@@ -1,0 +1,26 @@
+{
+  "scripts": {
+    "start": "snowpack dev",
+    "build": "snowpack build",
+    "test": "jest"
+  },
+  "webDependencies": {},
+  "devDependencies": {
+    "@snowpack/app-scripts-svelte": "^1.1.4",
+    "@testing-library/jest-dom": "^5.9.0",
+    "@testing-library/svelte": "^3.0.0",
+    "@tsconfig/svelte": "^2.0.1",
+    "jest": "^26.0.1",
+    "prettier": "^2.0.5",
+    "prettier-plugin-svelte": "^1.1.0",
+    "slugify": "^1.4.0",
+    "snowpack": "^2.3.1",
+    "svelte": "^3.23.0",
+    "svelte-check": "^2.2.7",
+    "svelte-preprocess": "^4.9.8",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "sirv-cli": "^1.0.14"
+  }
+}

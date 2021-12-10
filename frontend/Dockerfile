@@ -1,6 +1,11 @@
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
 FROM node:17.2.0-bullseye-slim as build-stage
 
+RUN apt-get update && apt-get install -y \
+    python3  \
+    make  \
+    g++
+
 WORKDIR /app
 
 COPY *.json /app/
@@ -16,7 +21,7 @@ COPY ./ /app/
 # Comment out the next line to disable tests
 # RUN npm run test:unit
 
-# RUN npm run build
+RUN npm run build
 RUN npm start
 
 

@@ -47,8 +47,6 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  // import slugify from 'slugify';
-  // import ResourceRequest from './ResourceRequest.svelte';
 
   let API_ROOT_URL = 'http://localhost:5005';
 

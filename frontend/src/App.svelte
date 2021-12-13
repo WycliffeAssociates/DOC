@@ -229,25 +229,27 @@
       hideErrorMessage();
     }
     showWaitMessage();
-    // try {
     fetch(API_ROOT_URL + '/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(document_request),
     })
       .then((response) => {
-        if (!response.ok) {
-          // return Promise.reject('Request failed error');
-          throw new Error(response.json());
+        console.log("response.ok: " + response.ok);
+        if (response.ok) {
+          return response.json();
+        } else {
+          return Promise.reject('Request failed error');
         }
       })
       .then((data) => {
-        console.log(data);
+        console.log("data: ", data);
         finished_document_url = data['finished_document_request_key'];
+        hideErrorMessage();
         hideWaitMessage();
       })
       .catch((err) => {
-        console.error(JSON.stringify(err));
+        console.error("error: ", err);
         hideWaitMessage();
         errorMessageDetails = JSON.stringify(err);
         showErrorMessage();

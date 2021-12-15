@@ -216,14 +216,14 @@
       }
     }
 
-    console.log(documentRequest.email);
+    console.log("email: ", documentRequest.email);
     // Create the JSON structure to POST.
     let document_request = {
       email_address: !isEmpty(documentRequest.email) ? documentRequest.email.trim() : null,
       assembly_strategy_kind: documentRequest.assemblyStrategy,
       resource_requests: rr,
     };
-    console.log(JSON.stringify(document_request, null, 2));
+    console.log("document request: ", JSON.stringify(document_request, null, 2));
     // POST the DocumentRequest to the API
     if (errorMessage) {
       hideErrorMessage();

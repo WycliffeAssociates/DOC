@@ -27,15 +27,6 @@ RUN npm run build
 # Run the frontend
 CMD ["npm", "start"]
 
-# You can build this container thusly:
-# docker build -t frontend .
-
-# You can run the container thusly:
-# docker run -d -it -p 8000:8000 frontend
-
-# Finally you can access the UI (assuming bridge network to localhost)
-# at http://localhost:8000
-
 # Optional nginx front to frontend JS
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
 # FROM nginx:1.21.4

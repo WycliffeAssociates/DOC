@@ -27,7 +27,10 @@ RUN fc-cache -f -v
 # Source: https://gist.github.com/lobermann/ca0e7bb2558b3b08923c6ae2c37a26ce
 # How to get wkhtmltopdf - don't use what Debian provides as it can have
 # headless display issues that mess with wkhtmltopdf.
-ARG WKHTMLTOX_LOC # Make a build arg (in docker-compose.yml from .env) available to this Dockerfile
+
+# Make a build arg available to this Dockerfile with default. Default will be overriden by environment var if used.
+ARG WKHTMLTOX_LOC=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
+
 RUN WKHTMLTOX_TEMP="$(mktemp)" && \
     wget -O "$WKHTMLTOX_TEMP" ${WKHTMLTOX_LOC} && \
     dpkg -i "$WKHTMLTOX_TEMP" && \
@@ -71,11 +74,12 @@ ENV PYTHONPATH=/backend:/tests
 # To run the tests do: docker-compose build --build-arg run_tests=1
 # Make RUN_TESTS in .env and referenced in docker-compose.yml
 # available here.
-ARG RUN_TESTS
+ARG RUN_TESTS=false
 RUN if [ "$RUN_TESTS" = "true" ] ; then IN_CONTAINER=true pytest /tests/ ; else echo You have chosen to skip the test suite ; fi
 
 # Make PORT in .env and referenced in docker-compose.yml
 # available here.
-ARG PORT
+ARG PORT=5005
 # What gets run when 'docker-compose run backend' is executed.
 CMD ["gunicorn", "--name", "document:entrypoints:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--pythonpath", "/backend", "--conf", "/backend/gunicorn.conf.py", "document.entrypoints.app:app"]
+

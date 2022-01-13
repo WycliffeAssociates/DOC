@@ -1,7 +1,7 @@
 version: "3"
 services:
   api:
-    image: danparisd/InterleavedResourcesGenerator
+    image: wycliffeassociates/doc:${IMAGE_TAG}
     env_file:
       - .env
     environment:
@@ -9,20 +9,20 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       TO_EMAIL_ADDRESS: ${TO_EMAIL_ADDRESS}
       SMTP_HOST: ${SMTP_HOST}
+      SEND_EMAIL: ${SEND_EMAIL}
+      TRANSLATIONS_JSON_LOCATION: ${TRANSLATIONS_JSON_LOCATION}
+    ports:
+      - "5005:80"
     volumes:
       - docker_pdf_output:/output
-    entrypoint:
-      - gunicorn
-      - --name IRG
-      - --worker-class uvicorn.workers.UvicornWorker
-      - --conf ./gunicorn.conf.py
-      - document.entrypoints.app:app
+    restart: unless-stopped
   web:
     build: ./web
     ports:
       - "8089:80"
     volumes:
       - docker_pdf_output:/srv/content
+    restart: unless-stopped
 
 volumes:
   docker_pdf_output:

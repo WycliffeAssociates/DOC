@@ -21,16 +21,9 @@ COPY ./ /app/
 # directory ./build/_dist_  containing the built project.
 RUN npm run build
 
-# Expose a the port for the sake of docker-compose.
-# EXPOSE 8000
-
-# Run the frontend
-CMD ["npm", "start"]
-
-# Optional nginx front to frontend JS
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
-# FROM nginx:1.21.4
-# COPY --from=build-stage /app/nginx.conf /etc/nginx/conf.d/default.conf
-# COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
-# COPY --from=build-stage /app/build/_dist_/ /usr/share/nginx/html
-# EXPOSE 80
+FROM nginx:1.21.4
+COPY --from=build-stage /app/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
+COPY --from=build-stage /app/build/_dist_/ /usr/share/nginx/html
+EXPOSE 80

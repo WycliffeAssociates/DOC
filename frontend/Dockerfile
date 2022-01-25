@@ -21,6 +21,11 @@ COPY ./ /app/
 # directory ./build/_dist_  containing the built project.
 RUN npm run build
 
+# Run the frontend for development. Use a targeted build pointed
+# at Stage 0 for development purposes. Npm is not installed in stage 1
+# so there is no issue for production with having this here.
+CMD ["npm", "start"]
+
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
 FROM nginx:1.21.4
 COPY --from=build-stage /app/nginx.conf /etc/nginx/conf.d/default.conf

@@ -48,7 +48,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  let API_ROOT_URL = 'http://localhost:5005';
+  let API_ROOT_URL = ""
+  if (__SNOWPACK_ENV__.MODE === "development") {
+    API_ROOT_URL = 'http://localhost:5005';
+  } else {
+    API_ROOT_URL = __SNOWPACK_ENV__.SNOWPACK_PUBLIC_BACKEND_PROD_API_URL;
+  }
+  console.log("API_ROOT_URL: ", API_ROOT_URL);
 
   let assemblyStrategies = [
     { id: 'book_language_order', label: 'Sort by book then by language' },

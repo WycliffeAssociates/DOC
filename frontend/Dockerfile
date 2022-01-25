@@ -17,7 +17,7 @@ COPY ./ /app/
 # Comment out the next line to disable tests
 # RUN npm run test:unit
 
-# npm run build will run snowpack build which will create the
+# 'npm run build' will run 'snowpack build' which will create the
 # directory ./build/_dist_  containing the built project.
 RUN npm run build
 

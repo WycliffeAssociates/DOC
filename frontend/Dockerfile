@@ -30,5 +30,5 @@ CMD ["npm", "start"]
 FROM nginx:1.21.4
 COPY --from=build-stage /app/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
-COPY --from=build-stage /app/build/_dist_/ /usr/share/nginx/html
+COPY --from=build-stage /app/build/ /usr/share/nginx/html
 EXPOSE 80

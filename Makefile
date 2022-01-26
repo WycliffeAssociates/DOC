@@ -36,7 +36,7 @@ up: checkvenv
 # This runs just the backend
 .PHONY: server
 server: up
-	docker-compose run backend
+	docker-compose run api
 
 # This runs both the backend and the frontend
 .PHONY: frontend-server
@@ -45,7 +45,7 @@ frontend-server: up
 
 .PHONY: test
 test: up
-	docker-compose run --rm --no-deps --entrypoint=pytest backend /tests/unit /tests/integration /tests/e2e
+	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/unit /tests/integration /tests/e2e
 
 
 .PHONY: clean-local-docker-output-dir
@@ -54,19 +54,19 @@ clean-local-docker-output-dir:
 
 .PHONY: unit-tests
 unit-tests: up
-	docker-compose run --rm --no-deps --entrypoint=pytest backend /tests/unit
+	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/unit
 
 .PHONY: e2e-tests
 e2e-tests: up clean-local-docker-output-dir
-	docker-compose run --rm --no-deps --entrypoint=pytest backend /tests/e2e
+	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e
 
 .PHONY: smoke-test-with-translation-words
 smoke-test-with-translation-words: up clean-local-docker-output-dir
-	docker-compose run --rm --no-deps --entrypoint=pytest backend /tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order
+	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order
 
 .PHONY: smoke-test-with-translation-words2
 smoke-test-with-translation-words2: up clean-local-docker-output-dir
-	docker-compose run --rm --no-deps --entrypoint=pytest backend /tests/e2e -k test_en_ulb_wa_rom_en_tn_wa_rom_en_tq_wa_rom_en_tw_wa_rom_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order
+	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_en_ulb_wa_rom_en_tn_wa_rom_en_tq_wa_rom_en_tw_wa_rom_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order
 
 .PHONY: down
 down:

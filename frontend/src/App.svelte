@@ -1,64 +1,12 @@
-<style>
-  :global(body) {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #f3f3f3;
-  }
-  :global(*, *:before, *:after) {
-    box-sizing: border-box;
-  }
-  :global(input[type='text'], input[type='select'], input[type='password'], input[type='number'], select) {
-    padding: 5px;
-    min-width: 30em;
-  }
-  .box {
-    width: 100px;
-    height: 100px;
-    background-color: #ff4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .fields {
-    margin: 2em 0;
-  }
-  .fields label {
-    display: block;
-    margin-top: 1em;
-  }
-  .forms {
-    margin: 2em 5em 2em 10em;
-  }
-  .container {
-    display: flex;
-  }
-  .results {
-    position: fixed;
-    overflow: auto;
-    right: 0;
-    width: 40%;
-    height: 100%;
-    background-color: #def7f7;
-    padding: 10% 3em;
-  }
-  .results pre {
-    font-size: 1.2em;
-  }
-</style>
-
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  let API_ROOT_URL = ""
-  if (__SNOWPACK_ENV__.MODE === "development") {
-    API_ROOT_URL = 'http://localhost:5005';
-  } else {
-    API_ROOT_URL = __SNOWPACK_ENV__.SNOWPACK_PUBLIC_BACKEND_PROD_API_URL;
-  }
+  let API_ROOT_URL = import.meta.env.VITE_BACKEND_API_URL;
   console.log("API_ROOT_URL: ", API_ROOT_URL);
 
   let assemblyStrategies = [
-    { id: 'book_language_order', label: 'Sort by book then by language' },
-    { id: 'language_book_order', label: 'Sort by language, and then by book' },
+    { id: 'book_language_order', label: import.meta.env.VITE_BOOK_LANGUAGE_ORDER_LABEL },
+    { id: 'language_book_order', label: import.meta.env.VITE_LANGUAGE_BOOK_ORDER_LABEL },
   ];
 
   let langs0 = [];
@@ -266,15 +214,15 @@
 <div class="container">
   <div class="forms">
     <div>
-      <h2>Document Request</h2>
+      <h2>{import.meta.env.VITE_TOP_H2_HEADER}</h2>
 
       <form on:submit|preventDefault={submit}>
         <div class="fields">
-          <label for="email">Email (Optional)</label>
+          <label for="email">{import.meta.env.VITE_EMAIL_LABEL}</label>
           <input type="text" name="email" id="email" bind:value={documentRequest.email} />
         </div>
         <div>
-          <h3>Please select the assembly strategy for this document</h3>
+          <h3>{import.meta.env.VITE_ASSEMBLY_STRATEGY_HEADER}</h3>
           <select bind:value={documentRequest.assemblyStrategy}>
             {#each assemblyStrategies as assemblyStrategy}
               <option value={assemblyStrategy.id}>{assemblyStrategy.label}</option>
@@ -283,7 +231,7 @@
         </div>
 
         <div>
-          <h3>Language #0</h3>
+          <h3>{import.meta.env.VITE_LANG_0_HEADER}</h3>
           {#await langs0}
             <p>...loading</p>
           {:then data}
@@ -305,9 +253,9 @@
         {#if !isEmpty(documentRequest.lang0Code)}
           <div>
             {#await lang0ResourceTypes}
-              <p>...choose language #1 first</p>
+              <p>{import.meta.env.VITE_LANG_0_RESOURCE_TYPES_WAIT_MSG}</p>
             {:then data}
-              <h3>Language #1 resource types</h3>
+              <h3>{import.meta.env.VITE_LANG_0_RESOURCE_TYPES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
@@ -328,9 +276,9 @@
         {#if !isEmpty(documentRequest.lang0Code) && documentRequest.lang0ResourceTypes.length > 0}
           <div>
             {#await lang0ResourceCodes}
-              <p>...choose language #1 resource types first</p>
+              <p>{import.meta.env.VITE_LANG_0_RESOURCE_CODES_WAIT_MSG}</p>
             {:then data}
-              <h3>Language #1 resource codes</h3>
+              <h3>{import.meta.env.VITE_LANG_0_RESOURCE_CODES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
@@ -353,7 +301,7 @@
         {/if}
         {#if showAnotherLang}
           <div>
-            <h3>Language #2</h3>
+            <h3>{import.meta.env.VITE_LANG_1_HEADER}</h3>
             {#await langs1}
               <p>...loading</p>
             {:then data}
@@ -375,9 +323,9 @@
         {#if !isEmpty(documentRequest.lang1Code)}
           <div>
             {#await lang1ResourceTypes}
-              <p>...choose language #2 first</p>
+              <p>{import.meta.env.VITE_LANG_1_RESOURCE_TYPES_WAIT_MSG}</p>
             {:then data}
-              <h3>Language #2 resource types</h3>
+              <h3>{import.meta.env.VITE_LANG_1_RESOURCE_TYPES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
@@ -398,9 +346,9 @@
         {#if !isEmpty(documentRequest.lang1Code) && documentRequest.lang1ResourceTypes.length > 0}
           <div>
             {#await lang1ResourceCodes}
-              <p>...choose language #1 resource types first</p>
+              <p>{import.meta.env.VITE_LANG_1_RESOURCE_CODES_WAIT_MSG}</p>
             {:then data}
-              <h3>Language #2 resource codes</h3>
+              <h3>{import.meta.env.VITE_LANG_1_RESOURCE_CODES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
@@ -419,15 +367,14 @@
           </div>
         {/if}
         {#if !isEmpty(documentRequest.lang1Code) && documentRequest.lang1ResourceTypes.length > 0 && documentRequest.lang1ResourceCodes.length > 0}
-          <button disabled={showAnotherLang2} on:click|preventDefault={handleAddLang2}>Add another language</button>
+          <button disabled={showAnotherLang2} on:click|preventDefault={handleAddLang2}>{import.meta.env.VITE_ADD_ANOTHER_LANGUAGE_BUTTON_TXT}</button>
         {/if}
         {#if showAnotherLang2}
           <div>
-            <h3>Language #2</h3>
+            <h3>{import.meta.env.VITE_LANG_2_HEADER}</h3>
             {#await langs2}
               <p>...loading</p>
             {:then data}
-              <!-- <h3>Language #2</h3> -->
               <select
                 bind:value={documentRequest.lang2Code}
                 name="lang2"
@@ -446,9 +393,9 @@
         {#if !isEmpty(documentRequest.lang2Code)}
           <div>
             {#await lang2ResourceTypes}
-              <p>...choose language #2 first</p>
+              <p>{import.meta.env.VITE_LANG_2_RESOURCE_TYPES_WAIT_MSG}</p>
             {:then data}
-              <h3>Language #2 resource types</h3>
+              <h3>{import.meta.env.VITE_LANG_2_RESOURCE_TYPES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
@@ -469,9 +416,9 @@
         {#if !isEmpty(documentRequest.lang2Code) && documentRequest.lang2ResourceTypes.length > 0}
           <div>
             {#await lang2ResourceCodes}
-              <p>...choose language #2 resource types first</p>
+              <p>{import.meta.env.VITE_LANG_2_RESOURCE_CODES_WAIT_MSG}</p>
             {:then data}
-              <h3>Language #2 resource codes</h3>
+              <h3>{import.meta.env.VITE_LANG_2_RESOURCE_CODES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
@@ -497,29 +444,20 @@
 
       {#if waitMessage}
         <div class="wait-message">
-          <p>
-            Thank you for submitting your document request. Please wait while the system generates your document. Note
-            that, depending on the size of the document, this could take a while. A link will be presented to you in
-            place of this message if the document is generated successfully. Thank you for your patience. If you have
-            provided an email address above, the same link will also be sent to the email address provided.
-          </p>
+          <p>{import.meta.env.VITE_WAIT_MSG}</p>
         </div>
       {/if}
       {#if errorMessage}
         <div class="error-message">
-          <p>
-            There was a problem handling your document request. The issue has been logged and we will take a look at it.
-            We apologize for the inconvenience. Please try another selection by resetting the form and trying your new
-            selection.
-          </p>
+          <p>{import.meta.env.VITE_ERROR_MSG}</p>
         </div>
       {/if}
       {#if finished_document_url.length > 0}
         <div class="finished-document-url">
           <p>
-            Your document is ready, please click
-            <a href="{API_ROOT_URL}/pdfs/{finished_document_url}">here</a>
-            to retrieve it.
+            {import.meta.env.VITE_DOCUMENT_READY_MSG_PART1}
+            <a href="{API_ROOT_URL}/pdfs/{finished_document_url}">{import.meta.env.VITE_DOCUMENT_READY_LINK_TXT}</a>
+            {import.meta.env.VITE_DOCUMENT_READY_MSG_PART2}
           </p>
         </div>
       {/if}
@@ -531,3 +469,51 @@
   <!--     <pre>{JSON.stringify(documentRequest, null, 2)}</pre> -->
   <!--   </div> -->
 </div>
+
+<style>
+  :global(body) {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f3f3f3;
+  }
+  :global(*, *:before, *:after) {
+    box-sizing: border-box;
+  }
+  :global(input[type='text'], input[type='select'], input[type='password'], input[type='number'], select) {
+    padding: 5px;
+    min-width: 30em;
+  }
+  .box {
+    width: 100px;
+    height: 100px;
+    background-color: #ff4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fields {
+    margin: 2em 0;
+  }
+  .fields label {
+    display: block;
+    margin-top: 1em;
+  }
+  .forms {
+    margin: 2em 5em 2em 10em;
+  }
+  .container {
+    display: flex;
+  }
+  .results {
+    position: fixed;
+    overflow: auto;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background-color: #def7f7;
+    padding: 10% 3em;
+  }
+  .results pre {
+    font-size: 1.2em;
+  }
+</style>
+

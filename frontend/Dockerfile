@@ -1,5 +1,6 @@
-# Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM node:17.2.0-bullseye-slim as build-stage
+# Stage 0, "development-stage", based on Node.js, to build the
+# frontend and run it in 'development' mode.
+FROM node:17.2.0-bullseye-slim as development-stage
 
 RUN apt-get update && apt-get install -y \
     python3  \
@@ -18,17 +19,12 @@ COPY ./ /app/
 # RUN npm run test:unit
 
 # 'npm run build' will run 'snowpack build' which will create the
-# directory ./build/_dist_  containing the built project.
+# ./build directory containing the built project.
 RUN npm run build
-
-# Run the frontend for development. Use a targeted build pointed
-# at Stage 0 for development purposes. Npm is not installed in stage 1
-# so there is no issue for production with having this here.
-CMD ["npm", "start"]
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
 FROM nginx:1.21.4
-COPY --from=build-stage /app/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=development-stage /app/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
-COPY --from=build-stage /app/build/ /usr/share/nginx/html
+COPY --from=development-stage /app/dist/ /usr/share/nginx/html
 EXPOSE 80

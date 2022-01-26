@@ -157,17 +157,15 @@ local-install-deps-base: local-update-deps-base
 	pip install --no-cache-dir -r ./backend/requirements.txt
 
 .PHONY: local-install-deps-dev
-local-install-deps-dev: local-update-deps-dev
-	pip install --no-cache-dir -r ./backend/requirements.txt
+local-install-deps-dev: local-update-deps-dev local-install-deps-base
 	pip install --no-cache-dir -r ./backend/requirements-dev.txt
 
 .PHONY: local-install-deps-prod
-local-install-deps-prod: local-update-deps-prod
-	pip install --no-cache-dir -r ./backend/requirements.txt
+local-install-deps-prod: local-update-deps-prod local-install-deps-base
 	pip install --no-cache-dir -r ./backend/requirements-prod.txt
 
 .PHONY: local-prepare-for-tests
-local-prepare-for-tests: mypy  local-clean-working-output-dir
+local-prepare-for-tests: mypy local-clean-working-output-dir
 
 .PHONY: local-prepare-for-tests-without-cleaning
 local-prepare-for-tests-without-cleaning: mypy

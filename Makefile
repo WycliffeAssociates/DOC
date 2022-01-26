@@ -31,7 +31,7 @@ build-no-cache: checkvenv
 
 .PHONY: up
 up: checkvenv
-	docker-compose up -d --force-recreate
+	docker-compose up -d
 
 # This runs just the backend
 .PHONY: server

@@ -12,21 +12,21 @@ services:
       SEND_EMAIL: ${SEND_EMAIL}
       TRANSLATIONS_JSON_LOCATION: ${TRANSLATIONS_JSON_LOCATION}
     ports:
-      - "5005:5005"
+      - 5005:5005
     volumes:
       - docker_pdf_output:/pdf_output
     restart: unless-stopped
   fileserver:
     build: ./web
     ports:
-      - "8089:80"
+      - 8089:80
     volumes:
       - docker_pdf_output:/srv/content
     restart: unless-stopped
   frontend:
     image: wycliffeassociates/doc-ui:${IMAGE_TAG}
     ports:
-      - "8001:80"
+      - 8001:80
     depends_on:
       - api
     restart: unless-stopped

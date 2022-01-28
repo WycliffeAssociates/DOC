@@ -130,14 +130,10 @@ def _location(
     # format='Download' that is parallel to the
     # individual, per book, USFM files.
     #
-    # There is at least one language, code='ar', that has only
-    # single USFM files. In that particular language all the
-    # individual USFM files per book can also be found in a zip
-    # file,
-    # $[?code='ar'].contents[?code='nav'].links[format='zip'],
-    # which also contains the manifest.yaml file.
-    # That language is the only one with a
-    # contents[?code='nav'].
+    # There is at least one language, code='ar', that has only single USFM
+    # files. In that particular language, and others like it, all the
+    # individual USFM files per book can also be found in a zip file,
+    # $[?code='ar'].contents[?code='nav'].links[format='zip'].
     #
     # Another, yet different, example is the case of
     # $[?code="avd"] which has format="usfm" without

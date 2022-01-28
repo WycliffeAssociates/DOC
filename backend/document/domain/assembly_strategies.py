@@ -36,7 +36,7 @@ NUM_ZEROS = 3
 # higher level, so-called 'assembly strategies' and lower level,
 # so-called 'sub strategies', assembly strategies.
 
-# FIXME More accurate return type than Any that mypy likes.
+# TODO More accurate return type than Any that mypy likes.
 # NOTE Every return type I tried based on the possible actual return
 # types failed. I also used pyre type checker, pyre-check, to try to
 # unearth a more accurate type and it did find a possible type, but it

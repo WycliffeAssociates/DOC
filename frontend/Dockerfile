@@ -18,6 +18,9 @@ COPY ./ /app/
 # Comment out the next line to disable tests
 # RUN npm run test:unit
 
+# Enforce typescript strict type checking and if no errors, proceed.
+RUN npm run check
+
 # 'npm run build' will run 'snowpack build' which will create the
 # ./build directory containing the built project.
 RUN npm run build

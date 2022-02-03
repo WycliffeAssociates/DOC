@@ -1,213 +1,265 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount } from 'svelte'
+  import type { AssemblyStrategy } from './lib/types'
+  import LoadingIndicator from './lib/LoadingIndicator.svelte'
+  import AssemblyStrategyComponent from './lib/AssemblyStrategy.svelte'
 
-  let API_ROOT_URL = import.meta.env.VITE_BACKEND_API_URL;
-  console.log("API_ROOT_URL: ", API_ROOT_URL);
+  let API_ROOT_URL: string = <string>import.meta.env.VITE_BACKEND_API_URL
+  console.log('API_ROOT_URL: ', API_ROOT_URL)
 
-  let assemblyStrategies = [
-    { id: 'book_language_order', label: import.meta.env.VITE_BOOK_LANGUAGE_ORDER_LABEL },
-    { id: 'language_book_order', label: import.meta.env.VITE_LANGUAGE_BOOK_ORDER_LABEL },
-  ];
+  function isEmpty(value: string | null): boolean {
+    return value === null || value.trim()?.length === 0
+  }
 
-  let langs0 = [];
-  let langs1 = [];
-  let langs2 = [];
+  let email: string | null = null
+  let assemblyStrategy: AssemblyStrategy | null
+  let lang0Code: string = ''
+  let langs0: string[] = []
+  let lang0ResourceTypes: string[] = []
+  let lang0ResourceCodes: string[] = []
+  let lang1Code: string = ''
+  let langs1: string[] = []
+  let lang1ResourceTypes: string[] = []
+  let lang1ResourceCodes: string[] = []
+  let lang2Code: string = ''
+  let langs2: string[] = []
+  let lang2ResourceTypes: string[] = []
+  let lang2ResourceCodes: string[] = []
 
-  let lang0Code = '';
-  let lang1Code = '';
-  let lang2Code = '';
-  let lang0ResourceTypes = [];
-  let lang1ResourceTypes = [];
-  let lang2ResourceTypes = [];
-  let lang0ResourceCodes = [];
-  let lang1ResourceCodes = [];
-  let lang2ResourceCodes = [];
-  let documentRequest = {
-    assemblyStrategy: assemblyStrategies[0],
-    email: null,
-    lang0Code: lang0Code,
-    lang0ResourceTypes: lang0ResourceTypes,
-    lang0ResourceCodes: lang0ResourceCodes,
-    lang1Code: lang1Code,
-    lang1ResourceTypes: lang1ResourceTypes,
-    lang1ResourceCodes: lang1ResourceCodes,
-    lang2Code: lang2Code,
-    lang2ResourceTypes: lang2ResourceTypes,
-    lang2ResourceCodes: lang2ResourceCodes,
-  };
   // Button will toggle this value
-  let showAnotherLang = false;
+  let showAnotherLang: boolean = false
   function handleAddLang() {
-    showAnotherLang = true;
+    showAnotherLang = true
   }
-  let showAnotherLang2 = false;
+  let showAnotherLang2: boolean = false
   function handleAddLang2() {
-    showAnotherLang2 = true;
-  }
-  function isEmpty(str: string): boolean {
-    return !str || str.trim().length === 0;
+    showAnotherLang2 = true
   }
 
-  async function getLang0CodesAndNames() {
-    const response = await fetch(API_ROOT_URL + '/language_codes_and_names');
-    langs0 = await response.json();
+  onMount(() => {
+    reset()
+  })
+
+  const LANGUAGE_CODES_AND_NAMES: string = '/language_codes_and_names'
+  const RESOURCE_TYPES_FOR_LANG: string = '/resource_types_for_lang/'
+  const RESOURCE_CODES_FOR_LANG: string = '/resource_codes_for_lang/'
+
+  // Language 0
+
+  async function getLang0CodesAndNames(): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + LANGUAGE_CODES_AND_NAMES)
+    const json = await response.json()
+    if (response.ok) {
+      langs0 = <string[]>json
+      return langs0
+    } else {
+      throw new Error(json)
+    }
   }
 
-  onMount(async () => {
-    // const response = await fetch(API_ROOT_URL + '/language_codes_and_names');
-    // langs0 = await response.json();
-    getLang0CodesAndNames();
-  });
-
-  // FIXME Consider more fully using promises rather than async/await/exceptions
-  // Source: https://jessewarden.com/2021/06/why-i-dont-use-async-await.html
-  // const getLang1CodesAndNames =>
-  //    fetch(API_ROOT_URL + '/language_codes_and_names')
-  //    .then( response => langs1 = response.json() ) // Here you'd maybe, see next line, return object from json instead of doing assignment to global.
-  //    .then( json => {
-  //        const something = json?.data?.something ?? []
-  //        return something
-  //     })
-  //    .catch( error => console.log( "http failed: ", error)
-  // NOTE Possibly after the function above is defined we would then await that
-  // directly in the "html" template below rather than storing its value into
-  // langs1
-
-  async function getLang1CodesAndNames() {
-    const response = await fetch(API_ROOT_URL + '/language_codes_and_names');
-    langs1 = await response.json();
+  async function getLang0ResourceTypes(langCode: string): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + RESOURCE_TYPES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
   }
 
-  async function getLang2CodesAndNames() {
-    const response = await fetch(API_ROOT_URL + '/language_codes_and_names');
-    langs2 = await response.json();
-  }
-  async function getLang0ResourceTypes(langCode: string) {
-    const response = await fetch(API_ROOT_URL + '/resource_types_for_lang/' + langCode);
-    lang0ResourceTypes = await response.json();
-  }
-  async function getLang1ResourceTypes(langCode: string) {
-    const response = await fetch(API_ROOT_URL + '/resource_types_for_lang/' + langCode);
-    lang1ResourceTypes = await response.json();
+  async function getLang0ResourceCodes(langCode: string): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + RESOURCE_CODES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
   }
 
-  async function getLang2ResourceTypes(langCode: string) {
-    const response = await fetch(API_ROOT_URL + '/resource_types_for_lang/' + langCode);
-    lang2ResourceTypes = await response.json();
+  // Language 1
+
+  async function getLang1CodesAndNames(): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + LANGUAGE_CODES_AND_NAMES)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
   }
-  async function getLang0ResourceCodes(langCode: string) {
-    const response = await fetch(API_ROOT_URL + '/resource_codes_for_lang/' + langCode);
-    lang0ResourceCodes = await response.json();
+
+  async function getLang1ResourceTypes(langCode: string): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + RESOURCE_TYPES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
   }
-  async function getLang1ResourceCodes(langCode: string) {
-    const response = await fetch(API_ROOT_URL + '/resource_codes_for_lang/' + langCode);
-    lang1ResourceCodes = await response.json();
+
+  async function getLang1ResourceCodes(langCode: string): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + RESOURCE_CODES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
   }
-  async function getLang2ResourceCodes(langCode: string) {
-    const response = await fetch(API_ROOT_URL + '/resource_codes_for_lang/' + langCode);
-    lang2ResourceCodes = await response.json();
+
+  // Language 2
+
+  async function getLang2CodesAndNames(): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + LANGUAGE_CODES_AND_NAMES)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
   }
-  let finished_document_url = '';
+
+  async function getLang2ResourceTypes(langCode: string): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + RESOURCE_TYPES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
+  }
+
+  async function getLang2ResourceCodes(langCode: string): Promise<string[]> {
+    const response = await fetch(API_ROOT_URL + RESOURCE_CODES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
+  }
+
+  let finished_document_url: string = ''
 
   function reset() {
-    Object.keys(documentRequest).forEach((key) => (documentRequest[key] = ''));
-    hideWaitMessage();
-    hideErrorMessage();
-    langs0 = [];
-    langs1 = [];
-    langs2 = [];
-    lang0Code = '';
-    lang1Code = '';
-    lang2Code = '';
-    lang0ResourceTypes = [];
-    lang1ResourceTypes = [];
-    lang2ResourceTypes = [];
-    lang0ResourceCodes = [];
-    lang1ResourceCodes = [];
-    lang2ResourceCodes = [];
-    finished_document_url = '';
-    getLang0CodesAndNames();
-    documentRequest.email = null; // Be careful to set email to null as API expects a null rather than empty string if not provided
-    document.getElementById('email').focus();
+    assemblyStrategy = null
+    // Be careful to set email to null as API expects a null rather
+    // than empty string if email is not provided by user.
+    email = null
+    lang0Code = ''
+    lang0ResourceTypes = []
+    lang0ResourceCodes = []
+    lang1Code = ''
+    lang1ResourceTypes = []
+    lang1ResourceCodes = []
+    lang2Code = ''
+    lang2ResourceTypes = []
+    lang2ResourceCodes = []
+    hideWaitMessage()
+    hideErrorMessage()
+    finished_document_url = ''
+    showAnotherLang = false
+    showAnotherLang2 = false
+    document.getElementById('email')?.focus()
   }
 
   // Submit button will toggle this value
-  $: waitMessage = false;
+  let waitMessage: boolean
+  $: waitMessage = false
   function hideWaitMessage() {
-    waitMessage = false;
+    waitMessage = false
   }
   function showWaitMessage() {
-    waitMessage = true;
+    waitMessage = true
   }
   // Error will toggle this value
-  $: errorMessage = false;
-  $: errorMessageDetails = null;
+  let errorMessage: boolean
+  $: errorMessage = false
+  // let errorMessageDetails: string | null
+  // $: errorMessageDetails = null
   function hideErrorMessage() {
-    errorMessage = false;
+    errorMessage = false
   }
   function showErrorMessage() {
-    errorMessage = true;
+    errorMessage = true
   }
 
-  async function submit() {
-    let rr = [];
+  function submit() {
+    let rr = []
     // Create resource_requests for lang0
-    for (let resourceCode of documentRequest.lang0ResourceCodes) {
-      for (let resourceType of documentRequest.lang0ResourceTypes) {
-        rr.push({ lang_code: documentRequest.lang0Code, resource_type: resourceType, resource_code: resourceCode });
+    for (let resourceCode of <string[]>lang0ResourceCodes) {
+      for (let resourceType of <string[]>lang0ResourceTypes) {
+        rr.push({
+          lang_code: lang0Code,
+          resource_type: resourceType,
+          resource_code: resourceCode
+        })
       }
     }
     // Create resource_requests for lang1
-    for (let resourceCode of documentRequest.lang1ResourceCodes) {
-      for (let resourceType of documentRequest.lang1ResourceTypes) {
-        rr.push({ lang_code: documentRequest.lang1Code, resource_type: resourceType, resource_code: resourceCode });
+    for (let resourceCode of <string[]>lang1ResourceCodes) {
+      for (let resourceType of <string[]>lang1ResourceTypes) {
+        rr.push({
+          lang_code: lang1Code,
+          resource_type: resourceType,
+          resource_code: resourceCode
+        })
       }
     }
     // Create resource_requests for lang2
-    for (let resourceCode of documentRequest.lang2ResourceCodes) {
-      for (let resourceType of documentRequest.lang2ResourceTypes) {
-        rr.push({ lang_code: documentRequest.lang2Code, resource_type: resourceType, resource_code: resourceCode });
+    for (let resourceCode of <string[]>lang2ResourceCodes) {
+      for (let resourceType of <string[]>lang2ResourceTypes) {
+        rr.push({
+          lang_code: lang2Code,
+          resource_type: resourceType,
+          resource_code: resourceCode
+        })
       }
     }
 
-    console.log("email: ", documentRequest.email);
+    console.log('email: ', email)
     // Create the JSON structure to POST.
-    let document_request = {
-      email_address: !isEmpty(documentRequest.email) ? documentRequest.email.trim() : null,
-      assembly_strategy_kind: documentRequest.assemblyStrategy,
-      resource_requests: rr,
-    };
-    console.log("document request: ", JSON.stringify(document_request, null, 2));
-    // POST the DocumentRequest to the API
-    if (errorMessage) {
-      hideErrorMessage();
+    let documentRequest = {
+      // FIXME Test that email_address is handled correctly with respect to null
+      email_address: email?.trim(), // !isEmpty(email) ? email.trim() : null,
+      assembly_strategy_kind: assemblyStrategy,
+      resource_requests: rr
     }
-    showWaitMessage();
+    console.log('document request: ', JSON.stringify(documentRequest, null, 2))
+    if (errorMessage) {
+      hideErrorMessage()
+    }
+    showWaitMessage()
+    // POST the formValues to the API
     fetch(API_ROOT_URL + '/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(document_request),
+      body: JSON.stringify(documentRequest)
     })
-      .then((response) => {
-        console.log("response.ok: " + response.ok);
+      .then(response => {
+        console.log('response.ok: ', response.ok)
         if (response.ok) {
-          return response.json();
+          return response.json()
         } else {
-          return Promise.reject('Request failed error');
+          return Promise.reject('Request failed error')
         }
       })
-      .then((data) => {
-        console.log("data: ", data);
-        finished_document_url = data['finished_document_request_key'];
-        hideErrorMessage();
-        hideWaitMessage();
+      .then(data => {
+        console.log('data: ', data)
+        finished_document_url = data['finished_document_request_key']
+        hideErrorMessage()
+        hideWaitMessage()
       })
-      .catch((err) => {
-        console.error("error: ", err);
-        hideWaitMessage();
-        errorMessageDetails = JSON.stringify(err);
-        showErrorMessage();
-      });
+      .catch(err => {
+        console.error('error: ', err)
+        hideWaitMessage()
+        // Currently we don't display this error to the user, but we could
+        // display it alongside the canned generic error message.
+        // errorMessageDetails = JSON.stringify(err)
+        showErrorMessage()
+      })
   }
 </script>
 
@@ -219,219 +271,202 @@
       <form on:submit|preventDefault={submit}>
         <div class="fields">
           <label for="email">{import.meta.env.VITE_EMAIL_LABEL}</label>
-          <input type="text" name="email" id="email" bind:value={documentRequest.email} />
-        </div>
-        <div>
-          <h3>{import.meta.env.VITE_ASSEMBLY_STRATEGY_HEADER}</h3>
-          <select bind:value={documentRequest.assemblyStrategy}>
-            {#each assemblyStrategies as assemblyStrategy}
-              <option value={assemblyStrategy.id}>{assemblyStrategy.label}</option>
-            {/each}
-          </select>
+          <input type="text" name="email" id="email" bind:value={email} />
         </div>
 
-        <div>
+        <AssemblyStrategyComponent bind:assemblyStrategy />
+
+        <div class:langs0-invisible={assemblyStrategy === null}>
           <h3>{import.meta.env.VITE_LANG_0_HEADER}</h3>
-          {#await langs0}
-            <p>...loading</p>
+
+          {#await getLang0CodesAndNames()}
+            <LoadingIndicator />
           {:then data}
-            <select
-              bind:value={documentRequest.lang0Code}
-              name="lang0"
-              id="lang0-select"
-              on:change={() => getLang0ResourceTypes(documentRequest.lang0Code)}
-            >
-              {#each data as value}
-                <option value={value[0]}>{value[1]}</option>
+            <select bind:value={lang0Code} name="lang">
+              {#each data as langCodeAndName}
+                <option value={langCodeAndName[0]}>{langCodeAndName[1]}</option>
               {/each}
             </select>
           {:catch error}
-            <p>{error.message}</p>
+            <p class="error">{error.message}</p>
           {/await}
         </div>
 
-        {#if !isEmpty(documentRequest.lang0Code)}
+        {#if !isEmpty(lang0Code)}
           <div>
-            {#await lang0ResourceTypes}
-              <p>{import.meta.env.VITE_LANG_0_RESOURCE_TYPES_WAIT_MSG}</p>
+            {#await getLang0ResourceTypes(lang0Code)}
+              <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_0_RESOURCE_TYPES_HEADER}</h3>
-              {#each data as value}
+              {#each data as resourceType}
                 <label>
                   <input
                     type="checkbox"
-                    bind:group={documentRequest.lang0ResourceTypes}
+                    bind:group={lang0ResourceTypes}
                     name="lang0ResourceTypes"
-                    on:change={() => getLang0ResourceCodes(documentRequest.lang0Code)}
-                    {value}
+                    value={resourceType}
                   />
-                  {value}
+                  {resourceType}
                 </label>
               {/each}
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
-        {#if !isEmpty(documentRequest.lang0Code) && documentRequest.lang0ResourceTypes.length > 0}
+
+        {#if !isEmpty(lang0Code) && lang0ResourceTypes?.length > 0}
           <div>
-            {#await lang0ResourceCodes}
-              <p>{import.meta.env.VITE_LANG_0_RESOURCE_CODES_WAIT_MSG}</p>
+            {#await getLang0ResourceCodes(lang0Code)}
+              <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_0_RESOURCE_CODES_HEADER}</h3>
-              {#each data as value}
+              {#each data as resourceCodeAndName}
                 <label>
                   <input
                     type="checkbox"
-                    bind:group={documentRequest.lang0ResourceCodes}
-                    name="lang0ResourceCodes"
-                    value={value[0]}
-                    on:change={() => getLang1CodesAndNames()}
+                    bind:group={lang0ResourceCodes}
+                    name="langResourceCodes"
+                    value={resourceCodeAndName[0]}
                   />
-                  {value[1]}
+                  {resourceCodeAndName[1]}
                 </label>
               {/each}
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
-        {#if !isEmpty(documentRequest.lang0Code) && documentRequest.lang0ResourceTypes.length > 0 && documentRequest.lang0ResourceCodes.length > 0}
-          <button disabled={showAnotherLang} on:click|preventDefault={handleAddLang}>Add another language</button>
+
+        {#if !isEmpty(lang0Code) && lang0ResourceTypes?.length > 0 && lang0ResourceCodes?.length > 0}
+          <button disabled={showAnotherLang} on:click|preventDefault={handleAddLang}
+            >{import.meta.env.VITE_ADD_ANOTHER_LANGUAGE_BUTTON_TXT}</button
+          >
         {/if}
         {#if showAnotherLang}
           <div>
             <h3>{import.meta.env.VITE_LANG_1_HEADER}</h3>
-            {#await langs1}
-              <p>...loading</p>
+            {#await getLang1CodesAndNames()}
+              <LoadingIndicator />
             {:then data}
-              <select
-                bind:value={documentRequest.lang1Code}
-                name="lang1"
-                id="lang1-select"
-                on:change={() => getLang1ResourceTypes(documentRequest.lang1Code)}
-              >
+              <select bind:value={lang1Code} name="lang1">
                 {#each data as value}
                   <option value={value[0]}>{value[1]}</option>
                 {/each}
               </select>
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
-        {#if !isEmpty(documentRequest.lang1Code)}
+        {#if !isEmpty(lang1Code)}
           <div>
-            {#await lang1ResourceTypes}
-              <p>{import.meta.env.VITE_LANG_1_RESOURCE_TYPES_WAIT_MSG}</p>
+            {#await getLang1ResourceTypes(lang1Code)}
+              <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_1_RESOURCE_TYPES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
                     type="checkbox"
-                    bind:group={documentRequest.lang1ResourceTypes}
+                    bind:group={lang1ResourceTypes}
                     name="lang1ResourceTypes"
-                    on:change={() => getLang1ResourceCodes(documentRequest.lang1Code)}
                     {value}
                   />
                   {value}
                 </label>
               {/each}
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
-        {#if !isEmpty(documentRequest.lang1Code) && documentRequest.lang1ResourceTypes.length > 0}
+        {#if !isEmpty(lang1Code) && lang1ResourceTypes?.length > 0}
           <div>
-            {#await lang1ResourceCodes}
-              <p>{import.meta.env.VITE_LANG_1_RESOURCE_CODES_WAIT_MSG}</p>
+            {#await getLang1ResourceCodes(lang1Code)}
+              <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_1_RESOURCE_CODES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
                     type="checkbox"
-                    bind:group={documentRequest.lang1ResourceCodes}
+                    bind:group={lang1ResourceCodes}
                     name="lang1ResourceCodes"
                     value={value[0]}
-                    on:change={() => getLang2CodesAndNames()}
                   />
                   {value[1]}
                 </label>
               {/each}
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
-        {#if !isEmpty(documentRequest.lang1Code) && documentRequest.lang1ResourceTypes.length > 0 && documentRequest.lang1ResourceCodes.length > 0}
-          <button disabled={showAnotherLang2} on:click|preventDefault={handleAddLang2}>{import.meta.env.VITE_ADD_ANOTHER_LANGUAGE_BUTTON_TXT}</button>
+        {#if !isEmpty(lang1Code) && lang1ResourceTypes?.length > 0 && lang1ResourceCodes?.length > 0}
+          <button disabled={showAnotherLang2} on:click|preventDefault={handleAddLang2}
+            >{import.meta.env.VITE_ADD_ANOTHER_LANGUAGE_BUTTON_TXT}</button
+          >
         {/if}
         {#if showAnotherLang2}
           <div>
             <h3>{import.meta.env.VITE_LANG_2_HEADER}</h3>
-            {#await langs2}
-              <p>...loading</p>
+            {#await getLang2CodesAndNames()}
+              <LoadingIndicator />
             {:then data}
-              <select
-                bind:value={documentRequest.lang2Code}
-                name="lang2"
-                id="lang2-select"
-                on:change={() => getLang2ResourceTypes(documentRequest.lang2Code)}
-              >
+              <select bind:value={lang2Code} name="lang2">
                 {#each data as value}
                   <option value={value[0]}>{value[1]}</option>
                 {/each}
               </select>
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
-        {#if !isEmpty(documentRequest.lang2Code)}
+        {#if !isEmpty(lang2Code)}
           <div>
-            {#await lang2ResourceTypes}
-              <p>{import.meta.env.VITE_LANG_2_RESOURCE_TYPES_WAIT_MSG}</p>
+            {#await getLang2ResourceTypes(lang2Code)}
+              <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_2_RESOURCE_TYPES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
                     type="checkbox"
-                    bind:group={documentRequest.lang2ResourceTypes}
+                    bind:group={lang2ResourceTypes}
                     name="lang2ResourceTypes"
-                    on:change={() => getLang2ResourceCodes(documentRequest.lang2Code)}
+                    id="lang2ResourceTypes"
                     {value}
                   />
                   {value}
                 </label>
               {/each}
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
-        {#if !isEmpty(documentRequest.lang2Code) && documentRequest.lang2ResourceTypes.length > 0}
+        {#if !isEmpty(lang2Code) && lang2ResourceTypes?.length > 0}
           <div>
-            {#await lang2ResourceCodes}
-              <p>{import.meta.env.VITE_LANG_2_RESOURCE_CODES_WAIT_MSG}</p>
+            {#await getLang2ResourceCodes(lang2Code)}
+              <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_2_RESOURCE_CODES_HEADER}</h3>
               {#each data as value}
                 <label>
                   <input
                     type="checkbox"
-                    bind:group={documentRequest.lang2ResourceCodes}
+                    bind:group={lang2ResourceCodes}
                     name="lang2ResourceCodes"
+                    id="lang2ResourceCodes"
                     value={value[0]}
                   />
                   {value[1]}
                 </label>
               {/each}
             {:catch error}
-              <p>{error.message}</p>
+              <p class="error">{error.message}</p>
             {/await}
           </div>
         {/if}
@@ -456,18 +491,15 @@
         <div class="finished-document-url">
           <p>
             {import.meta.env.VITE_DOCUMENT_READY_MSG_PART1}
-            <a href="{API_ROOT_URL}/pdfs/{finished_document_url}">{import.meta.env.VITE_DOCUMENT_READY_LINK_TXT}</a>
+            <a href="{API_ROOT_URL}/pdfs/{finished_document_url}"
+              >{import.meta.env.VITE_DOCUMENT_READY_LINK_TXT}</a
+            >
             {import.meta.env.VITE_DOCUMENT_READY_MSG_PART2}
           </p>
         </div>
       {/if}
     </div>
   </div>
-
-  <!--   <div class="results"> -->
-  <!--     <h3>Form Results</h3> -->
-  <!--     <pre>{JSON.stringify(documentRequest, null, 2)}</pre> -->
-  <!--   </div> -->
 </div>
 
 <style>
@@ -482,14 +514,6 @@
     padding: 5px;
     min-width: 30em;
   }
-  .box {
-    width: 100px;
-    height: 100px;
-    background-color: #ff4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
   .fields {
     margin: 2em 0;
   }
@@ -503,17 +527,7 @@
   .container {
     display: flex;
   }
-  .results {
-    position: fixed;
-    overflow: auto;
-    right: 0;
-    width: 40%;
-    height: 100%;
-    background-color: #def7f7;
-    padding: 10% 3em;
-  }
-  .results pre {
-    font-size: 1.2em;
+  .error {
+    color: red;
   }
 </style>
-

@@ -1505,12 +1505,14 @@ def assemble_usfm_as_iterator_content_by_verse_for_book_then_lang(
                     yield usfm_book_content_unit.chapters[chapter_num].verses[verse_num]
             yield html_column_end
 
+            # All helps should show up in right column lined up with associated
+            # scripture on the left column. There should only ever be two columns.
+            yield html_column_begin
             # Add the interleaved tn notes
             tn_verses: Optional[dict[str, model.HtmlContent]] = None
             for tn_book_content_unit3 in tn_book_content_units:
                 tn_verses = verses_for_chapter_tn(tn_book_content_unit3, chapter_num)
                 if tn_verses and verse_num in tn_verses:
-                    yield html_column_begin
                     yield from format_tn_verse(
                         tn_book_content_unit3,
                         chapter_num,
@@ -1524,8 +1526,6 @@ def assemble_usfm_as_iterator_content_by_verse_for_book_then_lang(
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
-                    if not tn_verses:
-                        yield html_column_begin
                     yield from format_tq_verse(
                         tq_book_content_unit.resource_type_name,
                         chapter_num,
@@ -1557,8 +1557,6 @@ def assemble_usfm_as_iterator_content_by_verse_for_book_then_lang(
                     and verse_num
                     in usfm_book_content_unit_.chapters[chapter_num].verses
                 ):
-                    if not tn_verses and not tq_verses:
-                        yield html_column_begin
                     yield from translation_word_links(
                         tw_book_content_unit,
                         chapter_num,

@@ -14,15 +14,12 @@
   let email: string | null = null
   let assemblyStrategy: AssemblyStrategy | null
   let lang0Code: string = ''
-  let langs0: string[] = []
   let lang0ResourceTypes: string[] = []
   let lang0ResourceCodes: string[] = []
   let lang1Code: string = ''
-  let langs1: string[] = []
   let lang1ResourceTypes: string[] = []
   let lang1ResourceCodes: string[] = []
   let lang2Code: string = ''
-  let langs2: string[] = []
   let lang2ResourceTypes: string[] = []
   let lang2ResourceCodes: string[] = []
 
@@ -50,8 +47,7 @@
     const response = await fetch(API_ROOT_URL + LANGUAGE_CODES_AND_NAMES)
     const json = await response.json()
     if (response.ok) {
-      langs0 = <string[]>json
-      return langs0
+      return <string[]>json
     } else {
       throw new Error(json)
     }

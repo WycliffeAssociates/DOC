@@ -26,7 +26,7 @@ RUN npm run check
 RUN npm run build
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
-FROM nginx:1.21.4
+FROM nginx:1.21.6
 COPY --from=development-stage /app/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
 COPY --from=development-stage /app/dist/ /usr/share/nginx/html

@@ -21,8 +21,8 @@ COPY ./ /app/
 # Enforce typescript strict type checking and if no errors, proceed.
 RUN npm run check
 
-# 'npm run build' will run 'snowpack build' which will create the
-# ./build directory containing the built project.
+# 'npm run build' will run 'vite build' which will create the
+# ./dist directory containing the built project.
 RUN npm run build
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx

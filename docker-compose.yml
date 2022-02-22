@@ -27,9 +27,6 @@ services:
     image: wycliffeassociates/doc-ui:${IMAGE_TAG}
     environment:
       VITE_BACKEND_API_URL: ${VITE_BACKEND_API_URL}
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
     ports:
       - 8001:80
     depends_on:

@@ -8,7 +8,7 @@ import re
 import time
 from collections.abc import Mapping, Sequence
 from glob import glob
-from typing import Optional
+from typing import Optional, cast
 
 import bs4
 import markdown
@@ -373,7 +373,12 @@ def verse_ref_and_verse_content_str(
     try:
         # logger.debug("lower_tag.parent: %s", lower_tag.parent)
         # logger.debug("upper_tag.parent: %s", upper_tag.parent)
-        if lower_tag.parent != upper_tag.parent:
+        # The isinstance checks are to make mypy happy.
+        if (
+            isinstance(lower_tag, bs4.element.Tag)
+            and isinstance(upper_tag, bs4.element.Tag)
+            and lower_tag.parent != upper_tag.parent
+        ):
             lower_tag = lower_tag.parent
             upper_tag = upper_tag.parent
     except Exception:
@@ -410,9 +415,11 @@ def verse_ref_and_verse_content_str(
     orig_lower_tag_parser = bs4.BeautifulSoup(str(orig_lower_tag), "html.parser")
     # Split the verse_content_str on the id of the span for the
     # current verse.
-    split_verse_content_str = verse_content_str.split(
-        orig_lower_tag_parser.find("span").get("id")
-    )
+    span_tag: bs4.element.Tag = cast(
+        bs4.element.Tag, orig_lower_tag_parser.find("span")
+    )  # Make mypy happy
+    # cast usage to make mypy happy again
+    split_verse_content_str = verse_content_str.split(cast(str, span_tag.get("id")))
     # logger.debug("split_verse_content_str: %s", split_verse_content_str)
     # Keep the content for the current verse onward.
     verse_content_str = '<p>\n<span class="v-num" id="{}'.format(

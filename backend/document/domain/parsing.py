@@ -425,6 +425,25 @@ def verse_ref_and_verse_content_str(
     verse_content_str = '<p>\n<span class="v-num" id="{}'.format(
         split_verse_content_str[-1]
     )
+    # Now it can be the case, e.g., Jonah 2:2, that instead of the verse we
+    # want being prepended with recapitulated verse spans we don't want to
+    # show for this verse, there can also be verse spans being appended to
+    # the current verse that we don't want to show. So we must detect those
+    # and effectively discard them as well.
+    verse_content_str_parser = bs4.BeautifulSoup(verse_content_str, "html.parser")
+    verse_span_tags = verse_content_str_parser.find_all(
+        "span", attrs={css_attribute_type: "v-num"}
+    )
+    if len(verse_span_tags) > 1:
+        # cast is to make mypy happy
+        first_unwanted_appended_span_tag: bs4.element.Tag = cast(
+            bs4.element.Tag, verse_span_tags[1]
+        )
+        # cast is to make mypy happy
+        verse_content_str_split = verse_content_str.split(
+            str(first_unwanted_appended_span_tag)
+        )
+        verse_content_str = "{}</p>".format(verse_content_str_split[0])
     # At this point we alter verse_content_str span's ID by prepending the
     # lang_code to ensure unique verse references within language scope in a
     # multi-language document.

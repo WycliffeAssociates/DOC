@@ -62,7 +62,9 @@ class Settings(BaseSettings):
     OPENING_H3_FMT_STR: str = "<h3>{}"
     OPENING_H3_WITH_ID_FMT_STR: str = '<h3 id="{}-{}">{}'
     TRANSLATION_WORD_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{})"
+    TRANSLATION_WORD_FMT_STR: str = "{}"
     TRANSLATION_WORD_PREFIX_ANCHOR_LINK_FMT_STR: str = "({}: [{}](#{}-{}))"
+    TRANSLATION_WORD_PREFIX_FMT_STR: str = "({}: {})"
     TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{}-tn-ch-{}-v-{})"
     # FIXME Tighten up the '.' usage in the following regex
     VERSE_ANCHOR_ID_FMT_STR: str = 'id="(.+?)-ch-(.+?)-v-(.+?)"'
@@ -230,6 +232,7 @@ class Settings(BaseSettings):
     TEMPLATE_PATHS_MAP: Mapping[str, str] = {
         "book_intro": "backend/templates/tn/book_intro_template.md",
         "header_enclosing": "backend/templates/html/header_enclosing.html",
+        "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
         "footer_enclosing": "backend/templates/html/footer_enclosing.html",
         "cover": "backend/templates/html/cover.html",
         "email-html": "backend/templates/html/email.html",
@@ -254,9 +257,6 @@ class Settings(BaseSettings):
     # as a document request parameter so we'll just choose an arbitrary
     # sub-strategy here. This means that we can write code for multiple
     # sub-strategies and choose one to put in play at a time here.
-    DEFAULT_ASSEMBLY_SUBSTRATEGY: model.AssemblySubstrategyEnum = (
-        model.AssemblySubstrategyEnum.VERSE
-    )
 
     # Return a list of the Markdown section titles that our
     # Python-Markdown remove_section_processor extension should remove.

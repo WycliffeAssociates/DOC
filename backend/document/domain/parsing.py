@@ -197,6 +197,7 @@ def book_content(
     tn_resource_types: Sequence[str] = settings.TN_RESOURCE_TYPES,
     tq_resource_types: Sequence[str] = settings.TQ_RESOURCE_TYPES,
     tw_resource_types: Sequence[str] = settings.TW_RESOURCE_TYPES,
+    bc_resource_types: Sequence[str] = settings.BC_RESOURCE_TYPES,
 ) -> model.BookContent:
     """Build and return the HTML book content instance."""
     book_content: model.BookContent
@@ -214,6 +215,10 @@ def book_content(
         )
     elif resource_lookup_dto.resource_type in tw_resource_types:
         book_content = tw_book_content(
+            resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+        )
+    elif resource_lookup_dto.resource_type in bc_resource_types:
+        book_content = bc_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
         )
     return book_content
@@ -715,6 +720,60 @@ def tw_book_content(
         resource_type_name=resource_lookup_dto.resource_type_name,
         # Sort the name content pairs by localized translation word
         name_content_pairs=sorted(name_content_pairs, key=sort_key),
+    )
+
+
+def bc_book_content(
+    resource_lookup_dto: model.ResourceLookupDto,
+    resource_dir: str,
+    resource_requests: Sequence[model.ResourceRequest],
+    layout_for_print: bool,
+    chapter_dirs_glob_fmt_str: str = "{}/*{}/*[0-9]*",
+    parser_type: str = "html.parser",
+    url_fmt_str: str = settings.BC_ARTICLE_URL_FMT_STR,
+) -> model.BCBook:
+    # Create the Markdown instance once and have it use our markdown
+    # extensions.
+    md: markdown.Markdown = markdown_instance(
+        resource_lookup_dto.lang_code,
+        resource_lookup_dto.resource_type,
+        resource_requests,
+        layout_for_print,
+    )
+    chapter_dirs = sorted(
+        glob(
+            chapter_dirs_glob_fmt_str.format(
+                resource_dir, resource_lookup_dto.resource_code
+            )
+        )
+    )
+    chapters: dict[int, model.BCChapter] = {}
+    for chapter_dir in chapter_dirs:
+        chapter_num = int(pathlib.Path(chapter_dir).stem)
+        chapter_commentary_md_content = file_utils.read_file(chapter_dir)
+        chapter_commentary_html_content = md.convert(chapter_commentary_md_content)
+        parser = bs4.BeautifulSoup(chapter_commentary_html_content, parser_type)
+        if chapter_num == 1:
+            # Change the chapter heading to indicate that it is
+            # commentary.
+            h1 = parser.find("h1")
+            if h1:
+                h1.append(" Commentary")
+        # Replace relative links to bible commentary articles with
+        # absolute links the same resource online.
+        for link in parser.find_all("a"):
+            old_link_ref = link.get("href")
+            new_link_ref = url_fmt_str.format(old_link_ref[3:])
+            new_link = parser.new_tag("a", href=new_link_ref, target="_blank")
+            new_link.string = link.string
+            link.parent.a.replace_with(new_link)
+        chapters[chapter_num] = model.BCChapter(commentary=str(parser))
+    return model.BCBook(
+        lang_code=resource_lookup_dto.lang_code,
+        lang_name=resource_lookup_dto.lang_name,
+        resource_code=resource_lookup_dto.resource_code,
+        resource_type_name=resource_lookup_dto.resource_type_name,
+        chapters=chapters,
     )
 
 

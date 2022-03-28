@@ -8690,3 +8690,125 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_c
             },
         )
         check_finished_document_with_verses_success(response)
+
+
+def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_en_bc_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_layout_for_print() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response: requests.Response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": True,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tq-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "bc-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "f10",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "tn",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "tq",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "tw",
+                        "resource_code": "col",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_en_bc_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_layout_not_for_print() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response: requests.Response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tq-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "bc-wa",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "f10",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "tn",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "tq",
+                        "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "fr",
+                        "resource_type": "tw",
+                        "resource_code": "col",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)

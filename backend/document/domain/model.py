@@ -197,9 +197,9 @@ class ResourceLookupDto(BaseModel):
 @final
 class FinishedDocumentDetails(BaseModel):
     """
-    Pydanctic model that we use as a return value to send back via
-    Fastapi to the client. For now it just contains the finished
-    dcocument filepath on disk.
+    Pydantic model that we use as a return value to send back via
+    FastAPI to the client. For now it just contains the finished
+    document filepath on disk.
     """
 
     finished_document_request_key: Optional[str]
@@ -298,6 +298,30 @@ class TWBook(BaseModel):
 
 
 @final
+class BCChapter(BaseModel):
+    """
+    A class to hold a mapping of verse references to bible
+    commentary HTML content.
+    """
+
+    commentary: HtmlContent
+
+
+@final
+class BCBook(BaseModel):
+    """
+    A class to hold a mapping of chapter numbers to translation questions
+    HTML content.
+    """
+
+    lang_code: str
+    lang_name: str
+    resource_code: str
+    resource_type_name: str
+    chapters: dict[ChapterNum, BCChapter]
+
+
+@final
 class USFMChapter(BaseModel):
     """
     A class to hold the USFM converted to HTML content for a chapter
@@ -328,7 +352,7 @@ class USFMBook(BaseModel):
     chapters: dict[ChapterNum, USFMChapter]
 
 
-BookContent = Union[USFMBook, TNBook, TQBook, TWBook]
+BookContent = Union[USFMBook, TNBook, TQBook, TWBook, BCBook]
 
 
 @final

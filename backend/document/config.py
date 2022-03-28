@@ -86,6 +86,11 @@ class Settings(BaseSettings):
     TN_RESOURCE_TYPES: Sequence[str] = ["tn", "tn-wa"]
     TQ_RESOURCE_TYPES: Sequence[str] = ["tq", "tq-wa"]
     TW_RESOURCE_TYPES: Sequence[str] = ["tw", "tw-wa"]
+    BC_RESOURCE_TYPES: Sequence[str] = ["bc-wa"]
+
+    # fmt: off
+    BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
+    # fmt: on
 
     def logger(self, name: str) -> logging.Logger:
         """
@@ -219,6 +224,7 @@ class Settings(BaseSettings):
         "tn-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn",
         "tw-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tw",
         "tq-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tq",
+        "bc-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc",
     }
 
     ENGLISH_RESOURCE_TYPE_MAP: Mapping[str, str] = {
@@ -227,6 +233,7 @@ class Settings(BaseSettings):
         "tn-wa": "ULB Translation Helps",
         "tq-wa": "ULB Translation Questions",
         "tw-wa": "ULB Translation Words",
+        "bc-wa": "Bible Commentary",
     }
 
     TEMPLATE_PATHS_MAP: Mapping[str, str] = {

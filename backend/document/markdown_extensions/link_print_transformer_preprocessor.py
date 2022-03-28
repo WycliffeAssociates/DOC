@@ -73,6 +73,7 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
         # by self.transform_tn_markdown_links.
         source = self.transform_tn_missing_resource_code_markdown_links(source)
         source = self.transform_tn_obs_markdown_links(source)
+        source = self.transform_bc_markdown_links(source)
         return source.split("\n")
 
     def transform_tw_rc_link(self, wikilink: model.WikiLink, source: str) -> str:
@@ -118,7 +119,9 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
                 # Build the anchor link.
                 url = url.replace(
                     match.group(0),  # The whole match
-                    settings.TRANSLATION_WORD_FMT_STR.format(localized_translation_word),
+                    settings.TRANSLATION_WORD_FMT_STR.format(
+                        localized_translation_word
+                    ),
                 )
             else:
                 url = url.replace(match.group(0), filename_sans_suffix)
@@ -574,6 +577,19 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
             # Build the anchor links
             # FIXME Actually create a meaningful link rather than just
             # link text
+            source = source.replace(match.group(0), match.group("link_text"))
+        return source
+
+    def transform_bc_markdown_links(
+        self,
+        source: str,
+    ) -> str:
+        """
+        Replace bible commentary relative link with link text.
+        """
+        for match in re.finditer(link_regexes.BC_MARKDOWN_LINK_RE, source):
+            # Build the anchor links to referenced bible commentary
+            # articles.
             source = source.replace(match.group(0), match.group("link_text"))
         return source
 

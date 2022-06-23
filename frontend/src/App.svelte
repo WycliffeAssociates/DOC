@@ -190,7 +190,7 @@
     document_request_key = ''
     showAnotherLang = false
     /* showAnotherLang2 = false */
-    document.getElementById('email')?.focus()
+    document.getElementById('lang')?.focus()
   }
 
   // Submit button will toggle this value
@@ -336,51 +336,13 @@
       <h2>{import.meta.env.VITE_TOP_H2_HEADER}</h2>
 
       <form on:submit|preventDefault={submit}>
-        <div class="fields">
-          <label for="email">{import.meta.env.VITE_EMAIL_LABEL}</label>
-          <input type="text" name="email" id="email" bind:value={email} />
-        </div>
-        <label for="layoutForPrint">{import.meta.env.VITE_LAYOUT_FOR_PRINT_LABEL}</label>
-        <input
-          type="checkbox"
-          name="layoutForPrint"
-          id="layoutForPrint"
-          bind:checked={layoutForPrint}
-        />
-        <br />
-        <label for="generatePdf">{import.meta.env.VITE_PDF_LABEL}</label>
-        <input
-          type="checkbox"
-          name="generatePdf"
-          id="generatePdf"
-          bind:checked={generatePdf}
-        />
-        <br />
-        <label for="generateEpub">{import.meta.env.VITE_EPUB_LABEL}</label>
-        <input
-          type="checkbox"
-          name="generateEpub"
-          id="generateEpub"
-          bind:checked={generateEpub}
-        />
-        <br />
-        <label for="generateDocx">{import.meta.env.VITE_DOCX_LABEL}</label>
-        <input
-          type="checkbox"
-          name="generateDocx"
-          id="generateDocx"
-          bind:checked={generateDocx}
-        />
-
-        <AssemblyStrategyComponent bind:assemblyStrategy />
-
-        <div class:langs0-invisible={assemblyStrategy === null}>
+        <div>
           <h3>{import.meta.env.VITE_LANG_0_HEADER}</h3>
 
           {#await getLang0CodesAndNames()}
             <LoadingIndicator />
           {:then data}
-            <select bind:value={lang0Code} name="lang">
+            <select bind:value={lang0Code} name="lang" id="lang">
               {#each data as langCodeAndName}
                 <option value={langCodeAndName[0]}>{langCodeAndName[1]}</option>
               {/each}
@@ -569,6 +531,54 @@
           </div>
         {/if} -->
 
+        <div
+          class:assembly-strategy-invisible={lang1ResourceCodes === undefined ||
+            lang1ResourceCodes.length == 0}
+        >
+          <AssemblyStrategyComponent bind:assemblyStrategy />
+        </div>
+        <br />
+        <div>
+          <label for="layoutForPrint">{import.meta.env.VITE_LAYOUT_FOR_PRINT_LABEL}</label
+          >
+          <input
+            type="checkbox"
+            name="layoutForPrint"
+            id="layoutForPrint"
+            bind:checked={layoutForPrint}
+          />
+        </div>
+        <div>
+          <br />
+          <label for="generatePdf">{import.meta.env.VITE_PDF_LABEL}</label>
+          <input
+            type="checkbox"
+            name="generatePdf"
+            id="generatePdf"
+            bind:checked={generatePdf}
+          />
+          <br />
+          <label for="generateEpub">{import.meta.env.VITE_EPUB_LABEL}</label>
+          <input
+            type="checkbox"
+            name="generateEpub"
+            id="generateEpub"
+            bind:checked={generateEpub}
+          />
+          <br />
+          <label for="generateDocx">{import.meta.env.VITE_DOCX_LABEL}</label>
+          <input
+            type="checkbox"
+            name="generateDocx"
+            id="generateDocx"
+            bind:checked={generateDocx}
+          />
+        </div>
+
+        <div class="fields">
+          <label for="email">{import.meta.env.VITE_EMAIL_LABEL}</label>
+          <input type="text" name="email" id="email" bind:value={email} />
+        </div>
         <div style="margin-top:3em">
           <button type="submit" class="submit-button">submit</button>
           <button on:click|preventDefault={reset} class="reset-button">reset</button>
@@ -672,5 +682,8 @@
     text-decoration: none;
     margin: 4px 2px;
     cursor: pointer;
+  }
+  .assembly-strategy-invisible {
+    visibility: hidden;
   }
 </style>

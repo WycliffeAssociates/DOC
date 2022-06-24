@@ -36,6 +36,7 @@
 
   let email: string | null = null
   let assemblyStrategy: AssemblyStrategy | null
+  let assemblyStrategyKind: string = 'lbo' // Default to language book order since the UI is defaulted to print
   let layoutForPrint: boolean | null = true
   let generatePdf: boolean | null
   let generateEpub: boolean | null
@@ -192,7 +193,7 @@
   let document_request_key: string = ''
 
   function reset() {
-    assemblyStrategy = null
+    assemblyStrategyKind = 'lbo'
     // Be careful to set email to null as API expects a null rather
     // than empty string if email is not provided by user.
     email = null
@@ -308,7 +309,7 @@
       // FIXME Test that email_address is handled correctly with respect to null
       email_address: email?.trim(), // !isEmpty(email) ? email.trim() : null,
       // email_address: !isEmpty(email) ? email.trim() : null,
-      assembly_strategy_kind: assemblyStrategy,
+      assembly_strategy_kind: assemblyStrategyKind,
       // assembly_layout_kind: undefined,
       layout_for_print: layoutForPrint,
       generate_pdf: generatePdf,
@@ -558,14 +559,8 @@
           </div>
         {/if} -->
 
-        <div
-          class:assembly-strategy-invisible={lang1ResourceCodes === undefined ||
-            lang1ResourceCodes.length == 0}
-        >
-          <AssemblyStrategyComponent bind:assemblyStrategy />
-        </div>
-        <br />
         <div>
+          <br />
           <label for="layoutForPrint">{import.meta.env.VITE_LAYOUT_FOR_PRINT_LABEL}</label
           >
           <input
@@ -574,6 +569,13 @@
             id="layoutForPrint"
             bind:checked={layoutForPrint}
           />
+        </div>
+        <div
+          class:assembly-strategy-invisible={lang1ResourceCodes === undefined ||
+            lang1ResourceCodes.length == 0 ||
+            layoutForPrint}
+        >
+          <AssemblyStrategyComponent bind:assemblyStrategy />
         </div>
         <div>
           <br />

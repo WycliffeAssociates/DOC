@@ -66,6 +66,7 @@
 
   const LANGUAGE_CODES_AND_NAMES: string = '/language_codes_and_names'
   const RESOURCE_TYPES_FOR_LANG: string = '/resource_types_for_lang/'
+  const RESOURCE_TYPES_AND_NAMES_FOR_LANG: string = '/resource_types_and_names_for_lang/'
   const RESOURCE_CODES_FOR_LANG: string = '/resource_codes_for_lang/'
 
   // Language 0
@@ -82,6 +83,18 @@
 
   async function getLang0ResourceTypes(langCode: string): Promise<string[]> {
     const response = await fetch(API_ROOT_URL + RESOURCE_TYPES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
+  }
+
+  async function getLang0ResourceTypesAndNames(langCode: string): Promise<string[]> {
+    const response = await fetch(
+      API_ROOT_URL + RESOURCE_TYPES_AND_NAMES_FOR_LANG + langCode
+    )
     const json = await response.json()
     if (response.ok) {
       return <string[]>json
@@ -114,6 +127,18 @@
 
   async function getLang1ResourceTypes(langCode: string): Promise<string[]> {
     const response = await fetch(API_ROOT_URL + RESOURCE_TYPES_FOR_LANG + langCode)
+    const json = await response.json()
+    if (response.ok) {
+      return <string[]>json
+    } else {
+      throw new Error(json)
+    }
+  }
+
+  async function getLang1ResourceTypesAndNames(langCode: string): Promise<string[]> {
+    const response = await fetch(
+      API_ROOT_URL + RESOURCE_TYPES_AND_NAMES_FOR_LANG + langCode
+    )
     const json = await response.json()
     if (response.ok) {
       return <string[]>json
@@ -354,7 +379,7 @@
 
         {#if !isEmpty(lang0Code)}
           <div>
-            {#await getLang0ResourceTypes(lang0Code)}
+            {#await getLang0ResourceTypesAndNames(lang0Code)}
               <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_0_RESOURCE_TYPES_HEADER}</h3>
@@ -364,10 +389,11 @@
                     type="checkbox"
                     bind:group={lang0ResourceTypes}
                     name="lang0ResourceTypes"
-                    value={resourceType}
+                    value={resourceType[0]}
                   />
-                  {resourceType}
+                  {resourceType[1]}
                 </label>
+                <br />
               {/each}
             {:catch error}
               <p class="error">{error.message}</p>
@@ -421,20 +447,21 @@
         {/if}
         {#if !isEmpty(lang1Code)}
           <div>
-            {#await getLang1ResourceTypes(lang1Code)}
+            {#await getLang1ResourceTypesAndNames(lang1Code)}
               <LoadingIndicator />
             {:then data}
               <h3>{import.meta.env.VITE_LANG_1_RESOURCE_TYPES_HEADER}</h3>
-              {#each data as value}
+              {#each data as resourceType}
                 <label>
                   <input
                     type="checkbox"
                     bind:group={lang1ResourceTypes}
                     name="lang1ResourceTypes"
-                    {value}
+                    value={resourceType[0]}
                   />
-                  {value}
+                  {resourceType[1]}
                 </label>
+                <br />
               {/each}
             {:catch error}
               <p class="error">{error.message}</p>
@@ -648,6 +675,14 @@
   :global(input[type='text'], input[type='select'], input[type='password'], input[type='number'], select) {
     padding: 5px;
     min-width: 30em;
+  }
+  :global(input[type='checkbox']) {
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    top: 3px;
+    border-radius: 0px;
+    background: #1a130b;
   }
   .fields {
     margin: 2em 0;

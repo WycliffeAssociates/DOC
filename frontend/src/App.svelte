@@ -721,6 +721,6 @@
     cursor: pointer;
   }
   .assembly-strategy-invisible {
-    visibility: hidden;
+    display: none;
   }
 </style>

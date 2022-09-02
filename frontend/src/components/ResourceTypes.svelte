@@ -159,7 +159,7 @@
                 {$lang0NameStore}
               </h3>
               {#if lang0ResourceTypesAndNames.length > 0}
-                <div>
+                <div class="flex items-center justify-between">
                   <label
                     for="select-all-lang0-resource-types"
                     class="text-primary-content"
@@ -175,7 +175,7 @@
               {/if}
               <ul class="pb-4">
                 {#each lang0ResourceTypesAndNames as resourceTypeAndName, index}
-                  <li>
+                  <li class="flex items-center justify-between">
                     <label for="lang0-resourcetype-{index}" class="text-primary-content"
                       >{resourceTypeAndName.split(', ')[1]}</label
                     >
@@ -205,7 +205,7 @@
                 Resource types available for {$lang1NameStore}
               </h3>
               {#if lang1ResourceTypesAndNames.length > 0}
-                <div>
+                <div class="flex items-center justify-between">
                   <label
                     for="select-all-lang1-resource-types"
                     class="text-primary-content"
@@ -222,7 +222,7 @@
               {/if}
               <ul>
                 {#each lang1ResourceTypesAndNames as resourceTypeAndName, index}
-                  <li>
+                  <li class="flex items-center justify-between">
                     <label for="lang1-resourcetype-{index}" class="text-primary-content"
                       >{resourceTypeAndName.split(', ')[1]}</label
                     >

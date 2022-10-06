@@ -197,27 +197,6 @@ def shared_resource_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
     return resource_lookup.shared_resource_codes(lang0_code, lang1_code)
 
 
-@app.get("/resources_codes_and_types_for_lang/{lang_code}")
-def resource_codes_and_types_for_lang(
-    lang_code: str,
-) -> dict[str, list[tuple[str, str, str]]]:
-    """
-    Return dictionary in which keys are resource types for the
-    language that have available resource codes for lang_code.
-    """
-    return resource_lookup.resource_codes_and_types_for_lang(lang_code)
-
-
-# @app.get("/shared_resource_codes_and_types/{lang0_code}/{lang1_code}")
-# def shared_resource_codes_and_types(
-#     lang0_code: str, lang1_code: str
-# ) -> dict[str, list[tuple[str, str, str]]]:
-#     """
-#     Return list of available resource codes and types where resource code are common to both lang0_code and lang1_code.
-#     """
-#     return resource_lookup.shared_resource_codes_and_types(lang0_code, lang1_code)
-
-
 @app.get("/resource_types/{lang_code}/")
 def shared_resource_types(
     lang_code: str,

@@ -333,6 +333,9 @@ local-smoke-test-with-translation-words29: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_mat_language_book_order_1c
 
 
+.PHONY: local-smoke-test-with-translation-words29-profile
+local-smoke-test-with-translation-words29-profile: local-prepare-for-tests
+	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pyinstrument -m pytest tests/e2e/ -k test_es_419_ulb_col_es_419_ulb_eph_es_419_tn_col_es_419_tq_col_es_419_tw_col_es_419_tw_eph_book_language_order
 
 # This is one to run after running local-e2e-tests or any tests which
 # has yielded HTML and PDFs that need to be checked for linking

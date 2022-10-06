@@ -15,6 +15,7 @@ isort
 mypy
 pre-commit
 pygount
+pyinstrument
 pylint
 pyls-mypy
 pytest

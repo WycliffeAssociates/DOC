@@ -167,6 +167,8 @@ pygments==2.12.0
     #   rich
 pygount==1.4.0
     # via -r ./backend/requirements-dev.in
+pyinstrument==4.3.0
+    # via -r ./backend/requirements-dev.in
 pylint==2.14.1
     # via -r ./backend/requirements-dev.in
 pyls-mypy==0.1.8

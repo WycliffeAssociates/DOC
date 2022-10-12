@@ -10,7 +10,7 @@
     generateDocxStore,
     documentRequestKeyStore
   } from '../stores/SettingsStore'
-  import { resetStores } from '../lib/utils'
+  import { getApiRootUrl, resetStores } from '../lib/utils'
 
   function cancelDocument() {
     console.log('Called cancelDocument')
@@ -22,7 +22,8 @@
     push('#/')
   }
 
-  let apiRootUrl: string = <string>import.meta.env.VITE_BACKEND_API_URL
+  let apiRootUrl: string = getApiRootUrl()
+
   let pdfDownloadUrl: string
   $: pdfDownloadUrl = `${apiRootUrl}/pdf/${$documentRequestKeyStore}`
   let ePubDownloadUrl: string

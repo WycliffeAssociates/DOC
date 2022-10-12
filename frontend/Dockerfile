@@ -19,6 +19,8 @@ RUN npm install
 # Enforce typescript strict type checking and if no errors, proceed.
 RUN npm run check
 
+ARG BACKEND_API_URL=http://localhost:5005
+
 # 'npm run build' will run 'vite build' which will create the
 # ./dist directory containing the built project. Note too that 'npm
 # run build' puts the frontend build system (vite) into production mode

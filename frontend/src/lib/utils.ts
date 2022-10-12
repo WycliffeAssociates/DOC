@@ -72,3 +72,8 @@ export function resetStores(storeGroup: StoreGroup) {
     errorStore.set(null)
   }
 }
+
+export function getApiRootUrl(): string {
+  console.log(`BACKEND_API_URL: ${process.env.BACKEND_API_URL}`)
+  return <string>process.env.BACKEND_API_URL
+}

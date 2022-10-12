@@ -24,8 +24,8 @@ endif
 .PHONY: build
 build: checkvenv local-install-deps-prod
 	export IMAGE_TAG=local && \
-	docker build -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --build-arg BACKEND_API_URL -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build --build-arg BACKEND_API_URL -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 .PHONY: build-no-cache
 build-no-cache: checkvenv
@@ -150,7 +150,7 @@ all-plus-linting: mypy down build up test
 # Run a local Uvicorn server outside Docker
 .PHONY: local-server
 local-server: checkvenv
-	IN_CONTAINER=false uvicorn document.entrypoints.app:app --reload --host "0.0.0.0" --port "5005" --app-dir "./backend/"
+	BACKEND_API_URL="http://localhost:5005" IN_CONTAINER=false uvicorn document.entrypoints.app:app --reload --host "0.0.0.0" --port "5005" --app-dir "./backend/"
 
 # Run a local Gunicorn server outside Docker
 .PHONY: local-gunicorn-server

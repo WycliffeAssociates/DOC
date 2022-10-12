@@ -10,7 +10,6 @@ WORKDIR /app
 
 RUN mkdir dist # Output directory for color theme
 COPY ./ /app/
-RUN npx smui-theme template src/theme
 RUN npm install
 
 # Comment out the next line to disable tests

@@ -82,17 +82,17 @@
         {/if}view it online.
       </p>
       {#if $generatePdfStore}
-        <div class="m-auto text-center mt-8">
+        <div class="m-auto text-center mt-4">
           <DownloadButton buttonText="Download PDF" url={pdfDownloadUrl} />
         </div>
       {/if}
       {#if $generateEpubStore}
-        <div class="m-auto text-center mt-8">
+        <div class="m-auto text-center mt-4">
           <DownloadButton buttonText="Download ePub" url={ePubDownloadUrl} />
         </div>
       {/if}
       {#if $generateDocxStore}
-        <div class="m-auto text-center mt-8">
+        <div class="m-auto text-center mt-4">
           <DownloadButton buttonText="Download Docx" url={docxDownloadUrl} />
         </div>
       {/if}

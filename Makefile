@@ -38,22 +38,11 @@ up: checkvenv
 	export IMAGE_TAG=local && \
 	BACKEND_API_URL=http://localhost:5005 docker-compose up
 
-# This runs just the backend
-.PHONY: server
-server: up
-	docker-compose run api
 
-# This runs both the backend and the frontend
-.PHONY: frontend-server
-frontend-server: up
-	docker-compose run frontend
-
-# This builds the frontend and then runs both the backend and the
-# frontend. This is the entryoint for a non-technical user who just
+# This is the entryoint for a non-technical user who just
 # wants to type one command and have it work.
 .PHONY: build-and-run
 build-and-run: build up
-	docker-compose run frontend
 
 
 .PHONY: down

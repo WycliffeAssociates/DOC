@@ -39,7 +39,7 @@ up: checkvenv
 	BACKEND_API_URL=http://localhost:5005 docker-compose up
 
 .PHONY: up-as-daemon
-up: checkvenv
+up-as-daemon: checkvenv
 	export IMAGE_TAG=local && \
 	BACKEND_API_URL=http://localhost:5005 docker-compose up -d
 

@@ -294,7 +294,7 @@ local-smoke-test-with-translation-words22: local-prepare-for-tests
 
 .PHONY: local-smoke-test-with-translation-words23
 local-smoke-test-with-translation-words23: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_es_419_ulb_nam_es_419_reg_nam_es_419_tn_nam_es_419_tw_nam_sw_ulb_lam_sw_reg_lam_sw_tn_lam_sw_tw_lam_book_language_order_sl_sr
+	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr
 
 
 .PHONY: local-smoke-test-with-translation-words24

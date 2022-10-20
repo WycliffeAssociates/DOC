@@ -56,6 +56,16 @@ build-and-run: build up
 	docker-compose run frontend
 
 
+.PHONY: down
+down:
+	docker-compose down --remove-orphans
+
+.PHONY: stop-and-remove
+stop-and-remove:
+	docker ps -q | xargs docker stop
+	docker ps -a -q -f status=exited | xargs docker rm
+
+
 .PHONY: test
 test: up
 	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/unit /tests/integration /tests/e2e
@@ -90,15 +100,6 @@ smoke-test-with-translation-words2: up clean-local-docker-output-dir
 .PHONY: smoke-test-with-translation-words3
 smoke-test-with-translation-words3: up clean-local-docker-output-dir
 	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_pt_br_ulb_tn_en_ulb_wa_tn_wa_luk_language_book_order_2c_sl_hr
-
-.PHONY: down
-down:
-	docker-compose down --remove-orphans
-
-.PHONY: stop-and-remove
-stop-and-remove:
-	docker ps -q | xargs docker stop
-	docker ps -a -q -f status=exited | xargs docker rm
 
 .PHONY: mypy
 mypy: checkvenv

@@ -29,7 +29,19 @@ RUN npm run build
 
 # Stage 1: Let nginx serve the built front-end in production.
 FROM nginx:1.23
+
+RUN apt-get update && apt-get install -y \
+    moreutils # For sponge in start-nginx.sh
+
+COPY ./start-nginx.sh /usr/bin/start-nginx.sh
+RUN chmod +x /usr/bin/start-nginx.sh
+
 COPY --from=development-stage /app/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf
 COPY --from=development-stage /app/dist/ /usr/share/nginx/html
 EXPOSE 80
+
+# For use by start-nginx.sh
+ENV JSFOLDER=/usr/share/nginx/html/assets/*.js
+ENTRYPOINT [ "/usr/bin/start-nginx.sh" ]
+

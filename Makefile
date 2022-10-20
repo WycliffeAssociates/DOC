@@ -24,8 +24,8 @@ endif
 .PHONY: build
 build: checkvenv local-install-deps-prod
 	export IMAGE_TAG=local && \
-	docker build --build-arg BACKEND_API_URL -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --build-arg BACKEND_API_URL -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 .PHONY: build-no-cache
 build-no-cache: checkvenv
@@ -36,7 +36,7 @@ build-no-cache: checkvenv
 .PHONY: up
 up: checkvenv
 	export IMAGE_TAG=local && \
-	docker-compose up -d
+	BACKEND_API_URL=http://localhost:5005 docker-compose up
 
 # This runs just the backend
 .PHONY: server

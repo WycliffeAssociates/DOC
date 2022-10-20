@@ -28,6 +28,7 @@ import {
   emailStore,
   documentRequestKeyStore
 } from '../stores/SettingsStore'
+import EnvVars from '../envvars.json'
 
 const languageBookOrder: string = <string>import.meta.env.VITE_LANGUAGE_BOOK_ORDER
 

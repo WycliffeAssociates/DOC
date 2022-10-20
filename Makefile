@@ -38,6 +38,11 @@ up: checkvenv
 	export IMAGE_TAG=local && \
 	BACKEND_API_URL=http://localhost:5005 docker-compose up
 
+.PHONY: up-as-daemon
+up: checkvenv
+	export IMAGE_TAG=local && \
+	BACKEND_API_URL=http://localhost:5005 docker-compose up -d
+
 
 # This is the entryoint for a non-technical user who just
 # wants to type one command and have it work.
@@ -56,7 +61,7 @@ stop-and-remove:
 
 
 .PHONY: test
-test: up
+test: up-as-daemon
 	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/unit /tests/integration /tests/e2e
 
 
@@ -67,11 +72,11 @@ clean-local-docker-output-dir:
 	find docker_document_output/ -type f -name "*.docx" -exec rm -- {} +
 
 .PHONY: unit-tests
-unit-tests: up
+unit-tests: up-as-daemon
 	docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /tests/unit
 
 .PHONY: e2e-tests
-e2e-tests: up clean-local-docker-output-dir
+e2e-tests: up-as-daemon clean-local-docker-output-dir
 	# NOTE parallel pytests via pytest_xdist fail for e2e tests in Docker but
 	# work for unit tests in Docker and work everywhere outside of
 	# Docker. So we utilize them everywhere we can pending a fix.

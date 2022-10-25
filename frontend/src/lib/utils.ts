@@ -28,7 +28,6 @@ import {
   emailStore,
   documentRequestKeyStore
 } from '../stores/SettingsStore'
-import EnvVars from '../envvars.json'
 
 const languageBookOrder: string = <string>import.meta.env.VITE_LANGUAGE_BOOK_ORDER
 
@@ -75,6 +74,8 @@ export function resetStores(storeGroup: StoreGroup) {
 }
 
 export function getApiRootUrl(): string {
-  console.log(`BACKEND_API_URL: ${EnvVars.BACKEND_API_URL}`)
-  return <string>EnvVars.BACKEND_API_URL
+  // @ts-ignore
+  console.log(`BACKEND_API_URL: ${window.env.BACKEND_API_URL}`)
+  // @ts-ignore
+  return <string>window.env.BACKEND_API_URL
 }

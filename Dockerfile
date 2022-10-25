@@ -68,7 +68,6 @@ RUN pip install --no-cache-dir -r requirements-prod.txt
 
 COPY ./backend/ /backend/
 COPY ./tests/ /tests/
-# COPY ./language_codes.json /tests/
 
 # Inside the Python virtual env: check types, install any missing mypy stub
 # types packages, and compile most modules into C using mypyc

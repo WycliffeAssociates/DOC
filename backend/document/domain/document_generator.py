@@ -3,6 +3,7 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
+import asyncio
 import more_itertools
 import os
 import requests
@@ -46,45 +47,62 @@ MAX_FILENAME_LENGTH = 240
 NUM_ZEROS = 3
 
 
-def resource_book_content_units(
+async def resource_book_content_units(
     found_resource_lookup_dtos: Iterable[model.ResourceLookupDto],
     resource_dirs: Iterable[str],
     resource_requests: Sequence[model.ResourceRequest],
     layout_for_print: bool,
-) -> Sequence[Union[model.BookContent, model.ResourceLookupDto]]:
+) -> Sequence[model.BookContent]:
     """
     Initialize the resources from their found assets and
-    parse their content for later typesetting. If any of the
-    found resources could not be loaded then return them for later
-    reporting.
+    parse their content for later typesetting.
     """
     book_content_or_unloaded_resource_lookup_dtos: list[
         Union[model.BookContent, model.ResourceLookupDto]
     ] = []
-    for resource_lookup_dto, resource_dir in zip(
-        found_resource_lookup_dtos, resource_dirs
-    ):
-        # usfm_tools parser can throw a MalformedUsfmError parse error if the
-        # USFM for the resource is malformed (from the perspective of the
-        # parser). If that happens keep track of said USFM resource for
-        # reporting on the cover page of the generated PDF and log the issue,
-        # but continue handling other resources in the document request.
-        try:
-            book_content_or_unloaded_resource_lookup_dtos.append(
-                parsing.book_content(
+
+    tasks = []
+    async with asyncio.TaskGroup() as tg:
+        for resource_lookup_dto, resource_dir in zip(
+            found_resource_lookup_dtos, resource_dirs
+        ):
+            # usfm_tools parser can throw a MalformedUsfmError parse error if the
+            # USFM for the resource is malformed (from the perspective of the
+            # parser). If that happens keep track of said USFM resource for
+            # reporting on the cover page of the generated PDF and log the issue,
+            # but continue handling other resources in the document request.
+            # try:
+            tasks.append(
+                (
                     resource_lookup_dto,
-                    resource_dir,
-                    resource_requests,
-                    layout_for_print,
+                    tg.create_task(
+                        asyncio.to_thread(
+                            parsing.book_content,
+                            resource_lookup_dto,
+                            resource_dir,
+                            resource_requests,
+                            layout_for_print,
+                        )
+                    ),
                 )
             )
-        except Exception:
+            # )
+            # except Exception:
             # Yield the resource that failed to be loaded by the USFM parser likely
-            # due to a USFM-Tools.exceptions.MalformedUsfmError. These unloaded resources are
-            # reported later on the cover page of the PDF.
-            book_content_or_unloaded_resource_lookup_dtos.append(resource_lookup_dto)
-            logger.exception("Caught exception: ")
-    return book_content_or_unloaded_resource_lookup_dtos
+            # due to a USFM-Tools.exceptions.MalformedUsfmError.
+            # book_content_or_unloaded_resource_lookup_dtos.append(
+            #     resource_lookup_dto
+            # )
+            # logger.exception("Caught exception: ")
+
+    dto_book_content_tuples = [(dto, task.result()) for (dto, task) in tasks]
+    sorted_book_content = [
+        tuple[1]
+        for x in found_resource_lookup_dtos
+        for tuple in dto_book_content_tuples
+        if tuple[0] == x
+    ]
+    return sorted_book_content  # book_content_or_unloaded_resource_lookup_dtos
 
 
 def document_request_key(
@@ -387,9 +405,9 @@ def send_email_with_attachment(
     comma_space: str = COMMASPACE,
 ) -> None:
     """
-    If PDF exists, and environment configuration allows sending of
+    If environment configuration allows sending of
     email, then send an email to the document request
-    recipient's email with the PDF attached.
+    recipient's email with the document attached.
     """
     if email_address:
         sender = from_email_address
@@ -455,23 +473,40 @@ def send_email_with_attachment(
 def convert_html_to_pdf(
     html_filepath: str,
     pdf_filepath: str,
+    email_address: Optional[str],
+    document_request_key: str,
     wkhtmltopdf_options: dict[str, Optional[str]] = settings.WKHTMLTOPDF_OPTIONS,
 ) -> None:
-    """Generate PDF from HTML."""
+    """
+    Generate PDF from HTML, copy it to output directory, possibly send to email_address as attachment.
+    """
     assert os.path.exists(html_filepath)
+    logger.info("Generating PDF %s...", pdf_filepath)
     pdfkit.from_file(
         html_filepath,
         pdf_filepath,
         options=wkhtmltopdf_options,
     )
+    copy_pdf_to_docker_output_dir(pdf_filepath)
+    if should_send_email(email_address):
+        attachments = [
+            model.Attachment(filepath=pdf_filepath, mime_type=("application", "pdf"))
+        ]
+        send_email_with_attachment(
+            email_address,
+            attachments,
+            document_request_key,
+        )
 
 
 def convert_html_to_epub(
     html_filepath: str,
     epub_filepath: str,
+    email_address: Optional[str],
+    document_request_key: str,
     pandoc_options: str = settings.PANDOC_OPTIONS,
 ) -> None:
-    """Generate ePub from HTML."""
+    """Generate ePub from HTML, possibly send to email_address as attachment."""
     assert os.path.exists(html_filepath)
     pandoc_command = "pandoc {} {} -o {}".format(
         pandoc_options,
@@ -480,14 +515,28 @@ def convert_html_to_epub(
     )
     logger.debug("Generate ePub command: %s", pandoc_command)
     subprocess.call(pandoc_command, shell=True)
+    copy_epub_to_docker_output_dir(epub_filepath)
+    if should_send_email(email_address):
+        attachments = [
+            model.Attachment(
+                filepath=epub_filepath, mime_type=("application", "epub+zip")
+            )
+        ]
+        send_email_with_attachment(
+            email_address,
+            attachments,
+            document_request_key,
+        )
 
 
 def convert_html_to_docx(
     html_filepath: str,
     docx_filepath: str,
+    email_address: Optional[str],
+    document_request_key: str,
     pandoc_options: str = settings.PANDOC_OPTIONS,
 ) -> None:
-    """Generate Docx from HTML."""
+    """Generate Docx from HTML, possibly send to email_address as attachment."""
     assert os.path.exists(html_filepath)
     pandoc_command = "pandoc {} {} -o {}".format(
         pandoc_options,
@@ -496,6 +545,22 @@ def convert_html_to_docx(
     )
     logger.debug("Generate Docx command: %s", pandoc_command)
     subprocess.call(pandoc_command, shell=True)
+    copy_docx_to_docker_output_dir(docx_filepath)
+    if should_send_email(email_address):
+        attachments = [
+            model.Attachment(
+                filepath=docx_filepath,
+                mime_type=(
+                    "application",
+                    "vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ),
+            )
+        ]
+        send_email_with_attachment(
+            email_address,
+            attachments,
+            document_request_key,
+        )
 
 
 def html_filepath(
@@ -735,7 +800,7 @@ def verify_resource_assets_available(
         )
 
 
-def main(document_request: model.DocumentRequest) -> str:
+async def main(document_request: model.DocumentRequest) -> str:
     """
     This is the main entry point for this module.
     """
@@ -789,37 +854,66 @@ def main(document_request: model.DocumentRequest) -> str:
         # For each found resource lookup DTO, now actually provision
         # to disk the assets associated with the resources and return
         # the resource directory paths.
-        resource_dirs = [
-            resource_lookup.provision_asset_files(resource_lookup_dto)
-            for resource_lookup_dto in found_resource_lookup_dtos
+        # resource_dirs = [
+        #     resource_lookup.provision_asset_files(resource_lookup_dto)
+        #     for resource_lookup_dto in found_resource_lookup_dtos
+        # ]
+
+        tasks = []
+        async with asyncio.TaskGroup() as tg:
+            for resource_lookup_dto in found_resource_lookup_dtos:
+                tasks.append(
+                    (
+                        resource_lookup_dto,
+                        tg.create_task(
+                            asyncio.to_thread(
+                                resource_lookup.provision_asset_files,
+                                resource_lookup_dto,
+                            )
+                        ),
+                    )
+                )
+
+        logger.info("All concurrent resource acquisition tasks complete.")
+        # try:
+        # Harvest results from completed asynchronous tasks
+        # associated.
+        dto_resource_dir_tuples = [(dto, task.result()) for (dto, task) in tasks]
+        sorted_resource_dirs = [
+            tuple[1]
+            for x in found_resource_lookup_dtos
+            for tuple in dto_resource_dir_tuples
+            if tuple[0] == x
         ]
+
+        # logger.debug("Sorted results from task group: %s", sorted_resource_dirs)
 
         # Initialize found resources from their provisioned assets. If
         # any could not be initialized return those in the second
         # iterator via tee.
-        book_content_units_iter, unloaded_resource_lookup_dtos_iter = tee(
-            resource_book_content_units(
-                found_resource_lookup_dtos,
-                resource_dirs,
-                document_request.resource_requests,
-                document_request.layout_for_print,
-            )
+        # book_content_units_iter, unloaded_resource_lookup_dtos_iter = tee(
+        book_content_units = await resource_book_content_units(
+            found_resource_lookup_dtos,
+            # resource_dirs,
+            sorted_resource_dirs,
+            document_request.resource_requests,
+            document_request.layout_for_print,
         )
         # A little further processing is needed on tee objects to get
         # the types separated. This first list is of successfully
         # initialized book content units.
-        book_content_units = [
-            book_content_unit
-            for book_content_unit in book_content_units_iter
-            if not isinstance(book_content_unit, model.ResourceLookupDto)
-        ]
+        # book_content_units = [
+        #     book_content_unit
+        #     for book_content_unit in book_content_units_iter
+        #     if not isinstance(book_content_unit, model.ResourceLookupDto)
+        # ]
         # This second list is of resource lookup DTOs whose assets
         # could not be successfully loaded.
-        unloaded_resource_lookup_dtos = [
-            resource_lookup_dto
-            for resource_lookup_dto in unloaded_resource_lookup_dtos_iter
-            if isinstance(resource_lookup_dto, model.ResourceLookupDto)
-        ]
+        # unloaded_resource_lookup_dtos = [
+        #     resource_lookup_dto
+        #     for resource_lookup_dto in unloaded_resource_lookup_dtos_iter
+        #     if isinstance(resource_lookup_dto, model.ResourceLookupDto)
+        # ]
         content = assemble_content(
             document_request_key_, document_request, book_content_units
         )
@@ -828,62 +922,50 @@ def main(document_request: model.DocumentRequest) -> str:
             html_filepath_,
         )
 
-    # Immediately return pre-built PDF if the document has previously been
-    # generated and is fresh enough. In that case, front run all requests to
-    # the cloud including the more low level resource asset caching
-    # mechanism for comparatively immediate return of PDF.
-    if document_request.generate_pdf and file_utils.asset_file_needs_update(
-        pdf_filepath_
-    ):
-        logger.info("Generating PDF %s...", pdf_filepath_)
-        convert_html_to_pdf(
-            html_filepath_,
-            pdf_filepath_,
-        )
-        copy_pdf_to_docker_output_dir(pdf_filepath_)
-
-    if document_request.generate_epub and file_utils.asset_file_needs_update(
-        epub_filepath_
-    ):
-        convert_html_to_epub(
-            html_filepath_,
-            epub_filepath_,
-        )
-        copy_epub_to_docker_output_dir(epub_filepath_)
-
-    if document_request.generate_docx and file_utils.asset_file_needs_update(
-        docx_filepath_
-    ):
-
-        convert_html_to_docx(
-            html_filepath_,
-            docx_filepath_,
-        )
-        copy_docx_to_docker_output_dir(docx_filepath_)
-
-    if should_send_email(document_request.email_address):
-        if document_request.generate_pdf:
-            attachments = [
-                model.Attachment(
-                    filepath=pdf_filepath_, mime_type=("application", "octet-stream")
-                )
-            ]
-        if document_request.generate_epub:
-            attachments.append(
-                model.Attachment(
-                    filepath=epub_filepath_, mime_type=("application", "octet-stream")
-                )
-            )
-        if document_request.generate_docx:
-            attachments.append(
-                model.Attachment(
-                    filepath=docx_filepath_, mime_type=("application", "octet-stream")
-                )
+    async with asyncio.TaskGroup() as tg2:
+        # Immediately return pre-built PDF if the document has previously been
+        # generated and is fresh enough. In that case, front run all requests to
+        # the cloud including the more low level resource asset caching
+        # mechanism for comparatively immediate return of PDF.
+        if document_request.generate_pdf and file_utils.asset_file_needs_update(
+            pdf_filepath_
+        ):
+            tg2.create_task(
+                asyncio.to_thread(
+                    convert_html_to_pdf,
+                    html_filepath_,
+                    pdf_filepath_,
+                    document_request.email_address,
+                    document_request_key_,
+                ),
             )
 
-        send_email_with_attachment(
-            document_request.email_address,
-            attachments,
-            document_request_key_,
-        )
+        if document_request.generate_epub and file_utils.asset_file_needs_update(
+            epub_filepath_
+        ):
+            tg2.create_task(
+                asyncio.to_thread(
+                    convert_html_to_epub,
+                    html_filepath_,
+                    epub_filepath_,
+                    document_request.email_address,
+                    document_request_key_,
+                ),
+            )
+
+        if document_request.generate_docx and file_utils.asset_file_needs_update(
+            docx_filepath_
+        ):
+            tg2.create_task(
+                asyncio.to_thread(
+                    convert_html_to_docx,
+                    html_filepath_,
+                    docx_filepath_,
+                    document_request.email_address,
+                    document_request_key_,
+                ),
+            )
+
+        logger.info("All concurrent document creation tasks complete.")
+
     return document_request_key_

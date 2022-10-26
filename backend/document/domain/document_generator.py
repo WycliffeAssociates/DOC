@@ -121,7 +121,7 @@ def document_request_key(
         ]
     )
     document_request_key = "{}_{}_{}".format(
-        resource_request_keys, assembly_strategy_kind, assembly_layout_kind
+        resource_request_keys, assembly_strategy_kind.value, assembly_layout_kind.value
     )
     if len(document_request_key) >= max_filename_len:
         # Likely the generated filename was too long for the OS where this is

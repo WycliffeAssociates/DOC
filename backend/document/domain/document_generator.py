@@ -191,7 +191,6 @@ def document_html_header(
     """
     if assembly_layout_kind and assembly_layout_kind in [
         model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-        model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
         model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,
     ]:
         return template("header_compact_enclosing")
@@ -542,8 +541,6 @@ def select_assembly_layout_kind(
     book_language_order: model.AssemblyStrategyEnum = model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
     print_layout: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
     # NOTE Could also have default value for non_print_layout_for_multiple_usfm of
-    # model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT
-    # or model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT
     non_print_layout_for_multiple_usfm: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
     default_layout: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN,
 ) -> model.AssemblyLayoutEnum:

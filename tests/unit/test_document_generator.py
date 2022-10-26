@@ -82,7 +82,7 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
     ]
     assembly_strategy_kind = model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
     assembly_layout_kind = (
-        model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT
+        model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
     )
     key = document_generator.document_request_key(
         resource_requests, assembly_strategy_kind, assembly_layout_kind

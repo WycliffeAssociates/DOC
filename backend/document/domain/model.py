@@ -86,10 +86,9 @@ class AssemblyLayoutEnum(str, Enum):
     * ONE_COLUMN
       One column verse and associated content interleave
 
-    * TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT
-      Two columns, with scripture on the left and its associated helps
-      on the right. This layout causes excessive whitespace on the
-      left side because helps are much longer than verses typically.
+    * ONE_COLUMN_COMPACT
+      This layout minimizes whitespace in a one column layout so as to
+      be appropriate for printing to paper.
 
     * TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
       Two columns, with scripture on the left and a different
@@ -100,15 +99,6 @@ class AssemblyLayoutEnum(str, Enum):
       and helps are shown vertically spanning the whole horizontal space
       after each verse.
 
-    * ONE_COLUMN_COMPACT
-      This layout minimizes whitespace in a one column layout so as to
-      be appropriate for printing to paper.
-
-    * TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT
-      This layout minimizes whitespace by using
-      TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT layout but with a different
-      CSS styling that results in less whitespace.
-
     * TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT
       This layout minimizes whitespace by using
       TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT layout but with a
@@ -117,12 +107,10 @@ class AssemblyLayoutEnum(str, Enum):
 
     ONE_COLUMN = "1c"
     ONE_COLUMN_COMPACT = "1c_c"
-    TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT = "2c_sl_hr"
     # fmt: off
-    TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT = "2c_sl_hr_c"
-    # NOTE The next two layouts would only make sense
+    # NOTE The next two layouts only make sense
     # with an AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER assembly
-    # strategy when more than one language is chosen for the same
+    # strategy and when more than one language is chosen for the same
     # book.
     TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT = "2c_sl_sr"
     TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT = "2c_sl_sr_c"

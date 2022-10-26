@@ -195,42 +195,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            True,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c,
         (
@@ -260,42 +224,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c_c,
-        (
-            True,
-            True,
-            True,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
         (
             True,
             True,
@@ -339,42 +267,6 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            True,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c,
         (
@@ -404,60 +296,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c_c,
-        (
-            True,
-            False,
-            False,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
         (
             True,
             False,
@@ -519,42 +357,6 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            True,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c,
         (
@@ -584,42 +386,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c_c,
-        (
-            True,
-            True,
-            False,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
         (
             True,
             True,
@@ -663,42 +429,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            True,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c,
         (
@@ -728,42 +458,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c_c,
-        (
-            True,
-            False,
-            False,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
         (
             True,
             False,
@@ -807,42 +501,6 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            False,
-            False,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            False,
-            False,
-            False,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            False,
-            False,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            False,
-            False,
-            False,
-            False,
-            True,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c,
         (
@@ -872,42 +530,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c_c,
-        (
-            True,
-            True,
-            True,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
         (
             True,
             True,
@@ -951,42 +573,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             False,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            False,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c,
         (
@@ -1016,24 +602,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c_c,
-        (
-            True,
-            False,
-            True,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_tq_tw_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_tq_tw_for_lang_then_book_2c_sl_hr,
         (
             True,
             False,
@@ -1059,24 +627,6 @@ def assembly_factory_for_lang_then_book_strategy(
             True,
             False,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_tw_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_tw_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            False,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_usfm_tw_for_lang_then_book_1c,
         (
@@ -1095,42 +645,6 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             False,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            False,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_by_usfm_as_iterator_for_lang_then_book_1c,
         (
@@ -1167,24 +681,6 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             False,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_tq_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_tq_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            False,
-            False,
             model.AssemblyLayoutEnum.ONE_COLUMN,
         ): assemble_usfm_tq_for_lang_then_book_1c,
         (
@@ -1196,42 +692,6 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_usfm_tq_for_lang_then_book_1c,
-        (
-            True,
-            True,
-            False,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
         (
             True,
             True,
@@ -1448,24 +908,6 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_tq_as_iterator_for_lang_then_book,
-        (
-            True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr,
         (
             True,
             False,
@@ -1674,38 +1116,6 @@ def assembly_factory_for_book_then_lang_strategy(
             True,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            True,
-            False,
             model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
         ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr,
         (
@@ -1764,38 +1174,6 @@ def assembly_factory_for_book_then_lang_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_usfm_as_iterator_for_book_then_lang_1c_c,
-        (
-            True,
-            True,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
         (
             True,
             True,
@@ -1866,38 +1244,6 @@ def assembly_factory_for_book_then_lang_strategy(
             False,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            True,
-            False,
             model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
         ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr,
         (
@@ -1956,38 +1302,6 @@ def assembly_factory_for_book_then_lang_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_usfm_as_iterator_for_book_then_lang_1c_c,
-        (
-            True,
-            True,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            True,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
         (
             True,
             True,
@@ -2058,38 +1372,6 @@ def assembly_factory_for_book_then_lang_strategy(
             True,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            True,
-            False,
             model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
         ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr,
         (
@@ -2148,38 +1430,6 @@ def assembly_factory_for_book_then_lang_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_usfm_as_iterator_for_book_then_lang_1c_c,
-        (
-            True,
-            False,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            True,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
         (
             True,
             False,
@@ -2250,38 +1500,6 @@ def assembly_factory_for_book_then_lang_strategy(
             False,
             True,
             False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            True,
-            False,
             model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
         ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr,
         (
@@ -2340,38 +1558,6 @@ def assembly_factory_for_book_then_lang_strategy(
             True,
             model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         ): assemble_usfm_as_iterator_for_book_then_lang_1c_c,
-        (
-            True,
-            False,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            False,
-            False,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
-        (
-            True,
-            False,
-            False,
-            False,
-            True,
-            model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT_COMPACT,
-        ): assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr,
         (
             True,
             False,
@@ -2758,135 +1944,6 @@ def tn_book_intro(tn_book_content_unit: model.TNBook) -> Iterable[model.HtmlCont
 
 
 # Available through API, but not through UI
-def assemble_by_usfm_as_iterator_for_lang_then_book_2c_sl_hr(
-    usfm_book_content_unit: Optional[model.USFMBook],
-    tn_book_content_unit: Optional[model.TNBook],
-    tq_book_content_unit: Optional[model.TQBook],
-    tw_book_content_unit: Optional[model.TWBook],
-    usfm_book_content_unit2: Optional[model.USFMBook],
-    bc_book_content_unit: Optional[model.BCBook],
-    footnotes_heading: model.HtmlContent = settings.FOOTNOTES_HEADING,
-    html_row_begin: str = settings.HTML_ROW_BEGIN,
-    html_column_begin: str = settings.HTML_COLUMN_BEGIN,
-    html_column_end: str = settings.HTML_COLUMN_END,
-    html_row_end: str = settings.HTML_ROW_END,
-) -> Iterable[model.HtmlContent]:
-    """
-    Construct the HTML wherein at least one USFM resource (e.g., ulb,
-    nav, cuv, etc.) exists, and TN, TQ, TW, and a second USFM (e.g.,
-    probably always udb) may exist. If only one USFM exists then it will
-    be used as the first USFM resource even if it is of udb resource type.
-    Non-USFM resources, e.g., TN, TQ, and TW will reference (and link
-    where applicable) the first USFM resource. The second USFM resource is
-    displayed last in this interleaving strategy.
-    """
-    if tn_book_content_unit:
-        yield from tn_book_intro(tn_book_content_unit)
-
-    if bc_book_content_unit:
-        yield book_intro_commentary(bc_book_content_unit)
-
-    if usfm_book_content_unit:
-        for (
-            chapter_num,
-            chapter,
-        ) in usfm_book_content_unit.chapters.items():
-            # Add in the USFM chapter heading.
-            chapter_heading = model.HtmlContent("")
-            chapter_heading = chapter.content[0]
-            yield chapter_heading
-            tn_verses: Optional[dict[str, model.HtmlContent]] = None
-            tq_verses: Optional[dict[str, model.HtmlContent]] = None
-            if tn_book_content_unit:
-                # Add the translation notes chapter intro.
-                yield chapter_intro(tn_book_content_unit, chapter_num)
-
-                tn_verses = verses_for_chapter_tn(tn_book_content_unit, chapter_num)
-            if bc_book_content_unit:
-                yield chapter_commentary(bc_book_content_unit, chapter_num)
-            if tq_book_content_unit:
-                tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
-
-            # PEP526 disallows declaration of types in for loops.
-            verse_num: str
-            verse: model.HtmlContent
-            # Now let's interleave USFM verse with its translation note, translation
-            # questions, and translation words if available.
-            for verse_num, verse in chapter.verses.items():
-                yield html_row_begin
-                yield html_column_begin
-                # Add scripture verse
-                yield verse
-
-                if usfm_book_content_unit2:
-                    # Add the usfm_book_content_unit2, e.g., udb, scripture verses.
-                    # Add scripture verse
-                    if (
-                        chapter_num in usfm_book_content_unit2.chapters
-                        and verse_num
-                        in usfm_book_content_unit2.chapters[chapter_num].verses
-                    ):
-                        verse_ = usfm_book_content_unit2.chapters[chapter_num].verses[
-                            verse_num
-                        ]
-                        yield verse_
-
-                yield html_column_end
-                yield html_column_begin
-
-                # Add TN verse content, if any
-                if (
-                    tn_book_content_unit
-                    and tn_verses is not None
-                    and tn_verses
-                    and verse_num in tn_verses
-                ):
-                    yield from format_tn_verse(
-                        tn_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
-                # Add TQ verse content, if any
-                if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
-
-                if tw_book_content_unit:
-                    # Add the translation words links section.
-                    yield from translation_word_links(
-                        tw_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        verse,
-                    )
-
-                yield html_column_end
-                yield html_row_end
-            # Add scripture footnotes if available
-            if chapter.footnotes:
-                yield footnotes_heading
-                yield chapter.footnotes
-
-    if not usfm_book_content_unit and usfm_book_content_unit2:
-        # Add the usfm_book_content_unit2, e.g., udb, scripture verses.
-        for (
-            chapter_num_,
-            chapter_,
-        ) in usfm_book_content_unit2.chapters.items():
-            # Add in the USFM chapter heading.
-            chapter_heading = model.HtmlContent("")
-            chapter_heading = chapter_.content[0]
-            yield chapter_heading
-            # Now let's interleave USFM verse with its translation note, translation
-            # questions, and translation words if available.
-            for verse_num, verse in chapter_.verses.items():
-                # Add scripture verse
-                yield verse
 
 
 def assemble_by_usfm_as_iterator_for_lang_then_book_1c(
@@ -3122,75 +2179,6 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c_c(
                 yield verse
 
 
-# Available through API, but not through UI
-def assemble_usfm_tq_tw_for_lang_then_book_2c_sl_hr(
-    usfm_book_content_unit: Optional[model.USFMBook],
-    tn_book_content_unit: Optional[model.TNBook],
-    tq_book_content_unit: Optional[model.TQBook],
-    tw_book_content_unit: Optional[model.TWBook],
-    usfm_book_content_unit2: Optional[model.USFMBook],
-    bc_book_content_unit: Optional[model.BCBook],
-    footnotes_heading: model.HtmlContent = settings.FOOTNOTES_HEADING,
-    html_row_begin: str = settings.HTML_ROW_BEGIN,
-    html_column_begin: str = settings.HTML_COLUMN_BEGIN,
-    html_column_end: str = settings.HTML_COLUMN_END,
-    html_row_end: str = settings.HTML_ROW_END,
-) -> Iterable[model.HtmlContent]:
-    """
-    Construct the HTML for a 'by verse' strategy wherein USFM, TQ,
-    and TW exist.
-    """
-
-    if usfm_book_content_unit:
-        for chapter_num, chapter in usfm_book_content_unit.chapters.items():
-            # Add in the USFM chapter heading.
-            chapter_heading = model.HtmlContent("")
-            chapter_heading = chapter.content[0]
-            yield chapter_heading
-
-            tq_verses = None
-            if tq_book_content_unit:
-                tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
-
-            # PEP526 disallows declaration of types in for loops.
-            verse_num: str
-            verse: model.HtmlContent
-            # Now let's interleave USFM verse with its translation note, translation
-            # questions, and translation words if available.
-            for verse_num, verse in chapter.verses.items():
-                yield html_row_begin
-                yield html_column_begin
-                # Add scripture verse
-                yield verse
-
-                yield html_column_end
-                yield html_column_begin
-
-                # Add TN verse content, if any
-                if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
-                if tw_book_content_unit:
-                    # Add the translation words links section
-                    yield from translation_word_links(
-                        tw_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        verse,
-                    )
-
-                yield html_column_end
-                yield html_row_end
-            # Add scripture footnotes if available
-            if chapter.footnotes:
-                yield footnotes_heading
-                yield chapter.footnotes
-
-
 def assemble_usfm_tq_tw_for_lang_then_book_1c(
     usfm_book_content_unit: Optional[model.USFMBook],
     tn_book_content_unit: Optional[model.TNBook],
@@ -3297,65 +2285,6 @@ def assemble_usfm_tq_tw_for_lang_then_book_1c_c(
                 yield chapter.footnotes
 
 
-# Available through API, but not through UI
-def assemble_usfm_tw_for_lang_then_book_2c_sl_hr(
-    usfm_book_content_unit: Optional[model.USFMBook],
-    tn_book_content_unit: Optional[model.TNBook],
-    tq_book_content_unit: Optional[model.TQBook],
-    tw_book_content_unit: Optional[model.TWBook],
-    usfm_book_content_unit2: Optional[model.USFMBook],
-    bc_book_content_unit: Optional[model.BCBook],
-    footnotes_heading: model.HtmlContent = settings.FOOTNOTES_HEADING,
-    html_row_begin: str = settings.HTML_ROW_BEGIN,
-    html_column_begin: str = settings.HTML_COLUMN_BEGIN,
-    html_column_end: str = settings.HTML_COLUMN_END,
-    html_row_end: str = settings.HTML_ROW_END,
-) -> Iterable[model.HtmlContent]:
-    """
-    Construct the HTML for a 'by verse' strategy wherein USFM and TW
-    exist.
-    """
-
-    if usfm_book_content_unit:
-        for chapter_num, chapter in usfm_book_content_unit.chapters.items():
-            # Add in the USFM chapter heading.
-            chapter_heading = model.HtmlContent("")
-            chapter_heading = chapter.content[0]
-            yield chapter_heading
-
-            # PEP526 disallows declaration of types in for
-            # loops, but allows this.
-            verse_num: str
-            verse: model.HtmlContent
-            # Now let's interleave USFM verse with its translation note, translation
-            # questions, and translation words if available.
-            for verse_num, verse in chapter.verses.items():
-                yield html_row_begin
-                yield html_column_begin
-                # Add scripture verse
-                yield verse
-
-                yield html_column_end
-                yield html_column_begin
-
-                if tw_book_content_unit:
-                    # Add the translation words links section
-                    yield from translation_word_links(
-                        tw_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        verse,
-                    )
-
-                yield html_column_end
-                yield html_row_end
-
-            # Add scripture footnotes if available
-            if chapter.footnotes:
-                yield footnotes_heading
-                yield chapter.footnotes
-
-
 def assemble_usfm_tw_for_lang_then_book_1c(
     usfm_book_content_unit: Optional[model.USFMBook],
     tn_book_content_unit: Optional[model.TNBook],
@@ -3440,63 +2369,6 @@ def assemble_usfm_tw_for_lang_then_book_1c_c(
 
 
 # Available through API, but not through UI
-def assemble_usfm_tq_for_lang_then_book_2c_sl_hr(
-    usfm_book_content_unit: Optional[model.USFMBook],
-    tn_book_content_unit: Optional[model.TNBook],
-    tq_book_content_unit: Optional[model.TQBook],
-    tw_book_content_unit: Optional[model.TWBook],
-    usfm_book_content_unit2: Optional[model.USFMBook],
-    bc_book_content_unit: Optional[model.BCBook],
-    footnotes_heading: model.HtmlContent = settings.FOOTNOTES_HEADING,
-    html_row_begin: str = settings.HTML_ROW_BEGIN,
-    html_column_begin: str = settings.HTML_COLUMN_BEGIN,
-    html_column_end: str = settings.HTML_COLUMN_END,
-    html_row_end: str = settings.HTML_ROW_END,
-) -> Iterable[model.HtmlContent]:
-    """Construct the HTML for a 'by verse' strategy wherein only USFM and TQ exist."""
-
-    if usfm_book_content_unit:
-        for chapter_num, chapter in usfm_book_content_unit.chapters.items():
-            # Add in the USFM chapter heading.
-            chapter_heading = model.HtmlContent("")
-            chapter_heading = chapter.content[0]
-            yield chapter_heading
-
-            tq_verses = None
-            if tq_book_content_unit:
-                tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
-
-            # PEP526 disallows declaration of types in for
-            # loops, but allows this.
-            verse_num: str
-            verse: model.HtmlContent
-            # Now let's interleave USFM verse with its
-            # translation note if available.
-            for verse_num, verse in chapter.verses.items():
-                yield html_row_begin
-                yield html_column_begin
-                # Add scripture verse
-                yield verse
-
-                yield html_column_end
-                yield html_column_begin
-
-                # Add TQ verse content, if any
-                if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
-
-                yield html_column_end
-                yield html_row_end
-
-            # Add scripture footnotes if available
-            if chapter.footnotes:
-                yield footnotes_heading
-                yield chapter.footnotes
 
 
 def assemble_usfm_tq_for_lang_then_book_1c(
@@ -3871,170 +2743,6 @@ def assemble_tw_as_iterator_for_lang_then_book(
 
 
 # Available through API, but not through UI
-def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_hr(
-    usfm_book_content_units: Sequence[model.USFMBook],
-    tn_book_content_units: Sequence[model.TNBook],
-    tq_book_content_units: Sequence[model.TQBook],
-    tw_book_content_units: Sequence[model.TWBook],
-    bc_book_content_units: Sequence[model.BCBook],
-    footnotes_heading: model.HtmlContent = settings.FOOTNOTES_HEADING,
-    html_row_begin: str = settings.HTML_ROW_BEGIN,
-    html_column_begin: str = settings.HTML_COLUMN_BEGIN,
-    html_column_end: str = settings.HTML_COLUMN_END,
-    html_row_end: str = settings.HTML_ROW_END,
-) -> Iterable[model.HtmlContent]:
-    """
-    Construct the HTML wherein at least one USFM resource (e.g., ulb,
-    nav, cuv, etc.) exists, and TN, TQ, and TW may exist. Scripture on
-    the left and helps on the right of a two column layout.
-    """
-
-    # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
-    tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
-
-    # Add book intros for each tn_book_content_unit
-    for tn_book_content_unit in tn_book_content_units:
-        # Add the book intro
-        yield from tn_book_intro(tn_book_content_unit)
-
-    for bc_book_content_unit in bc_book_content_units:
-        yield book_intro_commentary(bc_book_content_unit)
-
-    # Use the usfm_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
-    usfm_with_most_chapters = max(
-        usfm_book_content_units,
-        key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters.keys(),
-    )
-    for chapter_num, chapter in usfm_with_most_chapters.chapters.items():
-        # Add the first USFM resource's chapter heading. We ignore
-        # chapter headings for other usfm_book_content_units because it would
-        # be strange to have more than one chapter heading per chapter
-        # for this assembly sub-strategy.
-        chapter_heading = model.HtmlContent("")
-        chapter_heading = chapter.content[0]
-        yield model.HtmlContent(chapter_heading)
-
-        # Add chapter intro for each language
-        for tn_book_content_unit2 in tn_book_content_units:
-            # Add the translation notes chapter intro.
-            yield model.HtmlContent(chapter_intro(tn_book_content_unit2, chapter_num))
-
-        # Use the usfm_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # usfm_with_most_verses = max(
-        #     usfm_book_content_units,
-        #     key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in usfm_with_most_verses.chapters[chapter_num].verses.keys():
-        for verse_num in chapter.verses.keys():
-            yield html_row_begin
-            yield html_column_begin
-            # Add the interleaved USFM verses
-            for usfm_book_content_unit in usfm_book_content_units:
-                if (
-                    chapter_num in usfm_book_content_unit.chapters
-                    and verse_num in usfm_book_content_unit.chapters[chapter_num].verses
-                ):
-                    # Add scripture verse
-                    yield usfm_book_content_unit.chapters[chapter_num].verses[verse_num]
-            yield html_column_end
-
-            # All helps should show up in right column lined up with associated
-            # scripture on the left column. There should only ever be two columns.
-            yield html_column_begin
-            # Add the interleaved tn notes
-            tn_verses: Optional[dict[str, model.HtmlContent]] = None
-            for tn_book_content_unit3 in tn_book_content_units:
-                tn_verses = verses_for_chapter_tn(tn_book_content_unit3, chapter_num)
-                if tn_verses and verse_num in tn_verses:
-                    yield from format_tn_verse(
-                        tn_book_content_unit3,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
-
-            # Add the interleaved tq questions
-            tq_verses: Optional[dict[str, model.HtmlContent]] = None
-            for tq_book_content_unit in tq_book_content_units:
-                tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
-                # Add TQ verse content, if any
-                if tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
-
-            # Add the interleaved translation word links
-            for tw_book_content_unit in tw_book_content_units:
-                # Get the usfm_book_content_unit instance associated with the
-                # tw_book_content_unit, i.e., having same lang_code and
-                # resource_code.
-                usfm_book_content_unit_: Optional[model.USFMBook]
-                usfm_book_content_unit_lst = [
-                    usfm_book_content_unit
-                    for usfm_book_content_unit in usfm_book_content_units
-                    if usfm_book_content_unit.lang_code
-                    == tw_book_content_unit.lang_code
-                    and usfm_book_content_unit.resource_code
-                    == tw_book_content_unit.resource_code
-                ]
-                if usfm_book_content_unit_lst:
-                    usfm_book_content_unit_ = usfm_book_content_unit_lst[0]
-                else:
-                    usfm_book_content_unit_ = None
-                # Add the translation words links section.
-                if (
-                    usfm_book_content_unit_ is not None
-                    and verse_num
-                    in usfm_book_content_unit_.chapters[chapter_num].verses
-                ):
-                    yield from translation_word_links(
-                        tw_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        usfm_book_content_unit_.chapters[chapter_num].verses[verse_num],
-                    )
-                else:
-                    logger.debug(
-                        "usfm for chapter %s, verse %s likely could not be parsed by usfm parser for language %s and book %s",
-                        chapter_num,
-                        verse_num,
-                        tw_book_content_unit.lang_code,
-                        tw_book_content_unit.resource_code,
-                    )
-
-            yield html_column_end
-            yield html_row_end
-
-        # Add the footnotes
-        for usfm_book_content_unit in usfm_book_content_units:
-            try:
-                chapter_footnotes = usfm_book_content_unit.chapters[
-                    chapter_num
-                ].footnotes
-                if chapter_footnotes:
-                    yield footnotes_heading
-                    yield chapter_footnotes
-            except KeyError:
-                logger.debug(
-                    "usfm_book_content_unit: %s, does not have chapter: %s",
-                    usfm_book_content_unit,
-                    chapter_num,
-                )
-                logger.exception("Caught exception:")
 
 
 def languages_in_books(

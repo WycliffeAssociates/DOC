@@ -8,9 +8,7 @@ def test_lookup_successes() -> None:
     assembly_strategy_kind: model.AssemblyStrategyEnum = (
         model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
     )
-    assembly_layout_kind: model.AssemblyLayoutEnum = (
-        model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT
-    )
+    assembly_layout_kind: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN
     resource_requests: list[model.ResourceRequest] = []
     resource_requests.append(
         model.ResourceRequest(
@@ -55,9 +53,7 @@ def test_lookup_failures() -> None:
     assembly_strategy_kind: model.AssemblyStrategyEnum = (
         model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
     )
-    assembly_layout_kind: model.AssemblyLayoutEnum = (
-        model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_HELPS_RIGHT
-    )
+    assembly_layout_kind: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN
     resource_requests: list[model.ResourceRequest] = []
     resource_requests.append(
         model.ResourceRequest(lang_code="zh", resource_type="ulb", resource_code="jol")

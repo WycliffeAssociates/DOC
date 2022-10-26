@@ -244,7 +244,7 @@ def usfm_book_content(
     resource_requests: Sequence[model.ResourceRequest],
     layout_for_print: bool,
     h2: str = H2,
-    bs_parser_type: str = "html.parser",
+    bs_parser_type: str = "lxml",
     css_attribute_type: str = "class",
     pattern: str = settings.VERSE_ANCHOR_ID_FMT_STR,
     format_str: str = settings.VERSE_ANCHOR_ID_SUBSTITUTION_FMT_STR,

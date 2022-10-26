@@ -9,6 +9,7 @@ gunicorn
 jinja2
 jsonpath-rw
 jsonpath-rw-ext
+lxml # For bs4
 more-itertools
 pdfkit
 pydantic[email,dotenv]

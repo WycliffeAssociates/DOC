@@ -106,7 +106,7 @@ mypy: checkvenv
 
 .PHONY: mypyc
 mypyc:
-	mypyc --strict --install-types --non-interactive backend/document/**/*.py
+	mypyc --strict --install-types --non-interactive backend/document/domain/{assembly_strategies,document_generator,resource_lookup,parsing}.py
 
 .PHONY: clean-mypyc-artifacts
 clean-mypyc-artifacts:

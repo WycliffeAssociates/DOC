@@ -711,7 +711,7 @@ def markdown_instance(
     if not tw_resource_dir:
         tw_resource_dir = tw_utils.tw_resource_dir(lang_code)
     translation_words_dict = tw_utils.translation_words_dict(tw_resource_dir)
-    if not layout_for_print:  # User doesn't want to print result
+    if not layout_for_print:  # User doesn't want to compact layout
         return markdown.Markdown(
             extensions=[
                 remove_section_preprocessor.RemoveSectionExtension(

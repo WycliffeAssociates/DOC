@@ -23,7 +23,7 @@ RUN cd /tmp \
 RUN fc-cache -f -v
 
 # Get and install Pandoc for HTML to ePub conversion.
-ARG PANDOC_LOC=https://github.com/jgm/pandoc/releases/download/2.18/pandoc-2.18-1-amd64.deb
+ARG PANDOC_LOC=https://github.com/jgm/pandoc/releases/download/2.19.2/pandoc-2.19.2-1-amd64.deb
 RUN PANDOC_TEMP="$(mktemp)" && \
     wget -O "$PANDOC_TEMP" ${PANDOC_LOC} && \
     dpkg -i "$PANDOC_TEMP" && \

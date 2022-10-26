@@ -3,8 +3,6 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
-import base64
-import datetime
 import more_itertools
 import os
 import requests

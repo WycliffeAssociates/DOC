@@ -15,7 +15,7 @@ import yaml
 from collections.abc import Iterable, Sequence
 from contextlib import closing
 from fastapi import HTTPException, status
-from typing import Any, Callable, Mapping, Optional, cast
+from typing import Any, Callable, Mapping, Optional
 from urllib import parse as urllib_parse
 from urllib.request import urlopen
 
@@ -715,7 +715,7 @@ def resource_codes_and_types_for_lang(
             (
                 resource_code,
                 name,
-                cast(str, link[0] if isinstance(link, list) else link),
+                link[0] if isinstance(link, list) else link,
             )
             for resource_code, name, link in tuples
         ]

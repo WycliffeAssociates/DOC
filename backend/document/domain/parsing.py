@@ -20,7 +20,9 @@ from document.markdown_extensions import (
     remove_section_preprocessor,
 )
 from document.utils import file_utils, html_parsing_utils, tw_utils
-from usfm_tools.transform import UsfmTransform  # type: ignore
+
+from usfm_tools import transform
+
 
 logger = settings.logger(__name__)
 
@@ -176,7 +178,7 @@ def asset_content(
         # raise MalformedUsfmError when the following code is called. The
         # document_generator module will catch that error but continue with
         # other resource requests in the same document request.
-        UsfmTransform.buildSingleHtmlFromFile(
+        transform.buildSingleHtmlFromFile(
             pathlib.Path(content_files[0]),
             output_dir,
             resource_filename_,

@@ -746,60 +746,6 @@ def copy_docx_to_docker_output_dir(
         subprocess.call(copy_command, shell=True)
 
 
-def verify_resource_assets_available(
-    resource_lookup_dto: model.ResourceLookupDto,
-    # NOTE For some reason mypy and Python runtime don't believe
-    # settings.NOT_FOUND_MESSAGE_FMT_STR is defined? So I am
-    # hardcoding the format string instead as a default argument value
-    # from the config module.
-    # failure_message: str = settings.NOT_FOUND_MESSAGE_FMT_STR,
-    failure_message: str = "Book {} and resource type {} for language {} is not available.",
-) -> bool:
-    """
-    We've got a non-None URL, but now let's check that the URL
-    actually exists in the cloud because this URL points to assets
-    associated with the resource that we need to build our document.
-    If it doesn't response ok to an HTTP GET request then raise an
-    InvalidDocumentRequestException to notify the front end there was a
-    problem and otherwise return true if the URL returned an ok reponse.
-    """
-    if resource_lookup_dto.url:
-        try:
-            response = requests.get(resource_lookup_dto.url)
-            response.raise_for_status()
-        except HTTPError as http_err:
-            logger.debug(http_err)
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=failure_message.format(
-                    resource_lookup_dto.resource_code,
-                    resource_lookup_dto.resource_type_name,
-                    resource_lookup_dto.lang_name,
-                ),
-            )
-        except Exception as err:
-            logger.debug(f"Other error occurred: {err}")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=failure_message.format(
-                    resource_lookup_dto.resource_code,
-                    resource_lookup_dto.resource_type,
-                    resource_lookup_dto.lang_name,
-                ),
-            )
-        else:
-            return True
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=failure_message.format(
-                resource_lookup_dto.resource_code,
-                resource_lookup_dto.resource_type,
-                resource_lookup_dto.lang_name,
-            ),
-        )
-
-
 async def main(document_request: model.DocumentRequest) -> str:
     """
     This is the main entry point for this module.
@@ -845,7 +791,6 @@ async def main(document_request: model.DocumentRequest) -> str:
         # not.
         _, found_resource_lookup_dtos_iter = partition(
             lambda resource_lookup_dto: resource_lookup_dto.url is not None,
-            # and verify_resource_assets_available(resource_lookup_dto),
             resource_lookup_dtos,
         )
 

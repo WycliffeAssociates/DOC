@@ -3,9 +3,9 @@ git+https://github.com/psf/black
 cohesion
 dlint
 flake8
-flake8-annotations-complexity
+# flake8-annotations-complexity # not Python 3.11 ready
 flake8-annotations-coverage
-flake8-bandit
+# flake8-bandit # not Python 3.11 ready
 flake8-eradicate
 flake8-fixme
 flake8-mypy

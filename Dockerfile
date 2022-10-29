@@ -84,4 +84,3 @@ ARG RUN_TESTS=false
 RUN if [ "$RUN_TESTS" = "true" ] ; then IN_CONTAINER=true pytest /tests/ ; else echo You have chosen to skip the test suite ; fi
 
 # What gets run when 'docker-compose run backend' is executed.
-CMD ["gunicorn", "--name", "document:entrypoints:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--pythonpath", "/backend", "--conf", "/backend/gunicorn.conf.py", "document.entrypoints.app:app"]

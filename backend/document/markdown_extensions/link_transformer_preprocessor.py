@@ -1,10 +1,10 @@
 import os
 import re
-
-import markdown
 from typing import Any, final
 
+import markdown
 from document.config import settings
+
 from document.domain import bible_books, model
 from document.markdown_extensions import link_regexes
 from document.utils import file_utils, tw_utils

@@ -1,10 +1,10 @@
 import pytest
 import requests
+from document.config import settings
+from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from document.config import settings
 from document.domain import model
-from document.entrypoints.app import app
 
 ########################
 ## Long running tests ##

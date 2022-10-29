@@ -5,10 +5,10 @@ pydantic.BaseModel as FastAPI can use these classes to do automatic
 validation and JSON serialization.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
-from collections.abc import Sequence
-from typing import Optional, Union, final
+from typing import Any, Callable, Optional, Union, final
 
 from pydantic import AnyUrl, BaseModel, EmailStr
 

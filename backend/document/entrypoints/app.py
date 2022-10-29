@@ -7,13 +7,13 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 from document.config import settings
-from document.domain import document_generator, exceptions, model, resource_lookup
-from fastapi import FastAPI, Query, Request, status, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import AnyHttpUrl
 
+from document.domain import document_generator, exceptions, model, resource_lookup
 
 # Don't serve swagger docs static assets from third party CDN.
 # Source: https://github.com/tiangolo/fastapi/issues/2518#issuecomment-827513744

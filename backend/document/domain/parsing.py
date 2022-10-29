@@ -13,16 +13,15 @@ from typing import Optional, cast
 import bs4
 import markdown
 from document.config import settings
+from usfm_tools import transform
+
 from document.domain import bible_books, model
 from document.markdown_extensions import (
-    link_transformer_preprocessor,
     link_print_transformer_preprocessor,
+    link_transformer_preprocessor,
     remove_section_preprocessor,
 )
 from document.utils import file_utils, html_parsing_utils, tw_utils
-
-from usfm_tools import transform
-
 
 logger = settings.logger(__name__)
 

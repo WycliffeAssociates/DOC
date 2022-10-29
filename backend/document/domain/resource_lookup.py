@@ -5,22 +5,23 @@ assets.
 """
 
 
-import git
 import os
 import pathlib
 import shutil
 import subprocess
 import urllib
-import yaml
 from collections.abc import Iterable, Sequence
 from contextlib import closing
-from fastapi import HTTPException, status
 from typing import Any, Callable, Mapping, Optional
 from urllib import parse as urllib_parse
 from urllib.request import urlopen
 
+import git
 import jsonpath_rw_ext as jp  # type: ignore
+import yaml
 from document.config import settings
+from fastapi import HTTPException, status
+
 from document.domain import bible_books, exceptions, model
 from document.utils import file_utils
 

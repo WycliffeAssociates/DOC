@@ -3,11 +3,11 @@ import os
 
 import requests
 import yaml
+from document.config import settings
+from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from document.config import settings
 from document.domain import model
-from document.entrypoints.app import app
 
 logger = settings.logger(__name__)
 

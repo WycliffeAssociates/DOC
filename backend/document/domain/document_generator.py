@@ -4,25 +4,27 @@ and eventually a final document produced.
 """
 
 import asyncio
-import more_itertools
 import os
-import requests
 import smtplib
 import subprocess
-import toolz  # type: ignore
 from collections.abc import Iterable, Mapping, Sequence
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from fastapi import HTTPException, status
 from itertools import tee
-from requests.exceptions import HTTPError
 from typing import Optional, Union
 
 import jinja2
+import more_itertools
 import pdfkit  # type: ignore
+import requests
+import toolz  # type: ignore
 from document.config import settings
+from fastapi import HTTPException, status
+from more_itertools import partition
+from pydantic import BaseModel
+from requests.exceptions import HTTPError
 from document.domain import (
     assembly_strategies,
     bible_books,
@@ -32,9 +34,6 @@ from document.domain import (
 )
 from document.utils import file_utils, number_utils
 
-# from document.domain import exceptions
-from more_itertools import partition
-from pydantic import BaseModel
 
 logger = settings.logger(__name__)
 

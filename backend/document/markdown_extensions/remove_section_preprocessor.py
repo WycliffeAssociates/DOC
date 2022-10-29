@@ -2,10 +2,9 @@ import re
 from typing import Any, final
 
 import markdown
+from document.config import settings
 from markdown import Extension
 from markdown.preprocessors import Preprocessor
-
-from document.config import settings
 
 logger = settings.logger(__name__)
 

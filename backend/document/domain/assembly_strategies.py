@@ -25,8 +25,9 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import Any, Optional
 
 from document.config import settings
+
 from document.domain import bible_books, model
-from document.utils import tw_utils, number_utils
+from document.utils import number_utils, tw_utils
 
 logger = settings.logger(__name__)
 

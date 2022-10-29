@@ -5,11 +5,12 @@ resources that we use in multiple places.
 
 import os
 import pathlib
+from collections.abc import Iterable, Sequence
 from glob import glob
 from typing import Any, Optional
-from collections.abc import Iterable, Sequence
 
 from document.config import settings
+
 from document.domain import model
 
 logger = settings.logger(__name__)

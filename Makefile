@@ -206,8 +206,6 @@ local-e2e-tests:  local-prepare-for-tests
 local-repeat-randomized-tests: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest -n auto --count 10 tests/e2e/ -k test_api_randomized_combinatoric.py
 
-# Will execute
-# test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_hr and test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_hr_c
 .PHONY: local-smoke-test-with-translation-words
 local-smoke-test-with-translation-words: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr
@@ -326,7 +324,6 @@ local-smoke-test-with-translation-words28: local-prepare-for-tests
 .PHONY: local-smoke-test-with-translation-words29
 local-smoke-test-with-translation-words29: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_mat_language_book_order_1c
-
 
 
 # This is one to run after running local-e2e-tests or any tests which

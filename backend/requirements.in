@@ -1,3 +1,4 @@
+cython # For pydantic: https://pydantic-docs.helpmanual.io/install/
 Markdown
 PyYAML
 aiofiles

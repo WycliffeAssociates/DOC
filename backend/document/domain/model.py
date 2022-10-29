@@ -352,20 +352,6 @@ BookContent = Union[USFMBook, TNBook, TQBook, TWBook, BCBook]
 
 
 @final
-class CoverPayload(BaseModel):
-    """
-    A class to hold a PDF cover sheet, i.e., first page, HTML template
-    variable values.
-    """
-
-    title: str
-    unfound: str
-    unloaded: str
-    revision_date: str
-    images: dict[str, Union[str, bytes]]
-
-
-@final
 class EmailPayload(BaseModel):
     """A class to hold an HTML email body."""
 

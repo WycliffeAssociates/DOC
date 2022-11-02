@@ -177,10 +177,19 @@ def asset_content(
         # raise MalformedUsfmError when the following code is called. The
         # document_generator module will catch that error but continue with
         # other resource requests in the same document request.
+        t0 = time.time()
         transform.buildSingleHtmlFromFile(
             pathlib.Path(content_files[0]),
             output_dir,
             resource_filename_,
+        )
+        t1 = time.time()
+        logger.debug(
+            "Time to convert USFM to HTML (parsing to AST + convert AST to HTML) for %s-%s-%s: %s",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.resource_code,
+            t1 - t0,
         )
         html_file = os.path.join(output_dir, "{}.html".format(resource_filename_))
         assert os.path.exists(html_file)
@@ -207,26 +216,71 @@ def book_content(
     """Build and return the HTML book content instance."""
     book_content: model.BookContent
     if resource_lookup_dto.resource_type in usfm_resource_types:
+        t0 = time.time()
         book_content = usfm_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+        )
+        t1 = time.time()
+        logger.debug(
+            "Time splitting HTML into chapters and verses for interleaving for %s-%s-%s: %s",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.resource_code,
+            t1 - t0,
         )
     elif resource_lookup_dto.resource_type in cast(list[str], tn_resource_types) + cast(
         list[str], en_tn_resource_types
     ):
+        t0 = time.time()
         book_content = tn_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
         )
+        t1 = time.time()
+        logger.debug(
+            "Time processing and converting TN Markdown to HTML for interleaving for %s-%s-%s: %s",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.resource_code,
+            t1 - t0,
+        )
     elif resource_lookup_dto.resource_type in tq_resource_types:
+        t0 = time.time()
         book_content = tq_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
         )
+        t1 = time.time()
+        logger.debug(
+            "Time processing and converting TQ Markdown to HTML for interleaving for %s-%s-%s: %s",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.resource_code,
+            t1 - t0,
+        )
     elif resource_lookup_dto.resource_type in tw_resource_types:
+        t0 = time.time()
         book_content = tw_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
         )
+        t1 = time.time()
+        logger.debug(
+            "Time processing, converting, and linking TW Markdown to HTML for interleaving for %s-%s-%s: %s",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.resource_code,
+            t1 - t0,
+        )
     elif resource_lookup_dto.resource_type in bc_resource_types:
+        t0 = time.time()
         book_content = bc_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+        )
+        t1 = time.time()
+        logger.debug(
+            "Time processing, converting, and linking BC Markdown to HTML for interleaving for %s-%s-%s: %s",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.resource_code,
+            t1 - t0,
         )
     return book_content
 

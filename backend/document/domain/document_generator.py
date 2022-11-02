@@ -8,6 +8,7 @@ import concurrent.futures
 import os
 import smtplib
 import subprocess
+import time
 from collections.abc import Iterable, Mapping, Sequence
 from email import encoders
 from email.mime.base import MIMEBase
@@ -104,8 +105,6 @@ def document_request_key(
         # Likely the generated filename was too long for the OS where this is
         # running. In that case, use the current time as a document_request_key
         # value as doing so results in an acceptably short length.
-        import time
-
         timestamp_components = str(time.time()).split(".")
         return "{}_{}".format(timestamp_components[0], timestamp_components[1])
     else:
@@ -282,12 +281,17 @@ def assemble_content(
     assembly_strategy = assembly_strategies.assembly_strategy_factory(
         document_request.assembly_strategy_kind
     )
+    t0 = time.time()
     # Now, actually do the assembly given the additional
     # information of the document_request.assembly_layout_kind and
     # return it as a string.
     content = "".join(
         assembly_strategy(book_content_units, document_request.assembly_layout_kind)
     )
+    t1 = time.time()
+    logger.debug("Time for interleaving document: %s", t1 - t0)
+
+    t0 = time.time()
     tw_book_content_units = (
         book_content_unit
         for book_content_unit in book_content_units
@@ -326,6 +330,9 @@ def assemble_content(
                     )
                 ),
             )
+
+    t1 = time.time()
+    logger.debug("Time for add TW content to document: %s", t1 - t0)
 
     # Get the appropriate HTML template header content given the
     # document_request.assembly_layout_kind the user has chosen.
@@ -441,11 +448,15 @@ def convert_html_to_pdf(
     """
     assert os.path.exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
+
+    t0 = time.time()
     pdfkit.from_file(
         html_filepath,
         pdf_filepath,
         options=wkhtmltopdf_options,
     )
+    t1 = time.time()
+    logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
     copy_pdf_to_docker_output_dir(pdf_filepath)
     if should_send_email(email_address):
         attachments = [
@@ -763,20 +774,29 @@ def main(document_request: model.DocumentRequest) -> str:
         #     for resource_lookup_dto in found_resource_lookup_dtos
         # ]
 
+        t0 = time.time()
         with concurrent.futures.ProcessPoolExecutor() as executor:
             resource_dirs = executor.map(
                 resource_lookup.provision_asset_files,
                 found_resource_lookup_dtos,
             )
+        t1 = time.time()
+        logger.debug(
+            "Time to provision asset files (acquire and write to disk): %s", t1 - t0
+        )
 
 
         # Initialize found resources from their provisioned assets.
+        t0 = time.time()
         book_content_units = resource_book_content_units(
             found_resource_lookup_dtos,
             resource_dirs,
             document_request.resource_requests,
             document_request.layout_for_print,
         )
+        t1 = time.time()
+        logger.debug("Time to parse resource content: %s", t1 - t0)
+
         content = assemble_content(
             document_request_key_, document_request, book_content_units
         )

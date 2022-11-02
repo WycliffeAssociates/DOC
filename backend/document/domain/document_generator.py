@@ -766,14 +766,6 @@ def main(document_request: model.DocumentRequest) -> str:
 
         found_resource_lookup_dtos = list(found_resource_lookup_dtos_iter)
 
-        # For each found resource lookup DTO, now actually provision
-        # to disk the assets associated with the resources and return
-        # the resource directory paths.
-        # resource_dirs = [
-        #     resource_lookup.provision_asset_files(resource_lookup_dto)
-        #     for resource_lookup_dto in found_resource_lookup_dtos
-        # ]
-
         t0 = time.time()
         with concurrent.futures.ProcessPoolExecutor() as executor:
             resource_dirs = executor.map(

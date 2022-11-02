@@ -21,10 +21,6 @@ import pdfkit  # type: ignore
 import requests
 import toolz  # type: ignore
 from document.config import settings
-from fastapi import HTTPException, status
-from more_itertools import partition
-from pydantic import BaseModel
-from requests.exceptions import HTTPError
 from document.domain import (
     assembly_strategies,
     bible_books,
@@ -33,7 +29,10 @@ from document.domain import (
     resource_lookup,
 )
 from document.utils import file_utils, number_utils
-
+from fastapi import HTTPException, status
+from more_itertools import partition
+from pydantic import BaseModel
+from requests.exceptions import HTTPError
 
 logger = settings.logger(__name__)
 

@@ -4,6 +4,7 @@ and eventually a final document produced.
 """
 
 import asyncio
+import concurrent.futures
 import os
 import smtplib
 import subprocess
@@ -45,62 +46,22 @@ MAX_FILENAME_LENGTH = 240
 NUM_ZEROS = 3
 
 
-async def resource_book_content_units(
-    found_resource_lookup_dtos: Iterable[model.ResourceLookupDto],
-    resource_dirs: Iterable[str],
+def resource_book_content_units(
+    found_resource_lookup_dtos_iter: Iterable[model.ResourceLookupDto],
+    resource_dirs_iter: Iterable[str],
     resource_requests: Sequence[model.ResourceRequest],
     layout_for_print: bool,
-) -> Sequence[model.BookContent]:
-    """
-    Initialize the resources from their found assets and
-    parse their content for later typesetting.
-    """
-    book_content_or_unloaded_resource_lookup_dtos: list[
-        Union[model.BookContent, model.ResourceLookupDto]
-    ] = []
-
-    tasks = []
-    async with asyncio.TaskGroup() as tg:
-        for resource_lookup_dto, resource_dir in zip(
-            found_resource_lookup_dtos, resource_dirs
-        ):
-            # usfm_tools parser can throw a MalformedUsfmError parse error if the
-            # USFM for the resource is malformed (from the perspective of the
-            # parser). If that happens keep track of said USFM resource for
-            # reporting on the cover page of the generated PDF and log the issue,
-            # but continue handling other resources in the document request.
-            # try:
-            tasks.append(
-                (
-                    resource_lookup_dto,
-                    tg.create_task(
-                        asyncio.to_thread(
-                            parsing.book_content,
-                            resource_lookup_dto,
-                            resource_dir,
-                            resource_requests,
-                            layout_for_print,
-                        )
-                    ),
-                )
-            )
-            # )
-            # except Exception:
-            # Yield the resource that failed to be loaded by the USFM parser likely
-            # due to a USFM-Tools.exceptions.MalformedUsfmError.
-            # book_content_or_unloaded_resource_lookup_dtos.append(
-            #     resource_lookup_dto
-            # )
-            # logger.exception("Caught exception: ")
-
-    dto_book_content_tuples = [(dto, task.result()) for (dto, task) in tasks]
-    sorted_book_content = [
-        tuple[1]
-        for x in found_resource_lookup_dtos
-        for tuple in dto_book_content_tuples
-        if tuple[0] == x
-    ]
-    return sorted_book_content  # book_content_or_unloaded_resource_lookup_dtos
+) -> Iterable[model.BookContent]:
+    """Parse asset content for later use in document interleaving."""
+    found_resource_lookup_dtos = list(found_resource_lookup_dtos_iter)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        return executor.map(
+            parsing.book_content,
+            found_resource_lookup_dtos_iter,
+            resource_dirs_iter,
+            [resource_requests] * len(found_resource_lookup_dtos),
+            [layout_for_print] * len(found_resource_lookup_dtos),
+        )
 
 
 def document_request_key(
@@ -744,7 +705,7 @@ def copy_docx_to_docker_output_dir(
         subprocess.call(copy_command, shell=True)
 
 
-async def main(document_request: model.DocumentRequest) -> str:
+def main(document_request: model.DocumentRequest) -> str:
     """
     This is the main entry point for this module.
     """
@@ -802,61 +763,20 @@ async def main(document_request: model.DocumentRequest) -> str:
         #     for resource_lookup_dto in found_resource_lookup_dtos
         # ]
 
-        tasks = []
-        async with asyncio.TaskGroup() as tg:
-            for resource_lookup_dto in found_resource_lookup_dtos:
-                tasks.append(
-                    (
-                        resource_lookup_dto,
-                        tg.create_task(
-                            asyncio.to_thread(
-                                resource_lookup.provision_asset_files,
-                                resource_lookup_dto,
-                            )
-                        ),
-                    )
-                )
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            resource_dirs = executor.map(
+                resource_lookup.provision_asset_files,
+                found_resource_lookup_dtos,
+            )
 
-        logger.info("All concurrent resource acquisition tasks complete.")
-        # try:
-        # Harvest results from completed asynchronous tasks
-        # associated.
-        dto_resource_dir_tuples = [(dto, task.result()) for (dto, task) in tasks]
-        sorted_resource_dirs = [
-            tuple[1]
-            for x in found_resource_lookup_dtos
-            for tuple in dto_resource_dir_tuples
-            if tuple[0] == x
-        ]
 
-        # logger.debug("Sorted results from task group: %s", sorted_resource_dirs)
-
-        # Initialize found resources from their provisioned assets. If
-        # any could not be initialized return those in the second
-        # iterator via tee.
-        # book_content_units_iter, unloaded_resource_lookup_dtos_iter = tee(
-        book_content_units = await resource_book_content_units(
+        # Initialize found resources from their provisioned assets.
+        book_content_units = resource_book_content_units(
             found_resource_lookup_dtos,
-            # resource_dirs,
-            sorted_resource_dirs,
+            resource_dirs,
             document_request.resource_requests,
             document_request.layout_for_print,
         )
-        # A little further processing is needed on tee objects to get
-        # the types separated. This first list is of successfully
-        # initialized book content units.
-        # book_content_units = [
-        #     book_content_unit
-        #     for book_content_unit in book_content_units_iter
-        #     if not isinstance(book_content_unit, model.ResourceLookupDto)
-        # ]
-        # This second list is of resource lookup DTOs whose assets
-        # could not be successfully loaded.
-        # unloaded_resource_lookup_dtos = [
-        #     resource_lookup_dto
-        #     for resource_lookup_dto in unloaded_resource_lookup_dtos_iter
-        #     if isinstance(resource_lookup_dto, model.ResourceLookupDto)
-        # ]
         content = assemble_content(
             document_request_key_, document_request, book_content_units
         )
@@ -865,7 +785,7 @@ async def main(document_request: model.DocumentRequest) -> str:
             html_filepath_,
         )
 
-    async with asyncio.TaskGroup() as tg2:
+    with concurrent.futures.ProcessPoolExecutor() as executor:
         # Immediately return pre-built PDF if the document has previously been
         # generated and is fresh enough. In that case, front run all requests to
         # the cloud including the more low level resource asset caching
@@ -873,42 +793,34 @@ async def main(document_request: model.DocumentRequest) -> str:
         if document_request.generate_pdf and file_utils.asset_file_needs_update(
             pdf_filepath_
         ):
-            tg2.create_task(
-                asyncio.to_thread(
-                    convert_html_to_pdf,
-                    html_filepath_,
-                    pdf_filepath_,
-                    document_request.email_address,
-                    document_request_key_,
-                ),
+            executor.submit(
+                convert_html_to_pdf,
+                html_filepath_,
+                pdf_filepath_,
+                document_request.email_address,
+                document_request_key_,
             )
 
         if document_request.generate_epub and file_utils.asset_file_needs_update(
             epub_filepath_
         ):
-            tg2.create_task(
-                asyncio.to_thread(
-                    convert_html_to_epub,
-                    html_filepath_,
-                    epub_filepath_,
-                    document_request.email_address,
-                    document_request_key_,
-                ),
+            executor.submit(
+                convert_html_to_epub,
+                html_filepath_,
+                epub_filepath_,
+                document_request.email_address,
+                document_request_key_,
             )
 
         if document_request.generate_docx and file_utils.asset_file_needs_update(
             docx_filepath_
         ):
-            tg2.create_task(
-                asyncio.to_thread(
-                    convert_html_to_docx,
-                    html_filepath_,
-                    docx_filepath_,
-                    document_request.email_address,
-                    document_request_key_,
-                ),
+            executor.submit(
+                convert_html_to_docx,
+                html_filepath_,
+                docx_filepath_,
+                document_request.email_address,
+                document_request_key_,
             )
-
-        logger.info("All concurrent document creation tasks complete.")
 
     return document_request_key_

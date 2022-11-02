@@ -785,7 +785,6 @@ def main(document_request: model.DocumentRequest) -> str:
             "Time to provision asset files (acquire and write to disk): %s", t1 - t0
         )
 
-
         # Initialize found resources from their provisioned assets.
         t0 = time.time()
         book_content_units = resource_book_content_units(

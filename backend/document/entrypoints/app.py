@@ -1,6 +1,5 @@
 """This module provides the FastAPI API definition."""
 
-import asyncio
 import os
 import pathlib
 from collections.abc import Iterable, Sequence
@@ -75,7 +74,7 @@ def document_endpoint(
     """
     # Top level exception handler
     try:
-        document_request_key = asyncio.run(document_generator.main(document_request))
+        document_request_key = document_generator.main(document_request)
     except HTTPException as exc:
         raise exc
     except Exception:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.

@@ -12,6 +12,7 @@ jsonpath-rw
 jsonpath-rw-ext
 lxml # For bs4
 more-itertools
+orjson
 pdfkit
 pydantic[email,dotenv]
 pytest-repeat

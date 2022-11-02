@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Optional, Union, final
 
+import orjson
 from pydantic import AnyUrl, BaseModel, EmailStr
 
 # These Type Aliases give us more self-documenting code, but of course
@@ -20,21 +21,9 @@ VerseRef = str
 ChapterNum = int
 
 
-# https://blog.meadsteve.dev/programming/2020/02/10/types-at-the-edges-in-python/
-# https://pydantic-docs.helpmanual.io/usage/models/
-@final
-class ResourceRequest(BaseModel):
-    """
-    This class is used to encode a request for a resource, e.g.,
-    language 'English', en, resource type 'ulb', resource code, i.e.,
-    book, 'gen'. A document request composes n of these resource
-    request instances. Because this class inherits from pydantic's
-    BaseModel we get validation and JSON serialization for free.
-    """
-
-    lang_code: str
-    resource_type: str
-    resource_code: str
+def orjson_dumps(v: Any, *, default: Optional[Callable[[Any], Any]]) -> str:
+    # orjson.dumps returns bytes, to match standard json.dumps we need to decode
+    return orjson.dumps(v, default=default).decode()
 
 
 # See
@@ -117,6 +106,27 @@ class AssemblyLayoutEnum(str, Enum):
     # fmt: on
 
 
+# https://blog.meadsteve.dev/programming/2020/02/10/types-at-the-edges-in-python/
+# https://pydantic-docs.helpmanual.io/usage/models/
+@final
+class ResourceRequest(BaseModel):
+    """
+    This class is used to encode a request for a resource, e.g.,
+    language 'English', en, resource type 'ulb', resource code, i.e.,
+    book, 'gen'. A document request composes n of these resource
+    request instances. Because this class inherits from pydantic's
+    BaseModel we get validation and JSON serialization for free.
+    """
+
+    lang_code: str
+    resource_type: str
+    resource_code: str
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
+
+
 @final
 class DocumentRequest(BaseModel):
     """
@@ -157,6 +167,29 @@ class DocumentRequest(BaseModel):
     # Indicate whether Docx should be generated.
     generate_docx: bool = False
 
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
+
+
+
+
+# See ~/.ghq/github.com/jonathanreadshaw/ServingMLFastCelery/models.py
+@final
+class FinishedDocumentDetails(BaseModel):
+    """
+    Pydantic model that we use as a return value to send back via
+    FastAPI to the client. For now it just contains the finished
+    document filepath on disk.
+    """
+
+    finished_document_request_key: Optional[str]
+    message: str
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
+
 
 @final
 class AssetSourceEnum(str, Enum):
@@ -187,18 +220,6 @@ class ResourceLookupDto(BaseModel):
     url: Optional[AnyUrl]
     source: AssetSourceEnum
     jsonpath: Optional[str]
-
-
-@final
-class FinishedDocumentDetails(BaseModel):
-    """
-    Pydantic model that we use as a return value to send back via
-    FastAPI to the client. For now it just contains the finished
-    document filepath on disk.
-    """
-
-    finished_document_request_key: Optional[str]
-    message: str
 
 
 @final

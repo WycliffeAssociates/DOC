@@ -10,7 +10,7 @@ from document.config import settings
 from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, ORJSONResponse
 from pydantic import AnyHttpUrl
 
 from document.domain import document_generator, exceptions, model, resource_lookup
@@ -39,9 +39,9 @@ app.add_middleware(
 @app.exception_handler(exceptions.InvalidDocumentRequestException)
 def invalid_document_request_exception_handler(
     request: Request, exc: exceptions.InvalidDocumentRequestException
-) -> JSONResponse:
+) -> ORJSONResponse:
     logger.error(f"{request}: {exc}")
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={
             "message": f"{exc.message}",
@@ -52,11 +52,11 @@ def invalid_document_request_exception_handler(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
-) -> JSONResponse:
+) -> ORJSONResponse:
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
     logger.error(f"{request}: {exc_str}")
     content = {"status_code": 10422, "message": exc_str, "data": None}
-    return JSONResponse(
+    return ORJSONResponse(
         content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
     )
 

@@ -62,7 +62,7 @@ stop-and-remove:
 
 .PHONY: test
 test: up-as-daemon
-	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/unit /tests/integration /tests/e2e
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/unit /tests/integration /tests/e2e
 
 
 .PHONY: clean-local-docker-output-dir
@@ -73,7 +73,7 @@ clean-local-docker-output-dir:
 
 .PHONY: unit-tests
 unit-tests: up-as-daemon
-	docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /tests/unit
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /tests/unit
 
 .PHONY: e2e-tests
 e2e-tests: up-as-daemon clean-local-docker-output-dir
@@ -81,19 +81,19 @@ e2e-tests: up-as-daemon clean-local-docker-output-dir
 	# work for unit tests in Docker and work everywhere outside of
 	# Docker. So we utilize them everywhere we can pending a fix.
 	# docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /tests/e2e
-	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e
 
 .PHONY: smoke-test-with-translation-words
-smoke-test-with-translation-words: up clean-local-docker-output-dir
-	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_hr
+smoke-test-with-translation-words: up-as-daemon clean-local-docker-output-dir
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_hr
 
 .PHONY: smoke-test-with-translation-words2
-smoke-test-with-translation-words2: up clean-local-docker-output-dir
-	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_hr
+smoke-test-with-translation-words2: up-as-daemon clean-local-docker-output-dir
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_hr
 
 .PHONY: smoke-test-with-translation-words3
-smoke-test-with-translation-words3: up clean-local-docker-output-dir
-	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_pt_br_ulb_tn_en_ulb_wa_tn_wa_luk_language_book_order_2c_sl_hr
+smoke-test-with-translation-words3: up-as-daemon clean-local-docker-output-dir
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_stream_ar_nav_jud_pdf
 
 .PHONY: mypy
 mypy: checkvenv

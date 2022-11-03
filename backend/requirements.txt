@@ -159,7 +159,7 @@ typing-extensions==4.2.0
     # via pydantic
 urllib3==1.26.9
     # via requests
-usfm-tools @ git+https://github.com/linearcombination/USFM-Tools.git@develop
+usfm-tools @ git+https://github.com/linearcombination/USFM-Tools.git@0.0.8
     # via -r ./backend/requirements.in
 uvicorn==0.17.6
     # via -r ./backend/requirements.in

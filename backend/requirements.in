@@ -5,7 +5,7 @@ aiofiles
 beautifulsoup4
 fastapi
 GitPython
-git+https://github.com/linearcombination/USFM-Tools.git@0.0.8#egg=USFM-Tools
+git+https://github.com/linearcombination/USFM-Tools.git@develop#egg=USFM-Tools
 gunicorn
 jinja2
 jsonpath-rw

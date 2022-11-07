@@ -8,8 +8,12 @@ ifeq ("$(VIRTUAL_ENV)","")
 	exit 1
 endif
 
+.PHONY: pipupgrade
+pipupgrade: checkvenv
+	pip install --upgrade pip
+
 .PHONY: pyupgrade
-pyupgrade: checkvenv
+pyupgrade: checkvenv pipupgrade
 # checks if pip-tools is installed
 ifeq ("$(wildcard .venv/bin/pip-compile)","")
 	@echo "Installing Pip-tools..."

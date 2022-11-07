@@ -28,8 +28,6 @@ commonmark==0.9.1
     # via rich
 dill==0.3.6
     # via pylint
-distlib==0.3.6
-    # via virtualenv
 dlint==0.13.0
     # via -r ./backend/requirements-dev.in
 docstring-to-markdown==0.10
@@ -40,8 +38,6 @@ execnet==1.9.0
     # via
     #   -c ./backend/requirements.txt
     #   pytest-xdist
-filelock==3.8.0
-    # via virtualenv
 flake8==3.9.2
     # via
     #   -r ./backend/requirements-dev.in
@@ -66,8 +62,6 @@ future==0.18.2
     #   radon
 icdiff==2.0.5
     # via pytest-icdiff
-identify==2.5.8
-    # via pre-commit
 iniconfig==1.1.1
     # via
     #   -c ./backend/requirements.txt
@@ -76,9 +70,9 @@ isort==5.10.1
     # via
     #   -r ./backend/requirements-dev.in
     #   pylint
-jedi==0.17.2
+jedi==0.18.1
     # via python-lsp-server
-lazy-object-proxy==1.7.1
+lazy-object-proxy==1.8.0
     # via astroid
 mando==0.6.4
     # via radon
@@ -95,17 +89,15 @@ mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-nodeenv==1.7.0
-    # via pre-commit
 packaging==21.3
     # via
     #   -c ./backend/requirements.txt
     #   pytest
-parso==0.7.1
+parso==0.8.3
     # via jedi
 pathspec==0.10.1
     # via black
-platformdirs==2.5.2
+platformdirs==2.5.3
     # via
     #   black
     #   pylint
@@ -116,7 +108,7 @@ pluggy==1.0.0
     #   python-lsp-server
 pprintpp==0.4.0
     # via pytest-icdiff
-psutil==5.9.1
+psutil==5.9.3
     # via
     #   -c ./backend/requirements.txt
     #   pytest-xdist
@@ -159,10 +151,6 @@ python-lsp-jsonrpc==1.0.0
     # via python-lsp-server
 python-lsp-server==1.6.0
     # via pylsp-mypy
-pyyaml==6.0
-    # via
-    #   -c ./backend/requirements.txt
-    #   pre-commit
 radon==5.1.0
     # via -r ./backend/requirements-dev.in
 rich==12.6.0
@@ -183,16 +171,12 @@ typing-extensions==4.4.0
     #   mypy
 ujson==5.5.0
     # via
-    #   python-jsonrpc-server
-    #   python-language-server
-virtualenv==20.16.6
-    # via pre-commit
+    #   python-lsp-jsonrpc
+    #   python-lsp-server
 vulture==2.6
     # via -r ./backend/requirements-dev.in
 wrapt==1.14.1
-    # via
-    #   -c ./backend/requirements.txt
-    #   astroid
+    # via astroid
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

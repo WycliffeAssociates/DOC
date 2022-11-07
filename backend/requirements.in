@@ -10,7 +10,7 @@ gunicorn
 jinja2
 jsonpath-rw
 jsonpath-rw-ext
-lxml # For bs4
+lxml
 more-itertools
 orjson
 pdfkit

@@ -4,7 +4,11 @@
 #
 #    pip-compile ./backend/requirements-prod.in
 #
-attrs==21.4.0
+attrs==22.1.0
+    # via
+    #   -c ./backend/requirements.txt
+    #   pytest
+exceptiongroup==1.0.1
     # via
     #   -c ./backend/requirements.txt
     #   pytest
@@ -14,7 +18,7 @@ iniconfig==1.1.1
     # via
     #   -c ./backend/requirements.txt
     #   pytest
-mypy==0.921
+mypy==0.982
     # via -r ./backend/requirements-prod.in
 mypy-extensions==0.4.3
     # via mypy
@@ -29,15 +33,12 @@ pluggy==1.0.0
 pprintpp==0.4.0
     # via pytest-icdiff
 py==1.11.0
-    # via
-    #   -c ./backend/requirements.txt
-    #   pytest
-    #   pytest-datafiles
+    # via pytest-datafiles
 pyparsing==3.0.9
     # via
     #   -c ./backend/requirements.txt
     #   packaging
-pytest==7.1.2
+pytest==7.2.0
     # via
     #   -c ./backend/requirements.txt
     #   -r ./backend/requirements-prod.in
@@ -45,14 +46,14 @@ pytest==7.1.2
     #   pytest-icdiff
 pytest-datafiles==2.0.1
     # via -r ./backend/requirements-prod.in
-pytest-icdiff==0.5
+pytest-icdiff==0.6
     # via -r ./backend/requirements-prod.in
 tomli==2.0.1
     # via
     #   -c ./backend/requirements.txt
     #   mypy
     #   pytest
-typing-extensions==4.2.0
+typing-extensions==4.4.0
     # via
     #   -c ./backend/requirements.txt
     #   mypy

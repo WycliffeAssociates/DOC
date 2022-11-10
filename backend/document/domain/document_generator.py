@@ -6,6 +6,7 @@ and eventually a final document produced.
 import asyncio
 import concurrent.futures
 import os
+import shutil
 import smtplib
 import subprocess
 import time
@@ -15,13 +16,15 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from itertools import tee
-from typing import Optional, Union
+from typing import Any, Optional
 
 import jinja2
 import more_itertools
 import pdfkit  # type: ignore
 import requests
 import toolz  # type: ignore
+from celery import Celery, current_task
+from celery.app.task import Task
 from document.config import settings
 from document.domain import (
     assembly_strategies,
@@ -29,11 +32,12 @@ from document.domain import (
     model,
     parsing,
     resource_lookup,
+    worker,
 )
 from document.utils import file_utils, number_utils
 from fastapi import HTTPException, status
 from more_itertools import partition
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 from requests.exceptions import HTTPError
 
 logger = settings.logger(__name__)
@@ -54,14 +58,11 @@ def resource_book_content_units(
     layout_for_print: bool,
 ) -> Iterable[model.BookContent]:
     """Parse asset content for later use in document interleaving."""
-    found_resource_lookup_dtos = list(found_resource_lookup_dtos_iter)
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        return executor.map(
-            parsing.book_content,
-            found_resource_lookup_dtos_iter,
-            resource_dirs_iter,
-            [resource_requests] * len(found_resource_lookup_dtos),
-            [layout_for_print] * len(found_resource_lookup_dtos),
+    for resource_lookup_dto, resource_dir in zip(
+        found_resource_lookup_dtos_iter, resource_dirs_iter
+    ):
+        yield parsing.book_content(
+            resource_lookup_dto, resource_dir, resource_requests, layout_for_print
         )
 
 
@@ -292,11 +293,11 @@ def assemble_content(
     logger.debug("Time for interleaving document: %s", t1 - t0)
 
     t0 = time.time()
-    tw_book_content_units = (
+    tw_book_content_units = [
         book_content_unit
         for book_content_unit in book_content_units
         if isinstance(book_content_unit, model.TWBook)
-    )
+    ]
     # We need to see if the document request included any usfm because
     # if it did we'll generate not only the tw word defs but also the
     # links to them from the notes area that exists adjacent to the
@@ -457,7 +458,7 @@ def convert_html_to_pdf(
     )
     t1 = time.time()
     logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
-    copy_pdf_to_docker_output_dir(pdf_filepath)
+    copy_file_to_docker_output_dir(pdf_filepath)
     if should_send_email(email_address):
         attachments = [
             model.Attachment(filepath=pdf_filepath, mime_type=("application", "pdf"))
@@ -485,7 +486,7 @@ def convert_html_to_epub(
     )
     logger.debug("Generate ePub command: %s", pandoc_command)
     subprocess.call(pandoc_command, shell=True)
-    copy_epub_to_docker_output_dir(epub_filepath)
+    copy_file_to_docker_output_dir(epub_filepath)
     if should_send_email(email_address):
         attachments = [
             model.Attachment(
@@ -515,7 +516,7 @@ def convert_html_to_docx(
     )
     logger.debug("Generate Docx command: %s", pandoc_command)
     subprocess.call(pandoc_command, shell=True)
-    copy_docx_to_docker_output_dir(docx_filepath)
+    copy_file_to_docker_output_dir(docx_filepath)
     if should_send_email(email_address):
         attachments = [
             model.Attachment(
@@ -650,73 +651,26 @@ def write_html_content_to_file(
         output_filename,
         content,
     )
+    copy_file_to_docker_output_dir(output_filename)
 
 
-def copy_pdf_to_docker_output_dir(
-    pdf_filepath: str,
+def copy_file_to_docker_output_dir(
+    filepath: str,
     docker_container_document_output_dir: str = settings.DOCKER_CONTAINER_DOCUMENT_OUTPUT_DIR,
     in_container: bool = settings.IN_CONTAINER,
 ) -> None:
     """
-    Copy PDF file to docker_container_document_output_dir.
+    Copy file to docker_container_document_output_dir.
     """
-    assert os.path.exists(pdf_filepath)
-    copy_command = "cp {} {}".format(
-        pdf_filepath,
-        docker_container_document_output_dir,
-    )
+    assert os.path.exists(filepath)
     logger.debug("IN_CONTAINER: {}".format(in_container))
     if in_container:
-        logger.info("About to cp PDF to from Docker volume to host")
-        logger.debug("Copy PDF command: %s", copy_command)
-        subprocess.call(copy_command, shell=True)
+        logger.info("About to cp file to Docker volume")
+        shutil.copy(filepath, docker_container_document_output_dir)
 
 
-def copy_epub_to_docker_output_dir(
-    epub_filepath: str,
-    docker_container_document_output_dir: str = settings.DOCKER_CONTAINER_DOCUMENT_OUTPUT_DIR,
-    in_container: bool = settings.IN_CONTAINER,
-) -> None:
-    """
-    Copy ePub file to docker_container_document_output_dir.
-    """
-    assert os.path.exists(epub_filepath)
-    copy_command = "cp {} {}".format(
-        epub_filepath,
-        docker_container_document_output_dir,
-    )
-    logger.debug("IN_CONTAINER: {}".format(in_container))
-    if in_container:
-        logger.info(
-            "About to cp ePub from output directory to from Docker volume for fileserver in production and for file viewing on host in development."
-        )
-        logger.debug("Copy ePub command: %s", copy_command)
-        subprocess.call(copy_command, shell=True)
-
-
-def copy_docx_to_docker_output_dir(
-    docx_filepath: str,
-    docker_container_document_output_dir: str = settings.DOCKER_CONTAINER_DOCUMENT_OUTPUT_DIR,
-    in_container: bool = settings.IN_CONTAINER,
-) -> None:
-    """
-    Copy Docx file to docker_container_document_output_dir.
-    """
-    assert os.path.exists(docx_filepath)
-    copy_command = "cp {} {}".format(
-        docx_filepath,
-        docker_container_document_output_dir,
-    )
-    logger.debug("IN_CONTAINER: {}".format(in_container))
-    if in_container:
-        logger.info(
-            "About to cp Docx from output directory to from Docker volume for fileserver in production and for file viewing on host in development."
-        )
-        logger.debug("Copy Docx command: %s", copy_command)
-        subprocess.call(copy_command, shell=True)
-
-
-def main(document_request: model.DocumentRequest) -> str:
+@worker.app.task
+def main(document_request_json: Json[Any]) -> Json[Any]:
     """
     This is the main entry point for this module.
     """
@@ -724,14 +678,19 @@ def main(document_request: model.DocumentRequest) -> str:
     # then we know that the request originated from a unit test. The UI does
     # not provide a way to choose an arbitrary layout, but unit tests can
     # specify a layout arbitrarily. We must handle both situations.
-    if not document_request.assembly_layout_kind:
-        document_request.assembly_layout_kind = select_assembly_layout_kind(
-            document_request
-        )
+    document_request = model.DocumentRequest.parse_raw(document_request_json)
     logger.debug(
         "document_request: %s",
         document_request,
     )
+    if not document_request.assembly_layout_kind:
+        document_request.assembly_layout_kind = select_assembly_layout_kind(
+            document_request
+        )
+        logger.debug(
+            "updated document_request: %s",
+            document_request,
+        )
     # Generate the document request key that identifies this and
     # identical document requests.
     document_request_key_ = document_request_key(
@@ -745,6 +704,7 @@ def main(document_request: model.DocumentRequest) -> str:
     docx_filepath_ = docx_filepath(document_request_key_)
 
     if file_utils.asset_file_needs_update(html_filepath_):
+        current_task.update_state(state="Locate assets")
         # HTML didn't exist in cache so go ahead and start by getting the
         # resource lookup DTOs for each resource request in the document
         # request.
@@ -766,17 +726,18 @@ def main(document_request: model.DocumentRequest) -> str:
 
         found_resource_lookup_dtos = list(found_resource_lookup_dtos_iter)
 
+        current_task.update_state(state="Provision asset files")
         t0 = time.time()
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            resource_dirs = executor.map(
-                resource_lookup.provision_asset_files,
-                found_resource_lookup_dtos,
-            )
+        resource_dirs = [
+            resource_lookup.provision_asset_files(dto)
+            for dto in found_resource_lookup_dtos
+        ]
         t1 = time.time()
         logger.debug(
             "Time to provision asset files (acquire and write to disk): %s", t1 - t0
         )
 
+        current_task.update_state(state="Parse asset files")
         # Initialize found resources from their provisioned assets.
         t0 = time.time()
         book_content_units = resource_book_content_units(
@@ -788,6 +749,7 @@ def main(document_request: model.DocumentRequest) -> str:
         t1 = time.time()
         logger.debug("Time to parse resource content: %s", t1 - t0)
 
+        current_task.update_state(state="Assembling content")
         content = assemble_content(
             document_request_key_, document_request, book_content_units
         )
@@ -796,42 +758,41 @@ def main(document_request: model.DocumentRequest) -> str:
             html_filepath_,
         )
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        # Immediately return pre-built PDF if the document has previously been
-        # generated and is fresh enough. In that case, front run all requests to
-        # the cloud including the more low level resource asset caching
-        # mechanism for comparatively immediate return of PDF.
-        if document_request.generate_pdf and file_utils.asset_file_needs_update(
-            pdf_filepath_
-        ):
-            executor.submit(
-                convert_html_to_pdf,
-                html_filepath_,
-                pdf_filepath_,
-                document_request.email_address,
-                document_request_key_,
-            )
+    # Immediately return pre-built PDF if the document has previously been
+    # generated and is fresh enough. In that case, front run all requests to
+    # the cloud including the more low level resource asset caching
+    # mechanism for comparatively immediate return of PDF.
+    if document_request.generate_pdf and file_utils.asset_file_needs_update(
+        pdf_filepath_
+    ):
+        current_task.update_state(state="Converting to desired format")
+        convert_html_to_pdf(
+            html_filepath_,
+            pdf_filepath_,
+            document_request.email_address,
+            document_request_key_,
+        )
 
-        if document_request.generate_epub and file_utils.asset_file_needs_update(
-            epub_filepath_
-        ):
-            executor.submit(
-                convert_html_to_epub,
-                html_filepath_,
-                epub_filepath_,
-                document_request.email_address,
-                document_request_key_,
-            )
+    if document_request.generate_epub and file_utils.asset_file_needs_update(
+        epub_filepath_
+    ):
+        current_task.update_state(state="Converting to desired format")
+        convert_html_to_epub(
+            html_filepath_,
+            epub_filepath_,
+            document_request.email_address,
+            document_request_key_,
+        )
 
-        if document_request.generate_docx and file_utils.asset_file_needs_update(
-            docx_filepath_
-        ):
-            executor.submit(
-                convert_html_to_docx,
-                html_filepath_,
-                docx_filepath_,
-                document_request.email_address,
-                document_request_key_,
-            )
+    if document_request.generate_docx and file_utils.asset_file_needs_update(
+        docx_filepath_
+    ):
+        current_task.update_state(state="Converting to desired format")
+        convert_html_to_docx(
+            html_filepath_,
+            docx_filepath_,
+            document_request.email_address,
+            document_request_key_,
+        )
 
     return document_request_key_

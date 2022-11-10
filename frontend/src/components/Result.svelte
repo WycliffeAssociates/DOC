@@ -10,6 +10,7 @@
     generateDocxStore,
     documentRequestKeyStore
   } from '../stores/SettingsStore'
+  import { taskIdStore, taskStateStore } from '../stores/TaskStore'
   import { getApiRootUrl, resetStores } from '../lib/utils'
 
   function cancelDocument() {
@@ -56,6 +57,16 @@
     <p class="text-center text-secondary-content">
       We appreciate your patience as this can take several minutes for larger documents.
     </p>
+    {#if $taskIdStore}
+      <p class="text-center text-secondary-content">
+        Task id: {$taskIdStore}
+      </p>
+    {/if}
+    {#if $taskStateStore}
+      <p id="state" class="text-center  text-secondary-content">
+        Task state: {$taskStateStore}
+      </p>
+    {/if}
   {/if}
   {#if $documentReadyStore && !$errorStore}
     <div class="bg-white">

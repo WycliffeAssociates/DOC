@@ -5,6 +5,8 @@ import pathlib
 from collections.abc import Iterable, Sequence
 from typing import Any
 
+import celery.states
+from celery.result import AsyncResult
 from document.config import settings
 from document.domain import document_generator, exceptions, model, resource_lookup
 from fastapi import FastAPI, HTTPException, Query, Request, status
@@ -13,8 +15,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, ORJSONResponse
 from pydantic import AnyHttpUrl
 
-# Don't serve swagger docs static assets from third party CDN.
-# Source: https://github.com/tiangolo/fastapi/issues/2518#issuecomment-827513744
 app = FastAPI()
 
 
@@ -64,7 +64,7 @@ def document_endpoint(
     document_request: model.DocumentRequest,
     success_message: str = settings.SUCCESS_MESSAGE,
     failure_message: str = settings.FAILURE_MESSAGE,
-) -> model.FinishedDocumentDetails:
+) -> ORJSONResponse:
     """
     Get the document request and hand it off to the document_generator
     module for processing. Return model.FinishedDocumentDetails instance
@@ -74,7 +74,7 @@ def document_endpoint(
     """
     # Top level exception handler
     try:
-        document_request_key = document_generator.main(document_request)
+        task = document_generator.main.apply_async(args=(document_request.json(),))
     except HTTPException as exc:
         raise exc
     except Exception:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
@@ -87,17 +87,23 @@ def document_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=failure_message
         )
     else:
-        details = model.FinishedDocumentDetails(
-            finished_document_request_key=document_request_key,
-            message=success_message,
-        )
-        logger.debug("FinishedDocumentDetails: %s", details)
-        return details
+        logger.debug("task_id: %s", task.id)
+        return ORJSONResponse({"task_id": task.id})
+
+
+@app.get("/api/{task_id}/status")
+async def task_status(task_id: str) -> dict[str, Any]:
+    res: AsyncResult[dict[str, str]] = AsyncResult(task_id)
+    if res.state == celery.states.SUCCESS:
+        return {"state": celery.states.SUCCESS, "result": res.result}
+    return {
+        "state": res.state,
+    }
 
 
 @app.get("/epub/{document_request_key}")
 def serve_epub_document(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested ePub document."""
     path = "{}.epub".format(os.path.join(output_dir, document_request_key))
@@ -111,7 +117,7 @@ def serve_epub_document(
 
 @app.get("/pdf/{document_request_key}")
 def serve_pdf_document(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested PDF document."""
     path = "{}.pdf".format(os.path.join(output_dir, document_request_key))
@@ -125,7 +131,7 @@ def serve_pdf_document(
 
 @app.get("/docx/{document_request_key}")
 def serve_docx_document(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested Docx document."""
     path = "{}.docx".format(os.path.join(output_dir, document_request_key))
@@ -139,7 +145,7 @@ def serve_docx_document(
 
 @app.get("/html/{document_request_key}")
 def serve_html_document(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested HTML document."""
     path = "{}.html".format(os.path.join(output_dir, document_request_key))

@@ -184,6 +184,18 @@ class Settings(BaseSettings):
             dirname = self.DOCUMENT_OUTPUT_DIR[1:]
         return dirname
 
+    # Location where generated PDFs will be written to.
+    DOCUMENT_SERVE_DIR: str = "/document_output"
+
+    def document_serve_dir(self) -> str:
+        """The directory where the generated documents are served from."""
+        dirname = ""
+        if self.IN_CONTAINER:
+            dirname = self.DOCUMENT_SERVE_DIR
+        else:
+            dirname = self.DOCUMENT_SERVE_DIR[1:]
+        return dirname
+
     # For options see https://wkhtmltopdf.org/usage/wkhtmltopdf.txt
     WKHTMLTOPDF_OPTIONS: dict[str, Optional[str]] = {
         "page-size": "Letter",

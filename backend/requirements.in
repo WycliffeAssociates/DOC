@@ -3,6 +3,8 @@ Markdown
 PyYAML
 aiofiles
 beautifulsoup4
+celery[redis]
+celery-types
 fastapi
 GitPython
 git+https://github.com/linearcombination/USFM-Tools.git@develop#egg=USFM-Tools

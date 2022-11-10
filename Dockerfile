@@ -72,7 +72,7 @@ COPY ./tests/ /tests/
 
 # Inside the Python virtual env: check types, install any missing mypy stub
 # types packages, and compile most modules into C using mypyc
-RUN cd $VIRTUAL_ENV && . $VIRTUAL_ENV/bin/activate && mypyc --strict --install-types --non-interactive /backend/document/**/*.py
+# RUN cd $VIRTUAL_ENV && . $VIRTUAL_ENV/bin/activate && mypyc --strict --install-types --non-interactive /backend/document/domain/document_generator.py /backend/document/domain/resource_lookup.py /backend/document/domain/assembly_strategies.py /backend/document/domain/parsing.py /backend/document/domain/worker.py /backend/document/entrypoints/app.py
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/backend:/tests
@@ -83,5 +83,3 @@ ENV PYTHONPATH=/backend:/tests
 # available here.
 ARG RUN_TESTS=false
 RUN if [ "$RUN_TESTS" = "true" ] ; then IN_CONTAINER=true pytest /tests/ ; else echo You have chosen to skip the test suite ; fi
-
-# What gets run when 'docker-compose run backend' is executed.

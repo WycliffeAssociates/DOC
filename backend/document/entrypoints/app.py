@@ -60,7 +60,7 @@ async def validation_exception_handler(
 
 
 @app.post("/documents")
-def document_endpoint(
+async def generate_document(
     document_request: model.DocumentRequest,
     success_message: str = settings.SUCCESS_MESSAGE,
     failure_message: str = settings.FAILURE_MESSAGE,
@@ -102,7 +102,7 @@ async def task_status(task_id: str) -> dict[str, Any]:
 
 
 @app.get("/epub/{document_request_key}")
-def serve_epub_document(
+async def serve_epub_document(
     document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested ePub document."""
@@ -116,7 +116,7 @@ def serve_epub_document(
 
 
 @app.get("/pdf/{document_request_key}")
-def serve_pdf_document(
+async def serve_pdf_document(
     document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested PDF document."""
@@ -130,7 +130,7 @@ def serve_pdf_document(
 
 
 @app.get("/docx/{document_request_key}")
-def serve_docx_document(
+async def serve_docx_document(
     document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested Docx document."""
@@ -144,7 +144,7 @@ def serve_docx_document(
 
 
 @app.get("/html/{document_request_key}")
-def serve_html_document(
+async def serve_html_document(
     document_request_key: str, output_dir: str = settings.document_serve_dir()
 ) -> FileResponse:
     """Serve the requested HTML document."""
@@ -157,7 +157,7 @@ def serve_html_document(
 
 
 @app.get("/language_codes_names_and_resource_types")
-def lang_codes_names_and_resource_types() -> Iterable[model.CodeNameTypeTriplet]:
+async def lang_codes_names_and_resource_types() -> Iterable[model.CodeNameTypeTriplet]:
     """
     Return list of tuples of lang_code, lang_name, resource_types for
     all available language codes.
@@ -166,13 +166,13 @@ def lang_codes_names_and_resource_types() -> Iterable[model.CodeNameTypeTriplet]
 
 
 @app.get("/language_codes")
-def lang_codes() -> Iterable[str]:
+async def lang_codes() -> Iterable[str]:
     """Return list of all available language codes."""
     return resource_lookup.lang_codes()
 
 
 @app.get("/language_codes_and_names")
-def lang_codes_and_names() -> list[str]:
+async def lang_codes_and_names() -> list[str]:
     """
     Return list of all available language code, name tuples.
     """
@@ -180,25 +180,25 @@ def lang_codes_and_names() -> list[str]:
 
 
 @app.get("/resource_types")
-def resource_types() -> Any:
+async def resource_types() -> Any:
     """Return list of all available resource types."""
     return resource_lookup.resource_types()
 
 
 @app.get("/resource_types_for_lang/{lang_code}")
-def resource_types_for_lang(lang_code: str) -> Sequence[Any]:
+async def resource_types_for_lang(lang_code: str) -> Sequence[Any]:
     """Return list of all available resource types."""
     return resource_lookup.resource_types_for_lang(lang_code)
 
 
 @app.get("/resource_types_and_names_for_lang/{lang_code}")
-def resource_types_and_names_for_lang(lang_code: str) -> Sequence[Any]:
+async def resource_types_and_names_for_lang(lang_code: str) -> Sequence[Any]:
     """Return list of all available resource types and their names."""
     return resource_lookup.resource_types_and_names_for_lang(lang_code)
 
 
 @app.get("/shared_resource_codes/{lang0_code}/{lang1_code}")
-def shared_resource_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
+async def shared_resource_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
     """
     Return list of available resource codes common to both lang0_code and lang1_code.
     """
@@ -206,7 +206,7 @@ def shared_resource_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
 
 
 @app.get("/resources_codes_and_types_for_lang/{lang_code}")
-def resource_codes_and_types_for_lang(
+async def resource_codes_and_types_for_lang(
     lang_code: str,
 ) -> dict[str, list[tuple[str, str, str]]]:
     """
@@ -227,7 +227,7 @@ def resource_codes_and_types_for_lang(
 
 
 @app.get("/resource_types/{lang_code}/")
-def shared_resource_types(
+async def shared_resource_types(
     lang_code: str,
     resource_codes: Sequence[str] = Query(default=None),
 ) -> Iterable[tuple[str, str]]:
@@ -239,18 +239,18 @@ def shared_resource_types(
 
 
 @app.get("/resource_codes_for_lang/{lang_code}")
-def resource_codes_for_lang(lang_code: str) -> Sequence[tuple[str, str]]:
+async def resource_codes_for_lang(lang_code: str) -> Sequence[tuple[str, str]]:
     """Return list of all available resource codes."""
     return resource_lookup.resource_codes_for_lang(lang_code)
 
 
 @app.get("/resource_codes")
-def resource_codes() -> Any:
+async def resource_codes() -> Any:
     """Return list of all available resource codes."""
     return resource_lookup.resource_codes()
 
 
 @app.get("/health/status")
-def health_status() -> tuple[dict[str, str], int]:
+async def health_status() -> tuple[dict[str, str], int]:
     """Ping-able server endpoint."""
     return {"status": "ok"}, 200

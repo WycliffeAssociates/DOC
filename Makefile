@@ -31,8 +31,15 @@ build: checkvenv local-install-deps-prod
 	docker build -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
+
+.PHONY: build-no-pip-update
+build-no-pip-update: checkvenv
+	export IMAGE_TAG=local && \
+	docker build -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+
 .PHONY: build-no-cache
-build-no-cache: checkvenv
+build-no-cache: checkvenv local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --no-cache -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build --no-cache -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend

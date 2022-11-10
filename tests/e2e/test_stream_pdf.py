@@ -1,16 +1,45 @@
 import logging
 import os
+import time
+from typing import Literal
 
 import requests
-import time
 import yaml
 from document.config import settings
+from document.domain import model
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from document.domain import model
-
 logger = settings.logger(__name__)
+
+
+def check_result(
+    task_id: str,
+    /,
+    poll_duration: int,
+    suffix: Literal["html"] | Literal["pdf"] | Literal["epub"] | Literal["docx"],
+    status_url_fmt_str: str = "/api/{}/status",
+    success_state: str = "SUCCESS",
+) -> None:
+    while True:
+        with TestClient(app=app, base_url=settings.api_test_url()) as client:
+            response: requests.Response = client.get(
+                status_url_fmt_str.format(task_id),
+            )
+            logger.debug("response.json(): {}".format(response.json()))
+            if response.json()["state"] == success_state:
+                finished_document_request_key = response.json()["result"]
+                finished_document_path = os.path.join(
+                    settings.document_serve_dir(),
+                    "{}.{}".format(finished_document_request_key, suffix),
+                )
+                logger.debug(
+                    "finished_document_path: {}".format(finished_document_path)
+                )
+                assert os.path.exists(finished_document_path)
+                assert response.ok
+                break
+            time.sleep(poll_duration)
 
 
 def test_stream_pdf() -> None:
@@ -75,27 +104,8 @@ def test_stream_pdf() -> None:
                 ],
             },
         )
-        logger.debug("response.content: {}".format(response.json()))
+        logger.debug("response.json(): {}".format(response.json()))
         task_id = response.json()["task_id"]
         assert task_id
 
-    while True:
-        with TestClient(app=app, base_url=settings.api_test_url()) as client:
-            response2: requests.Response = client.get(
-                "/api/{}/status".format(task_id),
-            )
-            logger.debug("response: {}".format(response2))
-            logger.debug("status: {}".format(response2.json()["state"]))
-            if response2.json()["state"] == "SUCCESS":
-                finished_document_request_key = response2.json()["result"]
-                finished_document_path = os.path.join(
-                    settings.document_serve_dir(),
-                    "{}.pdf".format(finished_document_request_key),
-                )
-                logger.debug(
-                    "finished_document_path: {}".format(finished_document_path)
-                )
-                assert os.path.exists(finished_document_path)
-                assert response2.ok
-                break
-            time.sleep(4)
+    check_result(task_id, poll_duration=4, suffix="pdf")

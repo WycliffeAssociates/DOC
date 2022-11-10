@@ -12,7 +12,7 @@ from document.domain import model
 logger = settings.logger(__name__)
 
 
-def test_send_email_with_ar_nav_jud_pdf() -> None:
+def test_send_email_with_es_419_ulb_jud_pdf() -> None:
     """
     Produce verse level interleaved document for language, ar, Arabic
     scripture. There are no other resources than USFM available at
@@ -32,8 +32,8 @@ def test_send_email_with_ar_nav_jud_pdf() -> None:
                 "generate_docx": False,
                 "resource_requests": [
                     {
-                        "lang_code": "ar",
-                        "resource_type": "nav",
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
                         "resource_code": "jud",
                     },
                 ],

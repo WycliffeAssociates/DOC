@@ -97,7 +97,7 @@ smoke-test-with-translation-words2: up-as-daemon clean-local-docker-output-dir
 
 .PHONY: smoke-test-with-translation-words3
 smoke-test-with-translation-words3: up-as-daemon clean-local-docker-output-dir
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_stream_ar_nav_jud_pdf
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_stream_pdf
 
 .PHONY: mypy
 mypy: checkvenv

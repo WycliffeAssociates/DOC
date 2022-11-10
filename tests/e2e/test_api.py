@@ -283,7 +283,7 @@ def test_en_ulb_wa_tn_wa_jud_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_ar_nav_jud_language_book_order_1c() -> None:
+def test_es_419_ulb_jud_language_book_order_1c() -> None:
     """
     Produce verse level interleaved document for language, ar, Arabic
     scripture. There are no other resources than USFM available at
@@ -302,8 +302,8 @@ def test_ar_nav_jud_language_book_order_1c() -> None:
                 "generate_docx": False,
                 "resource_requests": [
                     {
-                        "lang_code": "ar",
-                        "resource_type": "nav",
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
                         "resource_code": "jud",
                     },
                 ],
@@ -313,7 +313,7 @@ def test_ar_nav_jud_language_book_order_1c() -> None:
             check_finished_document_with_verses_success(response)
 
 
-def test_ar_nav_jud_language_book_order_1c_c() -> None:
+def test_es_419_ulb_jud_language_book_order_1c_c() -> None:
     """
     Produce verse level interleaved document for language, ar, Arabic
     scripture. There are no other resources than USFM available at
@@ -332,8 +332,8 @@ def test_ar_nav_jud_language_book_order_1c_c() -> None:
                 "generate_docx": False,
                 "resource_requests": [
                     {
-                        "lang_code": "ar",
-                        "resource_type": "nav",
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
                         "resource_code": "jud",
                     },
                 ],

@@ -2737,62 +2737,6 @@ def assemble_tw_as_iterator_for_lang_then_book(
 # Assembly sub-strategy/layout implementations for book then language strategy
 
 
-
-def languages_in_books(
-    usfm_book_content_units: Sequence[model.BookContent],
-) -> Sequence[str]:
-    """Return the distinct languages in the usfm_book_content_units."""
-    languages = sorted(
-        list(
-            set(
-                [
-                    lang_group[0]
-                    for lang_group in itertools.groupby(
-                        usfm_book_content_units,
-                        key=lambda unit: unit.lang_code,
-                    )
-                ]
-            )
-        )
-    )
-    logger.debug("languages: %s", languages)
-    # Invariant: if we got this far, then we know there are at
-    # least two languages being requested (see
-    # document_generator.select_assembly_layout_kind).
-    return languages
-
-
-def ensure_primary_usfm_books_for_different_languages_are_adjacent(
-    usfm_book_content_units: Sequence[model.USFMBook],
-) -> Sequence[model.USFMBook]:
-    """
-    Interleave/zip USFM book content units such that they are
-    juxtaposed language to language in pairs.
-    """
-    languages = languages_in_books(usfm_book_content_units)
-    # Get book content units for language 0.
-    usfm_lang0_book_content_units = [
-        usfm_book_content_unit
-        for usfm_book_content_unit in usfm_book_content_units
-        if usfm_book_content_unit.lang_code == languages[0]
-    ]
-    # Get book content units for language 1.
-    usfm_lang1_book_content_units = [
-        usfm_book_content_unit
-        for usfm_book_content_unit in usfm_book_content_units
-        if usfm_book_content_unit.lang_code == languages[1]
-    ]
-    return list(
-        # Flatten iterable of tuples into regular flat iterable.
-        itertools.chain.from_iterable(
-            # Interleave the two different languages usfm units.
-            itertools.zip_longest(
-                usfm_lang0_book_content_units, usfm_lang1_book_content_units
-            )
-        )
-    )
-
-
 def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
     usfm_book_content_units: Sequence[model.USFMBook],
     tn_book_content_units: Sequence[model.TNBook],
@@ -4092,3 +4036,58 @@ def translation_word_links(
         yield model.HtmlContent("\n".join(uses_list_items))
         # End list formatting
         yield unordered_list_end_str
+
+
+def languages_in_books(
+    usfm_book_content_units: Sequence[model.BookContent],
+) -> Sequence[str]:
+    """Return the distinct languages in the usfm_book_content_units."""
+    languages = sorted(
+        list(
+            set(
+                [
+                    lang_group[0]
+                    for lang_group in itertools.groupby(
+                        usfm_book_content_units,
+                        key=lambda unit: unit.lang_code,
+                    )
+                ]
+            )
+        )
+    )
+    logger.debug("languages: %s", languages)
+    # Invariant: if we got this far, then we know there are at
+    # least two languages being requested (see
+    # document_generator.select_assembly_layout_kind).
+    return languages
+
+
+def ensure_primary_usfm_books_for_different_languages_are_adjacent(
+    usfm_book_content_units: Sequence[model.USFMBook],
+) -> Sequence[model.USFMBook]:
+    """
+    Interleave/zip USFM book content units such that they are
+    juxtaposed language to language in pairs.
+    """
+    languages = languages_in_books(usfm_book_content_units)
+    # Get book content units for language 0.
+    usfm_lang0_book_content_units = [
+        usfm_book_content_unit
+        for usfm_book_content_unit in usfm_book_content_units
+        if usfm_book_content_unit.lang_code == languages[0]
+    ]
+    # Get book content units for language 1.
+    usfm_lang1_book_content_units = [
+        usfm_book_content_unit
+        for usfm_book_content_unit in usfm_book_content_units
+        if usfm_book_content_unit.lang_code == languages[1]
+    ]
+    return list(
+        # Flatten iterable of tuples into regular flat iterable.
+        itertools.chain.from_iterable(
+            # Interleave the two different languages usfm units.
+            itertools.zip_longest(
+                usfm_lang0_book_content_units, usfm_lang1_book_content_units
+            )
+        )
+    )

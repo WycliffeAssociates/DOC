@@ -7,6 +7,11 @@ import pytest
 import requests
 from document.config import settings
 from document.entrypoints.app import app
+from tests.shared.utils import (
+    check_finished_document_with_verses_success,
+    check_finished_document_with_body_success,
+    check_finished_document_without_verses_success,
+)
 from fastapi.testclient import TestClient
 
 from document.domain import model
@@ -15,91 +20,6 @@ from document.domain import model
 ## Tests for assembly strategy book -hen-language
 
 
-def check_finished_document_with_verses_success(response: requests.Response) -> None:
-    """
-    Helper to keep tests DRY.
-
-    Check that the finished_document_path exists and also check that
-    the HTML file associated with it exists and includes verses_html.
-    """
-    assert response.ok
-    content = response.json()
-    assert "finished_document_request_key" in content
-    assert "message" in content
-    html_filepath = os.path.join(
-        settings.output_dir(),
-        "{}.html".format(content["finished_document_request_key"]),
-    )
-    assert content["message"] == settings.SUCCESS_MESSAGE
-    with open(html_filepath, "r") as fin:
-        html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
-        verses_html = parser.find_all("span", attrs={"class": "v-num"})
-        assert verses_html
-        # Test defect that can occur in USFM file parsing of
-        # non-standalone USFM files, e.g., aba, reg, tit.
-        repeating_verse_num_defect = re.search(
-            "<sup><b>1</b></sup></span><sup><b>1</b></sup><b>1</b>1<b>1</b>11",
-            html,
-        )
-        assert not repeating_verse_num_defect
-
-
-def check_finished_document_with_body_success(response: requests.Response) -> None:
-    """
-    Helper to keep tests DRY.
-
-    Check that the finished_document_path exists and also check that
-    the HTML file associated with it exists and includes body.
-    """
-    assert response.ok
-    content = response.json()
-    assert "finished_document_request_key" in content
-    assert "message" in content
-    html_filepath = os.path.join(
-        settings.output_dir(),
-        "{}.html".format(content["finished_document_request_key"]),
-    )
-    assert response.json() == {
-        "finished_document_request_key": content["finished_document_request_key"],
-        "message": settings.SUCCESS_MESSAGE,
-    }
-    with open(html_filepath, "r") as fin:
-        html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
-    assert response.ok
-
-
-def check_finished_document_without_verses_success(response: requests.Response) -> None:
-    """
-    Helper to keep tests DRY.
-
-    Check that the finished_document_path exists and also check that
-    the HTML file associated with it exists and includes body but not
-    verses_html.
-    """
-    assert response.ok
-    content = response.json()
-    assert "finished_document_request_key" in content
-    assert "message" in content
-    html_filepath = os.path.join(
-        settings.output_dir(),
-        "{}.html".format(content["finished_document_request_key"]),
-    )
-    with open(html_filepath, "r") as fin:
-        html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
-        verses_html = parser.find_all("span", attrs={"class": "v-num"})
-        # reg is malformed and udb does not exist, thus there is
-        # no html generated
-        assert not verses_html
-    assert response.ok
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr() -> None:
@@ -453,7 +373,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_b
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="epub")
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_c() -> None:

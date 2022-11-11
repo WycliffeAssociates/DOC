@@ -8,63 +8,13 @@ import requests
 from document.config import settings
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
-
+from tests.shared.utils import (
+    check_finished_document_with_verses_success,
+    check_finished_document_without_verses_success,
+)
 from document.domain import model
 
 
-def check_finished_document_with_verses_success(response: requests.Response) -> None:
-    """
-    Helper to keep tests DRY.
-
-    Check that the finished_document_path exists and also check that
-    the HTML file associated with it exists and includes verses_html.
-    """
-    assert response.ok
-    content = response.json()
-    assert "finished_document_request_key" in content
-    assert "message" in content
-    html_filepath = os.path.join(
-        settings.output_dir(),
-        "{}.html".format(content["finished_document_request_key"]),
-    )
-    assert response.json() == {
-        "finished_document_request_key": content["finished_document_request_key"],
-        "message": settings.SUCCESS_MESSAGE,
-    }
-    with open(html_filepath, "r") as fin:
-        html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
-        verses_html = parser.find_all("span", attrs={"class": "v-num"})
-        assert verses_html
-
-
-def check_finished_document_without_verses_success(response: requests.Response) -> None:
-    """
-    Helper to keep tests DRY.
-
-    Check that the finished_document_path exists and also check that
-    the HTML file associated with it exists and includes verses_html.
-    """
-    assert response.ok
-    content = response.json()
-    assert "finished_document_request_key" in content
-    assert "message" in content
-    html_filepath = os.path.join(
-        settings.output_dir(),
-        "{}.html".format(content["finished_document_request_key"]),
-    )
-    assert response.json() == {
-        "finished_document_request_key": content["finished_document_request_key"],
-        "message": settings.SUCCESS_MESSAGE,
-    }
-    with open(html_filepath, "r") as fin:
-        html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
-    assert response.ok
 
 
 def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c() -> None:

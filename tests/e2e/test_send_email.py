@@ -8,6 +8,7 @@ from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 
 from document.domain import model
+from tests.shared.utils import check_finished_document_with_verses_success
 
 logger = settings.logger(__name__)
 
@@ -39,10 +40,4 @@ def test_send_email_with_es_419_ulb_jud_pdf() -> None:
                 ],
             },
         )
-        finished_document_request_key = response.json()["finished_document_request_key"]
-        finished_document_path = os.path.join(
-            settings.output_dir(), "{}.pdf".format(finished_document_request_key)
-        )
-        logger.debug("finished_document_path: {}".format(finished_document_path))
-        assert os.path.exists(finished_document_path)
-        assert response.ok
+        check_finished_document_with_verses_success(response)

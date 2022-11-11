@@ -9,37 +9,9 @@ from document.config import settings
 from document.domain import model
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
+from tests.shared.utils import check_finished_document_with_verses_success
 
 logger = settings.logger(__name__)
-
-
-def check_result(
-    task_id: str,
-    /,
-    poll_duration: int,
-    suffix: Literal["html"] | Literal["pdf"] | Literal["epub"] | Literal["docx"],
-    status_url_fmt_str: str = "/api/{}/status",
-    success_state: str = "SUCCESS",
-) -> None:
-    while True:
-        with TestClient(app=app, base_url=settings.api_test_url()) as client:
-            response: requests.Response = client.get(
-                status_url_fmt_str.format(task_id),
-            )
-            logger.debug("response.json(): {}".format(response.json()))
-            if response.json()["state"] == success_state:
-                finished_document_request_key = response.json()["result"]
-                finished_document_path = os.path.join(
-                    settings.document_serve_dir(),
-                    "{}.{}".format(finished_document_request_key, suffix),
-                )
-                logger.debug(
-                    "finished_document_path: {}".format(finished_document_path)
-                )
-                assert os.path.exists(finished_document_path)
-                assert response.ok
-                break
-            time.sleep(poll_duration)
 
 
 def test_stream_pdf() -> None:
@@ -104,8 +76,5 @@ def test_stream_pdf() -> None:
                 ],
             },
         )
-        logger.debug("response.json(): {}".format(response.json()))
-        task_id = response.json()["task_id"]
-        assert task_id
 
-    check_result(task_id, poll_duration=4, suffix="pdf")
+    check_finished_document_with_verses_success(response)

@@ -10,7 +10,6 @@ from typing import Any, Optional
 import pydantic
 import pytest
 from document.config import settings
-
 from document.domain import bible_books, model
 from document.utils import file_utils
 

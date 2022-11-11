@@ -1944,9 +1944,6 @@ def tn_book_intro(tn_book_content_unit: model.TNBook) -> Iterable[model.HtmlCont
     yield model.HtmlContent(book_intro)
 
 
-# Available through API, but not through UI
-
-
 def assemble_by_usfm_as_iterator_for_lang_then_book_1c(
     usfm_book_content_unit: Optional[model.USFMBook],
     tn_book_content_unit: Optional[model.TNBook],
@@ -2369,9 +2366,6 @@ def assemble_usfm_tw_for_lang_then_book_1c_c(
                 yield chapter.footnotes
 
 
-# Available through API, but not through UI
-
-
 def assemble_usfm_tq_for_lang_then_book_1c(
     usfm_book_content_unit: Optional[model.USFMBook],
     tn_book_content_unit: Optional[model.TNBook],
@@ -2742,8 +2736,6 @@ def assemble_tw_as_iterator_for_lang_then_book(
 #########################################################################
 # Assembly sub-strategy/layout implementations for book then language strategy
 
-
-# Available through API, but not through UI
 
 
 def languages_in_books(

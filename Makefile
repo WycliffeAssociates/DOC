@@ -91,8 +91,8 @@ e2e-tests: up-as-daemon clean-local-docker-output-dir
 	# NOTE parallel pytests via pytest_xdist fail for e2e tests in Docker but
 	# work for unit tests in Docker and work everywhere outside of
 	# Docker. So we utilize them everywhere we can pending a fix.
-	# docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /tests/e2e
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e
+	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /tests/e2e
+	# BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e
 
 .PHONY: smoke-test-with-translation-words
 smoke-test-with-translation-words: up-as-daemon clean-local-docker-output-dir

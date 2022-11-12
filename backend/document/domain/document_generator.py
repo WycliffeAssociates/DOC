@@ -765,7 +765,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     if document_request.generate_pdf and file_utils.asset_file_needs_update(
         pdf_filepath_
     ):
-        current_task.update_state(state="Converting to desired format")
+        current_task.update_state(state="Converting to PDF format")
         convert_html_to_pdf(
             html_filepath_,
             pdf_filepath_,
@@ -776,7 +776,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     if document_request.generate_epub and file_utils.asset_file_needs_update(
         epub_filepath_
     ):
-        current_task.update_state(state="Converting to desired format")
+        current_task.update_state(state="Converting to ePub format")
         convert_html_to_epub(
             html_filepath_,
             epub_filepath_,
@@ -787,7 +787,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     if document_request.generate_docx and file_utils.asset_file_needs_update(
         docx_filepath_
     ):
-        current_task.update_state(state="Converting to desired format")
+        current_task.update_state(state="Converting to Docx format")
         convert_html_to_docx(
             html_filepath_,
             docx_filepath_,

@@ -26,7 +26,7 @@ ifeq ("$(wildcard .venv/bin/pip-sync)","")
 endif
 
 .PHONY: build
-build: checkvenv local-install-deps-prod
+build: checkvenv # local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
@@ -55,7 +55,7 @@ up-as-daemon: checkvenv
 	BACKEND_API_URL=http://localhost:5005 docker-compose up -d
 
 
-# This is the entryoint for a non-technical user who just
+# This is the entrypoint for a non-technical user who just
 # wants to type one command and have it work.
 .PHONY: build-and-run
 build-and-run: build up
@@ -88,11 +88,12 @@ unit-tests: up-as-daemon
 
 .PHONY: e2e-tests
 e2e-tests: up-as-daemon clean-local-docker-output-dir
-	# NOTE parallel pytests via pytest_xdist fail for e2e tests in Docker but
-	# work for unit tests in Docker and work everywhere outside of
-	# Docker. So we utilize them everywhere we can pending a fix.
 	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /tests/e2e
-	# BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e
+
+
+.PHONY: frontend-tests
+frontend-tests: up-as-daemon
+	cd frontend && npx playwright install firefox --with-deps && npx playwright test --project=firefox
 
 .PHONY: smoke-test-with-translation-words
 smoke-test-with-translation-words: up-as-daemon clean-local-docker-output-dir

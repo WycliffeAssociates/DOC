@@ -63,7 +63,6 @@ async def validation_exception_handler(
 async def generate_document(
     document_request: model.DocumentRequest,
     success_message: str = settings.SUCCESS_MESSAGE,
-    failure_message: str = settings.FAILURE_MESSAGE,
 ) -> ORJSONResponse:
     """
     Get the document request and hand it off to the document_generator
@@ -77,14 +76,14 @@ async def generate_document(
         task = document_generator.main.apply_async(args=(document_request.json(),))
     except HTTPException as exc:
         raise exc
-    except Exception:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
+    except Exception as exc:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
         logger.exception(
             "There was an error while attempting to fulfill the document "
             "request. Likely reason is the following exception:"
         )
         # Handle exceptions that aren't handled otherwise
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=failure_message
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
         )
     else:
         logger.debug("task_id: %s", task.id)

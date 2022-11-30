@@ -304,6 +304,12 @@ def usfm_book_content(
     pattern: str = settings.VERSE_ANCHOR_ID_FMT_STR,
     format_str: str = settings.VERSE_ANCHOR_ID_SUBSTITUTION_FMT_STR,
 ) -> model.USFMBook:
+    """
+    First produce HTML content from USFM content through call to
+    asset_content and then break the HTML content returned from that
+    into a model.USFMBook data structure containing chapters, verses,
+    footnotes, for use during interleaving with other resource assets.
+    """
     html_content = asset_content(resource_lookup_dto, resource_dir)
     parser = bs4.BeautifulSoup(html_content, bs_parser_type)
 

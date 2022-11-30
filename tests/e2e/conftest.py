@@ -5,7 +5,7 @@ import os
 import pathlib
 import random
 from collections.abc import Sequence
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import pydantic
 import pytest
@@ -107,7 +107,7 @@ def resource_code(request: Any) -> Any:
 @pytest.fixture()
 def random_resource_code() -> str:
     """One random book name chosen at random."""
-    book_ids = list(bible_books.BOOK_NAMES.keys())
+    book_ids: list[str] = list(bible_books.BOOK_NAMES.keys())
     return random.choice(book_ids)
 
 
@@ -116,22 +116,25 @@ def random_resource_code2() -> str:
     """One random book name chosen at random. This fixture exists so
     that we can have a separate book chosen in a two language document
     request."""
-    book_ids = list(bible_books.BOOK_NAMES.keys())
+    book_ids: list[str] = list(bible_books.BOOK_NAMES.keys())
     return random.choice(book_ids)
 
 
 @pytest.fixture()
 def email_address() -> str:
-    return settings.TO_EMAIL_ADDRESS
+    return cast(str, settings.TO_EMAIL_ADDRESS)
 
 
 @pytest.fixture()
 def assembly_strategy_kind() -> str:
-    return random.choice(
-        [
-            model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-            model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
-        ]
+    return cast(
+        str,
+        random.choice(
+            [
+                model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+            ]
+        ),
     )
 
 

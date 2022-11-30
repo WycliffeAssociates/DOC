@@ -52,7 +52,8 @@ RUN mkdir -p /document_output
 
 COPY .env .
 COPY icon-tn.png .
-COPY ./backend/gunicorn.conf.py .
+COPY ./backend/requirements.txt .
+COPY ./backend/requirements-prod.txt .
 
 # See https://pythonspeed.com/articles/activate-virtualenv-dockerfile/
 # for why a Python virtual env is used inside Docker.

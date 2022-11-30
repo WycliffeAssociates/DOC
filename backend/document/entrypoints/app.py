@@ -187,13 +187,13 @@ async def resource_types() -> Any:
 
 @app.get("/resource_types_for_lang/{lang_code}")
 async def resource_types_for_lang(lang_code: str) -> Sequence[Any]:
-    """Return list of all available resource types."""
+    """Return list of available resource types for lang_code."""
     return resource_lookup.resource_types_for_lang(lang_code)
 
 
 @app.get("/resource_types_and_names_for_lang/{lang_code}")
 async def resource_types_and_names_for_lang(lang_code: str) -> Sequence[Any]:
-    """Return list of all available resource types and their names."""
+    """Return list of available resource types and their names for lang_code."""
     return resource_lookup.resource_types_and_names_for_lang(lang_code)
 
 

@@ -2850,12 +2850,14 @@ def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
     """
 
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
-    tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
+    tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
+    tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Order USFM book content units so that they are in language pairs
     # for side by side display.
@@ -3082,12 +3084,15 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c(
     """
 
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
-    tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
+    tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
+    tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add book intros for each tn_book_content_unit
     for tn_book_content_unit in tn_book_content_units:
@@ -3258,12 +3263,15 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
     """
 
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
-    tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
+    tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
+    tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add book intros for each tn_book_content_unit
     for tn_book_content_unit in tn_book_content_units:
@@ -3390,12 +3398,15 @@ def assemble_tn_as_iterator_for_book_then_lang(
             etc for tq, tw links, followed by tw definitions
     """
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
-    tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
+    tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
+    tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add book intros for each tn_book_content_unit
     for tn_book_content_unit in tn_book_content_units:
@@ -3516,12 +3527,14 @@ def assemble_tn_as_iterator_for_book_then_lang_c(
             etc for tq, tw links, followed by tw definitions
     """
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
-    tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
+    tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
+    tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add book intros for each tn_book_content_unit
     for tn_book_content_unit in tn_book_content_units:
@@ -3597,12 +3610,14 @@ def assemble_tq_as_iterator_for_book_then_lang(
     """
 
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
-    tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
+    tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
+    tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Use the tq_book_content_unit that has the most chapters as a
     # chapter_num pump.
@@ -3686,12 +3701,14 @@ def assemble_tq_as_iterator_for_book_then_lang_c(
     """
 
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    usfm_book_content_units = sorted(usfm_book_content_units, key=key)
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
     # tn_book_content_units = sorted(tn_book_content_units, key=key)
-    tq_book_content_units = sorted(tq_book_content_units, key=key)
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+    tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Use the tq_book_content_unit that has the most chapters as a
     # chapter_num pump.
@@ -3741,9 +3758,11 @@ def assemble_tw_as_iterator_for_book_then_lang(
     """Construct the HTML for BC and TW."""
 
     # Sort resources by language
-    key = lambda resource: resource.lang_code
-    tw_book_content_units = sorted(tw_book_content_units, key=key)
-    bc_book_content_units = sorted(bc_book_content_units, key=key)
+    def sort_key(resource: model.BookContent) -> str:
+        return resource.lang_code
+
+    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
+    bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add the bible commentary
     for bc_book_content_unit in bc_book_content_units:

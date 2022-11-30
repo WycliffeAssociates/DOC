@@ -257,7 +257,7 @@ class Settings(BaseSettings):
 
     ENGLISH_RESOURCE_TYPE_MAP: Mapping[str, str] = {
         "ulb-wa": "Unlocked Literal Bible (ULB)",
-        "udb-wa": "Unlocked Dynamic Bible (UDB)",
+        # "udb-wa": "Unlocked Dynamic Bible (UDB)",
         "tn-wa": "ULB Translation Helps",
         "tq-wa": "ULB Translation Questions",
         "tw-wa": "ULB Translation Words",

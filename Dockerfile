@@ -78,10 +78,3 @@ COPY ./tests/ /tests/
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/backend:/tests
-
-# Run tests to verify correctness and (mainly) to generate assets for preheating cache
-# To run the tests do: docker-compose build --build-arg run_tests=1
-# Make RUN_TESTS in .env and referenced in docker-compose.yml
-# available here.
-ARG RUN_TESTS=false
-RUN if [ "$RUN_TESTS" = "true" ] ; then IN_CONTAINER=true pytest /tests/ ; else echo You have chosen to skip the test suite ; fi

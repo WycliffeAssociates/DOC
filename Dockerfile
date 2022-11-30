@@ -61,12 +61,13 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY ./backend/requirements.txt .
-COPY ./backend/requirements-prod.txt .
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir cython
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r requirements-prod.txt
+RUN pip install -v --upgrade pip
+RUN pip install -v cython
+RUN pip install -v -r requirements.txt
+RUN pip install -v -r requirements-prod.txt
+RUN cd /tmp && git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
+RUN cd /tmp/USFM-Tools && python setup.py build install
+RUN cp -r /tmp/USFM-Tools/usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
 
 COPY ./backend/ /backend/
 COPY ./tests/ /tests/

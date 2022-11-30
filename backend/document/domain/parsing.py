@@ -197,25 +197,27 @@ def asset_content(
     return html_content
 
 
-# NOTE Avoiding use of polymorphism via functools function dispatch because
-# mypyc doesn't like use of decorators for the most part and won't
-# compile the code where they are used unless the decorators are typed
-# correctly, i.e., strictly.
 def book_content(
     resource_lookup_dto: model.ResourceLookupDto,
     resource_dir: str,
     resource_requests: Sequence[model.ResourceRequest],
     layout_for_print: bool,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    en_usfm_resource_types: Sequence[str] = settings.EN_USFM_RESOURCE_TYPES,
     tn_resource_types: Sequence[str] = settings.TN_RESOURCE_TYPES,
     en_tn_resource_types: Sequence[str] = settings.EN_TN_RESOURCE_TYPES,
     tq_resource_types: Sequence[str] = settings.TQ_RESOURCE_TYPES,
+    en_tq_resource_types: Sequence[str] = settings.EN_TQ_RESOURCE_TYPES,
     tw_resource_types: Sequence[str] = settings.TW_RESOURCE_TYPES,
+    en_tw_resource_types: Sequence[str] = settings.EN_TW_RESOURCE_TYPES,
     bc_resource_types: Sequence[str] = settings.BC_RESOURCE_TYPES,
 ) -> model.BookContent:
     """Build and return the HTML book content instance."""
     book_content: model.BookContent
-    if resource_lookup_dto.resource_type in usfm_resource_types:
+    if (
+        resource_lookup_dto.resource_type in usfm_resource_types
+        or resource_lookup_dto.resource_type in en_usfm_resource_types
+    ):
         t0 = time.time()
         book_content = usfm_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
@@ -228,8 +230,9 @@ def book_content(
             resource_lookup_dto.resource_code,
             t1 - t0,
         )
-    elif resource_lookup_dto.resource_type in cast(list[str], tn_resource_types) + cast(
-        list[str], en_tn_resource_types
+    elif (
+        resource_lookup_dto.resource_type in tn_resource_types
+        or resource_lookup_dto.resource_type in en_tn_resource_types
     ):
         t0 = time.time()
         book_content = tn_book_content(
@@ -243,7 +246,10 @@ def book_content(
             resource_lookup_dto.resource_code,
             t1 - t0,
         )
-    elif resource_lookup_dto.resource_type in tq_resource_types:
+    elif (
+        resource_lookup_dto.resource_type in tq_resource_types
+        or resource_lookup_dto.resource_type in en_tq_resource_types
+    ):
         t0 = time.time()
         book_content = tq_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print
@@ -256,7 +262,10 @@ def book_content(
             resource_lookup_dto.resource_code,
             t1 - t0,
         )
-    elif resource_lookup_dto.resource_type in tw_resource_types:
+    elif (
+        resource_lookup_dto.resource_type in tw_resource_types
+        or resource_lookup_dto.resource_type in en_tw_resource_types
+    ):
         t0 = time.time()
         book_content = tw_book_content(
             resource_lookup_dto, resource_dir, resource_requests, layout_for_print

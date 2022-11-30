@@ -103,13 +103,15 @@ class Settings(BaseSettings):
         "ugnt",
         # "uhb", # parser blows on: AttributeError: 'SingleHTMLRenderer' object has no attribute 'renderCAS'
         "ulb",
-        "ulb-wa",
         "usfm",
     ]
+    EN_USFM_RESOURCE_TYPES: Sequence[str] = ["ulb-wa"]
     TN_RESOURCE_TYPES: Sequence[str] = ["tn"]
     EN_TN_RESOURCE_TYPES: Sequence[str] = ["tn-wa"]
-    TQ_RESOURCE_TYPES: Sequence[str] = ["tq", "tq-wa"]
-    TW_RESOURCE_TYPES: Sequence[str] = ["tw", "tw-wa"]
+    TQ_RESOURCE_TYPES: Sequence[str] = ["tq"]
+    EN_TQ_RESOURCE_TYPES: Sequence[str] = ["tq-wa"]
+    TW_RESOURCE_TYPES: Sequence[str] = ["tw"]
+    EN_TW_RESOURCE_TYPES: Sequence[str] = ["tw-wa"]
     BC_RESOURCE_TYPES: Sequence[str] = ["bc-wa"]
     # List of language codes for which there is an issue in
     # translations.json such that a complete document request cannot

@@ -26,23 +26,35 @@ ifeq ("$(wildcard .venv/bin/pip-sync)","")
 endif
 
 .PHONY: build
-build: checkvenv # local-install-deps-prod
+build: checkvenv clean-mypyc-artifacts local-install-deps-prod
 	export IMAGE_TAG=local && \
-	docker build -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 
 .PHONY: build-no-pip-update
-build-no-pip-update: checkvenv
+build-no-pip-update: checkvenv clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
-	docker build -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+
+.PHONY: build-no-pip-update-run-tests
+build-no-pip-update-run-tests: checkvenv clean-mypyc-artifacts
+	export IMAGE_TAG=local && \
+	docker build --build-arg RUN_TESTS=true --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 .PHONY: build-no-cache
-build-no-cache: checkvenv local-install-deps-prod
+build-no-cache: checkvenv clean-mypyc-artifacts local-install-deps-prod
 	export IMAGE_TAG=local && \
-	docker build --no-cache -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --no-cache -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain --no-cache -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build --progress=plain --no-cache -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+
+.PHONY: build-no-cache-no-pip-update
+build-no-cache-no-pip-update: checkvenv clean-mypyc-artifacts
+	export IMAGE_TAG=local && \
+	docker build --progress=plain --no-cache -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
+	docker build --progress=plain --no-cache -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 .PHONY: up
 up: checkvenv
@@ -107,6 +119,26 @@ smoke-test-with-translation-words2: up-as-daemon clean-local-docker-output-dir
 smoke-test-with-translation-words3: up-as-daemon clean-local-docker-output-dir
 	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e -k test_stream_pdf
 
+.PHONY: get-usfm-tools-source-locally
+get-usfm-tools-source-locally:
+	# In Docker we build usfm_tools package into a .so, but outside
+	# Docker we need the source to let mypy check it locally, i.e., when
+	# checking outside Docker build.
+	cd /tmp && \
+	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools  && \
+	cd ./USFM-Tools && \
+	cp -r ./usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
+
+.PHONY: build-usfm-tools
+build-usfm-tools:
+	cd /tmp && \
+	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
+	cd /tmp/USFM-Tools && python setup.py build install
+	cp -r /tmp/USFM-Tools/usfm_tools ~/src/WA/github.com/linearcombination/DOC/.venv/lib/python3.11/site-packages/
+	rm -rf /tmp/USFM-Tools
+
+# You may need to run 'make get-usfm-tools-source-locally' first if it
+# complains about usfm_tools not being typed.
 .PHONY: mypy
 mypy: checkvenv
 	mypy --strict --install-types --non-interactive backend/document/**/*.py
@@ -114,7 +146,8 @@ mypy: checkvenv
 
 .PHONY: mypyc
 mypyc:
-	mypyc --strict --install-types --non-interactive backend/document/domain/{assembly_strategies,document_generator,resource_lookup,parsing}.py
+	mypyc --strict --install-types --non-interactive backend/document/domain/document_generator.py backend/document/domain/resource_lookup.py backend/document/domain/assembly_strategies.py backend/document/domain/parsing.py backend/document/domain/worker.py backend/document/entrypoints/app.py
+
 
 .PHONY: clean-mypyc-artifacts
 clean-mypyc-artifacts:
@@ -166,17 +199,17 @@ local-gunicorn-server: checkvenv
 
 .PHONY: local-update-deps-base
 local-update-deps-base: pyupgrade
-	pip-compile ./backend/requirements.in
+	pip-compile --resolver=backtracking -v ./backend/requirements.in
 	# pip-compile --upgrade ./backend/requirements.in
 
 .PHONY: local-update-deps-prod
 local-update-deps-prod: local-update-deps-base
-	pip-compile ./backend/requirements-prod.in
+	pip-compile --resolver=backtracking -v ./backend/requirements-prod.in
 	# pip-compile --upgrade ./backend/requirements-prod.in
 
 .PHONY: local-update-deps-dev
 local-update-deps-dev: local-update-deps-base
-	pip-compile ./backend/requirements-dev.in
+	pip-compile --resolver=backtracking -v ./backend/requirements-dev.in
 	# pip-compile --upgrade ./backend/requirements-dev.in
 
 .PHONY: local-install-deps-base

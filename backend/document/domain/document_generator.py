@@ -674,15 +674,15 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     """
     This is the main entry point for this module.
     """
-    # If an assembly_layout_kind has been chosen in the document request,
-    # then we know that the request originated from a unit test. The UI does
-    # not provide a way to choose an arbitrary layout, but unit tests can
-    # specify a layout arbitrarily. We must handle both situations.
     document_request = model.DocumentRequest.parse_raw(document_request_json)
     logger.debug(
         "document_request: %s",
         document_request,
     )
+    # If an assembly_layout_kind has been chosen in the document request,
+    # then we know that the request originated from a unit test. The UI does
+    # not provide a way to choose an arbitrary layout, but unit tests can
+    # specify a layout arbitrarily. We must handle both situations.
     if not document_request.assembly_layout_kind:
         document_request.assembly_layout_kind = select_assembly_layout_kind(
             document_request
@@ -704,6 +704,8 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     docx_filepath_ = docx_filepath(document_request_key_)
 
     if file_utils.asset_file_needs_update(html_filepath_):
+        # Update the state of the worker process. This is used by the
+        # UI to report status.
         current_task.update_state(state="Locate assets")
         # HTML didn't exist in cache so go ahead and start by getting the
         # resource lookup DTOs for each resource request in the document

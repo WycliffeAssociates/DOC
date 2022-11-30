@@ -1,5 +1,5 @@
 -c requirements.txt
-git+https://github.com/psf/black
+black
 cohesion
 dlint
 flake8
@@ -12,12 +12,14 @@ flake8-mypy
 flake8-type-annotations
 isort
 mypy
+psutil
 pygount
 pylint
 pylsp-mypy
 pytest
 pytest-datafiles
 pytest-icdiff
-pytest-xdist[psutil]
+pytest-repeat
+pytest-xdist
 radon
 vulture

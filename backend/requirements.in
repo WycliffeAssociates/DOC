@@ -3,11 +3,11 @@ Markdown
 PyYAML
 aiofiles
 beautifulsoup4
-celery[redis]
+celery
 celery-types
 fastapi
 GitPython
-git+https://github.com/linearcombination/USFM-Tools.git@develop#egg=USFM-Tools
+# usfm_tools @ git+https://github.com/linearcombination/USFM-Tools.git@develop # For mypy
 gunicorn
 jinja2
 jsonpath-rw
@@ -16,10 +16,13 @@ lxml
 more-itertools
 orjson
 pdfkit
-pydantic[email,dotenv]
-pytest-repeat
-pytest-xdist[psutil]
+pydantic
+email-validator
+psutil
+python-dotenv
+redis
 requests
+setuptools
 termcolor
 toolz
 trio

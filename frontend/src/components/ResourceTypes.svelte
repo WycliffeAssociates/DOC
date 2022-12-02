@@ -155,7 +155,7 @@
         {#if !lang0ResourceTypesAndNames}
           <ProgressIndicator />
         {:else}
-          <div class="w-96">
+          <div>
             <h3 class="text-primary-content mb-4">
               Resource types available for
               {$lang0NameStore}
@@ -198,7 +198,7 @@
         {#if !lang1ResourceTypesAndNames}
           <ProgressIndicator />
         {:else}
-          <div class="w-96">
+          <div>
             <h3 class="text-primary-content mb-4">
               Resource types available for {$lang1NameStore}
             </h3>

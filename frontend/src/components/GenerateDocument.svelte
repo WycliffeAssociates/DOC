@@ -123,6 +123,14 @@
           documentReadyStore.set(true)
           documentRequestKeyStore.set(finishedDocumentRequestKey)
           errorStore.set(null)
+          taskStateStore.set('')
+          clearInterval(timer)
+        } else if ($taskStateStore === 'FAILURE') {
+          console.log("We're sorry, an internal error occurred which we'll investigate.")
+          errorStore.set(
+            "We're sorry. An error occurred. The document you requested may not yet be supported or we may have experienced an internal problem which we'll investigate. Please try another document request."
+          )
+          taskStateStore.set('')
           clearInterval(timer)
         }
       }, 5000)

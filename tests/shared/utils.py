@@ -6,6 +6,7 @@ from typing import Literal, Union
 import bs4
 import requests
 from document.config import settings
+from document.domain import model
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 
@@ -23,9 +24,11 @@ def check_result(
     poll_duration: int,
     status_url_fmt_str: str = "/api/{}/status",
     success_state: str = "SUCCESS",
+    failure_state: str = "FAILURE",
 ) -> str:
     logger.debug("response.json(): {}".format(response.json()))
-    task_id = response.json()["task_id"]
+    task_response = model.TaskResponse(task_id=response.json()["task_id"])
+    task_id = task_response.task_id
     assert task_id
     logger.debug("task_id: %s", task_id)
     finished_document_request_key: str
@@ -47,6 +50,9 @@ def check_result(
                 assert os.path.exists(finished_document_path)
                 assert response2.ok
                 break
+            elif response2.json()["state"] == failure_state:
+                logger.info("Test failed likely due to celery task failure")
+                raise Exception("Test failed")
             time.sleep(poll_duration)
     return finished_document_request_key
 

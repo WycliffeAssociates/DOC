@@ -109,14 +109,6 @@ frontend-tests: up-as-daemon
 
 .PHONY: smoke-test-with-translation-words
 smoke-test-with-translation-words: up-as-daemon clean-local-docker-output-dir
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_hr
-
-.PHONY: smoke-test-with-translation-words2
-smoke-test-with-translation-words2: up-as-daemon clean-local-docker-output-dir
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_hr
-
-.PHONY: smoke-test-with-translation-words3
-smoke-test-with-translation-words3: up-as-daemon clean-local-docker-output-dir
 	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_stream_pdf
 
 .PHONY: get-usfm-tools-source-locally
@@ -251,31 +243,6 @@ local-repeat-randomized-tests: local-prepare-for-tests
 local-smoke-test-with-translation-words: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr
 
-.PHONY: local-smoke-test-with-translation-words2
-local-smoke-test-with-translation-words2: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_rom_en_tn_wa_rom_en_tq_wa_rom_en_tw_wa_rom_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order_2c_sl_hr_c
-
-.PHONY: local-smoke-test-with-translation-words3
-local-smoke-test-with-translation-words3: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_hr
-
-.PHONY: local-smoke-test-with-translation-words4
-local-smoke-test-with-translation-words4: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_jon_en_tn_wa_jon_en_tq_wa_jon_en_tw_wa_jon_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order_2c_sl_hr_test
-
-
-.PHONY: local-smoke-test-with-translation-words5
-local-smoke-test-with-translation-words5: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_2c_sl_hr_c
-
-.PHONY: local-smoke-test-with-translation-words6
-local-smoke-test-with-translation-words6: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_hr_c
-
-.PHONY: local-smoke-test-with-translation-words7
-local-smoke-test-with-translation-words7: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_layout_for_print
-
 .PHONY: local-smoke-test-with-translation-words8
 local-smoke-test-with-translation-words8: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_layout_not_for_print
@@ -300,37 +267,9 @@ local-smoke-test-with-translation-words12: local-prepare-for-tests
 local-smoke-test-with-translation-words13: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_c
 
-.PHONY: local-smoke-test-with-translation-words14
-local-smoke-test-with-translation-words14: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_2c_sl_hr
-
-.PHONY: local-smoke-test-with-translation-words15
-local-smoke-test-with-translation-words15: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_api_randomized_combinatoric
-
-.PHONY: local-smoke-test-with-translation-words16
-local-smoke-test-with-translation-words16: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_en_bc_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_layout_for_print
-
-.PHONY: local-smoke-test-with-translation-words17
-local-smoke-test-with-translation-words17: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_en_bc_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_layout_not_for_print
-
-.PHONY: local-smoke-test-with-translation-words18
-local-smoke-test-with-translation-words18: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_document_requests
-
-.PHONY: local-smoke-test-with-translation-words19
-local-smoke-test-with-translation-words19: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_all_document_requests
-
 .PHONY: local-smoke-test-with-translation-words20
 local-smoke-test-with-translation-words20: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_2c_sl_sr
-
-.PHONY: local-smoke-test-with-translation-words21
-local-smoke-test-with-translation-words21: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_hr_docx
 
 .PHONY: local-smoke-test-with-translation-words22
 local-smoke-test-with-translation-words22: local-prepare-for-tests
@@ -339,33 +278,6 @@ local-smoke-test-with-translation-words22: local-prepare-for-tests
 .PHONY: local-smoke-test-with-translation-words23
 local-smoke-test-with-translation-words23: local-prepare-for-tests
 	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr
-
-
-.PHONY: local-smoke-test-with-translation-words24
-local-smoke-test-with-translation-words24: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_tw_wa_col_en_bc_wa_col_book_language_order
-
-.PHONY: local-smoke-test-with-translation-words25
-local-smoke-test-with-translation-words25: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_pt_br_ulb_tn_en_ulb_wa_tn_wa_luk_language_book_order_2c_sl_hr
-
-.PHONY: local-smoke-test-with-translation-words26
-local-smoke-test-with-translation-words26: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_long_document_request_key
-
-.PHONY: local-smoke-test-with-translation-words27
-local-smoke-test-with-translation-words27: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_es_419_ulb_col_es_419_ulb_eph_es_419_tn_col_es_419_tq_col_es_419_tw_col_es_419_tw_eph_book_language_order
-
-
-.PHONY: local-smoke-test-with-translation-words28
-local-smoke-test-with-translation-words28: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_kbt_reg_2co_fr_ulb_2co_sl_sr
-
-.PHONY: local-smoke-test-with-translation-words29
-local-smoke-test-with-translation-words29: local-prepare-for-tests
-	IN_CONTAINER=false ENABLE_ASSET_CACHING=true SEND_EMAIL=false FROM_EMAIL="foo@example.com" TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_mat_language_book_order_1c
-
 
 # This is one to run after running local-e2e-tests or any tests which
 # has yielded HTML and PDFs that need to be checked for linking

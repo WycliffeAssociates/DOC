@@ -75,8 +75,10 @@ COPY ./backend ./backend
 COPY ./tests ./tests
 
 # Inside the Python virtual env: check types, install any missing mypy stub
-# types packages, and compile most modules into C using mypyc
 # RUN cd $VIRTUAL_ENV && . $VIRTUAL_ENV/bin/activate && mypyc --strict --install-types --non-interactive /backend/document/domain/document_generator.py /backend/document/domain/resource_lookup.py /backend/document/domain/assembly_strategies.py /backend/document/domain/parsing.py /backend/document/domain/worker.py /backend/document/entrypoints/app.py
+# types packages, and transpile most modules into C using mypyc which
+# in turn build them with the resident C compiler, usually clang or
+# gcc.
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests

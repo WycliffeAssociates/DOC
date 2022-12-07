@@ -157,7 +157,8 @@ class Settings(BaseSettings):
     API_LOCAL_PORT: int
 
     # Location where resource assets will be downloaded.
-    RESOURCE_ASSETS_DIR: str = "/working/temp"
+    DOCKER_RESOURCE_ASSETS_DIR: str = "/app/working/temp"
+    RESOURCE_ASSETS_DIR: str = "working/temp"
 
     # Indicate whether running in Docker container.
     IN_CONTAINER: bool = False
@@ -170,9 +171,9 @@ class Settings(BaseSettings):
         acquired.
         """
         if self.IN_CONTAINER:
-            return self.RESOURCE_ASSETS_DIR
+            return self.DOCKER_RESOURCE_ASSETS_DIR
         else:
-            return self.RESOURCE_ASSETS_DIR[1:]
+            return self.RESOURCE_ASSETS_DIR
 
     # Location where generated PDFs will be written to.
     DOCUMENT_OUTPUT_DIR: str = "/working/output"

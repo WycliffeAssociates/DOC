@@ -42,13 +42,15 @@ RUN WKHTMLTOX_TEMP="$(mktemp)" && \
     dpkg -i "$WKHTMLTOX_TEMP" && \
     rm -f "$WKHTMLTOX_TEMP"
 
+WORKDIR /app
+
 # Make the output directory where resource asset files are cloned or
 # downloaded and unzipped.
-RUN mkdir -p /working/temp
+RUN mkdir -p working/temp
 # Make the output directory where generated HTML and PDFs are placed.
-RUN mkdir -p /working/output
+RUN mkdir -p working/output
 # Make the output directory where generated documents (PDF, ePub, Docx) are copied too.
-RUN mkdir -p /document_output
+RUN mkdir -p document_output
 
 COPY .env .
 COPY icon-tn.png .
@@ -69,12 +71,12 @@ RUN cd /tmp && git clone -b develop --depth 1 https://github.com/linearcombinati
 RUN cd /tmp/USFM-Tools && python setup.py build install
 RUN cp -r /tmp/USFM-Tools/usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
 
-COPY ./backend/ /backend/
-COPY ./tests/ /tests/
+COPY ./backend ./backend
+COPY ./tests ./tests
 
 # Inside the Python virtual env: check types, install any missing mypy stub
 # types packages, and compile most modules into C using mypyc
 # RUN cd $VIRTUAL_ENV && . $VIRTUAL_ENV/bin/activate && mypyc --strict --install-types --non-interactive /backend/document/domain/document_generator.py /backend/document/domain/resource_lookup.py /backend/document/domain/assembly_strategies.py /backend/document/domain/parsing.py /backend/document/domain/worker.py /backend/document/entrypoints/app.py
 
 # Make sure Python can find the code to run
-ENV PYTHONPATH=/backend:/tests
+ENV PYTHONPATH=/app/backend:/app/tests

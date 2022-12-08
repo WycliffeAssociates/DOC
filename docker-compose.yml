@@ -55,8 +55,3 @@ services:
 
 volumes:
   shared:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./docker_document_output
-      o: bind

@@ -522,7 +522,6 @@ def resource_types_and_names_for_lang(
     >>> # pprint.pprint(resource_lookup.resource_codes_and_types_for_lang("fr"))
     >>> pprint.pprint(resource_lookup.resource_types_and_names_for_lang("en"))
     [('ulb-wa', 'Unlocked Literal Bible (ULB)'),
-     ('udb-wa', 'Unlocked Dynamic Bible (UDB)'),
      ('tn-wa', 'ULB Translation Helps'),
      ('tq-wa', 'ULB Translation Questions'),
      ('tw-wa', 'ULB Translation Words'),
@@ -994,7 +993,7 @@ def shared_resource_types(
     >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> list(resource_lookup.shared_resource_types("en", ["2co"]))
-    [('ulb-wa', 'Unlocked Literal Bible (ULB)'), ('udb-wa', 'Unlocked Dynamic Bible (UDB)'), ('tn-wa', 'ULB Translation Helps'), ('tq-wa', 'ULB Translation Questions'), ('tw-wa', 'ULB Translation Words'), ('bc-wa', 'Bible Commentary')]
+    [('ulb-wa', 'Unlocked Literal Bible (ULB)'), ('tn-wa', 'ULB Translation Helps'), ('tq-wa', 'ULB Translation Questions'), ('tw-wa', 'ULB Translation Words'), ('bc-wa', 'Bible Commentary')]
     >>> list(resource_lookup.shared_resource_types("kbt", ["2co"]))
     [('reg', 'Bible (reg)')]
     >>> list(resource_lookup.shared_resource_types("pt-br", ["gen"]))

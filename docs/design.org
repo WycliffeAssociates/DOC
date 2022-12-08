@@ -17,7 +17,7 @@ Handle TN, TA, TW, TQ, ULB, UDB resource requests. Later perhaps also
 OBS, etc..
 ** How to run a demo for yourself
 *** Get the code
-Get the tools repo:
+Get the DOC repo:
 
 #+begin_src shell
 git clone https://github.com/linearcombination/DOC.git
@@ -29,7 +29,7 @@ git clone https://github.com/linearcombination/DOC.git
 make all
 #+end_src
 
-Note: this will take about a half hour give or take depending on your
+Note: this will take about a half hour to an hour give or take depending on your
 network latency.
 
 The generated PDFs are copied from the Docker container to the
@@ -86,11 +86,6 @@ and
 #+begin_src shell
 make e2e-tests
 #+end_src
-*** Run server so that you can test in browser
-#+begin_src shell
-make build
-make up
-#+end_src
 *** Run demo outside Docker container
 **** Create and activate the virtual environment
 
@@ -102,29 +97,90 @@ source .venv/bin/activate
 
 then ...
 
-**** Install pip-tools
-#+begin_src shell
-make pyupgrade
-#+end_src
-
-then ...
-
 **** Install dependencies
 #+begin_src shell
 make local-install-deps-dev
 #+end_src
 
-this will install production and development dependencies for our app.
+this will setup your environment tools and install production and
+development dependencies for our app.
 
 Then ...
 
-**** (optional) Install our app in editable mode
+**** Install our app in editable mode
 
 #+begin_src shell
 pip install -e .
 #+end_src
 
 then ...
+
+**** Run Redis Docker instance
+
+ #+begin_src shell
+ docker run -p 6379:6379 redis
+ #+end_src
+
+**** Run celery
+
+In another terminal window, in project root directory, in virtual env (source .venv/bin/activate[.fish]):
+ #+begin_src shell
+ IN_CONTAINER=false celery --app=document.domain.worker.app worker  --loglevel=DEBUG -E
+ #+end_src
+
+**** (optional) Run flower (a celery dashboard)
+
+In another terminal window, in project root directory, in virtual env:
+ #+begin_src shell
+ celery --broker=redis:// --result-backend=redis:// flower
+ #+end_src
+
+**** Run API
+
+In another terminal window, in project root directory, in virtual env:
+ #+begin_src shell
+ make local-server
+ #+end_src
+
+**** Build and run the frontend
+
+In another terminal window, in cd <project-root-directory>/frontend:
+ #+begin_src shell
+ npm run allbuildandrun
+ #+end_src
+
+**** Deal with our (required) frontend envvars hack:
+
+In another terminal window, in cd <project-root-directory>/frontend:
+ #+begin_src shell
+ export BACKEND_API_URL=http://localhost:5005
+ cp envvars.js dist/assets/ && envsubst < dist/assets/envvars.js | sponge dist/assets/envvars.js
+ #+end_src
+
+**** Note: how to handle situation if you run into runtime error with lxml
+
+If you get a runtime error (which you'll see in the terminal window
+from step 2 above) when interacting with the app about bs4
+module not having the lxml parser installed/available then you may
+need to do (in the project root dir with the venv activated):
+ #+begin_src shell
+ pip uninstall lxml
+ pip install cython # Make double sure cython is installed (it should already have been)
+ pip install lxml  # You should see pip invoking to build the lxml wheel as a C extension
+ #+end_src
+Then restart steps 2, 3, and 4 above.
+
+
+
+**** Use the UI
+
+Once all 6 steps are running fine you can navigate to
+http://localhost:4173 to access the app and interact with it.
+
+**** (optional) Use the celery dashboard
+
+And then, if desired, you can navigate to http://localhost:5555 to
+access the flower celery dashboard.
 
 **** Run a quick smoke test (runs one quick test)
 #+begin_src shell

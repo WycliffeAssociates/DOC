@@ -17,8 +17,6 @@ from tests.shared.utils import (
 )
 
 
-
-
 ##########################################################################
 ## Specific targeted tests (wrt language, resource type, resource code) ##
 ##########################################################################
@@ -232,7 +230,7 @@ def test_en_ulb_wa_tn_wa_jud_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_es_419_ulb_jud_language_book_order_1c() -> None:
+def test_ar_ulb_jud_language_book_order_1c() -> None:
     """
     Produce verse level interleaved document for language, ar, Arabic
     scripture. There are no other resources than USFM available at
@@ -251,7 +249,7 @@ def test_es_419_ulb_jud_language_book_order_1c() -> None:
                 "generate_docx": False,
                 "resource_requests": [
                     {
-                        "lang_code": "es-419",
+                        "lang_code": "ar",
                         "resource_type": "ulb",
                         "resource_code": "jud",
                     },
@@ -262,7 +260,7 @@ def test_es_419_ulb_jud_language_book_order_1c() -> None:
             check_finished_document_with_verses_success(response)
 
 
-def test_es_419_ulb_jud_language_book_order_1c_c() -> None:
+def test_ar_ulb_jud_language_book_order_1c_c() -> None:
     """
     Produce verse level interleaved document for language, ar, Arabic
     scripture. There are no other resources than USFM available at
@@ -281,7 +279,7 @@ def test_es_419_ulb_jud_language_book_order_1c_c() -> None:
                 "generate_docx": False,
                 "resource_requests": [
                     {
-                        "lang_code": "es-419",
+                        "lang_code": "ar",
                         "resource_type": "ulb",
                         "resource_code": "jud",
                     },
@@ -787,6 +785,21 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tw_col_
                         "resource_code": "col",
                     },
                     {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "resource_code": "tit",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn-wa",
+                        "resource_code": "tit",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw-wa",
+                        "resource_code": "tit",
+                    },
+                    {
                         "lang_code": "sw",
                         "resource_type": "ulb",
                         "resource_code": "col",
@@ -846,6 +859,16 @@ def test_en_ulb_wa_col_en_tw_wa_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_la
                         "resource_code": "col",
                     },
                     {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "resource_code": "tit",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw-wa",
+                        "resource_code": "tit",
+                    },
+                    {
                         "lang_code": "sw",
                         "resource_type": "ulb",
                         "resource_code": "col",
@@ -894,6 +917,16 @@ def test_en_ulb_wa_col_en_tw_wa_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_la
                         "lang_code": "en",
                         "resource_type": "tw-wa",
                         "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "resource_code": "tit",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw-wa",
+                        "resource_code": "tit",
                     },
                     {
                         "lang_code": "sw",
@@ -949,6 +982,16 @@ def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_
                         "lang_code": "en",
                         "resource_type": "tw-wa",
                         "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tq-wa",
+                        "resource_code": "tit",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw-wa",
+                        "resource_code": "tit",
                     },
                     {
                         "lang_code": "sw",
@@ -1014,6 +1057,21 @@ def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_
                         "lang_code": "en",
                         "resource_type": "tw-wa",
                         "resource_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "resource_code": "tit",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tq-wa",
+                        "resource_code": "tit",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw-wa",
+                        "resource_code": "tit",
                     },
                     {
                         "lang_code": "sw",

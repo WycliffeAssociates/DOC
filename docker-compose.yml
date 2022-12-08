@@ -24,7 +24,7 @@ services:
       - redis
   worker:
     image: wycliffeassociates/doc:${IMAGE_TAG}
-    command: celery --app=document.domain.worker.app worker  --loglevel=DEBUG  -E
+    command: celery --app=document.domain.worker.app worker --hostname=worker@%h --loglevel=DEBUG -E
     environment:
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}

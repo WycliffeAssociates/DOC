@@ -3,74 +3,56 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
-import asyncio
-import concurrent.futures
-import os
 import shutil
 import smtplib
 import subprocess
 import time
-from collections.abc import Iterable, Mapping, Sequence
-from email import encoders
+from email.encoders import encode_base64
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from itertools import tee
-from typing import Any, Optional
+from os.path import basename, exists, join
+from typing import Any, Iterable, Mapping, Optional, Sequence
 
 import jinja2
 import more_itertools
 import pdfkit  # type: ignore
-import requests
-import toolz  # type: ignore
-from celery import Celery, current_task
-from celery.app.task import Task
+from celery import current_task
 from document.config import settings
 from document.domain import (
     assembly_strategies,
     bible_books,
-    model,
     parsing,
     resource_lookup,
     worker,
 )
+from document.domain.model import (
+    AssemblyLayoutEnum,
+    AssemblyStrategyEnum,
+    Attachment,
+    BookContent,
+    DocumentRequest,
+    # EmailPayload,
+    HtmlContent,
+    ResourceRequest,
+    TWBook,
+    TWUse,
+    USFMBook,
+)
 from document.utils import file_utils, number_utils
-from fastapi import HTTPException, status
-from more_itertools import partition
-from pydantic import BaseModel, Json
-from requests.exceptions import HTTPError
+from pydantic import Json
+from toolz import itertoolz, unique  # type: ignore
 
 logger = settings.logger(__name__)
 
-COMMASPACE = ", "
-HYPHEN = "-"
-UNDERSCORE = "_"
-
-MAX_FILENAME_LENGTH = 240
-
-NUM_ZEROS = 3
-
-
-def resource_book_content_units(
-    found_resource_lookup_dtos_iter: Iterable[model.ResourceLookupDto],
-    resource_dirs_iter: Iterable[str],
-    resource_requests: Sequence[model.ResourceRequest],
-    layout_for_print: bool,
-) -> Iterable[model.BookContent]:
-    """Parse asset content for later use in document interleaving."""
-    for resource_lookup_dto, resource_dir in zip(
-        found_resource_lookup_dtos_iter, resource_dirs_iter
-    ):
-        yield parsing.book_content(
-            resource_lookup_dto, resource_dir, resource_requests, layout_for_print
-        )
-
 
 def document_request_key(
-    resource_requests: Sequence[model.ResourceRequest],
-    assembly_strategy_kind: model.AssemblyStrategyEnum,
-    assembly_layout_kind: model.AssemblyLayoutEnum,
-    max_filename_len: int = MAX_FILENAME_LENGTH,
+    resource_requests: Sequence[ResourceRequest],
+    assembly_strategy_kind: AssemblyStrategyEnum,
+    assembly_layout_kind: AssemblyLayoutEnum,
+    max_filename_len: int = 240,
+    underscore: str = "_",
+    hyphen: str = "-",
 ) -> str:
     """
     Create and return the document_request_key. The
@@ -87,9 +69,9 @@ def document_request_key(
     those are preferred when possible, i.e., when the file name is not
     too long.
     """
-    resource_request_keys = UNDERSCORE.join(
+    resource_request_keys = underscore.join(
         [
-            HYPHEN.join(
+            hyphen.join(
                 [
                     resource_request.lang_code,
                     resource_request.resource_type,
@@ -132,7 +114,7 @@ def template(template_lookup_key: str) -> str:
     return template
 
 
-def instantiated_template(template_lookup_key: str, dto: BaseModel) -> str:
+def instantiated_template(template_lookup_key: str, document_request_key: str) -> str:
     """
     Instantiate Jinja2 template with dto BaseModel instance. Return
     instantiated template as string.
@@ -140,7 +122,7 @@ def instantiated_template(template_lookup_key: str, dto: BaseModel) -> str:
     with open(template_path(template_lookup_key), "r") as filepath:
         template = filepath.read()
     env = jinja2.Environment(autoescape=True).from_string(template)
-    return env.render(data=dto)
+    return env.render(data=document_request_key)
 
 
 def enclose_html_content(
@@ -156,7 +138,7 @@ def enclose_html_content(
 
 
 def document_html_header(
-    assembly_layout_kind: Optional[model.AssemblyLayoutEnum],
+    assembly_layout_kind: Optional[AssemblyLayoutEnum],
 ) -> str:
     """
     Choose the appropriate HTML header given the
@@ -165,8 +147,8 @@ def document_html_header(
     compactness.
     """
     if assembly_layout_kind and assembly_layout_kind in [
-        model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-        model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,
+        AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
+        AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,
     ]:
         return template("header_compact_enclosing")
     else:
@@ -174,26 +156,26 @@ def document_html_header(
 
 
 def uses_section(
-    uses: Sequence[model.TWUse],
+    uses: Sequence[TWUse],
     translation_word_verse_section_header_str: str = settings.TRANSLATION_WORD_VERSE_SECTION_HEADER_STR,
     unordered_list_begin_str: str = settings.UNORDERED_LIST_BEGIN_STR,
     translation_word_verse_ref_item_fmt_str: str = settings.TRANSLATION_WORD_VERSE_REF_ITEM_FMT_STR,
     unordered_list_end_str: str = settings.UNORDERED_LIST_END_STR,
     book_numbers: Mapping[str, str] = bible_books.BOOK_NUMBERS,
     book_names: Mapping[str, str] = bible_books.BOOK_NAMES,
-    num_zeros: int = NUM_ZEROS,
-) -> model.HtmlContent:
+    num_zeros: int = 3,
+) -> HtmlContent:
     """
     Construct and return the 'Uses:' section which comes at the end of
     a translation word definition and wherein each item points to
     verses (as targeted by lang_code, book_id, chapter_num, and
     verse_num) wherein the word occurs.
     """
-    html: list[model.HtmlContent] = []
+    html: list[HtmlContent] = []
     html.append(translation_word_verse_section_header_str)
     html.append(unordered_list_begin_str)
     for use in uses:
-        html_content_str = model.HtmlContent(
+        html_content_str = HtmlContent(
             translation_word_verse_ref_item_fmt_str.format(
                 use.lang_code,
                 book_numbers[use.book_id].zfill(num_zeros),
@@ -206,16 +188,16 @@ def uses_section(
         )
         html.append(html_content_str)
     html.append(unordered_list_end_str)
-    return model.HtmlContent("\n".join(html))
+    return HtmlContent("\n".join(html))
 
 
 def translation_words_section(
-    book_content_unit: model.TWBook,
+    book_content_unit: TWBook,
     include_uses_section: bool = True,
     resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
     opening_h3_fmt_str: str = settings.OPENING_H3_FMT_STR,
     opening_h3_with_id_fmt_str: str = settings.OPENING_H3_WITH_ID_FMT_STR,
-) -> Iterable[model.HtmlContent]:
+) -> Iterable[HtmlContent]:
     """
     Build and return the translation words definition section, i.e.,
     the list of all translation words for this language, book
@@ -224,7 +206,7 @@ def translation_words_section(
     word if include_uses_section is True.
     """
     if book_content_unit.name_content_pairs:
-        yield model.HtmlContent(
+        yield HtmlContent(
             resource_type_name_fmt_str.format(book_content_unit.resource_type_name)
         )
 
@@ -241,7 +223,7 @@ def translation_words_section(
 
         # Make linking work: have to add ID to tags for anchor
         # links to work.
-        name_content_pair.content = model.HtmlContent(
+        name_content_pair.content = HtmlContent(
             name_content_pair.content.replace(
                 opening_h3_fmt_str.format(name_content_pair.localized_word),
                 opening_h3_with_id_fmt_str.format(
@@ -251,7 +233,7 @@ def translation_words_section(
                 ),
             )
         )
-        uses_section_ = model.HtmlContent("")
+        uses_section_ = HtmlContent("")
 
         # See comment above.
         if (
@@ -261,7 +243,7 @@ def translation_words_section(
             uses_section_ = uses_section(
                 book_content_unit.uses[name_content_pair.localized_word]
             )
-            name_content_pair.content = model.HtmlContent(
+            name_content_pair.content = HtmlContent(
                 name_content_pair.content + uses_section_
             )
         yield name_content_pair.content
@@ -269,8 +251,8 @@ def translation_words_section(
 
 def assemble_content(
     document_request_key: str,
-    document_request: model.DocumentRequest,
-    book_content_units: Iterable[model.BookContent],
+    document_request: DocumentRequest,
+    book_content_units: Iterable[BookContent],
 ) -> str:
     """
     Assemble the content from all requested resources according to the
@@ -296,7 +278,7 @@ def assemble_content(
     tw_book_content_units = [
         book_content_unit
         for book_content_unit in book_content_units
-        if isinstance(book_content_unit, model.TWBook)
+        if isinstance(book_content_unit, TWBook)
     ]
     # We need to see if the document request included any usfm because
     # if it did we'll generate not only the tw word defs but also the
@@ -305,10 +287,10 @@ def assemble_content(
     usfm_book_content_units = [
         book_content_unit
         for book_content_unit in book_content_units
-        if isinstance(book_content_unit, model.USFMBook)
+        if isinstance(book_content_unit, USFMBook)
     ]
     # Add the translation words definition section for each language requested.
-    for tw_book_content_unit in toolz.unique(
+    for tw_book_content_unit in unique(
         tw_book_content_units, key=lambda unit: unit.lang_code
     ):
         if usfm_book_content_units:
@@ -361,7 +343,7 @@ def send_email_with_attachment(
     # NOTE: email_address comes in as pydantic.EmailStr and leaves
     # the pydantic class validator as a str.
     email_address: Optional[str],
-    attachments: list[model.Attachment],
+    attachments: list[Attachment],
     document_request_key: str,
     content_disposition: str = "attachment",
     from_email_address: str = settings.FROM_EMAIL_ADDRESS,
@@ -369,13 +351,15 @@ def send_email_with_attachment(
     email_send_subject: str = settings.EMAIL_SEND_SUBJECT,
     smtp_host: str = settings.SMTP_HOST,
     smtp_port: int = settings.SMTP_PORT,
-    comma_space: str = COMMASPACE,
+    comma_space: str = ", ",
 ) -> None:
     """
     If environment configuration allows sending of
     email, then send an email to the document request
     recipient's email with the document attached.
     """
+    lexception = logger.exception
+
     if email_address:
         sender = from_email_address
         email_password = smtp_password
@@ -398,24 +382,20 @@ def send_email_with_attachment(
                 with open(attachment.filepath, "rb") as fp:
                     msg = MIMEBase(attachment.mime_type[0], attachment.mime_type[1])
                     msg.set_payload(fp.read())
-                encoders.encode_base64(msg)
+                encode_base64(msg)
                 msg.add_header(
                     "Content-Disposition",
                     content_disposition,
-                    filename=os.path.basename(attachment.filepath),
+                    filename=basename(attachment.filepath),
                 )
                 outer.attach(msg)
             except Exception:
-                logger.exception(
-                    "Unable to open one of the attachments. Caught exception: "
-                )
+                lexception("Unable to open one of the attachments. Caught exception: ")
 
         # Get the email body
         message_body = instantiated_template(
             "email",
-            model.EmailPayload(
-                document_request_key=document_request_key,
-            ),
+            document_request_key
         )
         logger.debug("instantiated email template: %s", message_body)
 
@@ -447,7 +427,7 @@ def convert_html_to_pdf(
     """
     Generate PDF from HTML, copy it to output directory, possibly send to email_address as attachment.
     """
-    assert os.path.exists(html_filepath)
+    assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
 
     t0 = time.time()
@@ -461,7 +441,7 @@ def convert_html_to_pdf(
     copy_file_to_docker_output_dir(pdf_filepath)
     if should_send_email(email_address):
         attachments = [
-            model.Attachment(filepath=pdf_filepath, mime_type=("application", "pdf"))
+            Attachment(filepath=pdf_filepath, mime_type=("application", "pdf"))
         ]
         send_email_with_attachment(
             email_address,
@@ -478,7 +458,7 @@ def convert_html_to_epub(
     pandoc_options: str = settings.PANDOC_OPTIONS,
 ) -> None:
     """Generate ePub from HTML, possibly send to email_address as attachment."""
-    assert os.path.exists(html_filepath)
+    assert exists(html_filepath)
     pandoc_command = "pandoc {} {} -o {}".format(
         pandoc_options,
         html_filepath,
@@ -489,9 +469,7 @@ def convert_html_to_epub(
     copy_file_to_docker_output_dir(epub_filepath)
     if should_send_email(email_address):
         attachments = [
-            model.Attachment(
-                filepath=epub_filepath, mime_type=("application", "epub+zip")
-            )
+            Attachment(filepath=epub_filepath, mime_type=("application", "epub+zip"))
         ]
         send_email_with_attachment(
             email_address,
@@ -508,7 +486,7 @@ def convert_html_to_docx(
     pandoc_options: str = settings.PANDOC_OPTIONS,
 ) -> None:
     """Generate Docx from HTML, possibly send to email_address as attachment."""
-    assert os.path.exists(html_filepath)
+    assert exists(html_filepath)
     pandoc_command = "pandoc {} {} -o {}".format(
         pandoc_options,
         html_filepath,
@@ -519,7 +497,7 @@ def convert_html_to_docx(
     copy_file_to_docker_output_dir(docx_filepath)
     if should_send_email(email_address):
         attachments = [
-            model.Attachment(
+            Attachment(
                 filepath=docx_filepath,
                 mime_type=(
                     "application",
@@ -538,46 +516,46 @@ def html_filepath(
     document_request_key: str, output_dir: str = settings.output_dir()
 ) -> str:
     """Given document_request_key, return the HTML output file path."""
-    return os.path.join(output_dir, "{}.html".format(document_request_key))
+    return join(output_dir, "{}.html".format(document_request_key))
 
 
 def pdf_filepath(
     document_request_key: str, output_dir: str = settings.output_dir()
 ) -> str:
     """Given document_request_key, return the PDF output file path."""
-    return os.path.join(output_dir, "{}.pdf".format(document_request_key))
+    return join(output_dir, "{}.pdf".format(document_request_key))
 
 
 def epub_filepath(
     document_request_key: str, output_dir: str = settings.output_dir()
 ) -> str:
     """Given document_request_key, return the ePub output file path."""
-    return os.path.join(output_dir, "{}.epub".format(document_request_key))
+    return join(output_dir, "{}.epub".format(document_request_key))
 
 
 def docx_filepath(
     document_request_key: str, output_dir: str = settings.output_dir()
 ) -> str:
     """Given document_request_key, return the docx output file path."""
-    return os.path.join(output_dir, "{}.docx".format(document_request_key))
+    return join(output_dir, "{}.docx".format(document_request_key))
 
 
 def cover_filepath(
     document_request_key: str, output_dir: str = settings.output_dir()
 ) -> str:
     """Given document_request_key, return the HTML cover output file path."""
-    return os.path.join(output_dir, "{}_cover.html".format(document_request_key))
+    return join(output_dir, "{}_cover.html".format(document_request_key))
 
 
 def select_assembly_layout_kind(
-    document_request: model.DocumentRequest,
+    document_request: DocumentRequest,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    book_language_order: model.AssemblyStrategyEnum = model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
-    print_layout: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
+    book_language_order: AssemblyStrategyEnum = AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+    print_layout: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
     # NOTE Could also have default value for non_print_layout_for_multiple_usfm of
-    non_print_layout_for_multiple_usfm: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
-    default_layout: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN,
-) -> model.AssemblyLayoutEnum:
+    non_print_layout_for_multiple_usfm: AssemblyLayoutEnum = AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
+    default_layout: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN,
+) -> AssemblyLayoutEnum:
     """
     Make an intelligent choice of what layout to use given the
     DocumentRequest instance the user has requested. Why? Because we
@@ -592,7 +570,7 @@ def select_assembly_layout_kind(
         return print_layout
 
     # Partition ulb resource requests by language.
-    language_groups = toolz.itertoolz.groupby(
+    language_groups = itertoolz.groupby(
         lambda r: r.lang_code,
         filter(
             lambda r: r.resource_type in usfm_resource_types,
@@ -662,7 +640,7 @@ def copy_file_to_docker_output_dir(
     """
     Copy file to docker_container_document_output_dir.
     """
-    assert os.path.exists(filepath)
+    assert exists(filepath)
     logger.debug("IN_CONTAINER: {}".format(in_container))
     if in_container:
         logger.info("About to cp file to Docker volume")
@@ -674,7 +652,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     """
     This is the main entry point for this module.
     """
-    document_request = model.DocumentRequest.parse_raw(document_request_json)
+    document_request = DocumentRequest.parse_raw(document_request_json)
     logger.debug(
         "document_request: %s",
         document_request,
@@ -719,14 +697,12 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
             for resource_request in document_request.resource_requests
         ]
 
-        # Determine which resources were actually found and which were
-        # not.
-        _, found_resource_lookup_dtos_iter = partition(
-            lambda resource_lookup_dto: resource_lookup_dto.url is not None,
-            resource_lookup_dtos,
-        )
-
-        found_resource_lookup_dtos = list(found_resource_lookup_dtos_iter)
+        # Determine which resource URLs were actually found.
+        found_resource_lookup_dtos = [
+            resource_lookup_dto
+            for resource_lookup_dto in resource_lookup_dtos
+            if resource_lookup_dto.url is not None
+        ]
 
         current_task.update_state(state="Provision asset files")
         t0 = time.time()
@@ -742,12 +718,18 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
         current_task.update_state(state="Parse asset files")
         # Initialize found resources from their provisioned assets.
         t0 = time.time()
-        book_content_units = resource_book_content_units(
-            found_resource_lookup_dtos,
-            resource_dirs,
-            document_request.resource_requests,
-            document_request.layout_for_print,
-        )
+        book_content_units = [
+            parsing.book_content(
+                resource_lookup_dto,
+                resource_dir,
+                document_request.resource_requests,
+                document_request.layout_for_print,
+            )
+            for resource_lookup_dto, resource_dir in zip(
+                found_resource_lookup_dtos, resource_dirs
+            )
+        ]
+
         t1 = time.time()
         logger.debug("Time to parse resource content: %s", t1 - t0)
 

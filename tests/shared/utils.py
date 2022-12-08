@@ -27,8 +27,7 @@ def check_result(
     failure_state: str = "FAILURE",
 ) -> str:
     logger.debug("response.json(): {}".format(response.json()))
-    task_response = model.TaskResponse(task_id=response.json()["task_id"])
-    task_id = task_response.task_id
+    task_id = response.json()["task_id"]
     assert task_id
     logger.debug("task_id: %s", task_id)
     finished_document_request_key: str

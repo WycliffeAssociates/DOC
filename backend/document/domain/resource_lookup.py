@@ -5,25 +5,34 @@ assets.
 """
 
 
-import os
 import pathlib
 import shutil
 import subprocess
 import urllib
-from collections.abc import Iterable, Sequence
 from contextlib import closing
-from typing import Any, Callable, Mapping, Optional
+from os import mkdir, scandir
+from os.path import exists, join, sep
+from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 from urllib import parse as urllib_parse
 from urllib.request import urlopen
 
 import git
 import jsonpath_rw_ext as jp  # type: ignore
-import yaml
 from document.config import settings
+from document.domain import bible_books, exceptions
+from document.domain.model import (
+    AssetSourceEnum,
+    CodeNameTypeTriplet,
+    ResourceLookupDto,
+)
+from document.utils.file_utils import (
+    asset_file_needs_update,
+    load_json_object,
+    source_file_needs_update,
+    unzip,
+)
 from fastapi import HTTPException, status
-
-from document.domain import bible_books, exceptions, model
-from document.utils import file_utils
+from yaml import safe_load
 
 logger = settings.logger(__name__)
 
@@ -47,15 +56,13 @@ def fetch_source_data(working_dir: str, json_file_url: str) -> Any:
     Obtain the source data, by downloading it from json_file_url, and
     then reifying it into its JSON object form.
     """
-    json_file = pathlib.Path(
-        os.path.join(working_dir, json_file_url.rpartition(os.path.sep)[2])
-    )
-    if file_utils.source_file_needs_update(json_file):
+    json_file = pathlib.Path(join(working_dir, json_file_url.rpartition(sep)[2]))
+    if source_file_needs_update(json_file):
         logger.debug("Downloading %s...", json_file_url)
         download_file(json_file_url, str(json_file.resolve()))
 
     try:
-        return file_utils.load_json_object(json_file)
+        return load_json_object(json_file)
     except Exception:
         logger.exception("Caught exception: ")
 
@@ -110,10 +117,10 @@ def _english_git_repo_location(
     resource_code: str,
     url: str,
     resource_type_name: str,
-    asset_source_enum_kind: str = model.AssetSourceEnum.GIT,
-) -> model.ResourceLookupDto:
+    asset_source_enum_kind: AssetSourceEnum = AssetSourceEnum.GIT,
+) -> ResourceLookupDto:
     """Return a model.ResourceLookupDto."""
-    return model.ResourceLookupDto(
+    return ResourceLookupDto(
         lang_code=lang_code,
         resource_type=resource_type,
         resource_code=resource_code,
@@ -137,9 +144,9 @@ def _location(
     jsonpath_str: str,
     lang_name_jsonpath_str: str,
     resource_type_name_jsonpath_str: str,
-    asset_source_enum_kind: str,
+    asset_source_enum_kind: AssetSourceEnum,
     url_parsing_fn: Callable[[str], Optional[str]] = const,
-) -> model.ResourceLookupDto:
+) -> ResourceLookupDto:
     """Return a model.ResourceLookupDto."""
     # Many languages have a git repo found by
     # format='Download' that is parallel to the
@@ -167,7 +174,7 @@ def _location(
         resource_type_name = resource_type_name_lst[0]
     else:
         resource_type_name = ""
-    return model.ResourceLookupDto(
+    return ResourceLookupDto(
         lang_code=lang_code,
         lang_name=lang_name,
         resource_type=resource_type,
@@ -208,18 +215,18 @@ def usfm_resource_lookup(
     individual_usfm_url_jsonpath_fmt_str: str = settings.INDIVIDUAL_USFM_URL_JSONPATH,
     resource_lang_name_jsonpath_fmt_str: str = settings.RESOURCE_LANG_NAME_JSONPATH,
     resource_type_name_jsonpath_fmt_str: str = settings.RESOURCE_TYPE_NAME_JSONPATH,
-    asset_source_enum_usfm_kind: str = model.AssetSourceEnum.USFM,
-    asset_source_enum_git_kind: str = model.AssetSourceEnum.GIT,
-    asset_source_enum_zip_kind: str = model.AssetSourceEnum.ZIP,
+    asset_source_enum_usfm_kind: AssetSourceEnum = AssetSourceEnum.USFM,
+    asset_source_enum_git_kind: AssetSourceEnum = AssetSourceEnum.GIT,
+    asset_source_enum_zip_kind: AssetSourceEnum = AssetSourceEnum.ZIP,
     resource_download_format_jsonpath_fmt_str: str = settings.RESOURCE_DOWNLOAD_FORMAT_JSONPATH,
     resource_url_level1_jsonpath_fmt_str: str = settings.RESOURCE_URL_LEVEL1_JSONPATH,
-) -> model.ResourceLookupDto:
+) -> ResourceLookupDto:
     """
     Given a resource, comprised of language code, e.g., 'en', a
     resource type, e.g., 'ulb-wa', and a resource code, e.g., 'gen',
     return model.ResourceLookupDto for resource.
     """
-    resource_lookup_dto: model.ResourceLookupDto
+    resource_lookup_dto: ResourceLookupDto
 
     # Prefer getting USFM files individually rather than
     # introducing the latency of cloning a git repo.
@@ -292,15 +299,15 @@ def t_resource_lookup(
     resource_type_name_jsonpath_fmt_str: str = settings.RESOURCE_TYPE_NAME_JSONPATH,
     resource_url_level1_jsonpath_fmt_str: str = settings.RESOURCE_URL_LEVEL1_JSONPATH,
     resource_url_level2_jsonpath_fmt_str: str = settings.RESOURCE_URL_LEVEL2_JSONPATH,
-    asset_source_enum_kind: str = model.AssetSourceEnum.ZIP,
-) -> model.ResourceLookupDto:
+    asset_source_enum_kind: AssetSourceEnum = AssetSourceEnum.ZIP,
+) -> ResourceLookupDto:
     """
     Given a non-English language resource, comprised of language code,
     e.g., 'wum', a resource type, e.g., 'tn', and a resource code,
     e.g., 'gen', return a model.ResourceLookupDto instance for
     resource.
     """
-    resource_lookup_dto: model.ResourceLookupDto
+    resource_lookup_dto: ResourceLookupDto
 
     resource_lookup_dto = _location(
         lang_code,
@@ -399,10 +406,11 @@ def lang_codes_and_names(
     >>> data[0]
     'Abuhaina, code: tbg-x-abuhaina'
     """
-    values = []
     data = fetch_source_data(working_dir, translations_json_location)
-    for d in [lang for lang in data if lang["code"] not in lang_code_filter_list]:
-        values.append("{}, code: {}".format(d["name"], d["code"]))
+    values = [
+        "{}, code: {}".format(d["name"], d["code"])
+        for d in [lang for lang in data if lang["code"] not in lang_code_filter_list]
+    ]
     return sorted(values, key=lambda value: value.split(",")[0])
 
 
@@ -523,22 +531,21 @@ def resource_types_and_names_for_lang(
     if lang_code == "en":
         return [(key, value) for key, value in english_resource_type_map.items()]
 
-    values = []
     data = fetch_source_data(working_dir, translations_json_location)
     for item in [lang for lang in data if lang["code"] in [lang_code]]:
-        for resource_type in item["contents"]:
+        values = [
+            (
+                resource_type["code"],
+                "{} ({})".format(resource_type["name"], resource_type["code"]),
+            )
+            for resource_type in item["contents"]
             if (
                 resource_type["code"] in usfm_resource_types
                 or resource_type["code"] in tn_resource_types
                 or resource_type["code"] in tq_resource_types
                 or resource_type["code"] in tw_resource_types
-            ):
-                values.append(
-                    (
-                        resource_type["code"],
-                        "{} ({})".format(resource_type["name"], resource_type["code"]),
-                    )
-                )
+            )
+        ]
     return sorted(values, key=lambda value: value[0])
 
 
@@ -702,33 +709,34 @@ def resource_codes_and_types_for_lang(
             for link in resource_type["links"]
             if link["url"] and link["format"] == format
         ]
+        resource_type_code = resource_type["code"]
         for url in links:
-            resource_filepath = os.path.join(
+            resource_filepath = join(
                 resource_dir,
-                url.rpartition(os.path.sep)[2],
+                url.rpartition(sep)[2],
             )
             # logger.debug("resource_filepath: %s", resource_filepath)
-            if file_utils.asset_file_needs_update(resource_filepath):
+            if asset_file_needs_update(resource_filepath):
                 prepare_resource_directory(lang_code, resource_type["code"])
                 download_asset(url, resource_filepath)
                 unzip_asset(
                     lang_code,
-                    resource_type["code"],
+                    resource_type_code,
                     resource_filepath,
                 )
             # When a git repo is cloned or when a zip file is
             # unzipped, a subdirectory of resource_dir is created
             # as a result. Update resource_dir to point to that
             # subdirectory.
-            resource_dir = update_resource_dir(lang_code, resource_type["code"])
+            resource_dir = update_resource_dir(lang_code, resource_type_code)
             # Now look for manifest and if it is avialable use it to return the list of resource codes.
 
             manifest_path = ""
             # if resource_type["code"] not in tw_resource_types:
-            if os.path.exists(f"{resource_dir}/manifest.yaml"):
+            if exists(f"{resource_dir}/manifest.yaml"):
                 manifest_path = f"{resource_dir}/manifest.yaml"
                 with open(manifest_path, "r") as file:
-                    yaml_content = yaml.safe_load(file)
+                    yaml_content = safe_load(file)
                     resource_codes = [
                         (
                             resource_code["identifier"],
@@ -742,10 +750,10 @@ def resource_codes_and_types_for_lang(
                         for resource_code in yaml_content["projects"]
                     ]
 
-            elif os.path.exists(f"{resource_dir}/projects.yaml"):
+            elif exists(f"{resource_dir}/projects.yaml"):
                 manifest_path = f"{resource_dir}/projects.yaml"
                 with open(manifest_path, "r") as file:
-                    yaml_content = yaml.safe_load(file)
+                    yaml_content = safe_load(file)
                     resource_codes = [
                         (
                             resource_code["identifier"],
@@ -780,6 +788,8 @@ def resource_codes_and_types_for_lang(
         book_names: Mapping[str, str] = bible_books.BOOK_NAMES,
     ) -> list[tuple[str, str, str]]:
 
+        ldebug = logger.debug
+
         links = [
             link_transformer_fn(link["url"])
             for link in resource_type["links"]
@@ -789,12 +799,12 @@ def resource_codes_and_types_for_lang(
         resource_codes: list[tuple[str, str, str]] = []
         resource_dir = resource_directory(lang_code, resource_type["code"])
         for url in links:
-            resource_filepath = os.path.join(
+            resource_filepath = join(
                 resource_dir,
-                url.rpartition(os.path.sep)[2],
+                url.rpartition(sep)[2],
             )
             # logger.debug("resource_filepath: %s", resource_filepath)
-            if file_utils.asset_file_needs_update(resource_filepath):
+            if asset_file_needs_update(resource_filepath):
                 clone_git_repo(url, resource_filepath)
             # When a git repo is cloned or when a zip file is
             # unzipped, a subdirectory of resource_dir is created
@@ -804,10 +814,10 @@ def resource_codes_and_types_for_lang(
             # Now look for manifest and if it is avialable use it to return the list of resource codes.
             manifest_path = ""
             # if resource_type["code"] not in tw_resource_types:
-            if os.path.exists(f"{resource_dir}/manifest.yaml"):
+            if exists(f"{resource_dir}/manifest.yaml"):
                 manifest_path = f"{resource_dir}/manifest.yaml"
                 with open(manifest_path, "r") as file:
-                    yaml_content = yaml.safe_load(file)
+                    yaml_content = safe_load(file)
                     resource_codes = [
                         (
                             resource_code["identifier"],
@@ -821,10 +831,10 @@ def resource_codes_and_types_for_lang(
                         for resource_code in yaml_content["projects"]
                     ]
 
-            elif os.path.exists(f"{resource_dir}/projects.yaml"):
+            elif exists(f"{resource_dir}/projects.yaml"):
                 manifest_path = f"{resource_dir}/projects.yaml"
                 with open(manifest_path, "r") as file:
-                    yaml_content = yaml.safe_load(file)
+                    yaml_content = safe_load(file)
                     resource_codes = [
                         (
                             resource_code["identifier"],
@@ -840,7 +850,7 @@ def resource_codes_and_types_for_lang(
 
             # TODO If manifest was not found, then glob filenames for resource codes provided.
             if not resource_codes:
-                logger.debug("resource_codes empty")
+                ldebug("resource_codes empty")
                 pass
 
         contents_resource_codes = [
@@ -1181,7 +1191,7 @@ def resource_codes(jsonpath_str: str = settings.RESOURCE_CODES_JSONPATH) -> Any:
 def lang_codes_names_and_resource_types(
     working_dir: str = settings.working_dir(),
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
-) -> Iterable[model.CodeNameTypeTriplet]:
+) -> Iterable[CodeNameTypeTriplet]:
     """
     Convenience method that can be called to get the list of all
     tuples containing language code, language name, and list of
@@ -1206,7 +1216,7 @@ def lang_codes_names_and_resource_types(
                 resource_types.append(resource_type)
             except Exception:
                 resource_type = None
-            yield model.CodeNameTypeTriplet(
+            yield CodeNameTypeTriplet(
                 lang_code=lang["code"],
                 lang_name=lang["name"],
                 resource_types=resource_types,
@@ -1350,7 +1360,7 @@ def resource_lookup_dto(
     tw_resource_types: Sequence[str] = settings.TW_RESOURCE_TYPES,
     en_tw_resource_types: Sequence[str] = settings.EN_TW_RESOURCE_TYPES,
     bc_resource_types: Sequence[str] = settings.BC_RESOURCE_TYPES,
-) -> model.ResourceLookupDto:
+) -> ResourceLookupDto:
     """
     Get the model.ResourceLookupDto instance for the given lang_code,
     resource_type, resource_code combination.
@@ -1394,7 +1404,7 @@ def resource_lookup_dto(
             )
 
 
-def provision_asset_files(resource_lookup_dto: model.ResourceLookupDto) -> str:
+def provision_asset_files(resource_lookup_dto: ResourceLookupDto) -> str:
     """
     Prepare the resource directory and then download the
     resource's file assets into that directory. Return resource_dir.
@@ -1411,7 +1421,7 @@ def resource_directory(
     working_dir: str = settings.working_dir(),
 ) -> str:
     """Return the resource directory for the resource_lookup_dto."""
-    return os.path.join(
+    return join(
         working_dir,
         "{}_{}".format(lang_code, resource_type),
     )
@@ -1425,17 +1435,17 @@ def prepare_resource_directory(lang_code: str, resource_type: str) -> None:
 
     resource_dir = resource_directory(lang_code, resource_type)
 
-    if not os.path.exists(resource_dir):
+    if not exists(resource_dir):
         logger.debug("About to create directory %s", resource_dir)
         try:
-            os.mkdir(resource_dir)
+            mkdir(resource_dir)
         except FileExistsError:
             logger.exception("Directory {} already existed".format(resource_dir))
         else:
             logger.debug("Created directory %s", resource_dir)
 
 
-def acquire_resource_assets(resource_lookup_dto: model.ResourceLookupDto) -> str:
+def acquire_resource_assets(resource_lookup_dto: ResourceLookupDto) -> str:
     """
     Download or git clone resource and unzip resulting file if it
     is a zip file. Return the resource_dir path.
@@ -1447,15 +1457,15 @@ def acquire_resource_assets(resource_lookup_dto: model.ResourceLookupDto) -> str
     if (
         resource_lookup_dto.url is not None
     ):  # We know that resource_url is not None because of how we got here, but mypy isn't convinced. Let's convince mypy.
-        resource_filepath = os.path.join(
+        resource_filepath = join(
             resource_dir,
-            resource_lookup_dto.url.rpartition(os.path.sep)[2],
+            resource_lookup_dto.url.rpartition(sep)[2],
         )
 
         logger.debug("resource_filepath: %s", resource_filepath)
         # Check if resource assets need updating otherwise use
         # what we already have on disk.
-        if file_utils.asset_file_needs_update(resource_filepath):
+        if asset_file_needs_update(resource_filepath):
             if is_git(resource_lookup_dto.source):
                 clone_git_repo(resource_lookup_dto.url, resource_filepath)
             else:
@@ -1482,7 +1492,7 @@ def unzip_asset(lang_code: str, resource_type: str, resource_filepath: str) -> N
     """Unzip the asset in its resource directory."""
     resource_dir = resource_directory(lang_code, resource_type)
     logger.debug("Unzipping %s into %s", resource_filepath, resource_dir)
-    file_utils.unzip(resource_filepath, resource_dir)
+    unzip(resource_filepath, resource_dir)
     logger.info("Unzipping finished.")
 
 
@@ -1494,7 +1504,7 @@ def clone_git_repo(
     the ASSET_CACHING_PERIOD has expired then delete the repo and
     clone it again to get updates.
     """
-    if os.path.exists(resource_filepath):
+    if exists(resource_filepath):
         logger.debug(
             "About to delete pre-existing git repo %s in order to recreate it due to cache staleness.",
             resource_filepath,
@@ -1562,7 +1572,7 @@ def update_resource_dir(lang_code: str, resource_type: str) -> str:
     resource_dir to point to that subdirectory.
     """
     resource_dir = resource_directory(lang_code, resource_type)
-    subdirs = [file.path for file in os.scandir(resource_dir) if file.is_dir()]
+    subdirs = [file.path for file in scandir(resource_dir) if file.is_dir()]
     if subdirs:
         resource_dir = subdirs[0]
         logger.debug(
@@ -1573,16 +1583,16 @@ def update_resource_dir(lang_code: str, resource_type: str) -> str:
 
 
 def is_zip(
-    resource_source: model.AssetSourceEnum,
-    asset_source_enum_kind: str = model.AssetSourceEnum.ZIP,
+    resource_source: AssetSourceEnum,
+    asset_source_enum_kind: str = AssetSourceEnum.ZIP,
 ) -> bool:
     """Return true if resource_source is equal to 'zip'."""
     return resource_source == asset_source_enum_kind
 
 
 def is_git(
-    resource_source: model.AssetSourceEnum,
-    asset_source_enum_kind: str = model.AssetSourceEnum.GIT,
+    resource_source: AssetSourceEnum,
+    asset_source_enum_kind: str = AssetSourceEnum.GIT,
 ) -> bool:
     """Return true if resource_source is equal to 'git'."""
     return resource_source == asset_source_enum_kind

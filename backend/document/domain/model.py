@@ -5,13 +5,11 @@ pydantic.BaseModel as FastAPI can use these classes to do automatic
 validation and JSON serialization.
 """
 
-from collections.abc import Sequence
-from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Optional, Union, final
+from typing import Any, Callable, NamedTuple, Optional, Sequence, Union, final
 
 import orjson
-from pydantic import AnyUrl, BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr
 
 # These Type Aliases give us more self-documenting code, but of course
 # aren't strictly necessary.
@@ -26,10 +24,6 @@ def orjson_dumps(v: Any, *, default: Optional[Callable[[Any], Any]]) -> str:
     return orjson.dumps(v, default=default).decode()
 
 
-# See
-# https://pydantic-docs.helpmanual.io/usage/types/#enums-and-choices
-# for where this pattern of combining Enum and BaseModel comes from in
-# pydantic.
 @final
 class AssemblyStrategyEnum(str, Enum):
     """
@@ -54,6 +48,10 @@ class AssemblyStrategyEnum(str, Enum):
 
     LANGUAGE_BOOK_ORDER = "lbo"
     BOOK_LANGUAGE_ORDER = "blo"
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
 
 
 @final
@@ -104,6 +102,10 @@ class AssemblyLayoutEnum(str, Enum):
     TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT = "2c_sl_sr"
     TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT = "2c_sl_sr_c"
     # fmt: on
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
 
 
 # https://blog.meadsteve.dev/programming/2020/02/10/types-at-the-edges-in-python/
@@ -172,9 +174,6 @@ class DocumentRequest(BaseModel):
         json_dumps = orjson_dumps
 
 
-
-
-# See ~/.ghq/github.com/jonathanreadshaw/ServingMLFastCelery/models.py
 @final
 class FinishedDocumentDetails(BaseModel):
     """
@@ -206,7 +205,7 @@ class AssetSourceEnum(str, Enum):
 
 
 @final
-class ResourceLookupDto(BaseModel):
+class ResourceLookupDto(NamedTuple):
     """
     'Data transfer object' that we use to send lookup related info to
     the resource.
@@ -217,13 +216,13 @@ class ResourceLookupDto(BaseModel):
     resource_type: str
     resource_type_name: str
     resource_code: str
-    url: Optional[AnyUrl]
+    url: Optional[str]
     source: AssetSourceEnum
     jsonpath: Optional[str]
 
 
 @final
-class TNChapter(BaseModel):
+class TNChapter(NamedTuple):
     """
     A class to hold a chapter's intro translation notes and a mapping
     of its verse references to translation notes HTML content.
@@ -234,7 +233,7 @@ class TNChapter(BaseModel):
 
 
 @final
-class TNBook(BaseModel):
+class TNBook(NamedTuple):
     """
     A class to hold a book's intro translation notes and a mapping
     of chapter numbers to translation notes HTML content.
@@ -249,7 +248,7 @@ class TNBook(BaseModel):
 
 
 @final
-class TQChapter(BaseModel):
+class TQChapter(NamedTuple):
     """
     A class to hold a mapping of verse references to translation
     questions HTML content.
@@ -259,7 +258,7 @@ class TQChapter(BaseModel):
 
 
 @final
-class TQBook(BaseModel):
+class TQBook(NamedTuple):
     """
     A class to hold a mapping of chapter numbers to translation questions
     HTML content.
@@ -273,7 +272,7 @@ class TQBook(BaseModel):
 
 
 @final
-class TWUse(BaseModel):
+class TWUse(NamedTuple):
     """
     A class to reify a reference to a translation word occurring
     in a USFM verse.
@@ -288,18 +287,19 @@ class TWUse(BaseModel):
 
 
 @final
-class TWNameContentPair(BaseModel):
+class TWNameContentPair:
     """
     A class to hold the localized translation word and its associated
     HTML content (which was converted from its Markdown).
     """
 
-    localized_word: str
-    content: HtmlContent
+    def __init__(self, localized_word: str, content: HtmlContent):
+        self.localized_word = localized_word
+        self.content = content  # content gets mutated after instantiation therefore we don't use a NamedTuple (which is immutable)
 
 
 @final
-class TWBook(BaseModel):
+class TWBook(NamedTuple):
     """
     A class to hold a list of TWNameContentPair instances and a list
     of TWUses instances.
@@ -314,7 +314,7 @@ class TWBook(BaseModel):
 
 
 @final
-class BCChapter(BaseModel):
+class BCChapter(NamedTuple):
     """
     A class to hold a mapping of verse references to bible
     commentary HTML content.
@@ -324,7 +324,7 @@ class BCChapter(BaseModel):
 
 
 @final
-class BCBook(BaseModel):
+class BCBook(NamedTuple):
     """
     A class to hold a mapping of chapter numbers to translation questions
     HTML content.
@@ -339,7 +339,7 @@ class BCBook(BaseModel):
 
 
 @final
-class USFMChapter(BaseModel):
+class USFMChapter(NamedTuple):
     """
     A class to hold the USFM converted to HTML content for a chapter
     in total (including things like 'chunk breaks' and other verse
@@ -359,7 +359,7 @@ class USFMChapter(BaseModel):
 
 
 @final
-class USFMBook(BaseModel):
+class USFMBook(NamedTuple):
     """A class to hold a book's USFMChapter instances."""
 
     lang_code: str
@@ -373,13 +373,6 @@ BookContent = Union[USFMBook, TNBook, TQBook, TWBook, BCBook]
 
 
 @final
-class EmailPayload(BaseModel):
-    """A class to hold an HTML email body."""
-
-    document_request_key: str
-
-
-@final
 class CodeNameTypeTriplet(BaseModel):
     """A utility class to provide validation in resource_lookup module."""
 
@@ -387,20 +380,13 @@ class CodeNameTypeTriplet(BaseModel):
     lang_name: str
     resource_types: list[str]
 
-
-@final
-class MarkdownLink(BaseModel):
-    """
-    Reify a markdown link for use in link_transformer_preprocessor
-    module.
-    """
-
-    url: str
-    link_text: str
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
 
 
 @final
-class WikiLink(BaseModel):
+class WikiLink(NamedTuple):
     """
     Reify a wiki link for use in link_transformer_preprocessor
     module.
@@ -410,7 +396,6 @@ class WikiLink(BaseModel):
 
 
 @final
-@dataclass
-class Attachment:
+class Attachment(NamedTuple):
     filepath: str
     mime_type: tuple[str, str]

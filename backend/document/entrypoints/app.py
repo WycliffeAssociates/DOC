@@ -2,8 +2,9 @@
 
 import os
 import pathlib
-from collections.abc import Iterable, Sequence
-from typing import Any
+
+from typing import Any, Iterable, Sequence
+
 
 import celery.states
 from celery.result import AsyncResult
@@ -91,13 +92,15 @@ async def generate_document(
 
 
 @app.get("/api/{task_id}/status")
-async def task_status(task_id: str) -> dict[str, Any]:
+async def task_status(task_id: str) -> ORJSONResponse:
     res: AsyncResult[dict[str, str]] = AsyncResult(task_id)
     if res.state == celery.states.SUCCESS:
-        return {"state": celery.states.SUCCESS, "result": res.result}
-    return {
-        "state": res.state,
-    }
+        return ORJSONResponse({"state": celery.states.SUCCESS, "result": res.result})
+    return ORJSONResponse(
+        {
+            "state": res.state,
+        }
+    )
 
 
 @app.get("/epub/{document_request_key}")

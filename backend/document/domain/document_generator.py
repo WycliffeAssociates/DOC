@@ -443,6 +443,7 @@ def convert_html_to_pdf(
         attachments = [
             Attachment(filepath=pdf_filepath, mime_type=("application", "pdf"))
         ]
+        current_task.update_state(state="Sending email")
         send_email_with_attachment(
             email_address,
             attachments,
@@ -471,6 +472,8 @@ def convert_html_to_epub(
         attachments = [
             Attachment(filepath=epub_filepath, mime_type=("application", "epub+zip"))
         ]
+
+        current_task.update_state(state="Sending email")
         send_email_with_attachment(
             email_address,
             attachments,
@@ -505,6 +508,7 @@ def convert_html_to_docx(
                 ),
             )
         ]
+        current_task.update_state(state="Sending email")
         send_email_with_attachment(
             email_address,
             attachments,
@@ -684,7 +688,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     if file_utils.asset_file_needs_update(html_filepath_):
         # Update the state of the worker process. This is used by the
         # UI to report status.
-        current_task.update_state(state="Locate assets")
+        current_task.update_state(state="Locating assets")
         # HTML didn't exist in cache so go ahead and start by getting the
         # resource lookup DTOs for each resource request in the document
         # request.
@@ -704,7 +708,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
             if resource_lookup_dto.url is not None
         ]
 
-        current_task.update_state(state="Provision asset files")
+        current_task.update_state(state="Provisioning asset files")
         t0 = time.time()
         resource_dirs = [
             resource_lookup.provision_asset_files(dto)
@@ -715,7 +719,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
             "Time to provision asset files (acquire and write to disk): %s", t1 - t0
         )
 
-        current_task.update_state(state="Parse asset files")
+        current_task.update_state(state="Parsing asset files")
         # Initialize found resources from their provisioned assets.
         t0 = time.time()
         book_content_units = [

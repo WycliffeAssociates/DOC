@@ -735,7 +735,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
         ]
 
         t1 = time.time()
-        logger.debug("Time to parse resource content: %s", t1 - t0)
+        logger.debug("Time to parse all resource content: %s", t1 - t0)
 
         current_task.update_state(state="Assembling content")
         content = assemble_content(

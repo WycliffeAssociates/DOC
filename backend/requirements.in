@@ -6,6 +6,7 @@ beautifulsoup4
 celery
 celery-types
 fastapi
+flower
 GitPython
 # usfm_tools @ git+https://github.com/linearcombination/USFM-Tools.git@develop # For mypy
 gunicorn

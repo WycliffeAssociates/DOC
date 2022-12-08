@@ -152,7 +152,7 @@
   <div class="grid grid-cols-2 gap-4 bg-white">
     {#if $langCountStore > 0}
       <div>
-        {#if !lang0ResourceTypesAndNames}
+        {#if lang0ResourceTypesAndNames.length == 0}
           <ProgressIndicator />
         {:else}
           <div>

@@ -53,7 +53,6 @@ RUN mkdir -p working/output
 RUN mkdir -p document_output
 
 COPY .env .
-COPY icon-tn.png .
 COPY ./backend/requirements.txt .
 COPY ./backend/requirements-prod.txt .
 

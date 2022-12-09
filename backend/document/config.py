@@ -284,10 +284,6 @@ class Settings(BaseSettings):
     # case of the final PDF). In hours.
     ASSET_CACHING_PERIOD: int
 
-    # Get the path to the logo image that will be used on the PDF cover,
-    # i.e., first, page.
-    LOGO_IMAGE_PATH: str = "icon-tn.png"
-
     # It doesn't yet make sense to offer the (high level)
     # assembly strategy _and_ the assembly sub-strategy to the end user
     # as a document request parameter so we'll just choose an arbitrary

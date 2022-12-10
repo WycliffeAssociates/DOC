@@ -393,10 +393,7 @@ def send_email_with_attachment(
                 lexception("Unable to open one of the attachments. Caught exception: ")
 
         # Get the email body
-        message_body = instantiated_template(
-            "email",
-            document_request_key
-        )
+        message_body = instantiated_template("email", document_request_key)
         logger.debug("instantiated email template: %s", message_body)
 
         outer.attach(MIMEText(message_body, "plain"))

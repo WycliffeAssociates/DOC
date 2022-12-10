@@ -197,9 +197,6 @@ class Settings(BaseSettings):
     # PDF.
     SUCCESS_MESSAGE: str = "Success! Please retrieve your generated document using a GET REST request to /pdf/{document_request_key} or /epub/{document_request_key} or /docx/{document_request_key} (depending on whether you requested PDF, ePub, or Docx result) where document_request_key is the finished_document_request_key in this payload."
 
-    # Return the message to show to user on failure generating PDF.
-    FAILURE_MESSAGE: str = "The document request could not be fulfilled either because the resources requested are not available either currently or at all or because the system does not yet support the resources requested."
-
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200",
     # "http://localhost:8000"]'

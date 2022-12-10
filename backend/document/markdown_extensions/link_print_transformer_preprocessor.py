@@ -371,7 +371,7 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
         return source
 
     def transform_tn_prefixed_markdown_links(
-        self, source: str, working_dir: str = settings.working_dir()
+        self, source: str, working_dir: str = settings.RESOURCE_ASSETS_DIR
     ) -> str:
         """
         Transform the translation note rc link into a link pointing to
@@ -475,7 +475,7 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
             #     )
             #     path = "{}.md".format(
             #         os.path.join(
-            #             settings.working_dir(),
+            #             settings.RESOURCE_ASSETS_DIR,
             #             first_resource_path_segment,
             #             second_resource_path_segment,
             #             resource_code,
@@ -547,7 +547,7 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
             #     )
             #     path = "{}.md".format(
             #         os.path.join(
-            #             settings.working_dir(),
+            #             settings.RESOURCE_ASSETS_DIR,
             #             first_resource_path_segment,
             #             second_resource_path_segment,
             #             resource_code,

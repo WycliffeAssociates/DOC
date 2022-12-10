@@ -123,7 +123,7 @@ def attempt_asset_content_rescue(
 def asset_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
-    output_dir: str = settings.output_dir(),
+    output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
     usfm_glob_fmt_str: str = "{}**/*.usfm",
     usfm_ending_in_txt_glob_fmt_str: str = "{}**/*.txt",
     usfm_ending_in_txt_in_subdirectoy_glob_fmt_str: str = "{}**/**/*.txt",

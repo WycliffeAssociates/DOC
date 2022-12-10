@@ -517,35 +517,35 @@ def convert_html_to_docx(
 
 
 def html_filepath(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
 ) -> str:
     """Given document_request_key, return the HTML output file path."""
     return join(output_dir, "{}.html".format(document_request_key))
 
 
 def pdf_filepath(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
 ) -> str:
     """Given document_request_key, return the PDF output file path."""
     return join(output_dir, "{}.pdf".format(document_request_key))
 
 
 def epub_filepath(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
 ) -> str:
     """Given document_request_key, return the ePub output file path."""
     return join(output_dir, "{}.epub".format(document_request_key))
 
 
 def docx_filepath(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
 ) -> str:
     """Given document_request_key, return the docx output file path."""
     return join(output_dir, "{}.docx".format(document_request_key))
 
 
 def cover_filepath(
-    document_request_key: str, output_dir: str = settings.output_dir()
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
 ) -> str:
     """Given document_request_key, return the HTML cover output file path."""
     return join(output_dir, "{}_cover.html".format(document_request_key))
@@ -638,17 +638,14 @@ def write_html_content_to_file(
 
 def copy_file_to_docker_output_dir(
     filepath: str,
-    docker_container_document_output_dir: str = settings.DOCKER_CONTAINER_DOCUMENT_OUTPUT_DIR,
-    in_container: bool = settings.IN_CONTAINER,
+    document_output_dir: str = settings.DOCUMENT_SERVE_DIR,
 ) -> None:
     """
     Copy file to docker_container_document_output_dir.
     """
     assert exists(filepath)
-    logger.debug("IN_CONTAINER: {}".format(in_container))
-    if in_container:
-        logger.info("About to cp file to Docker volume")
-        shutil.copy(filepath, docker_container_document_output_dir)
+    logger.debug("About to cp file to %s", document_output_dir)
+    shutil.copy(filepath, document_output_dir)
 
 
 @worker.app.task

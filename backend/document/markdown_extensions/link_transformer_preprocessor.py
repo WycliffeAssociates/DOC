@@ -375,7 +375,10 @@ class LinkTransformerPreprocessor(markdown.preprocessors.Preprocessor):
         return source
 
     def transform_tn_prefixed_markdown_links(
-        self, source: str, working_dir: str = settings.working_dir(), tn: str = "tn"
+        self,
+        source: str,
+        working_dir: str = settings.RESOURCE_ASSETS_DIR,
+        tn: str = "tn",
     ) -> str:
         """
         Transform the translation note rc link into a link pointing to
@@ -447,7 +450,10 @@ class LinkTransformerPreprocessor(markdown.preprocessors.Preprocessor):
         return source
 
     def transform_tn_markdown_links(
-        self, source: str, tn: str = "tn", working_dir: str = settings.working_dir()
+        self,
+        source: str,
+        tn: str = "tn",
+        working_dir: str = settings.RESOURCE_ASSETS_DIR,
     ) -> str:
         """
         Transform the translation note rc link into a link pointing to
@@ -521,7 +527,10 @@ class LinkTransformerPreprocessor(markdown.preprocessors.Preprocessor):
         return source
 
     def transform_tn_missing_resource_code_markdown_links(
-        self, source: str, tn: str = "tn", working_dir: str = settings.working_dir()
+        self,
+        source: str,
+        tn: str = "tn",
+        working_dir: str = settings.RESOURCE_ASSETS_DIR,
     ) -> str:
         """
         Transform the translation note rc link into a link pointing to
@@ -631,8 +640,6 @@ class LinkTransformerExtension(markdown.Extension):
             "link_transformer",
             32,
         )
-
-
 
 
 def wiki_link_parser(source: str) -> list[WikiLink]:

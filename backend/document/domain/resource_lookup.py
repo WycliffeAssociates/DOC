@@ -69,7 +69,7 @@ def fetch_source_data(working_dir: str, json_file_url: str) -> Any:
 
 def _lookup(
     json_path: str,
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
 ) -> Any:
     """Return jsonpath value or empty list if JSON node doesn't exist."""
@@ -375,7 +375,7 @@ def t_resource_lookup(
 
 
 def lang_codes(
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
     lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
 ) -> Iterable[Any]:
@@ -390,7 +390,7 @@ def lang_codes(
 
 
 def lang_codes_and_names(
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
     lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
 ) -> list[str]:
@@ -496,7 +496,7 @@ def resource_types_for_lang(
 
 def resource_types_and_names_for_lang(
     lang_code: str,
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     english_resource_type_map: Mapping[str, str] = settings.ENGLISH_RESOURCE_TYPE_MAP,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
@@ -612,7 +612,7 @@ def supported_resource_type(
 # Experimental alternative
 def resource_codes_and_types_for_lang(
     lang_code: str,
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
     tw_resource_types: Sequence[str] = settings.TW_RESOURCE_TYPES,
     bc_resource_types: Sequence[str] = settings.BC_RESOURCE_TYPES,
@@ -980,7 +980,7 @@ def resource_codes_and_types_for_lang(
 def shared_resource_types(
     lang_code: str,
     resource_codes: Sequence[str],
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     english_resource_type_map: Mapping[str, str] = settings.ENGLISH_RESOURCE_TYPE_MAP,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
     lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
@@ -1093,7 +1093,7 @@ def resource_codes_for_lang(
     jsonpath_str: str = settings.RESOURCE_CODES_FOR_LANG_JSONPATH,
     book_names: Mapping[str, str] = bible_books.BOOK_NAMES,
     book_numbers: Mapping[str, str] = bible_books.BOOK_NUMBERS,
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 ) -> Sequence[tuple[str, str]]:
@@ -1127,7 +1127,7 @@ def resource_codes_for_lang(
 #     jsonpath_str: str = settings.RESOURCE_CODES_FOR_LANG_JSONPATH,
 #     book_names: Mapping[str, str] = bible_books.BOOK_NAMES,
 #     book_numbers: Mapping[str, str] = bible_books.BOOK_NUMBERS,
-#     working_dir: str = settings.working_dir(),
+#     working_dir: str = settings.RESOURCE_ASSETS_DIR,
 #     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
 #     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 # ) -> Sequence[tuple[str, str]]:
@@ -1188,7 +1188,7 @@ def resource_codes(jsonpath_str: str = settings.RESOURCE_CODES_JSONPATH) -> Any:
 
 
 def lang_codes_names_and_resource_types(
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
 ) -> Iterable[CodeNameTypeTriplet]:
     """
@@ -1223,7 +1223,7 @@ def lang_codes_names_and_resource_types(
 
 
 def lang_codes_names_resource_types_and_resource_codes(
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
 ) -> Iterable[tuple[str, str, Sequence[tuple[str, Sequence[str]]]]]:
     """
@@ -1285,7 +1285,7 @@ def lang_codes_names_resource_types_and_resource_codes(
 # NOTE Only used for debugging and testing. Not part of long-term
 # API.
 def lang_codes_names_and_contents_codes(
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
     translations_json_location: str = settings.TRANSLATIONS_JSON_LOCATION,
 ) -> Sequence[tuple[str, str, str]]:
     """
@@ -1417,7 +1417,7 @@ def provision_asset_files(resource_lookup_dto: ResourceLookupDto) -> str:
 def resource_directory(
     lang_code: str,
     resource_type: str,
-    working_dir: str = settings.working_dir(),
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
 ) -> str:
     """Return the resource directory for the resource_lookup_dto."""
     return join(

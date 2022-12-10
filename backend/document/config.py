@@ -91,8 +91,6 @@ class Settings(BaseSettings):
     VERSE_ANCHOR_ID_FMT_STR: str = 'id="(.+?)-ch-(.+?)-v-(.+?)"'
     VERSE_ANCHOR_ID_SUBSTITUTION_FMT_STR: str = r"id='{}-\1-ch-\2-v-\3'"
 
-    LOGGING_CONFIG_FILE_PATH: str = "backend/document/logging_config.yaml"
-    DOCKER_CONTAINER_DOCUMENT_OUTPUT_DIR: str = "/document_output"
     USFM_RESOURCE_TYPES: Sequence[str] = [
         "cuv",
         "f10",
@@ -156,48 +154,21 @@ class Settings(BaseSettings):
 
     API_LOCAL_PORT: int
 
-    # Location where resource assets will be downloaded.
-    DOCKER_RESOURCE_ASSETS_DIR: str = "/app/working/temp"
-    RESOURCE_ASSETS_DIR: str = "working/temp"
-
     # Indicate whether running in Docker container.
     IN_CONTAINER: bool = False
 
     USE_GIT_CLI: bool = False
 
-    def working_dir(self) -> str:
-        """
-        The directory where the resources will be placed once
-        acquired.
-        """
-        if self.IN_CONTAINER:
-            return self.DOCKER_RESOURCE_ASSETS_DIR
-        else:
-            return self.RESOURCE_ASSETS_DIR
+    LOGGING_CONFIG_FILE_PATH: str = "backend/document/logging_config.yaml"
+
+    # Location where resource assets will be downloaded.
+    RESOURCE_ASSETS_DIR: str = "working/temp"
 
     # Location where generated PDFs will be written to.
-    DOCUMENT_OUTPUT_DIR: str = "/working/output"
-
-    def output_dir(self) -> str:
-        """The directory where the generated documents are placed."""
-        dirname = ""
-        if self.IN_CONTAINER:
-            dirname = self.DOCUMENT_OUTPUT_DIR
-        else:
-            dirname = self.DOCUMENT_OUTPUT_DIR[1:]
-        return dirname
+    DOCUMENT_OUTPUT_DIR: str = "working/output"
 
     # Location where generated PDFs will be written to.
-    DOCUMENT_SERVE_DIR: str = "/document_output"
-
-    def document_serve_dir(self) -> str:
-        """The directory where the generated documents are served from."""
-        dirname = ""
-        if self.IN_CONTAINER:
-            dirname = self.DOCUMENT_SERVE_DIR
-        else:
-            dirname = self.DOCUMENT_SERVE_DIR[1:]
-        return dirname
+    DOCUMENT_SERVE_DIR: str = "document_output"
 
     # For options see https://wkhtmltopdf.org/usage/wkhtmltopdf.txt
     WKHTMLTOPDF_OPTIONS: dict[str, Optional[str]] = {

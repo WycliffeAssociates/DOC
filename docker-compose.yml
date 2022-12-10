@@ -33,6 +33,7 @@ services:
     depends_on:
       - api
       - redis
+    restart: unless-stopped
   redis:
     image: redis:latest
   celery-dashboad:

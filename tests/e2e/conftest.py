@@ -244,15 +244,14 @@ def english_resource_requests(
     resource types passed in as a parameter and a resource_code. This
     will cycle through all resource_codes.
     """
-    resource_requests = []
-    for resource_type in random_english_resource_type_combo:
-        resource_requests.append(
-            model.ResourceRequest(
-                lang_code=english_lang_code,
-                resource_type=resource_type,
-                resource_code=resource_code,
-            )
+    resource_requests = [
+        model.ResourceRequest(
+            lang_code=english_lang_code,
+            resource_type=resource_type,
+            resource_code=resource_code,
         )
+        for resource_type in random_english_resource_type_combo
+    ]
     return resource_requests
 
 
@@ -267,15 +266,14 @@ def random_english_resource_requests(
     resource types passed in as a parameter and a randomly chosen
     resource code.
     """
-    resource_requests = []
-    for resource_type in random_english_resource_type_combo:
-        resource_requests.append(
-            model.ResourceRequest(
-                lang_code=english_lang_code,
-                resource_type=resource_type,
-                resource_code=random_resource_code,
-            )
+    resource_requests = [
+        model.ResourceRequest(
+            lang_code=english_lang_code,
+            resource_type=resource_type,
+            resource_code=random_resource_code,
         )
+        for resource_type in random_english_resource_type_combo
+    ]
     return resource_requests
 
 
@@ -290,15 +288,14 @@ def random_non_english_resource_requests(
     non-English lang_code, the set of non-English resource types
     passed in as a parameter, and a randomly chosen resource code.
     """
-    resource_requests = []
-    for resource_type in random_non_english_resource_type_combo:
-        resource_requests.append(
-            model.ResourceRequest(
-                lang_code=random_non_english_lang_code,
-                resource_type=resource_type,
-                resource_code=random_resource_code2,
-            )
+    resource_requests = [
+        model.ResourceRequest(
+            lang_code=random_non_english_lang_code,
+            resource_type=resource_type,
+            resource_code=random_resource_code2,
         )
+        for resource_type in random_non_english_resource_type_combo
+    ]
     return resource_requests
 
 
@@ -314,15 +311,14 @@ def random_failing_non_english_resource_requests(
     if USFM is requested, the set of non-English resource types
     passed in as a parameter, and a randomly chosen resource code.
     """
-    resource_requests = []
-    for resource_type in random_non_english_resource_type_combo:
-        resource_requests.append(
-            model.ResourceRequest(
-                lang_code=random_failing_non_english_lang_code,
-                resource_type=resource_type,
-                resource_code=random_resource_code2,
-            )
+    resource_requests = [
+        model.ResourceRequest(
+            lang_code=random_failing_non_english_lang_code,
+            resource_type=resource_type,
+            resource_code=random_resource_code2,
         )
+        for resource_type in random_non_english_resource_type_combo
+    ]
     return resource_requests
 
 
@@ -337,15 +333,14 @@ def random_non_english_resource_requests2(
     non-English lang_code, the set of non-English resource types
     passed in as a parameter, and a randomly chosen resource code.
     """
-    resource_requests = []
-    for resource_type in random_non_english_resource_type_combo:
-        resource_requests.append(
-            model.ResourceRequest(
-                lang_code=random_non_english_lang_code2,
-                resource_type=resource_type,
-                resource_code=random_resource_code,
-            )
+    resource_requests = [
+        model.ResourceRequest(
+            lang_code=random_non_english_lang_code2,
+            resource_type=resource_type,
+            resource_code=random_resource_code,
         )
+        for resource_type in random_non_english_resource_type_combo
+    ]
     return resource_requests
 
 

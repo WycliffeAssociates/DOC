@@ -82,11 +82,9 @@ stop-and-remove:
 	docker ps -q | xargs docker stop
 	docker ps -a -q -f status=exited | xargs docker rm
 
-
-.PHONY: test
-test: up-as-daemon
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/unit /app/tests/integration /app/tests/e2e
-
+.PHONY: list-pytest-markers
+list-pytest-markers:
+	pytest --strict-markers
 
 .PHONY: clean-local-docker-output-dir
 clean-local-docker-output-dir:
@@ -94,14 +92,17 @@ clean-local-docker-output-dir:
 	find docker_document_output/ -type f -name "*.epub" -exec rm -- {} +
 	find docker_document_output/ -type f -name "*.docx" -exec rm -- {} +
 
+.PHONY: test
+test: up-as-daemon
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/unit /app/tests/e2e
+
 .PHONY: unit-tests
 unit-tests: up-as-daemon
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /app/tests/unit
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/unit
 
 .PHONY: e2e-tests
 e2e-tests: up-as-daemon clean-local-docker-output-dir
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api -n auto /app/tests/e2e
-
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/e2e
 
 .PHONY: frontend-tests
 frontend-tests: up-as-daemon
@@ -120,6 +121,9 @@ get-usfm-tools-source-locally:
 	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools  && \
 	cd ./USFM-Tools && \
 	cp -r ./usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
+.PHONY: test-randomized
+test-randomized: up-as-daemon
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m randomized -n auto /app/tests/unit /app/tests/e2e
 
 .PHONY: build-usfm-tools
 build-usfm-tools:

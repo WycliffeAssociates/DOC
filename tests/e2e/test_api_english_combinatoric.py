@@ -17,7 +17,7 @@ from document.domain import model
 # in additional places so you aren't not testing English resources by
 # skipping this. This is just additional coverage that could be run
 # once in a while.
-@pytest.mark.skip
+@pytest.mark.randomized
 def test_english_variable_resource_type_combos_for_all_books(
     english_document_request: model.DocumentRequest,
 ) -> None:

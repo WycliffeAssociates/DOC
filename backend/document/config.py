@@ -208,7 +208,7 @@ class Settings(BaseSettings):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):
             return v
-        raise ValueError(v)
+        raise ValueError("Malformed JSON for BACKEND_CORS_ORIGINS value.")
 
     # Return the file names, excluding suffix, of files that do not
     # contain content but which may be in the same directory or

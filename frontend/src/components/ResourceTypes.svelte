@@ -13,7 +13,6 @@
     lang1ResourceTypesStore,
     resourceTypesCountStore
   } from '../stores/ResourceTypesStore'
-  import { resetValuesStore } from '../stores/NotificationStore'
   import LeftArrow from './LeftArrow.svelte'
   import ProgressIndicator from './ProgressIndicator.svelte'
   import { getApiRootUrl, resetStores } from '../lib/utils'
@@ -36,8 +35,6 @@
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-    // const codes = resourceTypesAndNames.map((x: [string, string]) => x[0])
-    // console.log(`codes: ${codes}`)
 
     return resourceTypesAndNames
   }

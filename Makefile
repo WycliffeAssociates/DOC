@@ -26,32 +26,32 @@ ifeq ("$(wildcard .venv/bin/pip-sync)","")
 endif
 
 .PHONY: build
-build: checkvenv clean-mypyc-artifacts local-install-deps-prod
+build: checkvenv down clean-mypyc-artifacts local-install-deps-dev local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 
 .PHONY: build-no-pip-update
-build-no-pip-update: checkvenv clean-mypyc-artifacts
+build-no-pip-update: checkvenv down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 .PHONY: build-no-pip-update-run-tests
-build-no-pip-update-run-tests: checkvenv clean-mypyc-artifacts
+build-no-pip-update-run-tests: checkvenv down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --build-arg RUN_TESTS=true --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 .PHONY: build-no-cache
-build-no-cache: checkvenv clean-mypyc-artifacts local-install-deps-prod
+build-no-cache: checkvenv down clean-mypyc-artifacts local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain --no-cache -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build --progress=plain --no-cache -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
 
 .PHONY: build-no-cache-no-pip-update
-build-no-cache-no-pip-update: checkvenv clean-mypyc-artifacts
+build-no-cache-no-pip-update: checkvenv down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --progress=plain --no-cache -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build --progress=plain --no-cache -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend

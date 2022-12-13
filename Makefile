@@ -129,8 +129,8 @@ build-usfm-tools:
 	cp -r /tmp/USFM-Tools/usfm_tools ~/src/WA/github.com/linearcombination/DOC/.venv/lib/python3.11/site-packages/
 	rm -rf /tmp/USFM-Tools
 
-# You may need to run 'make get-usfm-tools-source-locally' first if it
-# complains about usfm_tools not being typed.
+# You may need to run 'make build-usfm-tools' first if it
+# complains about usfm_tools not being available or typed.
 .PHONY: mypy
 mypy: checkvenv
 	mypy --strict --install-types --non-interactive backend/document/**/*.py

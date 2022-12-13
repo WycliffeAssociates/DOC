@@ -75,7 +75,7 @@ build-and-run: build up
 
 .PHONY: down
 down:
-	docker-compose down --remove-orphans
+	BACKEND_API_URL=http://localhost:5005 docker-compose down --remove-orphans
 
 .PHONY: stop-and-remove
 stop-and-remove:

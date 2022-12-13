@@ -995,6 +995,8 @@ def shared_resource_types(
     [('tn', 'Translation Notes (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)'), ('ulb', 'Brazilian Portuguese Unlocked Literal Bible (ulb)')]
     >>> list(resource_lookup.shared_resource_types("fr", ["gen"]))
     [('f10', 'French Louis Segond 1910 Bible (f10)'), ('tn', 'Translation Notes (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)')]
+    >>> list(resource_lookup.shared_resource_types("es-419", ["gen"]))
+    [('tn', 'Translation Notes (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)'), ('ulb', 'Español Latino Americano ULB (ulb)')]
     """
 
     if lang_code == "en":

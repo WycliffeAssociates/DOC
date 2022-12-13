@@ -9,9 +9,13 @@ from enum import Enum
 from typing import Any, Callable, NamedTuple, Optional, Sequence, Union, final
 
 import orjson
-from pydantic import BaseModel, EmailStr
 
-# These Type Aliases give us more self-documenting code, but of course
+from document.utils.number_utils import is_even
+from toolz import itertoolz  # type: ignore
+from more_itertools import all_equal
+from pydantic import BaseModel, EmailStr, root_validator, validator
+
+# These type aliases give us more self-documenting code, but of course
 # aren't strictly necessary.
 HtmlContent = str
 MarkdownContent = str
@@ -168,6 +172,112 @@ class DocumentRequest(BaseModel):
     generate_epub: bool = False
     # Indicate whether Docx should be generated.
     generate_docx: bool = False
+
+    @root_validator
+    def ensure_valid_document_request(cls, values: Any) -> Any:
+        """
+        See ValueError messages below for the rules we are enforcing.
+        """
+        if values.get("layout_for_print") and (
+            values.get("generate_epub") or values.get("generate_docx")
+        ):
+            raise ValueError(
+                "Only PDF (or HTML which is the same as not choosing any output format) is a valid output format option when layout for print is chosen."
+            )
+        # NOTE Commented out because, actually, we allow users to
+        # specify the non-compact assembly layout kinds and we then set them to
+        # the compact version if layout for print
+        # is chosen (and all other requirements are met) to provide a
+        # better UX.
+        # elif values.get("layout_for_print") and not (
+        #     values.get("assembly_layout_kind") == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
+        #     or values.get("assembly_layout_kind")
+        #     == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT
+        # ):
+        #     raise ValueError(
+        #         "Only one column compact assembly layout kind or two column scripture left, scripture right compact assembly layout kind is suitable when layout for print is chosen."
+        #     )
+
+        from document.config import settings
+
+        usfm_resource_types = [
+            *settings.USFM_RESOURCE_TYPES,
+            *settings.EN_USFM_RESOURCE_TYPES,
+        ]
+
+        # Partition ulb resource requests by language.
+        language_groups = itertoolz.groupby(
+            lambda r: r.lang_code,
+            filter(
+                lambda r: r.resource_type in usfm_resource_types,
+                values.get("resource_requests"),
+            ),
+        )
+        # Get a list of the sorted set of books for each language for later
+        # comparison.
+        sorted_book_set_for_each_language = [
+            sorted({item.resource_code for item in value})
+            for key, value in language_groups.items()
+        ]
+
+        # Get the unique number of languages
+        number_of_usfm_languages = len(
+            set(
+                [
+                    resource_request.lang_code
+                    for resource_request in values.get("resource_requests")
+                    if resource_request.resource_type in usfm_resource_types
+                ]
+            )
+        )
+
+        if (
+            values.get("assembly_layout_kind")
+            == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
+            and values.get("assembly_strategy_kind")
+            != AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+        ):
+            raise ValueError(
+                "Two column scripture left, scripture right layout is only compatible with book language order assembly strategy."
+            )
+        elif (
+            values.get("assembly_layout_kind")
+            == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
+            and values.get("assembly_strategy_kind")
+            == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+            # Because book content for different languages will be side by side for
+            # the scripture left scripture right layout, we make sure there are a non-zero
+            # even number of languages so that we can display them left and right in
+            # pairs.
+            and not (number_of_usfm_languages > 1 and is_even(number_of_usfm_languages))
+        ):
+            raise ValueError(
+                "Two column scripture left, scripture right layout requires a non-zero even number of books. For an uneven number of books you'll want to use the one column layout kind."
+            )
+        elif (
+            values.get("assembly_layout_kind")
+            == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
+            and values.get("assembly_strategy_kind")
+            == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+            # Because book content for different languages will be side by side for
+            # the scripture left scripture right layout, we make sure there are a non-zero
+            # even number of languages so that we can display them left and right in
+            # pairs.
+            and number_of_usfm_languages > 1
+            and is_even(number_of_usfm_languages)
+            # Each language must have the same set of books in order to
+            # use the scripture left scripture right layout strategy. As an example,
+            # you wouldn't want to allow the sl-sr layout if the document request
+            # asked for swahili ulb for lamentations and spanish ulb for nahum -
+            # the set of books in each language are not the same and so do not make
+            # sense to be displayed side by side.
+            and not all_equal(sorted_book_set_for_each_language)
+        ):
+            raise ValueError(
+                "Two column scripture left, scripture right layout requires the same books for each language chosen since they are displayed side by side. If you want a different set of books for each language you'll instead need to use the one column layout."
+            )
+
+        return values
 
     class Config:
         json_loads = orjson.loads

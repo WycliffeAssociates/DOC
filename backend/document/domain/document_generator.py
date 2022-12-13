@@ -551,70 +551,49 @@ def cover_filepath(
 def select_assembly_layout_kind(
     document_request: DocumentRequest,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    language_book_order: AssemblyStrategyEnum = AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
     book_language_order: AssemblyStrategyEnum = AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
-    print_layout: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-    # NOTE Could also have default value for non_print_layout_for_multiple_usfm of
-    non_print_layout_for_multiple_usfm: AssemblyLayoutEnum = AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
-    default_layout: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN,
+    one_column_compact: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
+    sl_sr: AssemblyLayoutEnum = AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
+    sl_sr_compact: AssemblyLayoutEnum = AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,
+    one_column: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN,
 ) -> AssemblyLayoutEnum:
     """
     Make an intelligent choice of what layout to use given the
-    DocumentRequest instance the user has requested. Why? Because we
-    don't want to bother the user with having to choose a layout which
-    would require them to understand what layouts could work well for
-    their particular document request. Instead, we make the choice for
-    them.
+    DocumentRequest instance the user has requested. Why? Because we don't
+    want to bother the user with having to choose a layout which would
+    require them to understand what layouts could work well for their
+    particular document request. Instead, we make the choice for them.
+    Note that prior to this, we've already validated the DocumentRequest
+    instance in the DocumentRequest's validator.
     """
-    if not document_request.layout_for_print:
-        document_request.layout_for_print = False
-    if document_request.layout_for_print:
-        return print_layout
+    if not document_request.assembly_layout_kind:
+        document_request.assembly_layout_kind = one_column
 
-    # Partition ulb resource requests by language.
-    language_groups = itertoolz.groupby(
-        lambda r: r.lang_code,
-        filter(
-            lambda r: r.resource_type in usfm_resource_types,
-            document_request.resource_requests,
-        ),
-    )
-    # Get a list of the sorted set of books for each language for later
-    # comparison.
-    sorted_book_set_for_each_language = [
-        sorted({item.resource_code for item in value})
-        for key, value in language_groups.items()
-    ]
-
-    # Get the unique number of languages
-    number_of_usfm_languages = len(
-        set(
-            [
-                resource_request.lang_code
-                for resource_request in document_request.resource_requests
-                if resource_request.resource_type in usfm_resource_types
-            ]
-        )
+    logger.debug(
+        "updated document_request: %s",
+        document_request,
     )
 
     if (
-        document_request.assembly_strategy_kind == book_language_order
-        # Because book content for different languages will be side by side for
-        # the scripture left scripture right layout, we make sure there are a non-zero
-        # even number of languages so that we can display them left and right in
-        # pairs.
-        and number_of_usfm_languages > 1
-        and number_utils.is_even(number_of_usfm_languages)
-        # Each language must have the same set of books in order to
-        # use the scripture left scripture right layout strategy. As an example,
-        # you wouldn't want to allow the sl-sr layout if the document request
-        # asked for swahili ulb for lamentations and spanish ulb for nahum -
-        # the set of books in each language are not the same and so do not make
-        # sense to be displayed side by side.
-        and more_itertools.all_equal(sorted_book_set_for_each_language)
+        document_request.layout_for_print
+        and document_request.assembly_strategy_kind == language_book_order
     ):
-        return non_print_layout_for_multiple_usfm
+        return one_column_compact
+    elif (
+        document_request.layout_for_print
+        and document_request.assembly_strategy_kind == book_language_order
+        and document_request.assembly_layout_kind == sl_sr
+    ):
+        return sl_sr_compact
+    elif (
+        document_request.layout_for_print
+        and document_request.assembly_strategy_kind == book_language_order
+        and document_request.assembly_layout_kind == one_column
+    ):
+        return one_column_compact
 
-    return default_layout
+    return one_column
 
 
 def write_html_content_to_file(
@@ -659,14 +638,9 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
     # then we know that the request originated from a unit test. The UI does
     # not provide a way to choose an arbitrary layout, but unit tests can
     # specify a layout arbitrarily. We must handle both situations.
-    if not document_request.assembly_layout_kind:
-        document_request.assembly_layout_kind = select_assembly_layout_kind(
-            document_request
-        )
-        logger.debug(
-            "updated document_request: %s",
-            document_request,
-        )
+    document_request.assembly_layout_kind = select_assembly_layout_kind(
+        document_request
+    )
     # Generate the document request key that identifies this and
     # identical document requests.
     document_request_key_ = document_request_key(

@@ -125,7 +125,7 @@ then ...
 
 In another terminal window, in project root directory, in virtual env (source .venv/bin/activate[.fish]):
  #+begin_src shell
- IN_CONTAINER=false celery --app=document.domain.worker.app worker  --loglevel=DEBUG -E
+ celery --app=document.domain.worker.app worker  --loglevel=DEBUG -E
  #+end_src
 
 **** (optional) Run flower (a celery dashboard)

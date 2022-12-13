@@ -154,9 +154,6 @@ class Settings(BaseSettings):
 
     API_LOCAL_PORT: int
 
-    # Indicate whether running in Docker container.
-    IN_CONTAINER: bool = False
-
     USE_GIT_CLI: bool = False
 
     LOGGING_CONFIG_FILE_PATH: str = "backend/document/logging_config.yaml"

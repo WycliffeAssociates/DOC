@@ -399,8 +399,6 @@ def lang_codes_and_names(
     of all language code, name tuples available through API.
     Presumably this could be called to populate a drop-down menu.
 
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> data = resource_lookup.lang_codes_and_names()
     >>> data[0]
@@ -431,8 +429,6 @@ def resource_types_for_langs(
     one USFM resource type as this relates to a bug I need to handle.
 
     Commenting out for now so that I can run other doctests as this takes a while.
-    >>> # from document.config import settings
-    >>> # settings.IN_CONTAINER = False
     >>> # from document.domain import resource_lookup
     >>> # data = resource_lookup.resource_types_for_langs()
     >>> # list(data)
@@ -510,10 +506,6 @@ def resource_types_and_names_for_lang(
     through API. Presumably this could be called to populate a
     drop-down menu.
 
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
-    >>> settings.IN_CONTAINER
-    False
     >>> from document.domain import resource_lookup
     >>> import logging
     >>> import sys
@@ -621,10 +613,6 @@ def resource_codes_and_types_for_lang(
     Obtain the max resource codes available for each supported
     resource type for a particular language.
 
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
-    >>> settings.IN_CONTAINER
-    False
     >>> from document.domain import resource_lookup
     >>> import logging
     >>> import sys
@@ -989,8 +977,6 @@ def shared_resource_types(
     Given a language code and a list of resource_codes, return the
     collection of resource types available.
 
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> list(resource_lookup.shared_resource_types("en", ["2co"]))
     [('ulb-wa', 'Unlocked Literal Bible (ULB)'), ('tn-wa', 'ULB Translation Helps'), ('tq-wa', 'ULB Translation Questions'), ('tw-wa', 'ULB Translation Words'), ('bc-wa', 'Bible Commentary')]
@@ -1066,8 +1052,6 @@ def shared_resource_codes(
     Given two language codes, return the intersection of resource
     codes between the two languages.
 
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> # Hack to ignore logging output: https://stackoverflow.com/a/33400983/3034580
     >>> # FIXME kbt shouldn't be obtainable due to an invalid URL in translations.json
@@ -1101,8 +1085,6 @@ def resource_codes_for_lang(
     Convenience method that can be called, e.g., from the UI, to
     get the set of all resource codes for a particular lang_code.
 
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> # Hack to ignore logging output causing doctest failure: https://stackoverflow.com/a/33400983/3034580
     >>> ();data = resource_lookup.resource_codes_for_lang("fr");() # doctest:+ELLIPSIS
@@ -1135,8 +1117,6 @@ def resource_codes_for_lang(
 #     Convenience method that can be called, e.g., from the UI, to
 #     get the set of all resource codes for a particular lang_code.
 
-#     >>> from document.config import settings
-#     >>> settings.IN_CONTAINER = False
 #     >>> from document.domain import resource_lookup
 #     >>> # Hack to ignore logging output: https://stackoverflow.com/a/33400983/3034580
 #     >>> ();data = resource_lookup.resource_codes_for_lang("fr");() # doctest:+ELLIPSIS
@@ -1197,8 +1177,6 @@ def lang_codes_names_and_resource_types(
     resource types available for that language.
 
     Example usage in repl:
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> data = resource_lookup.lang_codes_names_and_resource_types()
     >>> # Lookup the resource types available for zh
@@ -1234,8 +1212,6 @@ def lang_codes_names_resource_types_and_resource_codes(
     type.
 
     Example usage in repl:
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> data = resource_lookup.lang_codes_names_resource_types_and_resource_codes()
     >>> # Lookup the resource type available for zh
@@ -1307,8 +1283,6 @@ def lang_codes_names_and_contents_codes(
             ...
 
     Example usage in repl:
-    >>> from document.config import settings
-    >>> settings.IN_CONTAINER = False
     >>> from document.domain import resource_lookup
     >>> data = resource_lookup.lang_codes_names_and_contents_codes()
     >>> [(triplet[0], triplet[1]) for triplet in data if triplet[2] == "nil"]

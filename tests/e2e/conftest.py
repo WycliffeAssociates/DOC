@@ -30,13 +30,12 @@ PASSING_NON_ENGLISH_LANG_CODES: Sequence[str] = [
     "zh",
 ]
 
-# Every once in a while, outside the Docker environment, it is good to
-# allow tests against more language codes. Here we use all language
-# codes. The system randomized fixtures that use
-# PASSING_NON_ENGLISH_LANG_CODES will then have all languages to
-# choose from randomly of which it will choose a subset.
-if not os.environ.get("IN_CONTAINER"):
-    json_filepath = "./language_codes.json"
+# Every once in a while, it is good to allow tests against more language
+# codes. Here we use all language codes. The system randomized fixtures
+# that use PASSING_NON_ENGLISH_LANG_CODES will then have all languages
+# to choose from randomly of which it will choose a subset.
+if os.environ.get("ALL_LANGUAGE_CODES"):
+    json_filepath = "../../language_codes.json"
     ALL_LANGUAGE_CODES = file_utils.load_json_object(pathlib.Path(json_filepath))
     PASSING_NON_ENGLISH_LANG_CODES = ALL_LANGUAGE_CODES
 

@@ -21,9 +21,11 @@
     langCode: string,
     resourceCodeAndNames: Array<[string, string]>,
     apiRootUrl = getApiRootUrl(),
-    resourceTypesUrl = <string>import.meta.env.VITE_RESOURCE_TYPES_URL
+    sharedResourceTypesUrl = <string>import.meta.env.VITE_SHARED_RESOURCE_TYPES_URL
   ): Promise<Array<[string, string]>> {
-    const url_ = `${apiRootUrl}${resourceTypesUrl}${langCode}/`
+    // Form the URL to ultimately invoke
+    // resource_lookup.shared_resource_types.
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/`
     const url = new URL(url_)
     resourceCodeAndNames.map(resourceCodeAndName =>
       url.searchParams.append('resource_codes', resourceCodeAndName[0])

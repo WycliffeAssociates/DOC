@@ -100,9 +100,13 @@ test('test ePub and Docx options not available when print layout is chosen, but 
   await expect(page).toHaveURL('/#/')
   await page.getByRole('link', { name: 'Settings' }).click()
   await expect(page).toHaveURL('/#/settings')
-  await expect(page.locator('span:has-text("Generate PDF")')).toBeVisible()
-  await expect(page.locator('span:has-text("Generate ePub")')).not.toBeVisible()
-  await expect(page.locator('span:has-text("Generate Docx")')).not.toBeVisible()
+  await expect(page.locator('span:has-text("(Optional) Generate PDF")')).toBeVisible()
+  await expect(
+    page.locator('span:has-text("(Optional) Generate ePub")')
+  ).not.toBeVisible()
+  await expect(
+    page.locator('span:has-text("(Optional) Generate Docx")')
+  ).not.toBeVisible()
 })
 
 test('test assembly strategy drop down not available when print layout deselected and only one language chosen; PDF, ePub, Docx options present', async ({
@@ -136,7 +140,7 @@ test('test assembly strategy drop down not available when print layout deselecte
     .nth(3)
     .click()
   await expect(page.locator('select[name="assemblyStrategy"]')).not.toBeVisible()
-  await expect(page.locator('span:has-text("Generate PDF")')).toBeVisible()
-  await expect(page.locator('span:has-text("Generate ePub")')).toBeVisible()
-  await expect(page.locator('span:has-text("Generate Docx")')).toBeVisible()
+  await expect(page.locator('span:has-text("(Optional) Generate PDF")')).toBeVisible()
+  await expect(page.locator('span:has-text("(Optional) Generate ePub")')).toBeVisible()
+  await expect(page.locator('span:has-text("(Optional) Generate Docx")')).toBeVisible()
 })

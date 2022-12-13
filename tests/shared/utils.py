@@ -50,8 +50,12 @@ def check_result(
                 assert response2.ok
                 break
             elif response2.json()["state"] == failure_state:
-                logger.info("Test failed likely due to celery task failure")
-                raise Exception("Test failed")
+                logger.info(
+                    "Test failed likely due to celery task failure, check the celery flower dashboard"
+                )
+                raise Exception(
+                    "Received celery FAILURE state therefore e2e test failed"
+                )
             time.sleep(poll_duration)
     return finished_document_request_key
 

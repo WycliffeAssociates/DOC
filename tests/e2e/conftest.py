@@ -13,12 +13,11 @@ from document.config import settings
 from document.domain import bible_books, model
 from document.utils import file_utils
 
-# A blessed set of language codes that can be used to generate tests
-# that pass, i.e., they are well supported for all their resource
-# types and (hopefully) all their resource codes (i.e., books). This
-# is by no means the only language codes that are supported. It is
-# just that the more language codes we add here the longer the
-# e2e-tests suite will take to complete.
+# A blessed set of language codes that can be used to randomly generate
+# tests that pass, i.e., they are well supported for all their resource
+# types and (hopefully) all their resource codes (i.e., books). These
+# are by no means the only language codes that are supported. The more
+# included the longer the tests marked 'randomized' will take to run.
 PASSING_NON_ENGLISH_LANG_CODES: Sequence[str] = [
     "es-419",
     "fr",
@@ -305,10 +304,11 @@ def random_failing_non_english_resource_requests(
     random_resource_code2: str,
 ) -> Sequence[model.ResourceRequest]:
     """
-    Build a list of resource request instances for a randomly chosen
-    non-English lang_code that has ill-formed USFM and thus can fail
-    if USFM is requested, the set of non-English resource types
-    passed in as a parameter, and a randomly chosen resource code.
+    Build a list of resource request instances for:
+    - a randomly chosen non-English lang_code that has ill-formed USFM and thus can fail
+    if USFM is requested,
+    - the set of non-English resource types passed in as a parameter, and
+    - a randomly chosen resource code.
     """
     resource_requests = [
         model.ResourceRequest(
@@ -328,9 +328,11 @@ def random_non_english_resource_requests2(
     random_resource_code: str,
 ) -> Sequence[model.ResourceRequest]:
     """
-    Build a list of resource request instances for a randomly chosen
-    non-English lang_code, the set of non-English resource types
-    passed in as a parameter, and a randomly chosen resource code.
+    Build a list of resource request instances for:
+    - a randomly chosen non-English lang_code,
+    - the set of non-English resource types
+    passed in as a parameter, and,
+    - a randomly chosen resource code.
     """
     resource_requests = [
         model.ResourceRequest(
@@ -468,8 +470,6 @@ def random_failing_non_english_document_request(
         resource_requests=random_failing_non_english_resource_requests,
     )
 
-
-# @pytest.fixture(params=[pytest.lazy_fixture("document_request")])
 
 ## Multi-language combination fixtures start here:
 

@@ -369,28 +369,6 @@ def english_document_request(
     )
 
 
-@pytest.fixture()
-def random_english_document_request(
-    email_address: pydantic.EmailStr,
-    assembly_strategy_kind: model.AssemblyStrategyEnum,
-    assembly_layout_kind: model.AssemblyLayoutEnum,
-    layout_for_print: bool,
-    generate_pdf: bool,
-    generate_epub: bool,
-    english_resource_requests: Sequence[model.ResourceRequest],
-) -> model.DocumentRequest:
-    """
-    Build one randomly chosen English language document request.
-    """
-    return model.DocumentRequest(
-        email_address=email_address,
-        assembly_strategy_kind=assembly_strategy_kind,
-        assembly_layout_kind=assembly_layout_kind,
-        layout_for_print=layout_for_print,
-        generate_pdf=generate_pdf,
-        generate_epub=generate_epub,
-        resource_requests=random_english_resource_requests,
-    )
 
 
 @pytest.fixture()

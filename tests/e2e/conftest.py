@@ -351,6 +351,7 @@ def english_document_request(
     layout_for_print: bool,
     generate_pdf: bool,
     generate_epub: bool,
+    generate_docx: bool,
     english_resource_requests: Sequence[model.ResourceRequest],
 ) -> model.DocumentRequest:
     """Build one English language document request."""
@@ -361,6 +362,7 @@ def english_document_request(
         layout_for_print=layout_for_print,
         generate_pdf=generate_pdf,
         generate_epub=generate_epub,
+        generate_docx=generate_docx,
         resource_requests=english_resource_requests,
     )
 

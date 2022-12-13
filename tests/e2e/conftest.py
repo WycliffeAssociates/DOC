@@ -21,7 +21,7 @@ from document.utils import file_utils
 # e2e-tests suite will take to complete.
 PASSING_NON_ENGLISH_LANG_CODES: Sequence[str] = [
     "es-419",
-    "f10",
+    "fr",
     "gu",
     "mr",
     "pt-br",

@@ -5,7 +5,7 @@ test.beforeEach(async ({ page, baseURL }) => {
   await page.goto(baseURL!)
 })
 
-test('test pt-br, mat, mrk, ulb, tn, tq, tw, 1c pdf', async ({ page }) => {
+test('test pt-br, mat, mrk, ulb, tn, tq, tw, 1c, pdf', async ({ page }) => {
   await page.getByRole('button', { name: '1. Languages' }).click()
   await expect(page).toHaveURL('/#/languages')
   await page.getByPlaceholder('Filter languages').fill('Bra')
@@ -31,7 +31,7 @@ test('test pt-br, mat, mrk, ulb, tn, tq, tw, 1c pdf', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Success!' })).toHaveText('Success!')
 })
 
-test('test pt-br, fr, mat, ulb, tn, tq, tw, sl-sr pdf', async ({ page }) => {
+test('test pt-br, fr, mat, ulb, tn, tq, tw, sl-sr, pdf', async ({ page }) => {
   await page.getByRole('button', { name: '1. Languages' }).click()
   await expect(page).toHaveURL('/#/languages')
   await expect(page.locator('li:has-text("Brazilian Português")')).toHaveText(

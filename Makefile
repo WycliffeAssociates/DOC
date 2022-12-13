@@ -113,15 +113,10 @@ frontend-tests: up-as-daemon
 smoke-test-with-translation-words: up-as-daemon clean-local-docker-output-dir
 	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_stream_pdf
 
-.PHONY: get-usfm-tools-source-locally
-get-usfm-tools-source-locally:
-	# In Docker we build usfm_tools package into a .so, but outside
-	# Docker we need the source to let mypy check it locally, i.e., when
-	# checking outside Docker build.
-	cd /tmp && \
-	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools  && \
-	cd ./USFM-Tools && \
-	cp -r ./usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
+.PHONY: smoke-test-with-translation-words2
+smoke-test-with-translation-words2: up-as-daemon clean-local-docker-output-dir
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_resource_types_and_names_for_lang
+
 .PHONY: test-randomized
 test-randomized: up-as-daemon
 	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m randomized -n auto /app/tests/unit /app/tests/e2e

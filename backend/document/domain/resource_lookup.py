@@ -416,6 +416,9 @@ def resource_types(jsonpath_str: str = settings.RESOURCE_TYPES_JSONPATH) -> Any:
     """
     Convenience method that can be called, e.g., from the UI, to
     get the set of all resource types.
+    >>> from document.domain import resource_lookup
+    >>> sorted(resource_lookup.resource_types())
+    ['Reg', 'avd', 'bc', 'blv', 'cuv', 'dot', 'f10', 'nav', 'nva', 'reg', 'rg', 'rlv', 'ta', 'ta-wa', 'tn', 'tn-wa', 'tq', 'tq-wa', 'tw', 'tw-wa', 'udb', 'udb-wa', 'ugnt', 'uhb', 'ulb', 'ulb-wa']
     """
     return _lookup(jsonpath_str)
 
@@ -518,6 +521,12 @@ def resource_types_and_names_for_lang(
      ('tq-wa', 'ULB Translation Questions'),
      ('tw-wa', 'ULB Translation Words'),
      ('bc-wa', 'Bible Commentary')]
+    >>> pprint.pprint(resource_lookup.resource_types_and_names_for_lang("es-419"))
+    [('tn', 'Translation Notes (tn)'),
+     ('tq', 'Translation Questions (tq)'),
+     ('tw', 'Translation Words (tw)'),
+     ('udb', 'Unlocked Dynamic Bible (UDB) (udb)'),
+     ('ulb', 'Español Latino Americano ULB (ulb)')]
     """
     if lang_code == "en":
         return [(key, value) for key, value in english_resource_type_map.items()]

@@ -16,6 +16,7 @@ from tests.shared.utils import (
     check_finished_document_without_verses_success,
 )
 
+logger = settings.logger(__name__)
 
 ##########################################################################
 ## Specific targeted tests (wrt language, resource type, resource code) ##
@@ -1243,6 +1244,15 @@ def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_
             },
         )
         check_finished_document_with_verses_success(response)
+
+
+def test_resource_types_and_names_for_lang() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response: requests.Response = client.get(
+            "/resource_types_and_names_for_lang/es-419"
+        )
+        logger.debug("JSON: %s", response.json())
+        assert response.ok
 
 
 ###################################################################

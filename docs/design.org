@@ -144,12 +144,25 @@ In another terminal window, in project root directory, in virtual env:
 
 **** Build and run the frontend
 
+You run the frontend in either vite's production mode or vite's
+development mode.
+***** To run frontend in vite production mode
 In another terminal window, in cd <project-root-directory>/frontend:
  #+begin_src shell
  npm run allbuildandrun
  #+end_src
 
-**** Deal with our (required) frontend envvars hack:
+***** To run frontend in vite development mode
+
+In another terminal window, in cd <project-root-directory>/frontend:
+ #+begin_src shell
+ npm run dev
+ #+end_src
+
+**** Deal with our (required for vite production mode) frontend envvars hack
+
+Note: This step is only necessary if the frontend was started in the
+previous step in vite production mode.
 
 In another terminal window, in cd <project-root-directory>/frontend:
  #+begin_src shell
@@ -170,8 +183,13 @@ need to do (in the project root dir with the venv activated):
  #+end_src
 Then restart steps 2, 3, and 4 above.
 
+**** Note: how to handle situation if you run into can't import orjson.orjson error with orjs
 
-
+Reinstall orjson. In the project root with the virtual env activated:
+ #+begin_src shell
+ pip uninstall orjson
+ pip install orjson
+ #+end_src
 **** Use the UI
 
 Once all 6 steps are running fine you can navigate to
@@ -180,7 +198,7 @@ http://localhost:4173 to access the app and interact with it.
 **** (optional) Use the celery dashboard
 
 And then, if desired, you can navigate to http://localhost:5555 to
-access the flower celery dashboard.
+onaccess the flower celery dashboard.
 
 **** Run a quick smoke test (runs one quick test)
 #+begin_src shell

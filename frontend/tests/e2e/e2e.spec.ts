@@ -1,7 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('http://localhost:8001')
+test.beforeEach(async ({ page, baseURL }) => {
+  console.log(`Using FRONTEND_API_URL: ${baseURL}`)
+  await page.goto(baseURL!)
 })
 
 test('test pt-br, mat, mrk, ulb, tn, tq, tw, 1c pdf', async ({ page }) => {

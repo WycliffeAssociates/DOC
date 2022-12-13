@@ -106,7 +106,8 @@ e2e-tests: up-as-daemon clean-local-docker-output-dir
 
 .PHONY: frontend-tests
 frontend-tests: up-as-daemon
-	cd frontend && npx playwright install firefox --with-deps && npx playwright test --project=firefox
+	cd frontend && FRONTEND_API_URL=http://localhost:8001 envsubst < playwright.config.ts | sponge playwright.config.ts
+	cd frontend && npx playwright install --with-deps && npx playwright test
 
 .PHONY: smoke-test-with-translation-words
 smoke-test-with-translation-words: up-as-daemon clean-local-docker-output-dir

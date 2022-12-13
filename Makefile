@@ -111,7 +111,7 @@ frontend-tests: up-as-daemon
 
 .PHONY: smoke-test-with-translation-words
 smoke-test-with-translation-words: up-as-daemon clean-local-docker-output-dir
-	BACKEND_API_URL="http://localhost:5005" docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_stream_pdf
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_stream_pdf
 
 .PHONY: smoke-test-with-translation-words2
 smoke-test-with-translation-words2: up-as-daemon clean-local-docker-output-dir

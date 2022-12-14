@@ -151,7 +151,7 @@
   <div class="grid grid-cols-2 gap-4 bg-white">
     {#if $langCountStore > 0}
       <div>
-        {#if lang0ResourceTypesAndNames.length == 0}
+        {#if lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length == 0}
           <ProgressIndicator />
         {:else}
           <div>
@@ -159,7 +159,7 @@
               Resource types available for
               {$lang0NameStore}
             </h3>
-            {#if lang0ResourceTypesAndNames.length > 0}
+            {#if lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length > 0}
               <div class="flex items-center justify-between">
                 <label for="select-all-lang0-resource-types" class="text-primary-content"
                   >Select all {$lang0NameStore}'s resource types</label
@@ -171,7 +171,6 @@
                   on:change={event => selectAllLang0ResourceTypes(event)}
                 />
               </div>
-            {/if}
             <ul class="pb-4">
               {#each lang0ResourceTypesAndNames as resourceTypeAndName, index}
                 <li class="flex items-center justify-between">
@@ -188,6 +187,7 @@
                 </li>
               {/each}
             </ul>
+            {/if}
           </div>
         {/if}
       </div>
@@ -201,7 +201,7 @@
             <h3 class="text-primary-content mb-4">
               Resource types available for {$lang1NameStore}
             </h3>
-            {#if lang1ResourceTypesAndNames.length > 0}
+            {#if lang1ResourceTypesAndNames && lang1ResourceTypesAndNames.length > 0}
               <div class="flex items-center justify-between">
                 <label for="select-all-lang1-resource-types" class="text-primary-content"
                   >Select all
@@ -214,7 +214,6 @@
                   on:change={event => selectAllLang1ResourceTypes(event)}
                 />
               </div>
-            {/if}
             <ul>
               {#each lang1ResourceTypesAndNames as resourceTypeAndName, index}
                 <li class="flex items-center justify-between">
@@ -231,7 +230,8 @@
                 </li>
               {/each}
             </ul>
-          </div>
+          {/if}
+        </div>
         {/if}
       </div>
     {/if}

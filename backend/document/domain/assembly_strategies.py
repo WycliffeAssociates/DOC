@@ -2729,7 +2729,7 @@ def assemble_tq_tw_for_lang_then_book_1c_c(
             # Get TQ chapter verses
             tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
 
-            # Now let's get all the verse translation notes available.
+            # Now let's get all the verse translation questions available.
             if tq_verses:
                 for verse_num, verse in tq_verses.items():
                     yield from format_tq_verse(

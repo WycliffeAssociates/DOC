@@ -560,12 +560,9 @@ def select_assembly_layout_kind(
 ) -> AssemblyLayoutEnum:
     """
     Make an intelligent choice of what layout to use given the
-    DocumentRequest instance the user has requested. Why? Because we don't
-    want to bother the user with having to choose a layout which would
-    require them to understand what layouts could work well for their
-    particular document request. Instead, we make the choice for them.
-    Note that prior to this, we've already validated the DocumentRequest
-    instance in the DocumentRequest's validator.
+    DocumentRequest instance the user has requested. Note that prior to
+    this, we've already validated the DocumentRequest instance in the
+    DocumentRequest's validator.
     """
     if not document_request.assembly_layout_kind:
         document_request.assembly_layout_kind = one_column

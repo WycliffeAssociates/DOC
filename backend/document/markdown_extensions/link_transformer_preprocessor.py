@@ -6,24 +6,11 @@ import markdown
 from document.config import settings
 from document.domain.bible_books import BOOK_NUMBERS
 from document.domain.model import (
-    AssemblyLayoutEnum,
-    AssemblyStrategyEnum,
-    BCBook,
-    BookContent,
-    HtmlContent,
     MarkdownContent,
     ResourceRequest,
-    TNBook,
-    TQBook,
-    TWBook,
-    TWNameContentPair,
-    TWUse,
-    USFMBook,
     WikiLink,
 )
 from document.markdown_extensions.link_regexes import (
-    BC_MARKDOWN_LINK_RE,
-    MARKDOWN_LINK_RE,
     TA_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_LINK_RE,

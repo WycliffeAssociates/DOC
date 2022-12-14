@@ -15,7 +15,6 @@ from os.path import basename, exists, join
 from typing import Any, Iterable, Mapping, Optional, Sequence
 
 import jinja2
-import more_itertools
 import pdfkit  # type: ignore
 from celery import current_task
 from document.config import settings
@@ -39,9 +38,9 @@ from document.domain.model import (
     TWUse,
     USFMBook,
 )
-from document.utils import file_utils, number_utils
+from document.utils import file_utils
 from pydantic import Json
-from toolz import itertoolz, unique  # type: ignore
+from toolz import unique  # type: ignore
 
 logger = settings.logger(__name__)
 

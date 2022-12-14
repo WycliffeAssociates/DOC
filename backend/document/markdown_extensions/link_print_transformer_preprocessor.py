@@ -4,24 +4,12 @@ from typing import Any, final
 import markdown
 from document.config import settings
 from document.domain.model import (
-    AssemblyLayoutEnum,
-    AssemblyStrategyEnum,
-    BCBook,
-    BookContent,
-    HtmlContent,
     MarkdownContent,
     ResourceRequest,
-    TNBook,
-    TQBook,
-    TWBook,
-    TWNameContentPair,
-    TWUse,
-    USFMBook,
     WikiLink,
 )
 from document.markdown_extensions.link_regexes import (
     BC_MARKDOWN_LINK_RE,
-    MARKDOWN_LINK_RE,
     TA_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_LINK_RE,
@@ -522,8 +510,8 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
             TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE, source
         ):
             scripture_ref = match.group("scripture_ref")
-            chapter_num = match.group("chapter_num")
-            verse_ref = match.group("verse_ref")
+            # chapter_num = match.group("chapter_num")
+            # verse_ref = match.group("verse_ref")
 
             # matching_resource_requests: list[model.ResourceRequest] = [
             #     resource_request

@@ -13,7 +13,7 @@ import orjson
 from document.utils.number_utils import is_even
 from toolz import itertoolz  # type: ignore
 from more_itertools import all_equal
-from pydantic import BaseModel, EmailStr, root_validator, validator
+from pydantic import BaseModel, EmailStr, root_validator
 
 # These type aliases give us more self-documenting code, but of course
 # aren't strictly necessary.

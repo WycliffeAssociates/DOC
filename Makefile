@@ -25,8 +25,12 @@ ifeq ("$(wildcard .venv/bin/pip-sync)","")
 	@pip install --no-cache-dir pip-tools
 endif
 
+.PHONY: install-cython
+install-cython: checkvenv
+	pip install cython
+
 .PHONY: build
-build: checkvenv down clean-mypyc-artifacts local-install-deps-dev local-install-deps-prod
+build: checkvenv down clean-mypyc-artifacts install-cython local-install-deps-dev local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
 	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
@@ -217,7 +221,7 @@ local-update-deps-dev: local-update-deps-base
 	# pip-compile --upgrade ./backend/requirements-dev.in
 
 .PHONY: local-install-deps-base
-local-install-deps-base: local-update-deps-base
+local-install-deps-base: install-cython local-update-deps-base
 	pip install --no-cache-dir -r ./backend/requirements.txt
 
 .PHONY: local-install-deps-dev

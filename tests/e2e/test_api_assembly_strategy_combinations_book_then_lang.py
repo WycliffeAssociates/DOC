@@ -874,8 +874,6 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_tl_ulb_col_tl_tn_c
         check_finished_document_with_verses_success(response)
 
 
-# NOTE This test fails in the celery test context for some reason even though it succeeds manually testing, so skipping for now.
-@pytest.mark.skip
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -940,8 +938,6 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_tl_ulb_col_tl_tn_c
         check_finished_document_with_verses_success(response)
 
 
-# NOTE This test fails in the celery test context for some reason even though it succeeds manually testing, so skipping for now.
-@pytest.mark.skip
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -1202,7 +1198,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_bo
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_2c_sl_sr() -> None:
+def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1274,70 +1270,6 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
                 "email_address": settings.TO_EMAIL_ADDRESS,
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
                 "assembly_layout_kind": None,
-                "layout_for_print": False,
-                "generate_pdf": True,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "en",
-                        "resource_type": "ulb-wa",
-                        "resource_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tn-wa",
-                        "resource_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tq-wa",
-                        "resource_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "ulb",
-                        "resource_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tn",
-                        "resource_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tq",
-                        "resource_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "ulb",
-                        "resource_code": "tit",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tn",
-                        "resource_code": "tit",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tq",
-                        "resource_code": "tit",
-                    },
-                ],
-            },
-        )
-        check_finished_document_with_verses_success(response)
-
-
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_1c() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response: requests.Response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "generate_pdf": True,
                 "generate_epub": False,

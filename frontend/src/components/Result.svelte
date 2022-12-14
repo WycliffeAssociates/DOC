@@ -126,7 +126,7 @@
               fill-opacity="0.8"
             />
           </svg>
-          View Online</button
+          View HTML Online</button
         >
       </div>
     </div>

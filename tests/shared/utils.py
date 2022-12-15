@@ -22,7 +22,7 @@ def check_result(
     /,
     suffix: AcceptedSuffixes,
     poll_duration: int,
-    status_url_fmt_str: str = "/api/{}/status",
+    status_url_fmt_str: str = "/task_status/{}",
     success_state: str = "SUCCESS",
     failure_state: str = "FAILURE",
 ) -> str:

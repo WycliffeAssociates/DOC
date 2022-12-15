@@ -36,7 +36,7 @@
 
   async function poll(taskId: string): Promise<string | [string, string]> {
     console.log(`taskId in poll: ${taskId}`)
-    let res = await fetch(`${apiRootUrl}/api/${taskId}/status`, {
+    let res = await fetch(`${apiRootUrl}/task_status/${taskId}`, {
       method: 'GET'
     })
     let json = await res.json()

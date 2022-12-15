@@ -91,7 +91,7 @@ async def generate_document(
         return ORJSONResponse({"task_id": task.id})
 
 
-@app.get("/api/{task_id}/status")
+@app.get("/task_status/{task_id}")
 async def task_status(task_id: str) -> ORJSONResponse:
     res: AsyncResult[dict[str, str]] = AsyncResult(task_id)
     if res.state == celery.states.SUCCESS:

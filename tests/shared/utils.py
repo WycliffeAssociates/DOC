@@ -36,9 +36,10 @@ def check_result(
             response2: requests.Response = client.get(
                 status_url_fmt_str.format(task_id),
             )
-            logger.debug("response.json(): {}".format(response2.json()))
-            if response2.json()["state"] == success_state:
-                finished_document_request_key = response2.json()["result"]
+            json_data = response2.json()
+            logger.debug("json task status data: {}".format(json_data))
+            if json_data["state"] == success_state:
+                finished_document_request_key = json_data["result"]
                 finished_document_path = os.path.join(
                     settings.DOCUMENT_SERVE_DIR,
                     "{}.{}".format(finished_document_request_key, suffix),
@@ -49,7 +50,7 @@ def check_result(
                 assert os.path.exists(finished_document_path)
                 assert response2.ok
                 break
-            elif response2.json()["state"] == failure_state:
+            elif json_data["state"] == failure_state:
                 logger.info(
                     "Test failed likely due to celery task failure, check the celery flower dashboard"
                 )

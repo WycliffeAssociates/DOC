@@ -88,14 +88,7 @@ def assemble_content_by_lang_then_book(
         book_content_units,
         key=lambda book_content_unit: book_content_unit.lang_name,
     )
-    language: str
 
-    usfm_book_content_unit: Optional[USFMBook]
-    tn_book_content_unit_: Optional[TNBook]
-    tq_book_content_unit_: Optional[TQBook]
-    tw_book_content_unit_: Optional[TWBook]
-    usfm_book_content_unit2: Optional[USFMBook]
-    bc_book_content_unit_: Optional[BCBook]
 
     book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
 
@@ -1014,8 +1007,6 @@ def assemble_content_by_book_then_lang(
         book_content_units,
         key=lambda book_content_unit: book_id_map[book_content_unit.resource_code],
     )
-    book: str
-    usfm_book_content_units: Sequence[USFMBook]
     for book, group_by_book in groupby(
         book_content_units_sorted_by_book,
         book_content_unit_resource_code,
@@ -1990,10 +1981,6 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c(
 
     if usfm_book_content_unit:
 
-        tn_verses: Optional[dict[str, HtmlContent]]
-        tq_verses: Optional[dict[str, HtmlContent]]
-        verse_num: str
-        verse: HtmlContent
         for (
             chapter_num,
             chapter,
@@ -2112,10 +2099,6 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c_c(
         yield book_intro_commentary(bc_book_content_unit)
 
     if usfm_book_content_unit:
-        tn_verses: Optional[dict[str, HtmlContent]]
-        tq_verses: Optional[dict[str, HtmlContent]]
-        verse_num: str
-        verse: HtmlContent
         for (
             chapter_num,
             chapter,
@@ -2214,8 +2197,6 @@ def assemble_usfm_tq_tw_for_lang_then_book_1c(
     """
 
     if usfm_book_content_unit:
-        verse_num: str
-        verse: HtmlContent
         for chapter_num, chapter in usfm_book_content_unit.chapters.items():
             # Add in the USFM chapter heading.
             chapter_heading = HtmlContent("")
@@ -2270,8 +2251,6 @@ def assemble_usfm_tq_tw_for_lang_then_book_1c_c(
     """
 
     if usfm_book_content_unit:
-        verse_num: str
-        verse: HtmlContent
         for chapter_num, chapter in usfm_book_content_unit.chapters.items():
             # Add in the USFM chapter heading.
             chapter_heading = HtmlContent("")
@@ -2318,8 +2297,6 @@ def assemble_usfm_tw_for_lang_then_book_1c(
     """
 
     if usfm_book_content_unit:
-        verse_num: str
-        verse: HtmlContent
         for chapter_num, chapter in usfm_book_content_unit.chapters.items():
             # Add in the USFM chapter heading.
             chapter_heading = HtmlContent("")
@@ -2362,8 +2339,6 @@ def assemble_usfm_tw_for_lang_then_book_1c_c(
     """
 
     if usfm_book_content_unit:
-        verse_num: str
-        verse: HtmlContent
         for chapter_num, chapter in usfm_book_content_unit.chapters.items():
             # Add in the USFM chapter heading.
             chapter_heading = HtmlContent("")
@@ -2394,9 +2369,6 @@ def assemble_usfm_tq_for_lang_then_book_1c(
     """Construct the HTML for a 'by verse' strategy wherein only USFM and TQ exist."""
 
     if usfm_book_content_unit:
-
-        verse_num: str
-        verse: HtmlContent
         for chapter_num, chapter in usfm_book_content_unit.chapters.items():
             # Add in the USFM chapter heading.
             chapter_heading = HtmlContent("")
@@ -2452,8 +2424,6 @@ def assemble_tn_as_iterator_for_lang_then_book_1c(
     and TW exists.
     """
 
-    verse_num: str
-    verse: HtmlContent
 
     if tn_book_content_unit:
         yield from tn_book_intro(tn_book_content_unit)
@@ -2533,8 +2503,6 @@ def assemble_tn_as_iterator_for_lang_then_book_1c_c(
     if tn_book_content_unit:
         yield from tn_book_intro(tn_book_content_unit)
 
-        verse_num: str
-        verse: HtmlContent
         for chapter_num in tn_book_content_unit.chapters:
             # How to get chapter heading for Translation notes when USFM is not
             # requested? For now we'll use non-localized chapter heading. Add in the
@@ -2599,8 +2567,6 @@ def assemble_tq_as_iterator_for_lang_then_book(
     # Make mypy happy. We know, due to how we got here, that book_content_unit objects are not None.
 
     if tq_book_content_unit:
-        verse_num: str
-        verse: HtmlContent
         for chapter_num in tq_book_content_unit.chapters:
             if bc_book_content_unit:
                 # Add chapter commentary.
@@ -2649,9 +2615,6 @@ def assemble_tq_tw_for_lang_then_book_1c(
     """
 
     if tq_book_content_unit:
-
-        verse_num: str
-        verse: HtmlContent
         for chapter_num in tq_book_content_unit.chapters:
             if bc_book_content_unit:
                 # Add chapter commmentary.
@@ -2708,8 +2671,6 @@ def assemble_tq_tw_for_lang_then_book_1c_c(
     """
 
     if tq_book_content_unit:
-        verse_num: str
-        verse: HtmlContent
         for chapter_num in tq_book_content_unit.chapters:
             if bc_book_content_unit:
                 # Add chapter commmentary.
@@ -2873,9 +2834,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
     ldebug = logger.debug
     lexception = logger.exception
 
-    tn_verses: Optional[dict[str, HtmlContent]]
-    tq_verses: Optional[dict[str, HtmlContent]]
-    usfm_book_content_unit_: Optional[USFMBook]
 
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:
@@ -3113,9 +3071,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c(
     ldebug = logger.debug
     lexception = logger.exception
 
-    usfm_book_content_unit_: Optional[USFMBook]
-    tn_verses: Optional[dict[str, HtmlContent]]
-    tq_verses: Optional[dict[str, HtmlContent]]
 
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:
@@ -3297,8 +3252,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
     ldebug = logger.debug
     lexception = logger.exception
 
-    tn_verses: Optional[dict[str, HtmlContent]]
-    tq_verses: Optional[dict[str, HtmlContent]]
 
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:
@@ -3433,7 +3386,6 @@ def assemble_tn_as_iterator_for_book_then_lang(
             etc for tq, tw links, followed by tw definitions
     """
 
-    usfm_book_content_unit_: Optional[USFMBook]
 
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:
@@ -3645,7 +3597,6 @@ def assemble_tq_as_iterator_for_book_then_lang(
     tq_book_content_units exists, and TQ, and TW may exist.
     """
 
-    usfm_book_content_unit_: Optional[USFMBook]
 
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:

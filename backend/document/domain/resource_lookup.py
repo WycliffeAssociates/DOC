@@ -720,6 +720,9 @@ def resource_codes_and_types_for_lang(
                     resource_type_code,
                     resource_filepath,
                 )
+            else:
+                logger.debug("Cache hit for %s", resource_filepath)
+
             # When a git repo is cloned or when a zip file is
             # unzipped, a subdirectory of resource_dir is created
             # as a result. Update resource_dir to point to that
@@ -802,6 +805,9 @@ def resource_codes_and_types_for_lang(
             # logger.debug("resource_filepath: %s", resource_filepath)
             if asset_file_needs_update(resource_filepath):
                 clone_git_repo(url, resource_filepath)
+            else:
+                logger.debug("Cache hit for %s", resource_filepath)
+
             # When a git repo is cloned or when a zip file is
             # unzipped, a subdirectory of resource_dir is created
             # as a result. Update resource_dir to point to that
@@ -1461,6 +1467,8 @@ def acquire_resource_assets(resource_lookup_dto: ResourceLookupDto) -> str:
                     resource_lookup_dto.resource_type,
                     resource_filepath,
                 )
+        else:
+            logger.debug("Cache hit for %s", resource_filepath)
         if is_git(resource_lookup_dto.source) or is_zip(resource_lookup_dto.source):
             # When a git repo is cloned or when a zip file is
             # unzipped, a subdirectory of resource_dir is created

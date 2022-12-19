@@ -709,6 +709,8 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
             content,
             html_filepath_,
         )
+    else:
+        logger.debug("Cache hit for %s", html_filepath_)
 
     # Immediately return pre-built PDF if the document has previously been
     # generated and is fresh enough. In that case, front run all requests to
@@ -724,6 +726,8 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
             document_request.email_address,
             document_request_key_,
         )
+    else:
+        logger.debug("Cache hit for %s", pdf_filepath_)
 
     if document_request.generate_epub and file_utils.asset_file_needs_update(
         epub_filepath_
@@ -735,6 +739,8 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
             document_request.email_address,
             document_request_key_,
         )
+    else:
+        logger.debug("Cache hit for %s", epub_filepath_)
 
     if document_request.generate_docx and file_utils.asset_file_needs_update(
         docx_filepath_
@@ -746,5 +752,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
             document_request.email_address,
             document_request_key_,
         )
+    else:
+        logger.debug("Cache hit for %s", docx_filepath_)
 
     return document_request_key_

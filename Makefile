@@ -259,6 +259,10 @@ local-clean-working-output-dir:
 	find working/output/ -type f -name "*.html" -exec rm -- {} +
 	find working/output/ -type f -name "*.pdf" -exec rm -- {} +
 
+.PHONY: local-install-app
+local-install-app:
+	pip install -e .
+
 .PHONY: local-unit-tests
 local-unit-tests:  local-prepare-for-tests
 	TO_EMAIL="foo@example.com" pytest -n auto tests/unit/ -vv
@@ -311,6 +315,14 @@ local-smoke-test9: local-prepare-for-tests
 local-smoke-test10: local-prepare-for-tests
 	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr
 
+.PHONY: local-run-celery
+local-run-celery:
+	celery -A document.domain.worker.app worker --loglevel=DEBUG -E
+
+
+.PHONY: local-run-flower
+local-run-flower:
+ 	celery --broker=redis:// --result-backend=redis:// flower
 # This is one to run after running local-e2e-tests or any tests which
 # has yielded HTML and PDFs that need to be checked for linking
 # correctness.

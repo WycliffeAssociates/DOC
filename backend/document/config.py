@@ -150,7 +150,9 @@ class Settings(BaseSettings):
 
     def api_test_url(self) -> str:
         """Non-secure local URL for running the Fastapi server for testing."""
-        return "http://localhost:{}".format(self.API_LOCAL_PORT)
+        return "http://{}:{}".format(self.API_TEST_BASE_URL, self.API_LOCAL_PORT)
+
+    API_TEST_BASE_URL: str = "http://localhost"
 
     API_LOCAL_PORT: int
 

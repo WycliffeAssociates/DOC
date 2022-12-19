@@ -1519,7 +1519,7 @@ def clone_git_repo(
             logger.debug("git clone failed!")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="git clone was empty",
+                detail="git clone failed",
             )
         else:
             logger.debug("git command: %s", command)
@@ -1537,7 +1537,7 @@ def clone_git_repo(
             logger.debug("git clone failed!")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="git clone was empty",
+                detail="git clone failed",
             )
         else:
             logger.debug("git clone succeeded.")

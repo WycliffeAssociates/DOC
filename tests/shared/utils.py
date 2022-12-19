@@ -6,7 +6,6 @@ from typing import Literal, Union
 import bs4
 import requests
 from document.config import settings
-from document.domain import model
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 

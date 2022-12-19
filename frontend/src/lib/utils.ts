@@ -86,3 +86,17 @@ export function getApiRootUrl(): string {
     return <string>import.meta.env.VITE_DEV_BACKEND_API_URL
   }
 }
+
+export function getFileServerUrl(): string {
+  if (<boolean>import.meta.env.PROD) {
+    // @ts-ignore
+    console.log(`FILE_SERVER_URL: ${window.env.FILE_SERVER_URL}`)
+    // @ts-ignore
+    return <string>window.env.FILE_SERVER_URL
+  } else {
+    // If we are running the frontend with 'npm run dev' then this
+    // else will be used
+    console.log(`FILE_SERVER_URL: ${<string>import.meta.env.VITE_DEV_FILE_SERVER_URL}`)
+    return <string>import.meta.env.VITE_DEV_FILE_SERVER_URL
+  }
+}

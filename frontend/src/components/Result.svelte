@@ -11,7 +11,7 @@
     documentRequestKeyStore
   } from '../stores/SettingsStore'
   import { taskIdStore, taskStateStore } from '../stores/TaskStore'
-  import { getApiRootUrl, resetStores } from '../lib/utils'
+  import { getApiRootUrl, getFileServerUrl, resetStores } from '../lib/utils'
 
   function cancelDocument() {
     console.log('Called cancelDocument')
@@ -24,15 +24,16 @@
   }
 
   let apiRootUrl: string = getApiRootUrl()
+  let fileServerUrl: string = getFileServerUrl()
 
   let pdfDownloadUrl: string
-  $: pdfDownloadUrl = `${apiRootUrl}/pdf/${$documentRequestKeyStore}`
+  $: pdfDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.pdf`
   let ePubDownloadUrl: string
-  $: ePubDownloadUrl = `${apiRootUrl}/epub/${$documentRequestKeyStore}`
+  $: ePubDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.epub`
   let docxDownloadUrl: string
-  $: docxDownloadUrl = `${apiRootUrl}/docx/${$documentRequestKeyStore}`
+  $: docxDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.docx`
   let htmlDownloadUrl: string
-  $: htmlDownloadUrl = `${apiRootUrl}/html/${$documentRequestKeyStore}`
+  $: htmlDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.html`
 
   function viewFromUrl(url: string) {
     console.log(`url: ${url}`)

@@ -103,59 +103,59 @@ async def task_status(task_id: str) -> ORJSONResponse:
     )
 
 
-@app.get("/epub/{document_request_key}")
-async def serve_epub_document(
-    document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
-) -> FileResponse:
-    """Serve the requested ePub document."""
-    path = "{}.epub".format(os.path.join(output_dir, document_request_key))
-    return FileResponse(
-        path=path,
-        filename=pathlib.Path(path).name,
-        media_type="application/epub+zip",
-        headers={"Content-Disposition": "attachment"},
-    )
+# @app.get("/epub/{document_request_key}")
+# async def serve_epub_document(
+#     document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
+# ) -> FileResponse:
+#     """Serve the requested ePub document."""
+#     path = "{}.epub".format(os.path.join(output_dir, document_request_key))
+#     return FileResponse(
+#         path=path,
+#         filename=pathlib.Path(path).name,
+#         media_type="application/epub+zip",
+#         headers={"Content-Disposition": "attachment"},
+#     )
 
 
-@app.get("/pdf/{document_request_key}")
-async def serve_pdf_document(
-    document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
-) -> FileResponse:
-    """Serve the requested PDF document."""
-    path = "{}.pdf".format(os.path.join(output_dir, document_request_key))
-    return FileResponse(
-        path=path,
-        filename=pathlib.Path(path).name,
-        media_type="application/pdf",
-        headers={"Content-Disposition": "attachment"},
-    )
+# @app.get("/pdf/{document_request_key}")
+# async def serve_pdf_document(
+#     document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
+# ) -> FileResponse:
+#     """Serve the requested PDF document."""
+#     path = "{}.pdf".format(os.path.join(output_dir, document_request_key))
+#     return FileResponse(
+#         path=path,
+#         filename=pathlib.Path(path).name,
+#         media_type="application/pdf",
+#         headers={"Content-Disposition": "attachment"},
+#     )
 
 
-@app.get("/docx/{document_request_key}")
-async def serve_docx_document(
-    document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
-) -> FileResponse:
-    """Serve the requested Docx document."""
-    path = "{}.docx".format(os.path.join(output_dir, document_request_key))
-    return FileResponse(
-        path=path,
-        filename=pathlib.Path(path).name,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": "attachment"},
-    )
+# @app.get("/docx/{document_request_key}")
+# async def serve_docx_document(
+#     document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
+# ) -> FileResponse:
+#     """Serve the requested Docx document."""
+#     path = "{}.docx".format(os.path.join(output_dir, document_request_key))
+#     return FileResponse(
+#         path=path,
+#         filename=pathlib.Path(path).name,
+#         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+#         headers={"Content-Disposition": "attachment"},
+#     )
 
 
-@app.get("/html/{document_request_key}")
-async def serve_html_document(
-    document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
-) -> FileResponse:
-    """Serve the requested HTML document."""
-    path = "{}.html".format(os.path.join(output_dir, document_request_key))
-    return FileResponse(
-        path=path,
-        filename=pathlib.Path(path).name,
-        headers={"Content-Disposition": "inline"},
-    )
+# @app.get("/html/{document_request_key}")
+# async def serve_html_document(
+#     document_request_key: str, output_dir: str = settings.DOCUMENT_SERVE_DIR
+# ) -> FileResponse:
+#     """Serve the requested HTML document."""
+#     path = "{}.html".format(os.path.join(output_dir, document_request_key))
+#     return FileResponse(
+#         path=path,
+#         filename=pathlib.Path(path).name,
+#         headers={"Content-Disposition": "inline"},
+#     )
 
 
 @app.get("/language_codes_names_and_resource_types")

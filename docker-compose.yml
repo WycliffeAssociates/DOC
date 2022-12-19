@@ -57,7 +57,8 @@ services:
   frontend:
     image: wycliffeassociates/doc-ui:${IMAGE_TAG}
     environment:
-      BACKEND_API_URL: ${BACKEND_API_URL}
+      BACKEND_API_URL: ${BACKEND_API_URL:-http://localhost:5005}
+      FILE_SERVER_URL: ${FILE_SERVER_URL:-http://localhost:8089}
     ports:
       - 8001:80
     depends_on:

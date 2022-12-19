@@ -63,12 +63,12 @@ build-no-cache-no-pip-update: checkvenv down clean-mypyc-artifacts
 .PHONY: up
 up: checkvenv
 	export IMAGE_TAG=local && \
-	BACKEND_API_URL=http://localhost:5005 docker-compose up
+	BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker-compose up
 
 .PHONY: up-as-daemon
 up-as-daemon: checkvenv
 	export IMAGE_TAG=local && \
-	BACKEND_API_URL=http://localhost:5005 docker-compose up -d
+	BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker-compose up -d
 
 
 # This is the entrypoint for a non-technical user who just
@@ -79,7 +79,7 @@ build-and-run: build up
 
 .PHONY: down
 down:
-	BACKEND_API_URL=http://localhost:5005 docker-compose down --remove-orphans
+	BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker-compose down --remove-orphans
 
 .PHONY: stop-and-remove
 stop-and-remove:
@@ -98,19 +98,19 @@ clean-local-docker-output-dir:
 
 .PHONY: test
 test: up-as-daemon
-	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/unit /app/tests/e2e
+	BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/unit /app/tests/e2e
 
 .PHONY: unit-tests
 unit-tests: up-as-daemon
-	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/unit
+	BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/unit
 
 .PHONY: e2e-tests
 e2e-tests: up-as-daemon clean-local-docker-output-dir
-	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/e2e
+	BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/e2e
 
 .PHONY: frontend-tests
 frontend-tests: up-as-daemon
-	cd frontend && FRONTEND_API_URL=http://localhost:8001 envsubst < playwright.config.ts | sponge playwright.config.ts
+	cd frontend && FRONTEND_API_URL=http://localhost:8001 FILE_SERVER_URL=http://localhost:8089 envsubst < playwright.config.ts | sponge playwright.config.ts
 	cd frontend && npx playwright install --with-deps && npx playwright test
 
 .PHONY: smoke-test
@@ -214,7 +214,7 @@ all-plus-linting: mypy down build up test
 # Run a local Uvicorn server outside Docker
 .PHONY: local-server
 local-server: checkvenv
-	BACKEND_API_URL=http://localhost:5005 uvicorn document.entrypoints.app:app --reload --host "0.0.0.0" --port "5005" --app-dir "./backend/"
+	BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 uvicorn document.entrypoints.app:app --reload --host "0.0.0.0" --port "5005" --app-dir "./backend/"
 
 # Run a local Gunicorn server outside Docker
 .PHONY: local-gunicorn-server

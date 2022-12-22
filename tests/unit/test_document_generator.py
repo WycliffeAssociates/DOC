@@ -82,10 +82,11 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
         for component in components
     ]
     assembly_strategy_kind = model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
-    assembly_layout_kind = (
-        model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
-    )
+    # fmt: off
+    assembly_layout_kind = model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
+    # fmt: on
+    chunk_size = model.ChunkSizeEnum.VERSE
     key = document_generator.document_request_key(
-        resource_requests, assembly_strategy_kind, assembly_layout_kind
+        resource_requests, assembly_strategy_kind, assembly_layout_kind, chunk_size
     )
     assert re.search(r"[0-9]+_[0-9]+", key)

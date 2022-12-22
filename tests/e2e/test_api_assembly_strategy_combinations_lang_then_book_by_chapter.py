@@ -15,7 +15,7 @@ from tests.shared.utils import (
 from document.domain import model
 
 
-def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c() -> None:
+def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_by_chapter() -> None:
     "English ulb-wa and tn-wa for book of Timothy."
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -25,6 +25,7 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -45,7 +46,7 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_c_by_chapter() -> None:
     "English ulb-wa and tn-wa for book of Timothy."
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -55,6 +56,7 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -75,7 +77,7 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_sw_ulb_col_sw_tn_col_language_book_order_1c() -> None:
+def test_sw_ulb_col_sw_tn_col_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -84,6 +86,7 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -104,7 +107,7 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_sw_ulb_col_sw_tn_col_language_book_order_1c_c() -> None:
+def test_sw_ulb_col_sw_tn_col_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -113,6 +116,7 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -133,7 +137,7 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c() -> None:
+def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -142,6 +146,7 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c() -> N
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -172,7 +177,7 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c() -> N
         check_finished_document_with_verses_success(response)
 
 
-def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c() -> None:
+def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -181,6 +186,7 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c() ->
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -211,7 +217,7 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c() ->
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c() -> None:
+def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -220,6 +226,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -260,7 +267,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -269,6 +276,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -309,7 +317,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c() -> None:
+def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -318,6 +326,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -373,7 +382,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -382,6 +391,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -437,7 +447,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c() -> None:
+def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -446,6 +456,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -486,7 +497,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -495,6 +506,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -535,7 +547,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -544,6 +556,7 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -599,7 +612,7 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -608,6 +621,7 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -663,7 +677,7 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -672,6 +686,7 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -712,7 +727,7 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -721,6 +736,7 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -761,7 +777,7 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -770,6 +786,7 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -800,7 +817,7 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -809,6 +826,7 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -839,7 +857,7 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -848,6 +866,7 @@ def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -868,7 +887,7 @@ def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c() -> None:
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c() -> None:
+def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -877,6 +896,7 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -907,7 +927,7 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_c() -> None:
+def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -916,6 +936,7 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -946,7 +967,7 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c() -> None:
+def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -955,6 +976,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -975,7 +997,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c() -> None:
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c() -> None:
+def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -984,6 +1006,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1004,7 +1027,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c() -> None:
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c() -> None:
+def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1013,6 +1036,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1038,7 +1062,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c() -> None:
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c() -> None:
+def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1047,6 +1071,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1072,7 +1097,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c() -> None:
         check_finished_document_without_verses_success(response)
 
 
-def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c() -> None:
+def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1081,6 +1106,7 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1106,7 +1132,7 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1115,6 +1141,7 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1140,7 +1167,7 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c() -> None:
+def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1149,6 +1176,7 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1184,7 +1212,7 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_c() -> None:
+def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1193,6 +1221,7 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1228,7 +1257,7 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1237,6 +1266,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1272,7 +1302,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1281,6 +1311,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1316,7 +1347,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1325,6 +1356,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> N
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1355,7 +1387,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> N
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1364,6 +1396,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() ->
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1394,7 +1427,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() ->
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1403,45 +1436,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c() -> N
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
-                "generate_pdf": True,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "mr",
-                        "resource_type": "ulb",
-                        "resource_code": "mrk",
-                    },
-                    {
-                        "lang_code": "mr",
-                        "resource_type": "tn",
-                        "resource_code": "mrk",
-                    },
-                    {
-                        "lang_code": "mr",
-                        "resource_type": "tw",
-                        "resource_code": "mrk",
-                    },
-                    {
-                        "lang_code": "mr",
-                        "resource_type": "udb",
-                        "resource_code": "mrk",
-                    },
-                ],
-            },
-        )
-        check_finished_document_with_verses_success(response)
-
-
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response: requests.Response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1472,7 +1467,47 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c() ->
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response: requests.Response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "mr",
+                        "resource_type": "ulb",
+                        "resource_code": "mrk",
+                    },
+                    {
+                        "lang_code": "mr",
+                        "resource_type": "tn",
+                        "resource_code": "mrk",
+                    },
+                    {
+                        "lang_code": "mr",
+                        "resource_type": "tw",
+                        "resource_code": "mrk",
+                    },
+                    {
+                        "lang_code": "mr",
+                        "resource_type": "udb",
+                        "resource_code": "mrk",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1481,6 +1516,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1506,7 +1542,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1515,6 +1551,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1540,7 +1577,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> None:
+def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1549,6 +1586,7 @@ def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1574,7 +1612,7 @@ def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
+def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1583,6 +1621,7 @@ def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1608,7 +1647,7 @@ def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c() -> None:
+def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1617,6 +1656,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1637,7 +1677,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c() -> None:
+def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1646,6 +1686,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1666,7 +1707,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1675,6 +1716,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c() -> No
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1705,7 +1747,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c() -> No
         check_finished_document_with_verses_success(response)
 
 
-def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1714,6 +1756,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c() -> 
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1744,7 +1787,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c() -> 
         check_finished_document_with_verses_success(response)
 
 
-def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1753,6 +1796,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1778,7 +1822,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_c() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1787,6 +1831,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1812,7 +1857,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
+def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1821,6 +1866,7 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1846,7 +1892,7 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
+def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1855,6 +1901,7 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1880,7 +1927,7 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_tq_gen_tl_udb_gen_language_book_order_1c() -> None:
+def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1889,6 +1936,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1909,7 +1957,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_c() -> None:
+def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1918,6 +1966,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1938,7 +1987,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
+def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1947,6 +1996,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1967,7 +2017,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
+def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -1976,6 +2026,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1996,7 +2047,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_udb_gen_language_book_order_1c() -> None:
+def test_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2005,6 +2056,7 @@ def test_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2020,7 +2072,7 @@ def test_tl_udb_gen_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_tl_udb_gen_language_book_order_1c_c() -> None:
+def test_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2029,6 +2081,7 @@ def test_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2044,7 +2097,7 @@ def test_tl_udb_gen_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_by_chapter() -> None:
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -2054,6 +2107,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2089,7 +2143,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c_by_chapter() -> None:
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -2099,6 +2153,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2134,7 +2189,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> None:
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2147,6 +2202,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2182,7 +2238,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> None:
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2195,6 +2251,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2230,7 +2287,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c() -> None:
+def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> None:
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2243,6 +2300,7 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c() -> N
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2273,7 +2331,7 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c() -> N
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c() -> None:
+def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> None:
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2286,6 +2344,7 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c() ->
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2316,7 +2375,7 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c() ->
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c() -> None:
+def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_by_chapter() -> None:
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -2326,6 +2385,7 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2351,7 +2411,7 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c() -> None:
+def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c_by_chapter() -> None:
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
@@ -2361,6 +2421,7 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2386,7 +2447,7 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c() -> None:
+def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2395,6 +2456,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2445,7 +2507,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_c() -> None:
+def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2454,6 +2516,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2510,7 +2573,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c() -> None:
+def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2519,6 +2582,7 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2553,7 +2617,7 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c() -> None:
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c() -> None:
+def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2562,6 +2626,7 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2596,7 +2661,7 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c() -> None:
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c() -> None:
+def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2605,6 +2670,7 @@ def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -2639,7 +2705,7 @@ def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c_c() -> None:
+def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response: requests.Response = client.post(
             "/documents",
@@ -2648,6 +2714,7 @@ def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,

@@ -42,20 +42,6 @@ def book_number(
     return book_numbers[resource_code].zfill(num_zeros)
 
 
-def format_tq_verse(
-    resource_type_name: str,
-    chapter_num: int,
-    verse_num: str,
-    verse: HtmlContent,
-    h1: str = "h1",
-    h4: str = "h4",
-) -> Iterable[HtmlContent]:
-
-    # Change H1 HTML elements to H4 HTML elements in each translation
-    # question.
-    yield HtmlContent(sub(h1, h4, verse))
-
-
 def first_usfm_book_content_unit(
     book_content_units: Sequence[BookContent],
 ) -> Optional[USFMBook]:
@@ -248,24 +234,6 @@ def chapter_commentary(bc_book_content_unit: BCBook, chapter_num: int) -> HtmlCo
     else:
         chapter_commentary = HtmlContent("")
     return chapter_commentary
-
-
-def format_tn_verse(
-    book_content_unit: TNBook,
-    chapter_num: int,
-    verse_num: str,
-    verse: HtmlContent,
-    book_numbers: Mapping[str, str] = BOOK_NUMBERS,
-    num_zeros: int = settings.NUM_ZEROS,
-    h1: str = "h1",
-    h4: str = "h4",
-) -> Iterable[HtmlContent]:
-    """
-    This is a slightly different form of TNResource.tn_verse that is used
-    when no USFM has been requested.
-    """
-    # Change H1 HTML elements to H4 HTML elements in each translation note.
-    yield HtmlContent(sub(h1, h4, verse))
 
 
 def verses_for_chapter_tn(

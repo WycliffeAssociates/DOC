@@ -12,8 +12,6 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     chapter_commentary,
     chapter_intro,
     first_usfm_book_content_unit,
-    format_tn_verse,
-    format_tq_verse,
     second_usfm_book_content_unit,
     tn_book_content_unit,
     tq_book_content_unit,

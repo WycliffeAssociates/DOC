@@ -137,6 +137,14 @@ smoke-test5: up-as-daemon clean-local-docker-output-dir
 smoke-test6: up-as-daemon clean-local-docker-output-dir
 	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c
 
+.PHONY: smoke-test7
+smoke-test7: up-as-daemon clean-local-docker-output-dir
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_by_chapter
+
+.PHONY: smoke-test8
+smoke-test8: up-as-daemon clean-local-docker-output-dir
+	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api /app/tests/e2e -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter
+
 .PHONY: test-randomized
 test-randomized: up-as-daemon
 	BACKEND_API_URL=http://localhost:5005 docker-compose run --rm --no-deps --entrypoint=pytest api -v -m randomized -n auto /app/tests/unit /app/tests/e2e

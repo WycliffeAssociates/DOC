@@ -9,8 +9,6 @@ from document.domain.assembly_strategy_utils import (
     chapter_commentary,
     chapter_intro,
     ensure_primary_usfm_books_for_different_languages_are_adjacent,
-    format_tn_verse,
-    format_tq_verse,
     translation_word_links,
     verses_for_chapter_tn,
     verses_for_chapter_tq,
@@ -260,12 +258,7 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_2c_sl_sr(
                     if is_even(idx):
                         yield html_row_begin
                     yield html_column_begin
-                    yield from format_tn_verse(
-                        tn_book_content_unit3,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]
                     yield html_column_end
             yield html_row_end
 
@@ -279,12 +272,7 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_2c_sl_sr(
                     if is_even(idx):
                         yield html_row_begin
                     yield html_column_begin
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
                     yield html_column_end
             yield html_row_end
 

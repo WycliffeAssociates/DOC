@@ -12,8 +12,6 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     chapter_commentary,
     chapter_intro,
     first_usfm_book_content_unit,
-    format_tn_verse,
-    format_tq_verse,
     second_usfm_book_content_unit,
     tn_book_content_unit,
     tq_book_content_unit,
@@ -112,20 +110,10 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c(
                     and tn_verses
                     and verse_num in tn_verses
                 ):
-                    yield from format_tn_verse(
-                        tn_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]
                 # Add TQ verse content, if any
                 if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
                 if tw_book_content_unit:
                     # Add the translation words links section.
@@ -230,20 +218,10 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c_c(
                     and tn_verses
                     and verse_num in tn_verses
                 ):
-                    yield from format_tn_verse(
-                        tn_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]
                 # Add TQ verse content, if any
                 if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
             # Add scripture footnotes if available
             if chapter.footnotes:
@@ -300,12 +278,7 @@ def assemble_usfm_tq_tw_for_lang_then_book_1c(
 
                 # Add TN verse content, if any
                 if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
                 if tw_book_content_unit:
                     # Add the translation words links section
                     yield from translation_word_links(
@@ -354,12 +327,7 @@ def assemble_usfm_tq_tw_for_lang_then_book_1c_c(
 
                 # Add TN verse content, if any
                 if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
             # Add scripture footnotes if available
             if chapter.footnotes:
@@ -472,12 +440,7 @@ def assemble_usfm_tq_for_lang_then_book_1c(
 
                 # Add TQ verse content, if any
                 if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
             # Add scripture footnotes if available
             if chapter.footnotes:
@@ -536,21 +499,11 @@ def assemble_tn_as_iterator_for_lang_then_book_1c(
                 for verse_num, verse in tn_verses.items():
                     # Add TN verse content, if any
                     if tn_verses and verse_num in tn_verses:
-                        yield from format_tn_verse(
-                            tn_book_content_unit,
-                            chapter_num,
-                            verse_num,
-                            tn_verses[verse_num],
-                        )
+                        yield tn_verses[verse_num]
 
                     # Add TQ verse content, if any
                     if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                        yield from format_tq_verse(
-                            tq_book_content_unit.resource_type_name,
-                            chapter_num,
-                            verse_num,
-                            tq_verses[verse_num],
-                        )
+                        yield tq_verses[verse_num]
                     if tw_book_content_unit:
                         # Add the translation words links section.
                         yield from translation_word_links(
@@ -611,21 +564,11 @@ def assemble_tn_as_iterator_for_lang_then_book_1c_c(
                 for verse_num, verse in tn_verses.items():
                     # Add TN verse content, if any
                     if tn_verses and verse_num in tn_verses:
-                        yield from format_tn_verse(
-                            tn_book_content_unit,
-                            chapter_num,
-                            verse_num,
-                            tn_verses[verse_num],
-                        )
+                        yield tn_verses[verse_num]
 
                     # Add TQ verse content, if any
                     if tq_book_content_unit and tq_verses and verse_num in tq_verses:
-                        yield from format_tq_verse(
-                            tq_book_content_unit.resource_type_name,
-                            chapter_num,
-                            verse_num,
-                            tq_verses[verse_num],
-                        )
+                        yield tq_verses[verse_num]
 
 
 def assemble_tq_as_iterator_for_lang_then_book(
@@ -666,12 +609,7 @@ def assemble_tq_as_iterator_for_lang_then_book(
             # Now let's get all the verse translation notes available.
             if tq_verses:
                 for verse_num, verse in tq_verses.items():
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        verse,
-                    )
+                    yield verse
 
 
 def assemble_tq_tw_for_lang_then_book_1c(
@@ -713,12 +651,7 @@ def assemble_tq_tw_for_lang_then_book_1c(
             # Now let's get all the verse translation notes available.
             if tq_verses:
                 for verse_num, verse in tq_verses.items():
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        verse,
-                    )
+                    yield verse
 
                     if tw_book_content_unit:
                         # Add the translation words links section.
@@ -769,12 +702,7 @@ def assemble_tq_tw_for_lang_then_book_1c_c(
             # Now let's get all the verse translation questions available.
             if tq_verses:
                 for verse_num, verse in tq_verses.items():
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        verse,
-                    )
+                    yield verse
 
 
 # FIXME Eventually remove this. When you do you will have to also

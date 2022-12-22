@@ -30,6 +30,7 @@ from document.domain.model import (
     AssemblyStrategyEnum,
     Attachment,
     BookContent,
+    ChunkSizeEnum,
     DocumentRequest,
     # EmailPayload,
     HtmlContent,
@@ -49,6 +50,7 @@ def document_request_key(
     resource_requests: Sequence[ResourceRequest],
     assembly_strategy_kind: AssemblyStrategyEnum,
     assembly_layout_kind: AssemblyLayoutEnum,
+    chunk_size: ChunkSizeEnum,
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -80,8 +82,11 @@ def document_request_key(
             for resource_request in resource_requests
         ]
     )
-    document_request_key = "{}_{}_{}".format(
-        resource_request_keys, assembly_strategy_kind.value, assembly_layout_kind.value
+    document_request_key = "{}_{}_{}_{}".format(
+        resource_request_keys,
+        assembly_strategy_kind.value,
+        assembly_layout_kind.value,
+        chunk_size.value,
     )
     if len(document_request_key) >= max_filename_len:
         # Likely the generated filename was too long for the OS where this is
@@ -650,6 +655,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
         document_request.resource_requests,
         document_request.assembly_strategy_kind,
         document_request.assembly_layout_kind,
+        document_request.chunk_size,
     )
     html_filepath_ = html_filepath(document_request_key_)
     pdf_filepath_ = pdf_filepath(document_request_key_)

@@ -9,8 +9,6 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     chapter_commentary,
     chapter_intro,
     ensure_primary_usfm_books_for_different_languages_are_adjacent,
-    format_tn_verse,
-    format_tq_verse,
     translation_word_links,
     verses_for_chapter_tn,
     verses_for_chapter_tq,
@@ -259,12 +257,7 @@ def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
                     if is_even(idx):
                         yield html_row_begin
                     yield html_column_begin
-                    yield from format_tn_verse(
-                        tn_book_content_unit3,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]  # from format_tn_verse(
                     yield html_column_end
             yield html_row_end
 
@@ -278,12 +271,7 @@ def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
                     if is_even(idx):
                         yield html_row_begin
                     yield html_column_begin
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
                     yield html_column_end
             yield html_row_end
 
@@ -453,12 +441,7 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c(
             for tn_book_content_unit3 in tn_book_content_units:
                 tn_verses = verses_for_chapter_tn(tn_book_content_unit3, chapter_num)
                 if tn_verses and verse_num in tn_verses:
-                    yield from format_tn_verse(
-                        tn_book_content_unit3,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]
 
             # Add the interleaved tq questions
             tq_verses = None
@@ -466,12 +449,7 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c(
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
             # Add the interleaved translation word links
             for tw_book_content_unit in tw_book_content_units:
@@ -633,12 +611,7 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
             for tn_book_content_unit3 in tn_book_content_units:
                 tn_verses = verses_for_chapter_tn(tn_book_content_unit3, chapter_num)
                 if tn_verses and verse_num in tn_verses:
-                    yield from format_tn_verse(
-                        tn_book_content_unit3,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]
 
             # Add the interleaved tq questions
             tq_verses = None
@@ -646,12 +619,7 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
         # Add the footnotes
         for usfm_book_content_unit in usfm_book_content_units:
@@ -749,24 +717,14 @@ def assemble_tn_as_iterator_for_book_then_lang(
             for tn_book_content_unit in tn_book_content_units:
                 tn_verses = verses_for_chapter_tn(tn_book_content_unit, chapter_num)
                 if tn_verses and verse_num in tn_verses:
-                    yield from format_tn_verse(
-                        tn_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]
 
             # Add the interleaved tq questions
             for tq_book_content_unit in tq_book_content_units:
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
             # Add the interleaved translation word links
             for tw_book_content_unit in tw_book_content_units:
@@ -874,24 +832,14 @@ def assemble_tn_as_iterator_for_book_then_lang_c(
             for tn_book_content_unit in tn_book_content_units:
                 tn_verses = verses_for_chapter_tn(tn_book_content_unit, chapter_num)
                 if tn_verses and verse_num in tn_verses:
-                    yield from format_tn_verse(
-                        tn_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        tn_verses[verse_num],
-                    )
+                    yield tn_verses[verse_num]
 
             # Add the interleaved tq questions
             for tq_book_content_unit in tq_book_content_units:
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
 
 def assemble_tq_as_iterator_for_book_then_lang(
@@ -946,12 +894,7 @@ def assemble_tq_as_iterator_for_book_then_lang(
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
             # Add the interleaved translation word links
             for tw_book_content_unit in tw_book_content_units:
@@ -1036,12 +979,7 @@ def assemble_tq_as_iterator_for_book_then_lang_c(
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
-                    yield from format_tq_verse(
-                        tq_book_content_unit.resource_type_name,
-                        chapter_num,
-                        verse_num,
-                        tq_verses[verse_num],
-                    )
+                    yield tq_verses[verse_num]
 
 
 def assemble_tw_as_iterator_for_book_then_lang(

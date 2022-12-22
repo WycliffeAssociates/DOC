@@ -235,7 +235,7 @@ make local-e2e-tests
 ** Interactions at a high level
 
 #+begin_src plantuml :file wa_design_sequence_diagram1.png :exports results
-UI_biel -> app.document_endpoint: JSON document request
+client -> app.document_endpoint: JSON document request
 app.document_endpoint -> document_generator.main: passing resources from request
 #+end_src
 

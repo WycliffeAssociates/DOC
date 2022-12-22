@@ -1489,7 +1489,10 @@ def unzip_asset(lang_code: str, resource_type: str, resource_filepath: str) -> N
 
 
 def clone_git_repo(
-    url: str, resource_filepath: str, use_git_cli: bool = settings.USE_GIT_CLI
+    url: str,
+    resource_filepath: str,
+    branch: Optional[str] = None,
+    use_git_cli: bool = settings.USE_GIT_CLI,
 ) -> None:
     """
     Clone the git repo. If the repo was previously cloned but
@@ -1510,7 +1513,12 @@ def clone_git_repo(
             )
             logger.exception("Caught exception: ")
     if use_git_cli:
-        command = "git clone --depth=1 '{}' '{}'".format(url, resource_filepath)
+        if branch:  # CLient specified a particular branch
+            command = "git clone --depth=1 --branch '{}' '{}' '{}'".format(
+                branch, url, resource_filepath
+            )
+        else:
+            command = "git clone --depth=1 '{}' '{}'".format(url, resource_filepath)
         logger.debug("Attempting to clone into %s ...", resource_filepath)
         try:
             subprocess.call(command, shell=True)
@@ -1527,9 +1535,19 @@ def clone_git_repo(
     else:
         logger.debug("Attempting to clone into %s ...", resource_filepath)
         try:
-            git.repo.Repo.clone_from(
-                url=url, to_path=resource_filepath, multi_options=["--depth=1"]
-            )
+            if branch:  # CLient specified a particular branch
+                git.repo.Repo.clone_from(
+                    url=url,
+                    to_path=resource_filepath,
+                    multi_options=["--depth=1", "--branch '{}'".format(branch)],
+                )
+            else:
+                git.repo.Repo.clone_from(
+                    url=url,
+                    to_path=resource_filepath,
+                    multi_options=["--depth=1"],
+                )
+
             # with git_clone_options(...) ?
             #   pygit2.clone_repository(url, resource_filepath)
         except Exception:

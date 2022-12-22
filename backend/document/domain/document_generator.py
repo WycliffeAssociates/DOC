@@ -254,9 +254,8 @@ def assemble_content(
     book_content_units: Iterable[BookContent],
 ) -> str:
     """
-    Assemble the content from all requested resources according to the
-    assembly_strategy requested and write out to an HTML file
-    for subsequent use.
+    Assemble and return the content from all requested resources according to the
+    assembly_strategy requested.
     """
     # Get the assembly strategy function appropriate given the users
     # choice of document_request.assembly_strategy_kind

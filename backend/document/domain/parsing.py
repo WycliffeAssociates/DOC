@@ -238,7 +238,7 @@ def book_content(
     en_tw_resource_types: Sequence[str] = settings.EN_TW_RESOURCE_TYPES,
     bc_resource_types: Sequence[str] = settings.BC_RESOURCE_TYPES,
 ) -> BookContent:
-    """Build and return the HTML book content instance."""
+    """Build and return the BookContent instance."""
     book_content: BookContent
     if (
         resource_lookup_dto.resource_type in usfm_resource_types

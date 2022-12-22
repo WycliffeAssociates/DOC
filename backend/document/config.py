@@ -295,6 +295,9 @@ class Settings(BaseSettings):
     # works.
     USER_AGENT: str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
 
+    # Used in assembly_strategy_utils modeule when zero-filling various strings
+    NUM_ZEROS = 3
+
     # Pydantic uses this inner class convention to configure the
     # Settings class.
     class Config:

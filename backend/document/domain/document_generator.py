@@ -19,12 +19,12 @@ import pdfkit  # type: ignore
 from celery import current_task
 from document.config import settings
 from document.domain import (
-    assembly_strategies,
     bible_books,
     parsing,
     resource_lookup,
     worker,
 )
+from document.domain.assembly_strategies import assembly_strategies
 from document.domain.model import (
     AssemblyLayoutEnum,
     AssemblyStrategyEnum,
@@ -267,7 +267,11 @@ def assemble_content(
     # information of the document_request.assembly_layout_kind and
     # return it as a string.
     content = "".join(
-        assembly_strategy(book_content_units, document_request.assembly_layout_kind)
+        assembly_strategy(
+            book_content_units,
+            document_request.assembly_layout_kind,
+            document_request.chunk_size,
+        )
     )
     t1 = time.time()
     logger.debug("Time for interleaving document: %s", t1 - t0)

@@ -77,7 +77,7 @@ COPY ./tests ./tests
 # types packages, and transpile most modules into C using mypyc which
 # in turn build them with the resident C compiler, usually clang or
 # gcc.
-RUN cd backend && mypyc --strict --install-types --non-interactive --verbose document/domain/assembly_strategies.py document/domain/parsing.py document/domain/resource_lookup.py # document/domain/document_generator.py
+RUN cd backend && mypyc --strict --install-types --non-interactive --verbose document/domain/assembly_strategies/assembly_strategies.py document/domain/parsing.py document/domain/resource_lookup.py # document/domain/document_generator.py
 
 
 # Make sure Python can find the code to run

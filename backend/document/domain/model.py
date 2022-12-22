@@ -112,6 +112,35 @@ class AssemblyLayoutEnum(str, Enum):
         json_dumps = orjson_dumps
 
 
+@final
+class ChunkSizeEnum(str, Enum):
+    """
+    The length of content to burst out at a time when interleaving.
+    E.g., if VERSE is chosen as the chunk size then the interleaving will
+    do so in verse chunks (one verse of scripture, then one verse of helps
+    of the various kinds chosen). This is a reification of the idea
+    that translators want to be able to choose the chunk size of scripture
+    that should be grouped together for the purpose of translational
+    cohesion conceptually.
+
+    * VERSE
+      - This enum value signals to make each chunk of interleaved content be one verse in length.
+    * CHAPTER
+      - This enum value signals to make each chunk of interleaved content be one chapter in length.
+
+    NOTE
+    We could later add others. As an arbitrary example,
+    Perhaps we'd want to chunk by a number of verses.
+    """
+
+    VERSE = "verse"
+    CHAPTER = "chapter"
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
+
+
 # https://blog.meadsteve.dev/programming/2020/02/10/types-at-the-edges-in-python/
 # https://pydantic-docs.helpmanual.io/usage/models/
 @final
@@ -172,6 +201,9 @@ class DocumentRequest(BaseModel):
     generate_epub: bool = False
     # Indicate whether Docx should be generated.
     generate_docx: bool = False
+    # Indicate the chunk size to burst at a time when a document is
+    # being interleaved.
+    chunk_size: ChunkSizeEnum = ChunkSizeEnum.VERSE
 
     @root_validator
     def ensure_valid_document_request(cls, values: Any) -> Any:

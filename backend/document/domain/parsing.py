@@ -15,6 +15,11 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES, book_number
+from document.domain.assembly_strategies.assembly_strategy_utils import (
+    adjust_book_intro_headings,
+    adjust_chapter_intro_headings,
+    adjust_commentary_headings,
+)
 from document.domain.model import (
     BCBook,
     BCChapter,
@@ -520,6 +525,8 @@ def tn_book_content(
     verse_paths_glob_alt_fmt_str: str = "{}/*[0-9]*.txt",
     book_intro_paths_glob_fmt_str: str = "{}/*{}/front/intro.md",
     book_intro_paths_glob_alt_fmt_str: str = "{}/*{}/front/intro.txt",
+    h1: str = "H1",
+    h4: str = "H4",
 ) -> TNBook:
     # Initialize the Python-Markdown extensions that get invoked
     # when md.convert is called.
@@ -573,8 +580,10 @@ def tn_book_content(
             verse_num = Path(filepath).stem
             verse_md_content = read_file(filepath)
             verse_html_content = md.convert(verse_md_content)
-            verses_html[verse_num] = verse_html_content
-        chapter_payload = TNChapter(intro_html=intro_html, verses=verses_html)
+            adjusted_verse_html_content = sub(h1, h4, verse_html_content)
+            verses_html[verse_num] = adjusted_verse_html_content
+        adjusted_intro_html = adjust_chapter_intro_headings(intro_html)
+        chapter_payload = TNChapter(intro_html=adjusted_intro_html, verses=verses_html)
         chapter_verses[chapter_num] = chapter_payload
     # Get the book intro if it exists
     book_intro_path = glob(
@@ -591,16 +600,17 @@ def tn_book_content(
                 resource_dir, resource_lookup_dto.resource_code
             )
         )
-    book_intro_html = HtmlContent("")
+    adjusted_book_intro_html = HtmlContent("")
     if book_intro_path:
         book_intro_html = read_file(book_intro_path[0])
         book_intro_html = md.convert(book_intro_html)
+        adjusted_book_intro_html = adjust_book_intro_headings(book_intro_html)
     return TNBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         resource_code=resource_lookup_dto.resource_code,
         resource_type_name=resource_lookup_dto.resource_type_name,
-        intro_html=book_intro_html,
+        intro_html=adjusted_book_intro_html,
         chapters=chapter_verses,
     )
 
@@ -613,6 +623,8 @@ def tq_book_content(
     chapter_dirs_glob_fmt_str: str = "{}/**/*{}/*[0-9]*",
     chapter_dirs_glob_alt_fmt_str: str = "{}/*{}/*[0-9]*",
     verse_paths_glob_fmt_str: str = "{}/*[0-9]*.md",
+    h1: str = "H1",
+    h4: str = "H4",
 ) -> TQBook:
     # Create the Markdown instance once and have it use our markdown
     # extensions.
@@ -655,7 +667,8 @@ def tq_book_content(
             verse_ref = Path(filepath).stem
             verse_md_content = read_file(filepath)
             verse_html_content = md.convert(verse_md_content)
-            verses_html[verse_ref] = verse_html_content
+            adjusted_verse_html_content = sub(h1, h4, verse_html_content)
+            verses_html[verse_ref] = adjusted_verse_html_content
         chapter_verses[chapter_num] = TQChapter(verses=verses_html)
     return TQBook(
         lang_code=resource_lookup_dto.lang_code,
@@ -773,9 +786,14 @@ def bc_book_content(
             new_link = parser.new_tag("a", href=new_link_ref, target="_blank")
             new_link.string = link.string
             link.parent.a.replace_with(new_link)
-        chapters[chapter_num] = BCChapter(commentary=str(parser))
+        chapters[chapter_num] = BCChapter(
+            commentary=adjust_commentary_headings(str(parser))
+        )
+    adjusted_book_intro_html_content = adjust_commentary_headings(
+        book_intro_html_content
+    )
     return BCBook(
-        book_intro=book_intro_html_content,
+        book_intro=adjusted_book_intro_html_content,
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         resource_code=resource_lookup_dto.resource_code,

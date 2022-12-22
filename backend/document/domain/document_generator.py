@@ -620,7 +620,11 @@ def copy_file_to_docker_output_dir(
     shutil.copy(filepath, document_output_dir)
 
 
-@worker.app.task
+@worker.app.task(
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 5},
+)
 def main(document_request_json: Json[Any]) -> Json[Any]:
     """
     This is the main entry point for this module.

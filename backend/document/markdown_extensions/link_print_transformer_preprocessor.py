@@ -17,6 +17,9 @@ from document.markdown_extensions.link_regexes import (
     TA_WIKI_RC_LINK_RE,
     TN_MARKDOWN_RELATIVE_SCRIPTURE_LINK_RE,
     TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE,
+    TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE_NO_PARENS,
+    TN_MARKDOWN_RELATIVE_TO_CURRENT_CHAPTER_SCRIPTURE_LINK_RE_NO_PARENS,
+    TN_MARKDOWN_RELATIVE_SCRIPTURE_LINK_RE_NO_PARENS,
     TN_MARKDOWN_SCRIPTURE_LINK_RE,
     TN_OBS_MARKDOWN_LINK_RE,
     TW_MARKDOWN_LINK_RE,
@@ -81,12 +84,17 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
         # Handle links pointing at TN resource assets
         source = self.transform_tn_prefixed_markdown_links(source)
         source = self.transform_tn_markdown_links(source)
+        source = self.transform_tn_markdown_links_no_parens(source)
         # NOTE Haven't decided yet if we should use this next method or instead
         # have human translators use more explicit scripture reference that
         # includes the resource_code, e.g., col, rather than leave it out. If
-        # they did provide the resource_code then this case would be picked up
+        # they did provide the resource_code then these cases would be picked up
         # by self.transform_tn_markdown_links.
         source = self.transform_tn_missing_resource_code_markdown_links(source)
+        source = self.transform_tn_missing_resource_code_markdown_links_no_paren(source)
+        source = self.transform_tn_missing_resource_code_and_chapter_num_markdown_links_no_paren(
+            source
+        )
         source = self.transform_tn_obs_markdown_links(source)
         source = self.transform_bc_markdown_links(source)
         return source.split("\n")
@@ -362,68 +370,11 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
         self, source: str, working_dir: str = settings.RESOURCE_ASSETS_DIR
     ) -> str:
         """
-        Transform the translation note rc link into a link pointing to
-        the anchor link for the translation note for chapter verse
-        reference.
+        Transform the translation note rc link into a non-link of the
+        scripture reference only.
         """
         for match in finditer(TN_MARKDOWN_SCRIPTURE_LINK_RE, source):
             scripture_ref = match.group("scripture_ref")
-            # lang_code = match.group("lang_code")
-            # resource_code = match.group("resource_code")
-            # chapter_num = match.group("chapter_num")
-            # verse_ref = match.group("verse_ref")
-
-            # # NOTE(id:check_for_resource_request) To bother getting the TN resource
-            # # asset file referenced in the matched link we must know that said TN
-            # # resource identified by the lang_code/resource_type/resource_code combo
-            # # in the link has been requested by the user in the DocumentRequest.
-            # tn_resource_requests: list[model.ResourceRequest] = [
-            #     resource_request
-            #     for resource_request in self._resource_requests
-            #     if resource_request.lang_code == lang_code
-            #     and TN in resource_request.resource_type
-            #     and resource_request.resource_code == resource_code
-            # ]
-            # if tn_resource_requests:
-            #     tn_resource_request: model.ResourceRequest = tn_resource_requests[0]
-            #     # Build a file path to the TN note being requested.
-            #     first_resource_path_segment = "{}_{}".format(
-            #         tn_resource_request.lang_code,
-            #         tn_resource_request.resource_type,
-            #     )
-            #     second_resource_path_segment = "{}_tn".format(
-            #         tn_resource_request.lang_code
-            #     )
-            #     path = "{}.md".format(
-            #         os.path.join(
-            #             working_dir,
-            #             first_resource_path_segment,
-            #             second_resource_path_segment,
-            #             resource_code,
-            #             chapter_num,
-            #             verse_ref,
-            #         )
-            #     )
-            #     if os.path.exists(path):  # file path to TN note exists
-            #         # Create anchor link to translation note
-            #         new_link = settings.TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR.format(
-            #             scripture_ref,
-            #             tn_resource_request.lang_code,
-            #             bible_books.BOOK_NUMBERS[
-            #                 tn_resource_request.resource_code
-            #             ].zfill(3),
-            #             chapter_num.zfill(3),
-            #             verse_ref.zfill(3),
-            #         )
-            #         # Replace the match text with the new anchor link
-            #         source = source.replace(
-            #             match.group(0),  # The whole match
-            #             "({})".format(new_link),
-            #         )
-            #     else:  # TN note file does not exist.
-            #         # Replace link with link text only.
-            #         source = source.replace(match.group(0), scripture_ref)
-            # else:  # TN resource that link requested was not included as part of the DocumentRequest
             # Replace link with link text only.
             source = source.replace(match.group(0), scripture_ref)
 
@@ -431,143 +382,63 @@ class LinkPrintTransformerPreprocessor(markdown.preprocessors.Preprocessor):
 
     def transform_tn_markdown_links(self, source: str) -> str:
         """
-        Transform the translation note rc link into a link pointing to
-        the anchor link for the translation note for chapter verse
-        reference.
+        Transform the translation note rc link into a non-link of the
+        scripture reference only.
         """
         for match in finditer(TN_MARKDOWN_RELATIVE_SCRIPTURE_LINK_RE, source):
             scripture_ref = match.group("scripture_ref")
-            # resource_code = match.group("resource_code")
-            # chapter_num = match.group("chapter_num")
-            # verse_ref = match.group("verse_ref")
-
-            # NOTE See id:check_for_resource_request above
-            # matching_resource_requests: list[model.ResourceRequest] = [
-            #     resource_request
-            #     for resource_request in self._resource_requests
-            #     if resource_request.lang_code == self._lang_code
-            #     and TN in resource_request.resource_type
-            #     and resource_request.resource_code == resource_code
-            # ]
-            # if matching_resource_requests:
-            #     matching_resource_request: model.ResourceRequest = (
-            #         matching_resource_requests[0]
-            #     )
-            #     # Build a file path to the TN note being requested.
-            #     first_resource_path_segment = "{}_{}".format(
-            #         matching_resource_request.lang_code,
-            #         matching_resource_request.resource_type,
-            #     )
-            #     second_resource_path_segment = "{}_tn".format(
-            #         matching_resource_request.lang_code
-            #     )
-            #     path = "{}.md".format(
-            #         os.path.join(
-            #             settings.RESOURCE_ASSETS_DIR,
-            #             first_resource_path_segment,
-            #             second_resource_path_segment,
-            #             resource_code,
-            #             chapter_num,
-            #             verse_ref,
-            #         )
-            #     )
-            #     if os.path.exists(path):  # file path to TN note exists
-            #         # Create anchor link to translation note
-            #         new_link = settings.TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR.format(
-            #             scripture_ref,
-            #             self._lang_code,
-            #             bible_books.BOOK_NUMBERS[resource_code].zfill(3),
-            #             chapter_num.zfill(3),
-            #             verse_ref.zfill(3),
-            #         )
-            #         # Replace the match text with the new anchor link
-            #         source = source.replace(
-            #             match.group(0),  # The whole match
-            #             "({})".format(new_link),
-            #         )
-            #     else:  # TN note file does not exist.
-            #         # Replace match text from the source text with the
-            #         # link text only so that is not clickable.
-            #         # The whole match plus surrounding parenthesis
-            #         source = source.replace(
-            #             "({})".format(match.group(0)), scripture_ref
-            #         )
-            # else:  # TN resource that link requested was not included as part of the
-            # DocumentRequest Replace match text from the source text with the link
-            # text only so that is not clickable.
-            # The whole match plus surrounding parenthesis
             source = source.replace("({})".format(match.group(0)), scripture_ref)
+
+        return source
+
+    def transform_tn_markdown_links_no_parens(self, source: str) -> str:
+        """
+        Transform the translation note rc link into a non-link of the
+        scripture reference only.
+        """
+        for match in finditer(TN_MARKDOWN_RELATIVE_SCRIPTURE_LINK_RE_NO_PARENS, source):
+            scripture_ref = match.group("scripture_ref")
+            source = source.replace("{}".format(match.group(0)), scripture_ref)
+
+        return source
+
+    def transform_tn_missing_resource_code_markdown_links_no_paren(
+        self, source: str
+    ) -> str:
+        """
+        Transform the translation note rc link into a non-linked scripture reference only.
+        """
+        for match in finditer(
+            TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE_NO_PARENS, source
+        ):
+            scripture_ref = match.group("scripture_ref")
+            source = source.replace("{}".format(match.group(0)), scripture_ref)
+
+        return source
+
+    def transform_tn_missing_resource_code_and_chapter_num_markdown_links_no_paren(
+        self, source: str
+    ) -> str:
+        """
+        Transform the translation note rc link into a non-linked scripture reference only.
+        """
+        for match in finditer(
+            TN_MARKDOWN_RELATIVE_TO_CURRENT_CHAPTER_SCRIPTURE_LINK_RE_NO_PARENS, source
+        ):
+            scripture_ref = match.group("scripture_ref")
+            source = source.replace("{}".format(match.group(0)), scripture_ref)
 
         return source
 
     def transform_tn_missing_resource_code_markdown_links(self, source: str) -> str:
         """
-        Transform the translation note rc link into a link pointing to
-        the anchor link for the translation note for chapter verse
-        reference.
+        Transform the translation note rc link into a non-link of the
+        scripture reference only.
         """
         for match in finditer(
             TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE, source
         ):
             scripture_ref = match.group("scripture_ref")
-            # chapter_num = match.group("chapter_num")
-            # verse_ref = match.group("verse_ref")
-
-            # matching_resource_requests: list[model.ResourceRequest] = [
-            #     resource_request
-            #     for resource_request in self._resource_requests
-            #     if resource_request.lang_code == self._lang_code
-            #     and TN in resource_request.resource_type
-            # ]
-            # resource_code = ""
-            # if matching_resource_requests:
-            #     matching_resource_request: model.ResourceRequest = (
-            #         matching_resource_requests[0]
-            #     )
-            #     resource_code = matching_resource_request.resource_code
-            #     # Build a file path to the TN note being requested.
-            #     first_resource_path_segment = "{}_{}".format(
-            #         matching_resource_request.lang_code,
-            #         matching_resource_request.resource_type,
-            #     )
-            #     second_resource_path_segment = "{}_tn".format(
-            #         matching_resource_request.lang_code
-            #     )
-            #     path = "{}.md".format(
-            #         os.path.join(
-            #             settings.RESOURCE_ASSETS_DIR,
-            #             first_resource_path_segment,
-            #             second_resource_path_segment,
-            #             resource_code,
-            #             chapter_num,
-            #             verse_ref,
-            #         )
-            #     )
-            #     if os.path.exists(path):  # file path to TN note exists
-            #         # Create anchor link to translation note
-            #         new_link = settings.TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR.format(
-            #             scripture_ref,
-            #             self._lang_code,
-            #             bible_books.BOOK_NUMBERS[resource_code].zfill(3),
-            #             chapter_num.zfill(3),
-            #             verse_ref.zfill(3),
-            #         )
-            #         # Replace the match text with the new anchor link
-            #         source = source.replace(
-            #             match.group(0),  # The whole match
-            #             "({})".format(new_link),
-            #         )
-            #     else:  # TN note file does not exist.
-            #         # Replace match text from the source text with the
-            #         # link text only so that is not clickable.
-            #         # The whole match plus surrounding parenthesis
-            #         source = source.replace(
-            #             "({})".format(match.group(0)), scripture_ref
-            #         )
-            # else:  # TN resource that link requested was not included as part of the
-            # DocumentRequest Replace match text from the source text with the link
-            # text only so that is not clickable.
-            # The whole match plus surrounding parenthesis
             source = source.replace("({})".format(match.group(0)), scripture_ref)
 
         return source

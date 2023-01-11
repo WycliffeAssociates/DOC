@@ -577,15 +577,22 @@ def select_assembly_layout_kind(
     Make an intelligent choice of what layout to use given the
     DocumentRequest instance the user has requested. Note that prior to
     this, we've already validated the DocumentRequest instance in the
-    DocumentRequest's validator.
+    DocumentRequest's validator. If we hadn't then we wouldn't be able
+    to make the assumptions this function makes.
     """
-    if not document_request.assembly_layout_kind:
-        document_request.assembly_layout_kind = one_column
 
-    logger.debug(
-        "updated document_request: %s",
-        document_request,
-    )
+    # The assembly_layout_kind does not get set by the UI, so if it is set
+    # that means that the request is coming from use of the API other than
+    # the UI in which case validation of the DocumentRequest instance will
+    # have already occurred by this point thus ensuring that the
+    # assembly_layout_kind is a valid choice given the other values of the
+    # DocumentRequest instance in which case we can simply return it.
+    # NOTE: This is important because the API allows a layout that is
+    # otherwise not available through the UI: scripture-left, script-right,
+    # compact (which we probably won't keep long term but it is there
+    # for now).
+    if document_request.assembly_layout_kind:
+        return document_request.assembly_layout_kind
 
     if (
         document_request.layout_for_print
@@ -593,17 +600,16 @@ def select_assembly_layout_kind(
     ):
         return one_column_compact
     elif (
-        document_request.layout_for_print
-        and document_request.assembly_strategy_kind == book_language_order
-        and document_request.assembly_layout_kind == sl_sr
+        not document_request.layout_for_print
+        and document_request.assembly_strategy_kind == language_book_order
     ):
-        return sl_sr_compact
-    elif (
-        document_request.layout_for_print
+        return one_column
+    elif (  # Validation (and the UI) has already ensured that we have two languages. In such situations with the UI, with book_language_order, we always use the sl_sr layout.
+        not document_request.layout_for_print
         and document_request.assembly_strategy_kind == book_language_order
-        and document_request.assembly_layout_kind == one_column
+        # and document_request.assembly_layout_kind == sl_sr
     ):
-        return one_column_compact
+        return sl_sr
 
     return one_column
 

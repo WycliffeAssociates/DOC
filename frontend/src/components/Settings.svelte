@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AssemblyStrategy } from '../types'
+  import type { SelectElement } from '../types'
   import Switch from './Switch.svelte'
   import {
     layoutForPrintStore,
@@ -12,11 +12,11 @@
   import { lang1CodeStore } from '../stores/LanguagesStore'
   import GenerateDocument from './GenerateDocument.svelte'
 
-  let bookLanguageOrderStrategy: AssemblyStrategy = {
+  let bookLanguageOrderStrategy: SelectElement = {
     id: 'blo',
     label: <string>import.meta.env.VITE_BOOK_LANGUAGE_ORDER_LABEL
   }
-  let languageBookOrderStrategy: AssemblyStrategy = {
+  let languageBookOrderStrategy: SelectElement = {
     id: 'lbo',
     label: <string>import.meta.env.VITE_LANGUAGE_BOOK_ORDER_LABEL
   }

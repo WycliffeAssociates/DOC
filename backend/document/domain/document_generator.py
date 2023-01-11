@@ -705,6 +705,7 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
                 resource_dir,
                 document_request.resource_requests,
                 document_request.layout_for_print,
+                document_request.chunk_size,
             )
             for resource_lookup_dto, resource_dir in zip(
                 found_resource_lookup_dtos, resource_dirs

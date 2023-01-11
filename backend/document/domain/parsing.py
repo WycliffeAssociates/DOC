@@ -25,6 +25,7 @@ from document.domain.model import (
     BCChapter,
     BookContent,
     ChapterNum,
+    ChunkSizeEnum,
     HtmlContent,
     MarkdownContent,
     ResourceLookupDto,
@@ -233,6 +234,7 @@ def book_content(
     resource_dir: str,
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
+    chunk_size: str,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     en_usfm_resource_types: Sequence[str] = settings.EN_USFM_RESOURCE_TYPES,
     tn_resource_types: Sequence[str] = settings.TN_RESOURCE_TYPES,
@@ -267,7 +269,11 @@ def book_content(
     ):
         t0 = time.time()
         book_content = tn_book_content(
-            resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+            resource_lookup_dto,
+            resource_dir,
+            resource_requests,
+            layout_for_print,
+            chunk_size,
         )
         t1 = time.time()
         logger.debug(
@@ -283,7 +289,11 @@ def book_content(
     ):
         t0 = time.time()
         book_content = tq_book_content(
-            resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+            resource_lookup_dto,
+            resource_dir,
+            resource_requests,
+            layout_for_print,
+            chunk_size,
         )
         t1 = time.time()
         logger.debug(
@@ -517,6 +527,7 @@ def tn_book_content(
     resource_dir: str,
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
+    chunk_size: str,
     chapter_dirs_glob_fmt_str: str = "{}/**/*{}/*[0-9]*",
     chapter_dirs_glob_alt_fmt_str: str = "{}/*{}/*[0-9]*",
     intro_paths_glob_fmt_str: str = "{}/*intro.md",
@@ -527,6 +538,7 @@ def tn_book_content(
     book_intro_paths_glob_alt_fmt_str: str = "{}/*{}/front/intro.txt",
     h1: str = H1,
     h4: str = H4,
+    verse_label_fmt_str: str = "<h3>{} {}:{}</h3>\n{}",
 ) -> TNBook:
     # Initialize the Python-Markdown extensions that get invoked
     # when md.convert is called.
@@ -577,11 +589,20 @@ def tn_book_content(
             verse_paths = sorted(glob(verse_paths_glob_alt_fmt_str.format(chapter_dir)))
         verses_html: dict[VerseRef, str] = {}
         for filepath in verse_paths:
-            verse_num = Path(filepath).stem
+            verse_ref = Path(filepath).stem
             verse_md_content = read_file(filepath)
             verse_html_content = md.convert(verse_md_content)
             adjusted_verse_html_content = sub(h1, h4, verse_html_content)
-            verses_html[verse_num] = adjusted_verse_html_content
+            # Chapter chunking needs verse level labeling
+            if chunk_size == ChunkSizeEnum.CHAPTER:
+                verses_html[verse_ref] = verse_label_fmt_str.format(
+                    BOOK_NAMES[resource_lookup_dto.resource_code],
+                    chapter_num,
+                    str(int(verse_ref)) if "0" in verse_ref else verse_ref,
+                    adjusted_verse_html_content,
+                )
+            else:
+                verses_html[verse_ref] = adjusted_verse_html_content
         adjusted_intro_html = adjust_chapter_intro_headings(intro_html)
         chapter_payload = TNChapter(intro_html=adjusted_intro_html, verses=verses_html)
         chapter_verses[chapter_num] = chapter_payload
@@ -620,11 +641,13 @@ def tq_book_content(
     resource_dir: str,
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
+    chunk_size: str,
     chapter_dirs_glob_fmt_str: str = "{}/**/*{}/*[0-9]*",
     chapter_dirs_glob_alt_fmt_str: str = "{}/*{}/*[0-9]*",
     verse_paths_glob_fmt_str: str = "{}/*[0-9]*.md",
     h1: str = H1,
     h4: str = H4,
+    verse_label_fmt_str: str = "<h3>{} {}:{}</h3>\n{}",
 ) -> TQBook:
     # Create the Markdown instance once and have it use our markdown
     # extensions.
@@ -668,7 +691,16 @@ def tq_book_content(
             verse_md_content = read_file(filepath)
             verse_html_content = md.convert(verse_md_content)
             adjusted_verse_html_content = sub(h1, h4, verse_html_content)
-            verses_html[verse_ref] = adjusted_verse_html_content
+            # Chapter chunking needs verse level labeling
+            if chunk_size == ChunkSizeEnum.CHAPTER:
+                verses_html[verse_ref] = verse_label_fmt_str.format(
+                    BOOK_NAMES[resource_lookup_dto.resource_code],
+                    chapter_num,
+                    str(int(verse_ref)) if "0" in verse_ref else verse_ref,
+                    adjusted_verse_html_content,
+                )
+            else:
+                verses_html[verse_ref] = adjusted_verse_html_content
         chapter_verses[chapter_num] = TQChapter(verses=verses_html)
     return TQBook(
         lang_code=resource_lookup_dto.lang_code,

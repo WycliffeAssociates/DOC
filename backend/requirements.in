@@ -27,6 +27,9 @@ termcolor
 toolz
 trio
 uvicorn
+# Install weasyprint separately with pip in Dockerfile
+# because it is not installable with pip-tools.
+# weasyprint
 
 types-PyYAML
 types-Markdown

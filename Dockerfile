@@ -69,6 +69,7 @@ RUN pip install -v -r requirements-prod.txt
 RUN cd /tmp && git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
 RUN cd /tmp/USFM-Tools && python setup.py build install
 RUN cp -r /tmp/USFM-Tools/usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
+RUN pip install weasyprint
 
 COPY ./backend ./backend
 COPY ./tests ./tests

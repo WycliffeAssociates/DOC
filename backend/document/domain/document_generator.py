@@ -434,12 +434,20 @@ def convert_html_to_pdf(
     assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
 
+    weasyprint_command = "weasyprint {} {}".format(html_filepath, pdf_filepath)
+    logger.debug("Generate PDF command: %s", weasyprint_command)
     t0 = time.time()
-    pdfkit.from_file(
-        html_filepath,
-        pdf_filepath,
-        options=wkhtmltopdf_options,
-    )
+    # wkhtmltopdf cannot handle the column-count css directive that
+    # this layout requires, but weasyprint which is slower can, but
+    # weasyprint is much slower.
+    if "1c_chapter" in document_request_key:
+        subprocess.call(weasyprint_command, shell=True)
+    else:
+        pdfkit.from_file(
+            html_filepath,
+            pdf_filepath,
+            options=wkhtmltopdf_options,
+        )
     t1 = time.time()
     logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
     copy_file_to_docker_output_dir(pdf_filepath)

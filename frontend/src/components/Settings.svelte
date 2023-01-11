@@ -4,6 +4,7 @@
   import {
     layoutForPrintStore,
     assemblyStrategyKindStore,
+    assemblyStrategyChunkSizeStore,
     generatePdfStore,
     generateEpubStore,
     generateDocxStore,
@@ -20,11 +21,29 @@
     id: 'lbo',
     label: <string>import.meta.env.VITE_LANGUAGE_BOOK_ORDER_LABEL
   }
+  let verse: SelectElement = {
+    id: 'verse',
+    label: <string>import.meta.env.VITE_CHUNK_SIZE_VERSE
+  }
+  let chapter: SelectElement = {
+    id: 'chapter',
+    label: <string>import.meta.env.VITE_CHUNK_SIZE_CHAPTER
+  }
+  // Set default value of chapter
+  $assemblyStrategyChunkSizeStore = chapter.id
+
+  // Set up the values for the select drop-downs
   let assemblyStrategies = [bookLanguageOrderStrategy, languageBookOrderStrategy]
+  let assemblyStrategyChunkSizes = [chapter, verse]
 
   const assemblyStrategyHeader = <string>import.meta.env.VITE_ASSEMBLY_STRATEGY_HEADER
 
+  const assemblyStrategyChunkingHeader = <string>(
+    import.meta.env.VITE_ASSEMBLY_STRATEGY_CHUNKING_HEADER
+  )
+
   $: console.log(`$assemblyStrategyKindStore: ${$assemblyStrategyKindStore}`)
+  $: console.log(`$assemblyStrategyChunkSizeStore: ${$assemblyStrategyChunkSizeStore}`)
 </script>
 
 <h3 class="bg-white text-secondary-content text-lg pb-8 pt-2 pl-2">
@@ -64,6 +83,33 @@
     </div>
   </li>
   {/if}
+  <li class="bg-white p-2">
+    <div class="flex justify-between">
+      <span class="text-primary-content">{assemblyStrategyChunkingHeader}</span>
+      <select
+        bind:value="{$assemblyStrategyChunkSizeStore}"
+        name="assemblyStrategyChunkSize"
+      >
+        {#each assemblyStrategyChunkSizes as assemblyStrategyChunkSize}
+        <option value="{assemblyStrategyChunkSize.id}">
+          <span class="text-primary-content">{assemblyStrategyChunkSize.label}</span>
+        </option>
+        {/each}
+      </select>
+    </div>
+    <div>
+      <span class="text-sm text-neutral-content"
+        ><p>
+          Choosing 'By Verse' will interleave scripture and helps by a verse's worth of
+          content at a time.
+        </p>
+        <p>
+          Choosing 'By Chapter' will interleave scripture and helps by a chapter's worth
+          of content at a time.
+        </p></span
+      >
+    </div>
+  </li>
   <li class="bg-white p-2">
     <div class="flex justify-between">
       <span class="text-primary-content">{import.meta.env.VITE_PDF_LABEL}</span>

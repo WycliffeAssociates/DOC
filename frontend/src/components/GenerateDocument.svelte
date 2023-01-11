@@ -14,6 +14,7 @@
   import {
     layoutForPrintStore,
     assemblyStrategyKindStore,
+    assemblyStrategyChunkSizeStore,
     generatePdfStore,
     generateEpubStore,
     generateDocxStore,

@@ -273,7 +273,7 @@ class DocumentRequest(BaseModel):
             and not (number_of_usfm_languages > 1 and is_even(number_of_usfm_languages))
         ):
             raise ValueError(
-                "Two column scripture left, scripture right layout requires a non-zero even number of books. For an uneven number of books you'll want to use the one column layout kind."
+                "Two column scripture left, scripture right layout requires a non-zero even number of languages. For an uneven number of languages you'll want to use the one column layout kind."
             )
         elif (
             values.get("assembly_layout_kind")
@@ -426,7 +426,7 @@ class TWNameContentPair:
 
     def __init__(self, localized_word: str, content: HtmlContent):
         self.localized_word = localized_word
-        self.content = content  # content gets mutated after instantiation therefore we don't use a NamedTuple (which is immutable)
+        self.content = content  # content gets mutated after instantiation therefore we can't use a NamedTuple (which is immutable).
 
 
 @final

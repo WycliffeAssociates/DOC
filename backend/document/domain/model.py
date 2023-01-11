@@ -191,8 +191,8 @@ class DocumentRequest(BaseModel):
     # Indicate whether Docx should be generated.
     generate_docx: bool = False
     # Indicate the chunk size to burst at a time when a document is
-    # being interleaved.
-    chunk_size: ChunkSizeEnum = ChunkSizeEnum.VERSE
+    # being interleaved. Default to chapter.
+    chunk_size: ChunkSizeEnum = ChunkSizeEnum.CHAPTER
 
     @root_validator
     def ensure_valid_document_request(cls, values: Any) -> Any:

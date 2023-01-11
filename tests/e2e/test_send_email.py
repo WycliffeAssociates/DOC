@@ -40,4 +40,4 @@ def test_send_email_with_es_419_ulb_jud_pdf() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")

@@ -1,10 +1,8 @@
-from itertools import groupby
-from typing import Callable, Iterable, Mapping, Sequence
+from typing import Iterable, Sequence
 
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_book_intro_headings,
-    book_content_unit_resource_code,
     book_intro_commentary,
     chapter_commentary,
     chapter_intro,
@@ -13,12 +11,10 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     verses_for_chapter_tn,
     verses_for_chapter_tq,
 )
-from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import (
-    AssemblyLayoutEnum,
     BCBook,
     BookContent,
-    ChunkSizeEnum,
+    ChapterNum,
     HtmlContent,
     TNBook,
     TQBook,
@@ -347,25 +343,8 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML wherein at least one USFM resource (e.g., ulb,
-    nav, cuv, etc.) exists, and TN, TQ, and TW may exist. One column
-    layout.
-
-    Rough sketch of algo that follows:
-    English book intro
-    French book intro
-    chapter heading, e.g., Chapter 1
-        english chapter intro goes here
-        french chaptre entre qui
-            Unlocked Literal Bible (ULB) 1:1
-            a verse goes here
-            French ULB 1:1
-            a verse goes here
-            ULB Translation Helps 1:1
-            translation notes for English goes here
-            French Translation notes 1:1
-            translation notes for French goes here
-            etc for tq, tw links, footnotes, followed by tw definitions
+    Construct the one column layout verse interleaved HTML wherein at
+    least one USFM resource exists, and other resources may exist.
     """
 
     ldebug = logger.debug
@@ -516,26 +495,9 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML wherein at least one USFM resource (e.g., ulb,
-    nav, cuv, etc.) exists, and TN, TQ, and TW may exist. One column
-    layout compacted for printing: fewer translation words, no
-    linking.
-
-    Rough sketch of algo that follows:
-    English book intro
-    French book intro
-    chapter heading, e.g., Chapter 1
-        english chapter intro goes here
-        french chaptre entre qui
-            Unlocked Literal Bible (ULB) 1:1
-            a verse goes here
-            French ULB 1:1
-            a verse goes here
-            ULB Translation Helps 1:1
-            translation notes for English goes here
-            French Translation notes 1:1
-            translation notes for French goes here
-            etc for tq, tw links, footnotes, followed by tw definitions
+    Construct the one column compact layout verse interleaved HTML
+    wherein at least one USFM resource exists, and other resources may
+    exist.
     """
 
     ldebug = logger.debug
@@ -548,7 +510,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
     usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
     tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
     tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
-    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add book intros for each tn_book_content_unit
@@ -647,31 +608,17 @@ def assemble_tn_as_iterator_for_book_then_lang(
     bc_book_content_units: Sequence[BCBook],
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML for a 'by verse' strategy wherein at least
-    tn_book_content_units exists, and TN, TQ, and TW may exist.
-
-
-    Rough sketch of algo that follows:
-    English book intro
-    French book intro
-    chapter heading, e.g., Chapter 1
-        english chapter intro goes here
-        french chapter intro goes here
-            ULB Translation Helps 1:1
-            translation notes for English goes here
-            French Translation notes 1:1
-            translation notes for French goes here
-            etc for tq, tw links, followed by tw definitions
+    Construct the one column compact layout verse interleaved HTML
+    wherein at least one tn resource exists, and other non-USFM
+    resources may exist.
     """
 
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
     tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
     tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
-    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add book intros for each tn_book_content_unit
@@ -727,34 +674,6 @@ def assemble_tn_as_iterator_for_book_then_lang(
                     yield tq_verses[verse_num]
 
             # Add the interleaved translation word links
-            for tw_book_content_unit in tw_book_content_units:
-                # Get the usfm_book_content_unit instance associated with the
-                # tw_book_content_unit, i.e., having same lang_code and
-                # resource_code.
-                usfm_book_content_unit_lst = [
-                    usfm_book_content_unit
-                    for usfm_book_content_unit in usfm_book_content_units
-                    if usfm_book_content_unit.lang_code
-                    == tw_book_content_unit.lang_code
-                    and usfm_book_content_unit.resource_code
-                    == tw_book_content_unit.resource_code
-                ]
-                if usfm_book_content_unit_lst:
-                    usfm_book_content_unit_ = usfm_book_content_unit_lst[0]
-                else:
-                    usfm_book_content_unit_ = None
-                # Add the translation words links section.
-                if (
-                    usfm_book_content_unit_ is not None
-                    and verse_num
-                    in usfm_book_content_unit_.chapters[chapter_num].verses
-                ):
-                    yield from translation_word_links(
-                        tw_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        usfm_book_content_unit_.chapters[chapter_num].verses[verse_num],
-                    )
 
 
 def assemble_tn_as_iterator_for_book_then_lang_c(
@@ -765,30 +684,15 @@ def assemble_tn_as_iterator_for_book_then_lang_c(
     bc_book_content_units: Sequence[BCBook],
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML for a 'by verse' strategy wherein at least
-    tn_book_content_units exists, and TN, TQ, and TW may exist.
-
-
-    Rough sketch of algo that follows:
-    English book intro
-    French book intro
-    chapter heading, e.g., Chapter 1
-        english chapter intro goes here
-        french chapter intro goes here
-            ULB Translation Helps 1:1
-            translation notes for English goes here
-            French Translation notes 1:1
-            translation notes for French goes here
-            etc for tq, tw links, followed by tw definitions
+    Construct the compact layout HTML for a 'by verse' strategy wherein at least
+    tn_book_content_units exists, and other non-USFM resources may exist.
     """
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
     tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
     tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
-    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add book intros for each tn_book_content_unit
@@ -801,10 +705,12 @@ def assemble_tn_as_iterator_for_book_then_lang_c(
     for bc_book_content_unit in bc_book_content_units:
         yield book_intro_commentary(bc_book_content_unit)
 
+    def chapters_key(tn_book_content_unit: TNBook) -> list[ChapterNum]:
+        return list(tn_book_content_unit.chapters.keys())
+
     # Use the tn_book_content_unit that has the most chapters as a
     # chapter_num pump.
     # Realize the most amount of content displayed to user.
-    chapters_key = lambda tn_book_content_unit: tn_book_content_unit.chapters.keys()
     tn_with_most_chapters = max(tn_book_content_units, key=chapters_key)
     for chapter_num in tn_with_most_chapters.chapters.keys():
         yield HtmlContent("Chapter {}".format(chapter_num))
@@ -858,10 +764,7 @@ def assemble_tq_as_iterator_for_book_then_lang(
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
-    tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
     tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
-    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Use the tq_book_content_unit that has the most chapters as a
@@ -896,35 +799,6 @@ def assemble_tq_as_iterator_for_book_then_lang(
                 if tq_verses and verse_num in tq_verses:
                     yield tq_verses[verse_num]
 
-            # Add the interleaved translation word links
-            for tw_book_content_unit in tw_book_content_units:
-                # Get the usfm_book_content_unit instance associated with the
-                # tw_book_content_unit, i.e., having same lang_code and
-                # resource_code.
-                usfm_book_content_unit_lst = [
-                    usfm_book_content_unit
-                    for usfm_book_content_unit in usfm_book_content_units
-                    if usfm_book_content_unit.lang_code
-                    == tw_book_content_unit.lang_code
-                    and usfm_book_content_unit.resource_code
-                    == tw_book_content_unit.resource_code
-                ]
-                if usfm_book_content_unit_lst:
-                    usfm_book_content_unit_ = usfm_book_content_unit_lst[0]
-                else:
-                    usfm_book_content_unit_ = None
-                # Add the translation words links section.
-                if (
-                    usfm_book_content_unit_ is not None
-                    and verse_num
-                    in usfm_book_content_unit_.chapters[chapter_num].verses
-                ):
-                    yield from translation_word_links(
-                        tw_book_content_unit,
-                        chapter_num,
-                        verse_num,
-                        usfm_book_content_unit_.chapters[chapter_num].verses[verse_num],
-                    )
 
 
 def assemble_tq_as_iterator_for_book_then_lang_c(
@@ -943,10 +817,8 @@ def assemble_tq_as_iterator_for_book_then_lang_c(
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
     # tn_book_content_units = sorted(tn_book_content_units, key=key)
     tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
-    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Use the tq_book_content_unit that has the most chapters as a
@@ -995,7 +867,6 @@ def assemble_tw_as_iterator_for_book_then_lang(
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add the bible commentary

@@ -86,7 +86,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_language_book_order_with_no_email_1c_c() -> 
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_language_book_order_1c() -> None:
@@ -124,7 +124,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_language_book_order_1c() -> Non
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_language_book_order_1c_c() -> None:
@@ -162,7 +162,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_language_book_order_1c_c() -> N
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_tn_wa_jud_language_book_order_1c() -> None:
@@ -195,7 +195,7 @@ def test_en_ulb_wa_tn_wa_jud_language_book_order_1c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_tn_wa_jud_language_book_order_1c_c() -> None:
@@ -228,7 +228,7 @@ def test_en_ulb_wa_tn_wa_jud_language_book_order_1c_c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_ar_ulb_jud_language_book_order_1c() -> None:
@@ -258,7 +258,7 @@ def test_ar_ulb_jud_language_book_order_1c() -> None:
             },
         )
         with pytest.raises(Exception):
-            check_finished_document_with_verses_success(response)
+            check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_ar_ulb_jud_language_book_order_1c_c() -> None:
@@ -288,7 +288,7 @@ def test_ar_ulb_jud_language_book_order_1c_c() -> None:
             },
         )
         with pytest.raises(Exception):
-            check_finished_document_with_verses_success(response)
+            check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_tn_language_book_order_1c() -> None:
@@ -321,7 +321,7 @@ def test_pt_br_ulb_tn_language_book_order_1c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_tn_language_book_order_1c_c() -> None:
@@ -354,7 +354,7 @@ def test_pt_br_ulb_tn_language_book_order_1c_c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_tn_en_ulb_wa_tn_wa_luk_language_book_order_1c() -> None:
@@ -397,7 +397,7 @@ def test_pt_br_ulb_tn_en_ulb_wa_tn_wa_luk_language_book_order_1c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_tn_en_ulb_wa_tn_wa_luk_language_book_order_1c_c() -> None:
@@ -440,7 +440,7 @@ def test_pt_br_ulb_tn_en_ulb_wa_tn_wa_luk_language_book_order_1c_c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_tn_luk_en_ulb_wa_tn_wa_luk_sw_ulb_tn_col_language_book_order_1c() -> None:
@@ -489,7 +489,7 @@ def test_pt_br_ulb_tn_luk_en_ulb_wa_tn_wa_luk_sw_ulb_tn_col_language_book_order_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_tn_luk_en_ulb_wa_tn_wa_luk_sw_ulb_tn_col_language_book_order_1c_c() -> None:
@@ -538,7 +538,7 @@ def test_pt_br_ulb_tn_luk_en_ulb_wa_tn_wa_luk_sw_ulb_tn_col_language_book_order_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
@@ -613,7 +613,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_c
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
@@ -688,7 +688,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_c
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tw_tit_language_book_order_1c() -> None:
@@ -753,7 +753,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tw_col_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tn_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tw_tit_language_book_order_1c_c() -> None:
@@ -833,7 +833,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tw_wa_col_sw_ulb_col_sw_tn_col_sw_tw_col_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tw_wa_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language_book_order_1c() -> None:
@@ -892,7 +892,7 @@ def test_en_ulb_wa_col_en_tw_wa_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_la
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tw_wa_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language_book_order_1c_c() -> None:
@@ -952,7 +952,7 @@ def test_en_ulb_wa_col_en_tw_wa_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_la
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
@@ -1027,7 +1027,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
@@ -1107,7 +1107,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
@@ -1175,7 +1175,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
@@ -1243,7 +1243,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_en_tw_wa_col_sw_ulb_col_sw_tq_col_sw_tw_col_
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_resource_types_and_names_for_lang() -> None:
@@ -1295,7 +1295,7 @@ def test_zh_ulb_doesnt_exist_jol_zh_tn_jol_language_book_order_1c() -> None:
                 ],
             },
         )
-        check_finished_document_without_verses_success(response)
+        check_finished_document_without_verses_success(response, suffix="pdf")
 
 
 def test_zh_ulb_doesnt_exist_jol_zh_tn_jol_language_book_order_1c_c() -> None:
@@ -1332,7 +1332,7 @@ def test_zh_ulb_doesnt_exist_jol_zh_tn_jol_language_book_order_1c_c() -> None:
                 ],
             },
         )
-        check_finished_document_without_verses_success(response)
+        check_finished_document_without_verses_success(response, suffix="pdf")
 
 
 def test_zh_cuv_jol_zh_tn_jol_language_book_order_1c() -> None:
@@ -1366,7 +1366,7 @@ def test_zh_cuv_jol_zh_tn_jol_language_book_order_1c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_zh_cuv_jol_zh_tn_jol_language_book_order_1c_c() -> None:
@@ -1400,7 +1400,7 @@ def test_zh_cuv_jol_zh_tn_jol_language_book_order_1c_c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_zh_cuv_jol_zh_tn_jol_zh_tq_jol_zh_tw_jol_language_book_order_1c() -> None:
@@ -1444,7 +1444,7 @@ def test_zh_cuv_jol_zh_tn_jol_zh_tq_jol_zh_tw_jol_language_book_order_1c() -> No
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_zh_cuv_jol_zh_tn_jol_zh_tq_jol_zh_tw_jol_language_book_order_1c_c() -> None:
@@ -1487,7 +1487,7 @@ def test_zh_cuv_jol_zh_tn_jol_zh_tq_jol_zh_tw_jol_language_book_order_1c_c() -> 
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 # @pytest.mark.skip
@@ -1522,7 +1522,7 @@ def test_pt_br_ulb_luk_pt_br_tn_luk_language_book_order_1c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_luk_pt_br_tn_luk_language_book_order_1c_c() -> None:
@@ -1556,4 +1556,4 @@ def test_pt_br_ulb_luk_pt_br_tn_luk_language_book_order_1c_c() -> None:
                 ],
             },
         )
-        check_finished_document_with_verses_success(response)
+        check_finished_document_with_verses_success(response, suffix="pdf")

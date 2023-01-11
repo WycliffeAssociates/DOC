@@ -26,7 +26,7 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -57,7 +57,7 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -87,7 +87,7 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -117,7 +117,7 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -147,7 +147,7 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c() -> N
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -187,7 +187,7 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c() ->
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -227,7 +227,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -277,7 +277,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -327,7 +327,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -392,7 +392,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -457,7 +457,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -507,7 +507,7 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -557,7 +557,7 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -622,7 +622,7 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -687,7 +687,7 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -737,7 +737,7 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -787,7 +787,7 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -827,7 +827,7 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -867,7 +867,7 @@ def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -897,7 +897,7 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -937,7 +937,7 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -977,7 +977,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1007,7 +1007,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1037,7 +1037,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1072,7 +1072,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1107,7 +1107,7 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1142,7 +1142,7 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1177,7 +1177,7 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1222,7 +1222,7 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1267,7 +1267,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1312,7 +1312,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1357,7 +1357,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> N
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1397,7 +1397,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() ->
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1437,7 +1437,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c() -> N
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1477,7 +1477,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c() ->
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1517,7 +1517,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1552,7 +1552,7 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1587,7 +1587,7 @@ def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1622,7 +1622,7 @@ def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1657,7 +1657,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1687,7 +1687,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1717,7 +1717,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c() -> No
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1757,7 +1757,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c() -> 
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1797,7 +1797,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1832,7 +1832,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1867,7 +1867,7 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1902,7 +1902,7 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1937,7 +1937,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1967,7 +1967,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -1997,7 +1997,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2027,7 +2027,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2057,7 +2057,7 @@ def test_tl_udb_gen_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2082,7 +2082,7 @@ def test_tl_udb_gen_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2108,7 +2108,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2154,7 +2154,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2203,7 +2203,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2252,7 +2252,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2301,7 +2301,7 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c() -> N
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2345,7 +2345,7 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c() ->
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2386,7 +2386,7 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2422,7 +2422,7 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2457,7 +2457,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2517,7 +2517,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2583,7 +2583,7 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2627,7 +2627,7 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c() -> None:
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2671,7 +2671,7 @@ def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [
@@ -2715,7 +2715,7 @@ def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.VERSE,
-                "generate_pdf": True,
+                "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
                 "resource_requests": [

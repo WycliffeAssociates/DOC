@@ -77,4 +77,4 @@ def test_stream_pdf() -> None:
             },
         )
 
-    check_finished_document_with_verses_success(response)
+    check_finished_document_with_verses_success(response, suffix="pdf")

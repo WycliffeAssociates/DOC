@@ -24,6 +24,8 @@ from document.utils.tw_utils import uniq
 
 logger = settings.logger(__name__)
 
+H1, H2, H3, H4, H5, H6 = "h1", "h2", "h3", "h4", "h5", "h6"
+
 
 def book_content_unit_lang_name(book_content_unit: BookContent) -> str:
     return book_content_unit.lang_name
@@ -156,11 +158,11 @@ def bc_book_content_unit(
 
 def adjust_book_intro_headings(
     book_intro: str,
-    h1: str = "h1",
-    h2: str = "h2",
-    h3: str = "h3",
-    h4: str = "h4",
-    h6: str = "h6",
+    h1: str = H1,
+    h2: str = H2,
+    h3: str = H3,
+    h4: str = H4,
+    h6: str = H6,
 ) -> HtmlContent:
     """Change levels on headings."""
     # Move the H2 out of the way, we'll deal with it last.
@@ -173,12 +175,12 @@ def adjust_book_intro_headings(
 
 def adjust_chapter_intro_headings(
     chapter_intro: str,
-    h1: str = "h1",
-    h2: str = "h2",
-    h3: str = "h3",
-    h4: str = "h4",
-    h5: str = "h5",
-    h6: str = "h6",
+    h1: str = H1,
+    h2: str = H2,
+    h3: str = H3,
+    h4: str = H4,
+    h5: str = H5,
+    h6: str = H6,
 ) -> HtmlContent:
     """Change levels on headings."""
     # Move the H4 out of the way, we'll deal with it last.
@@ -192,12 +194,12 @@ def adjust_chapter_intro_headings(
 
 def adjust_commentary_headings(
     chapter_commentary: str,
-    h1: str = "h1",
-    h2: str = "h2",
-    h3: str = "h3",
-    h4: str = "h4",
-    h5: str = "h5",
-    h6: str = "h6",
+    h1: str = H1,
+    h2: str = H2,
+    h3: str = H3,
+    h4: str = H4,
+    h5: str = H5,
+    h6: str = H6,
 ) -> HtmlContent:
     """Change levels on headings."""
     # logger.debug("commentary parser: %s", parser)
@@ -352,15 +354,22 @@ def ensure_primary_usfm_books_for_different_languages_are_adjacent(
         if usfm_book_content_unit.lang_code == languages[0]
     ]
     # Get book content units for language 1.
-    usfm_lang1_book_content_units = [
-        usfm_book_content_unit
-        for usfm_book_content_unit in usfm_book_content_units
-        if usfm_book_content_unit.lang_code == languages[1]
-    ]
-    return list(
-        # Flatten iterable of tuples into regular flat iterable.
-        chain.from_iterable(
-            # Interleave the two different languages usfm units.
-            zip_longest(usfm_lang0_book_content_units, usfm_lang1_book_content_units)
+    try:
+        usfm_lang1_book_content_units = [
+            usfm_book_content_unit
+            for usfm_book_content_unit in usfm_book_content_units
+            if usfm_book_content_unit.lang_code == languages[1]
+        ]
+    except IndexError as exc:
+        logger.debug("Error: %s", exc)
+        return usfm_lang0_book_content_units
+    else:
+        return list(
+            # Flatten iterable of tuples into regular flat iterable.
+            chain.from_iterable(
+                # Interleave the two different languages' usfm units.
+                zip_longest(
+                    usfm_lang0_book_content_units, usfm_lang1_book_content_units
+                )
+            )
         )
-    )

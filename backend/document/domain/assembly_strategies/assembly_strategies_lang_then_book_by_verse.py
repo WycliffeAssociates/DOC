@@ -1,37 +1,23 @@
-from itertools import groupby
-from re import sub
-from typing import Callable, Iterable, Mapping, Optional
+from typing import Iterable, Mapping, Optional
 
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
-    bc_book_content_unit,
-    book_content_unit_lang_name,
-    book_content_unit_resource_code,
     book_intro_commentary,
     book_number,
     chapter_commentary,
     chapter_intro,
-    first_usfm_book_content_unit,
-    second_usfm_book_content_unit,
-    tn_book_content_unit,
-    tq_book_content_unit,
     translation_word_links,
-    tw_book_content_unit,
     verses_for_chapter_tn,
     verses_for_chapter_tq,
 )
-from document.domain.bible_books import BOOK_NAMES, BOOK_NUMBERS
+from document.domain.bible_books import BOOK_NUMBERS
 from document.domain.model import (
-    AssemblyLayoutEnum,
     BCBook,
-    BookContent,
-    ChunkSizeEnum,
     HtmlContent,
     TNBook,
     TQBook,
     TWBook,
     USFMBook,
-    VerseRef,
 )
 
 logger = settings.logger(__name__)
@@ -47,13 +33,14 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML wherein at least one USFM resource (e.g., ulb,
-    nav, cuv, etc.) exists, and TN, TQ, TW, and a second USFM (e.g.,
-    probably always udb) may exist. If only one USFM exists then it will
-    be used as the first USFM resource even if it is of udb resource type.
-    Non-USFM resources, e.g., TN, TQ, and TW will reference (and link
-    where applicable) the first USFM resource. The second USFM resource is
-    displayed last in this interleaving strategy.
+    Construct the one column 'by verse' HTML wherein at least one USFM
+    resource (e.g., ulb, nav, cuv, etc.) exists, and TN, TQ, TW, BC, and a
+    second USFM (e.g., probably always udb) may exist. If only one USFM
+    exists then it will be used as the first USFM resource even if it is
+    of udb resource type. Non-USFM resources, e.g., TN, TQ, TW, and BC
+    will reference (and link where applicable) the first USFM resource.
+    The second USFM resource is displayed last in this interleaving
+    strategy.
     """
 
     if tn_book_content_unit:
@@ -63,7 +50,6 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c(
         yield book_intro_commentary(bc_book_content_unit)
 
     if usfm_book_content_unit:
-
         for (
             chapter_num,
             chapter,
@@ -86,7 +72,6 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c(
             # Now let's interleave USFM verse with its translation note, translation
             # questions, and translation words if available.
             for verse_num, verse in chapter.verses.items():
-
                 # Add scripture verse
                 yield verse
 
@@ -156,11 +141,11 @@ def assemble_by_usfm_as_iterator_for_lang_then_book_1c_c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML wherein at least one USFM resource (e.g., ulb,
-    nav, cuv, etc.) exists, and TN, TQ, TW, and a second USFM (e.g.,
+    Construct the one column compact HTML wherein at least one USFM resource (e.g., ulb,
+    nav, cuv, etc.) exists, and TN, TQ, TW, BC, and a second USFM (e.g.,
     probably always udb) may exist. If only one USFM exists then it will
     be used as the first USFM resource even if it is of udb resource type.
-    Non-USFM resources, e.g., TN, TQ, and TW will reference (and link
+    Non-USFM resources, e.g., TN, TQ, TW and BC will reference (and link
     where applicable) the first USFM resource. The second USFM resource is
     displayed last in this interleaving strategy.
     """
@@ -255,8 +240,8 @@ def assemble_usfm_tq_tw_for_lang_then_book_1c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML for a 'by verse' strategy wherein USFM, TQ,
-    and TW exist.
+    Construct the one column HTML for a 'by verse' strategy wherein
+    USFM exists and TQ and TW may exist.
     """
 
     if usfm_book_content_unit:
@@ -304,8 +289,8 @@ def assemble_usfm_tq_tw_for_lang_then_book_1c_c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML for a 'by verse' strategy wherein USFM, TQ,
-    and TW exist.
+    Construct the one column compact HTML for a 'by verse' strategy
+    wherein USFM exists, and TQ, and TW may exist.
     """
 
     if usfm_book_content_unit:
@@ -345,8 +330,8 @@ def assemble_usfm_tw_for_lang_then_book_1c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML for a 'by verse' strategy wherein USFM and TW
-    exist.
+    Construct the one column HTML for a 'by verse' strategy wherein
+    USFM and TW exist.
     """
 
     if usfm_book_content_unit:
@@ -387,8 +372,8 @@ def assemble_usfm_tw_for_lang_then_book_1c_c(
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
     """
-    Construct the HTML for a 'by verse' strategy wherein USFM and TW
-    exist.
+    Construct the one column compact HTML for a 'by verse' strategy
+    wherein USFM and TW exist.
     """
 
     if usfm_book_content_unit:
@@ -419,7 +404,10 @@ def assemble_usfm_tq_for_lang_then_book_1c(
     bc_book_content_unit: Optional[BCBook],
     footnotes_heading: HtmlContent = settings.FOOTNOTES_HEADING,
 ) -> Iterable[HtmlContent]:
-    """Construct the HTML for a 'by verse' strategy wherein only USFM and TQ exist."""
+    """
+    Construct the one column HTML for a 'by verse' strategy wherein
+    only USFM and TQ exist.
+    """
 
     if usfm_book_content_unit:
         for chapter_num, chapter in usfm_book_content_unit.chapters.items():

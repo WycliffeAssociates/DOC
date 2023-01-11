@@ -62,7 +62,7 @@ def check_result(
 
 def check_finished_document_with_verses_success(
     response: requests.Response,
-    suffix: AcceptedSuffixes = "pdf",
+    suffix: AcceptedSuffixes = "html",
     poll_duration: int = 4,
 ) -> None:
     """
@@ -98,7 +98,7 @@ def check_finished_document_with_verses_success(
 
 def check_finished_document_without_verses_success(
     response: requests.Response,
-    suffix: AcceptedSuffixes = "pdf",
+    suffix: AcceptedSuffixes = "html",
     poll_duration: int = 4,
 ) -> None:
     """
@@ -124,7 +124,7 @@ def check_finished_document_without_verses_success(
 
 def check_finished_document_with_body_success(
     response: requests.Response,
-    suffix: AcceptedSuffixes = "pdf",
+    suffix: AcceptedSuffixes = "html",
     poll_duration: int = 4,
 ) -> None:
     """

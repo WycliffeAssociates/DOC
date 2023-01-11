@@ -645,7 +645,7 @@ def copy_file_to_docker_output_dir(
 @worker.app.task(
     autoretry_for=(Exception,),
     retry_backoff=True,
-    retry_kwargs={"max_retries": 5},
+    retry_kwargs={"max_retries": 3},
 )
 def main(document_request_json: Json[Any]) -> Json[Any]:
     """

@@ -34,7 +34,7 @@
   <li class="bg-white p-2">
     <div class="flex justify-between">
       <span class="text-primary-content">Print Optimization</span>
-      <Switch bind:checked={$layoutForPrintStore} id="layout-for-print-store" />
+      <Switch bind:checked="{$layoutForPrintStore}" id="layout-for-print-store" />
     </div>
     <div>
       <span class="text-sm text-neutral-content"
@@ -43,33 +43,31 @@
     </div>
   </li>
   {#if $lang1CodeStore && !$layoutForPrintStore}
-    <li class="bg-white p-2">
-      <div class="flex justify-between">
-        <span class="text-primary-content">{assemblyStrategyHeader}</span>
-        <select bind:value={$assemblyStrategyKindStore} name="assemblyStrategy">
-          {#each assemblyStrategies as assemblyStrategy}
-            <option value={assemblyStrategy.id}
-              ><span class="text-primary-content">{assemblyStrategy.label}</span></option
-            >
-          {/each}
-        </select>
-      </div>
-      <div>
-        <span class="text-sm text-neutral-content"
-          ><p>
-            Choosing 'Mix' will interleave the content of two languages verse by verse.
-          </p>
-          <p>
-            Choosing 'Separate' will keep the content separated by language per book.
-          </p></span
-        >
-      </div>
-    </li>
+  <li class="bg-white p-2">
+    <div class="flex justify-between">
+      <span class="text-primary-content">{assemblyStrategyHeader}</span>
+      <select bind:value="{$assemblyStrategyKindStore}" name="assemblyStrategy">
+        {#each assemblyStrategies as assemblyStrategy}
+        <option value="{assemblyStrategy.id}">
+          <span class="text-primary-content">{assemblyStrategy.label}</span>
+        </option>
+        {/each}
+      </select>
+    </div>
+    <div>
+      <span class="text-sm text-neutral-content"
+        ><p>Choosing 'Mix' will interleave the content of two languages for each book.</p>
+        <p>
+          Choosing 'Separate' will keep the content of each book separated by language.
+        </p></span
+      >
+    </div>
+  </li>
   {/if}
   <li class="bg-white p-2">
     <div class="flex justify-between">
       <span class="text-primary-content">{import.meta.env.VITE_PDF_LABEL}</span>
-      <Switch bind:checked={$generatePdfStore} id="generate-pdf-store" />
+      <Switch bind:checked="{$generatePdfStore}" id="generate-pdf-store" />
     </div>
     <div>
       <span class="text-sm text-neutral-content"
@@ -82,7 +80,7 @@
   <li class="bg-white p-2">
     <div class="flex justify-between">
       <span class="text-primary-content">{import.meta.env.VITE_EPUB_LABEL}</span>
-      <Switch bind:checked={$generateEpubStore} id="generate-epub-store" />
+      <Switch bind:checked="{$generateEpubStore}" id="generate-epub-store" />
     </div>
     <div>
       <span class="text-sm text-neutral-content"
@@ -93,7 +91,7 @@
   <li class="bg-white p-2">
     <div class="flex justify-between">
       <span class="text-primary-content">{import.meta.env.VITE_DOCX_LABEL}</span>
-      <Switch bind:checked={$generateDocxStore} id="generate-docx-store" />
+      <Switch bind:checked="{$generateDocxStore}" id="generate-docx-store" />
     </div>
     <div>
       <span class="text-sm text-neutral-content"
@@ -111,7 +109,7 @@
         type="text"
         name="email"
         id="email"
-        bind:value={$emailStore}
+        bind:value="{$emailStore}"
         placeholder="Type email address here (optional)"
         class="input input-bordered bg-white w-full max-w-xs"
       />

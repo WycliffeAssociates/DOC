@@ -525,8 +525,8 @@ def tn_book_content(
     verse_paths_glob_alt_fmt_str: str = "{}/*[0-9]*.txt",
     book_intro_paths_glob_fmt_str: str = "{}/*{}/front/intro.md",
     book_intro_paths_glob_alt_fmt_str: str = "{}/*{}/front/intro.txt",
-    h1: str = "H1",
-    h4: str = "H4",
+    h1: str = H1,
+    h4: str = H4,
 ) -> TNBook:
     # Initialize the Python-Markdown extensions that get invoked
     # when md.convert is called.
@@ -623,8 +623,8 @@ def tq_book_content(
     chapter_dirs_glob_fmt_str: str = "{}/**/*{}/*[0-9]*",
     chapter_dirs_glob_alt_fmt_str: str = "{}/*{}/*[0-9]*",
     verse_paths_glob_fmt_str: str = "{}/*[0-9]*.md",
-    h1: str = "H1",
-    h4: str = "H4",
+    h1: str = H1,
+    h4: str = H4,
 ) -> TQBook:
     # Create the Markdown instance once and have it use our markdown
     # extensions.

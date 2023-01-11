@@ -61,16 +61,11 @@ class AssemblyStrategyEnum(str, Enum):
 @final
 class AssemblyLayoutEnum(str, Enum):
     """
-    A enum used by the assembly_strategies module to know how
+    An enum used by the assembly_strategies module to know how
     to layout the content.
 
     We can have N such layouts and each can be completely
     arbitrary, simply based on the desires of content designers.
-
-    Said another way: the enum is just a name that is arbitrarily
-    chosen to be compact but adequate to express the type of layout
-    that is to be accomplished in the HTML document (prior to conversion
-    to PDF).
 
     Layouts:
 
@@ -84,11 +79,7 @@ class AssemblyLayoutEnum(str, Enum):
     * TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
       Two columns, with scripture on the left and a different
       scripture on the right. Obviously only applicable when at least
-      two languages have been chosen. This layout has less whitespace
-      than TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT because verses on
-      the left are typically about the same size as verses on the right
-      and helps are shown vertically spanning the whole horizontal space
-      after each verse.
+      two languages have been chosen.
 
     * TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT
       This layout minimizes whitespace by using
@@ -117,20 +108,21 @@ class ChunkSizeEnum(str, Enum):
     """
     The length of content to burst out at a time when interleaving.
     E.g., if VERSE is chosen as the chunk size then the interleaving will
-    do so in verse chunks (one verse of scripture, then one verse of helps
-    of the various kinds chosen). This is a reification of the idea
-    that translators want to be able to choose the chunk size of scripture
-    that should be grouped together for the purpose of translational
-    cohesion conceptually.
+    do so in verse chunks (one verse of scripture, then one verse of helps,
+    etc.). This exists because translators want to be able to choose
+    the chunk size of scripture that should be grouped together for the
+    purpose of translational cohesion.
 
     * VERSE
-      - This enum value signals to make each chunk of interleaved content be one verse in length.
+      - This enum value signals to make each chunk of interleaved
+        content be one verse's worth in length.
     * CHAPTER
-      - This enum value signals to make each chunk of interleaved content be one chapter in length.
+      - This enum value signals to make each chunk of interleaved
+        content be one chapter's worth in length.
 
     NOTE
     We could later add others. As an arbitrary example,
-    Perhaps we'd want to chunk by a number of verses.
+    Perhaps we'd want to chunk by a certain number of verses.
     """
 
     VERSE = "verse"
@@ -147,8 +139,8 @@ class ChunkSizeEnum(str, Enum):
 class ResourceRequest(BaseModel):
     """
     This class is used to encode a request for a resource, e.g.,
-    language 'English', en, resource type 'ulb', resource code, i.e.,
-    book, 'gen'. A document request composes n of these resource
+    language 'French', fr, resource type 'ulb', resource code, i.e.,
+    book, 'gen'. A document request composes N of these resource
     request instances. Because this class inherits from pydantic's
     BaseModel we get validation and JSON serialization for free.
     """
@@ -165,11 +157,10 @@ class ResourceRequest(BaseModel):
 @final
 class DocumentRequest(BaseModel):
     """
-    This class is used to send in a document generation request from
-    the front end client. A document request is composed of n resource
-    requests. Because this class inherits from pydantic's BaseModel we
-    get validation, serialization, and special dunder functions for
-    free.
+    This class reifies a document generation request from a client of
+    the API. A document request is composed of N resource requests.
+    Because this class inherits from pydantic's BaseModel we get
+    validation, serialization, and special dunder functions for free.
     """
 
     email_address: Optional[EmailStr]
@@ -190,9 +181,7 @@ class DocumentRequest(BaseModel):
     # The user can choose whether the result should be formatted to
     # print. When the user selects yes/True to format for print
     # then we'll choose a compact layout that makes sense for their
-    # document request. This happens in
-    # document_generator.select_assembly_layout_kind if
-    # assembly_layout_kind is None in the document request.
+    # document request.
     layout_for_print: bool = False
     resource_requests: Sequence[ResourceRequest]
     # Indicate whether PDF should be generated.
@@ -349,8 +338,8 @@ class AssetSourceEnum(str, Enum):
 @final
 class ResourceLookupDto(NamedTuple):
     """
-    'Data transfer object' that we use to send lookup related info to
-    the resource.
+    'Data transfer object' that we use to send resource lookup related
+    info around in the system.
     """
 
     lang_code: str
@@ -485,13 +474,12 @@ class USFMChapter(NamedTuple):
     """
     A class to hold the USFM converted to HTML content for a chapter
     in total (including things like 'chunk breaks' and other verse
-    formatting HTML elements), content, and by verse per
-    chapter (missing the 'chunk breaks' and other inter-verse HTML
-    formatting elements), verses. The purpose of
-    'content' is so that you can display a whole chapter at a
-    time should the system wish to do so. The purpose of
-    'verses' is so that you can display verses in a particular
-    chapter one at a time or a range of them at a time.
+    formatting HTML elements), content, and by verse per chapter (missing
+    the 'chunk breaks' and other inter-verse HTML formatting elements),
+    verses. The purpose of 'content' is so that you can display a whole
+    chapter at a time when desired. The purpose of 'verses' is so that you
+    can display verses in a particular chapter one at a time or a range of
+    them at a time.
     """
 
     content: list[HtmlContent]
@@ -538,5 +526,9 @@ class WikiLink(NamedTuple):
 
 @final
 class Attachment(NamedTuple):
+    """
+    An email attachment.
+    """
+
     filepath: str
     mime_type: tuple[str, str]

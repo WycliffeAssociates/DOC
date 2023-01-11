@@ -192,7 +192,7 @@ def english_resource_type_name(
 ) -> str:
     """
     This is a hack to compensate for translations.json which only
-    provides information for non-English languages.
+    provides accurate information for non-English languages.
     """
     return english_resource_type_map[resource_type]
 
@@ -203,7 +203,7 @@ def english_git_repo_url(
 ) -> str:
     """
     This is a hack to compensate for translations.json which only
-    provides URLs in non-English languages.
+    provides accurate URLs in non-English languages.
     """
     return english_git_repo_map[resource_type]
 
@@ -222,8 +222,8 @@ def usfm_resource_lookup(
     resource_url_level1_jsonpath_fmt_str: str = settings.RESOURCE_URL_LEVEL1_JSONPATH,
 ) -> ResourceLookupDto:
     """
-    Given a resource, comprised of language code, e.g., 'en', a
-    resource type, e.g., 'ulb-wa', and a resource code, e.g., 'gen',
+    Given a resource, comprised of language code, e.g., 'fr', a
+    resource type, e.g., 'ulb', and a resource code, e.g., 'gen',
     return model.ResourceLookupDto for resource.
     """
     resource_lookup_dto: ResourceLookupDto

@@ -5,7 +5,7 @@ test.beforeEach(async ({ page, baseURL }) => {
   await page.goto(baseURL!)
 })
 
-test('test pt-br, mat, mrk, ulb, tn, tq, tw, 1c, pdf', async ({ page }) => {
+test('test pt-br, mat, mrk, ulb, tn, tq, tw, 1c', async ({ page }) => {
   await page.getByRole('button', { name: '1. Languages' }).click()
   await expect(page).toHaveURL('/#/languages')
   await page.getByPlaceholder('Filter languages').fill('Bra')

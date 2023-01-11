@@ -34,7 +34,7 @@ class RemoveSectionPreprocessor(Preprocessor):
         text contained in the section.
         """
         header_regex = re.compile("^#.*$")
-        section_regex = re.compile("^#+ {}".format(section_name))
+        section_regex = re.compile("^#+ *{}.*".format(section_name))
         out_md = ""
         in_section = False
         for line in md.splitlines():

@@ -25,9 +25,9 @@ RUN fc-cache -f -v
 # Get and install Pandoc for HTML to Docx conversion.
 ARG PANDOC_LOC=https://github.com/jgm/pandoc/releases/download/2.19.2/pandoc-2.19.2-1-amd64.deb
 RUN PANDOC_TEMP="$(mktemp)" && \
-    wget -O "$PANDOC_TEMP" ${PANDOC_LOC} && \
-    dpkg -i "$PANDOC_TEMP" && \
-    rm -f "$PANDOC_TEMP"
+    wget -O ${PANDOC_TEMP} ${PANDOC_LOC} && \
+    dpkg -i ${PANDOC_TEMP} && \
+    rm -f ${PANDOC_TEMP}
 
 # Install wkhtmltopdf
 # Source: https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037
@@ -35,10 +35,10 @@ RUN PANDOC_TEMP="$(mktemp)" && \
 # How to get wkhtmltopdf - don't use what Debian provides as it can have
 # headless display issues that mess with wkhtmltopdf.
 ARG WKHTMLTOX_LOC=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN WKHTMLTOX_TEMP="$(mktemp)" && \
-    wget -O "$WKHTMLTOX_TEMP" ${WKHTMLTOX_LOC} && \
-    dpkg -i "$WKHTMLTOX_TEMP" && \
-    rm -f "$WKHTMLTOX_TEMP"
+RUN WKHTMLTOX_TEMP=$(mktemp) && \
+    wget -O ${WKHTMLTOX_TEMP} ${WKHTMLTOX_LOC} && \
+    dpkg -i ${WKHTMLTOX_TEMP} && \
+    rm -f ${WKHTMLTOX_TEMP}
 
 WORKDIR /app
 
@@ -57,8 +57,8 @@ COPY ./backend/requirements-prod.txt .
 # See https://pythonspeed.com/articles/activate-virtualenv-dockerfile/
 # for why a Python virtual env is used inside Docker.
 ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN python -m venv ${VIRTUAL_ENV}
+ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
 
 RUN pip install -v --upgrade pip
 RUN pip install -v cython

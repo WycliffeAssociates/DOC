@@ -416,6 +416,15 @@ def send_email_with_attachment(
             logger.exception("Unable to send the email. Caught exception: ")
 
 
+# HTML to PDF converters:
+# princexml ($$$$) or same through docraptor ($$),
+# wkhtmltopdf via pdfkit (can't handle column-count directive, we
+# overcome with manual two column layout),
+# weasyprint (does a nice job, but is slow),
+# pagedjs-cli (does a really nice job, but is really slow - research combining with chrome),
+# electron-pdf (similar speed to wkhtmltopdf) which uses chrome underneath the hood,
+# gotenburg which uses chrome under the hood and provides a nice api in Docker (untested),
+# ebook-convert (currently blows up because docker runs chrome as root)
 def convert_html_to_pdf(
     html_filepath: str,
     pdf_filepath: str,
@@ -429,20 +438,12 @@ def convert_html_to_pdf(
     assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
 
-    weasyprint_command = "weasyprint {} {}".format(html_filepath, pdf_filepath)
-    logger.debug("Generate PDF command: %s", weasyprint_command)
     t0 = time.time()
-    # wkhtmltopdf cannot handle the column-count css directive that
-    # this layout requires, but weasyprint which is slower can, but
-    # weasyprint is much slower.
-    if "1c_chapter" in document_request_key:
-        subprocess.call(weasyprint_command, shell=True)
-    else:
-        pdfkit.from_file(
-            html_filepath,
-            pdf_filepath,
-            options=wkhtmltopdf_options,
-        )
+    pdfkit.from_file(
+        html_filepath,
+        pdf_filepath,
+        options=wkhtmltopdf_options,
+    )
     t1 = time.time()
     logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
     copy_file_to_docker_output_dir(pdf_filepath)
@@ -458,6 +459,10 @@ def convert_html_to_pdf(
         )
 
 
+# HTML to ePub converters:
+# pandoc (this doesn't seem to respect two column),
+# html-to-epub which is written in go (this didn't seem to respect two column),
+# ebook-convert (this respects two column)
 def convert_html_to_epub(
     html_filepath: str,
     epub_filepath: str,
@@ -467,13 +472,16 @@ def convert_html_to_epub(
 ) -> None:
     """Generate ePub from HTML, possibly send to email_address as attachment."""
     assert exists(html_filepath)
-    pandoc_command = "pandoc {} {} -o {}".format(
-        pandoc_options,
-        html_filepath,
-        epub_filepath,
+    ebook_convert_command = (
+        "/calibre-bin/calibre/ebook-convert {} {} --no-default-epub-cover".format(
+            html_filepath, epub_filepath
+        )
     )
-    logger.debug("Generate ePub command: %s", pandoc_command)
-    subprocess.call(pandoc_command, shell=True)
+    logger.debug("Generate ePub command: %s", ebook_convert_command)
+    t0 = time.time()
+    subprocess.call(ebook_convert_command, shell=True)
+    t1 = time.time()
+    logger.debug("Time for converting HTML to ePub: %s", t1 - t0)
     copy_file_to_docker_output_dir(epub_filepath)
     if should_send_email(email_address):
         attachments = [
@@ -488,6 +496,15 @@ def convert_html_to_epub(
         )
 
 
+# HTML to DOCX conversion:
+# pandoc cannot handle two column layouts (manually created or with
+# column-count),
+# ebook-convert handles two column, but the page breaking is buggy,
+# python-docx can build Docx from scratch but would require change in
+# pipeline as it doesn't do HTML to DOCX conversion. Ironically, if python-docx
+# gave the greatest control over document creation we could get PDFs
+# from the Docx possibly. If we went this direction it would mean
+# modifying the USFM parser to have a Docx renderer.
 def convert_html_to_docx(
     html_filepath: str,
     docx_filepath: str,

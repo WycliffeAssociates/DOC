@@ -13,7 +13,18 @@ RUN apt-get update && apt-get install -y \
     xfonts-base \
     libjpeg62-turbo \
     # For mypyc
-    gcc
+    gcc \
+    # For ebook-convert
+    xz-utils \
+    xdg-utils \
+    libegl1 \
+    libopengl0 \
+    libegl1 \
+    libopengl0 \
+    libxcb-xinerama0 \
+    libxkbcommon0 \
+    libglx0 \
+    libnss3
 
 # Get and install needed fonts.
 RUN cd /tmp \
@@ -21,6 +32,10 @@ RUN cd /tmp \
     && cp /tmp/ScriptureAppBuilder-pipeline/ContainerImage/home/fonts/*.ttf /usr/share/fonts/
 # Refresh system font cache.
 RUN fc-cache -f -v
+
+# Get and install calibre for use of its ebook-convert binary for HTML
+# to ePub conversion.
+RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/calibre-bin isolated=y
 
 # Get and install Pandoc for HTML to Docx conversion.
 ARG PANDOC_LOC=https://github.com/jgm/pandoc/releases/download/2.19.2/pandoc-2.19.2-1-amd64.deb
@@ -67,7 +82,6 @@ RUN pip install -v -r requirements-prod.txt
 RUN cd /tmp && git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
 RUN cd /tmp/USFM-Tools && python setup.py build install
 RUN cp -r /tmp/USFM-Tools/usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
-RUN pip install weasyprint
 
 COPY ./backend ./backend
 COPY ./tests ./tests

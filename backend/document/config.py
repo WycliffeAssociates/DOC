@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     LANGUAGE_FMT_STR: str = "<h1>Language: {}</h1>"
     RESOURCE_TYPE_NAME_FMT_STR: str = "<h1>{}</h1>"
     TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR: str = "<div style='column-count: 2;'>{}</div>"
-    TQ_HEADING_FMT_STR: str = "<h3>{}</h3>\n{}"
+    TQ_HEADING_FMT_STR: str = "<h3>{}</h3>"
     HTML_ROW_BEGIN: str = model.HtmlContent("<div class='row'>")
     HTML_ROW_END: str = model.HtmlContent("</div>")
     HTML_COLUMN_BEGIN: str = model.HtmlContent("<div class='column'>")

@@ -193,16 +193,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
             # Add the chapter commentary.
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
-        # Use the usfm_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # usfm_with_most_verses = max(
-        #     usfm_book_content_units,
-        #     key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in usfm_with_most_verses.chapters[chapter_num].verses.keys():
         for verse_num in chapter.verses.keys():
             # Get lang_code of first USFM so that we can use it later
             # to make sure USFMs of the same language are on the same
@@ -212,7 +202,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
             for idx, usfm_book_content_unit in enumerate(
                 zipped_usfm_book_content_units
             ):
-                # If the number of non-None USFM book content unit instances
                 # The conditions for beginning a row are a simple
                 # result of the fact that we can have between 2 and 4
                 # non-None USFM content units in the collection one of which
@@ -253,7 +242,7 @@ def assemble_usfm_as_iterator_for_book_then_lang_2c_sl_sr(
                     if is_even(idx):
                         yield html_row_begin
                     yield html_column_begin
-                    yield tn_verses[verse_num]  # from format_tn_verse(
+                    yield tn_verses[verse_num]
                     yield html_column_end
             yield html_row_end
 
@@ -395,16 +384,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c(
             # Add the chapter commentary.
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
-        # Use the usfm_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # usfm_with_most_verses = max(
-        #     usfm_book_content_units,
-        #     key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in usfm_with_most_verses.chapters[chapter_num].verses.keys():
         for verse_num in chapter.verses.keys():
             # Add the interleaved USFM verses
             for usfm_book_content_unit in usfm_book_content_units:
@@ -523,8 +502,8 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
         yield book_intro_commentary(bc_book_content_unit)
 
     # Use the usfm_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
+    # chapter_num pump to realize the most amount of content displayed
+    # to user.
     usfm_with_most_chapters = max(
         usfm_book_content_units,
         key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters.keys(),
@@ -547,16 +526,6 @@ def assemble_usfm_as_iterator_for_book_then_lang_1c_c(
             # Add the commentary for chapter.
             yield HtmlContent(chapter_commentary(bc_book_content_unit, chapter_num))
 
-        # Use the usfm_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # usfm_with_most_verses = max(
-        #     usfm_book_content_units,
-        #     key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in usfm_with_most_verses.chapters[chapter_num].verses.keys():
         for verse_num in chapter.verses.keys():
             # Add the interleaved USFM verses
             for usfm_book_content_unit in usfm_book_content_units:
@@ -632,8 +601,8 @@ def assemble_tn_as_iterator_for_book_then_lang(
         yield book_intro_commentary(bc_book_content_unit)
 
     # Use the tn_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
+    # chapter_num pump to realize the most amount of content displayed
+    # to user.
     tn_with_most_chapters = max(
         tn_book_content_units,
         key=lambda tn_book_content_unit: tn_book_content_unit.chapters.keys(),
@@ -651,8 +620,8 @@ def assemble_tn_as_iterator_for_book_then_lang(
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
         # Use the tn_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
+        # this chapter_num chapter as a verse_num pump to realize the
+        # most amount of content displayed to user.
         tn_with_most_verses = max(
             tn_book_content_units,
             key=lambda tn_book_content_unit: tn_book_content_unit.chapters[
@@ -672,8 +641,6 @@ def assemble_tn_as_iterator_for_book_then_lang(
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
                     yield tq_verses[verse_num]
-
-            # Add the interleaved translation word links
 
 
 def assemble_tn_as_iterator_for_book_then_lang_c(
@@ -709,8 +676,8 @@ def assemble_tn_as_iterator_for_book_then_lang_c(
         return list(tn_book_content_unit.chapters.keys())
 
     # Use the tn_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
+    # chapter_num pump to realize the most amount of content displayed
+    # to user.
     tn_with_most_chapters = max(tn_book_content_units, key=chapters_key)
     for chapter_num in tn_with_most_chapters.chapters.keys():
         yield HtmlContent("Chapter {}".format(chapter_num))
@@ -725,8 +692,8 @@ def assemble_tn_as_iterator_for_book_then_lang_c(
             yield from chapter_commentary(bc_book_content_unit, chapter_num)
 
         # Use the tn_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
+        # this chapter_num chapter as a verse_num pump to realize the
+        # most amount of content displayed to user.
         tn_with_most_verses = max(
             tn_book_content_units,
             key=lambda tn_book_content_unit: tn_book_content_unit.chapters[
@@ -768,9 +735,7 @@ def assemble_tq_as_iterator_for_book_then_lang(
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Use the tq_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
-    # chapter_key = lambda tq_book_content_unit: tq_book_content_unit.chapters.keys()
+    # chapter_num pump to realize the most amount of content displayed to user.
     tq_with_most_chapters = max(
         tq_book_content_units,
         key=lambda tq_book_content_unit: tq_book_content_unit.chapters.keys(),
@@ -783,8 +748,8 @@ def assemble_tq_as_iterator_for_book_then_lang(
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
         # Use the tn_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
+        # this chapter_num chapter as a verse_num pump to realize the
+        # most amount of content displayed to user.
         tq_with_most_verses = max(
             tq_book_content_units,
             key=lambda tq_book_content_unit: tq_book_content_unit.chapters[
@@ -798,7 +763,6 @@ def assemble_tq_as_iterator_for_book_then_lang(
                 # Add TQ verse content, if any
                 if tq_verses and verse_num in tq_verses:
                     yield tq_verses[verse_num]
-
 
 
 def assemble_tq_as_iterator_for_book_then_lang_c(
@@ -817,14 +781,11 @@ def assemble_tq_as_iterator_for_book_then_lang_c(
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    # tn_book_content_units = sorted(tn_book_content_units, key=key)
     tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Use the tq_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
-    # chapter_key = lambda tq_book_content_unit: tq_book_content_unit.chapters.keys()
+    # chapter_num pump to realize the most amount of content displayed to user.
     tq_with_most_chapters = max(
         tq_book_content_units,
         key=lambda tq_book_content_unit: tq_book_content_unit.chapters.keys(),
@@ -837,8 +798,8 @@ def assemble_tq_as_iterator_for_book_then_lang_c(
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
         # Use the tn_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
+        # this chapter_num chapter as a verse_num pump to realize the
+        # most amount of content displayed to user.
         tq_with_most_verses = max(
             tq_book_content_units,
             key=lambda tq_book_content_unit: tq_book_content_unit.chapters[

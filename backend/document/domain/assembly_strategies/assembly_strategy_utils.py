@@ -55,17 +55,6 @@ def first_usfm_book_content_unit(
         book_content_unit
         for book_content_unit in book_content_units
         if isinstance(book_content_unit, USFMBook)
-        # NOTE If you wanted to force only certain USFM resource types
-        # in the usfm_book_content_unit position then you could do something
-        # like:
-        # resource for resource in resources if isinstance(resource,
-        # USFMResource) and resource.resource_type in ["ulb", "cuv",
-        # "nav", "ugnt", "uhb", "rsb", "f10", "blv", "ust"]
-        # You'd have to choose which USFM resource types based on
-        # which ones make sense for TN, TQ, and TW to reference
-        # them.
-        # NOTE See note on _second_usfm_book_content_unit for what else
-        # would need to be done to support this alternative.
     ]
     return usfm_books[0] if usfm_books else None
 
@@ -83,17 +72,6 @@ def second_usfm_book_content_unit(
         if isinstance(book_content_unit, USFMBook)
     ]
     return usfm_book_content_units[1] if len(usfm_book_content_units) > 1 else None
-    # NOTE This is just a sketch of what you could do if you wanted to
-    # only allow certain USFM resource types to be in usfm_book_content_unit
-    # position in the interleaving strategy. Currently, the
-    # interleaving strategy shows usfm_book_content_unit at the end of other
-    # resources in each chapter, i.e., no TN, TQ, or TW resource
-    # referencing it.
-    # usfm_book_content_units = [
-    #     resource for resource in resources if isinstance(resource,
-    #     USFMResource) and resource.resource_type in ["udb"]
-    # ]
-    # return usfm_book_content_units[0] if usfm_book_content_units else None
 
 
 def tn_book_content_unit(
@@ -333,9 +311,6 @@ def languages_in_books(
         )
     )
     logger.debug("languages: %s", languages)
-    # Invariant: if we got this far, then we know there are at
-    # least two languages being requested (see
-    # document_generator.select_assembly_layout_kind).
     return languages
 
 

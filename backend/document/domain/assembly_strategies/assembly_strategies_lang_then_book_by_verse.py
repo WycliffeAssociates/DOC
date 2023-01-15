@@ -545,9 +545,6 @@ def assemble_tn_as_iterator_for_lang_then_book_1c_c(
             if tq_book_content_unit:
                 tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
 
-            # Now let's get all the verse level content.
-            # iterator = tn_verses or tq_verses
-            # if iterator:
             if tn_verses:
                 for verse_num, verse in tn_verses.items():
                     # Add TN verse content, if any
@@ -571,8 +568,6 @@ def assemble_tq_as_iterator_for_lang_then_book(
     num_zeros: int = settings.NUM_ZEROS,
 ) -> Iterable[HtmlContent]:
     """Construct the HTML for a 'by verse' strategy wherein only TQ exists."""
-    # Make mypy happy. We know, due to how we got here, that book_content_unit objects are not None.
-
     if tq_book_content_unit:
         for chapter_num in tq_book_content_unit.chapters:
             if bc_book_content_unit:
@@ -636,7 +631,6 @@ def assemble_tq_tw_for_lang_then_book_1c(
             # Get TQ chapter verses
             tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
 
-            # Now let's get all the verse translation notes available.
             if tq_verses:
                 for verse_num, verse in tq_verses.items():
                     yield verse
@@ -684,17 +678,15 @@ def assemble_tq_tw_for_lang_then_book_1c_c(
                 )
             )
 
-            # Get TQ chapter verses
             tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
 
-            # Now let's get all the verse translation questions available.
             if tq_verses:
                 for verse_num, verse in tq_verses.items():
                     yield verse
 
 
-# FIXME Eventually remove this. When you do you will have to also
-# remove its entries from its respective dispatch table.
+# NOTE It is possible to request only TW, however TW is handled at a
+# higher level so we essentially have a no-op here.
 def assemble_tw_as_iterator_for_lang_then_book(
     usfm_book_content_unit: Optional[USFMBook],
     tn_book_content_unit: Optional[TNBook],

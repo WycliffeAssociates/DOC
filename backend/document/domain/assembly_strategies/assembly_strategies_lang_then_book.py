@@ -1934,25 +1934,10 @@ def assembly_factory_for_lang_then_book_strategy(
             ChunkSizeEnum.VERSE,
         ): assemble_tn_as_iterator_for_lang_then_book_1c_c,
     }
-    # logger.debug(
-    #     "usfm_book_content_unit is not None: %s", usfm_book_content_unit is not None
-    # )
-    # logger.debug(
-    #     "tn_book_content_unit is not None: %s", tn_book_content_unit is not None
-    # )
-    # logger.debug(
-    #     "tq_book_content_unit is not None: %s", tq_book_content_unit is not None
-    # )
-    # logger.debug(
-    #     "tw_book_content_unit is not None: %s", tw_book_content_unit is not None
-    # )
-    # logger.debug(
-    #     "usfm_book_content_unit2 is not None: %s", usfm_book_content_unit2 is not None
-    # )
     return strategies[
         (
             # Turn existence (exists or not) into a boolean for each instance, the
-            # tuple of these together are an immutable, and thus hashable,
+            # tuple of these together are immutable, and thus an hashable
             # dictionary key into our function lookup/dispatch table.
             usfm_book_content_unit is not None,
             tn_book_content_unit is not None,

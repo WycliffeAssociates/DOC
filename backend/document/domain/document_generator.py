@@ -32,7 +32,6 @@ from document.domain.model import (
     BookContent,
     ChunkSizeEnum,
     DocumentRequest,
-    # EmailPayload,
     HtmlContent,
     ResourceRequest,
     TWBook,
@@ -215,7 +214,7 @@ def translation_words_section(
         )
 
     for name_content_pair in book_content_unit.name_content_pairs:
-        # NOTE Another approach to including all translation words would be to
+        # NOTE Another approach to including translation words would be to
         # only include words in the translation section which occur in current
         # lang_code, book verses. The problem with this is that translation note
         # 'See also' sections often refer to translation words that are not part
@@ -269,8 +268,7 @@ def assemble_content(
     )
     t0 = time.time()
     # Now, actually do the assembly given the additional
-    # information of the document_request.assembly_layout_kind and
-    # return it as a string.
+    # information of the document_request.assembly_layout_kind.
     content = "".join(
         assembly_strategy(
             book_content_units,
@@ -288,7 +286,7 @@ def assemble_content(
         if isinstance(book_content_unit, TWBook)
     ]
     # We need to see if the document request included any usfm because
-    # if it did we'll generate not only the tw word defs but also the
+    # if it did we'll generate not only the TW word defs but also the
     # links to them from the notes area that exists adjacent to the
     # scripture versees themselves.
     usfm_book_content_units = [
@@ -379,9 +377,6 @@ def send_email_with_attachment(
         outer["Subject"] = email_send_subject
         outer["To"] = comma_space.join(recipients)
         outer["From"] = sender
-        # outer.preamble = "You will not see this in a MIME-aware mail reader.\n"
-
-        # List of attachments
 
         # Add the attachments to the message
         for attachment in attachments:
@@ -582,18 +577,18 @@ def select_assembly_layout_kind(
     """
 
     # The assembly_layout_kind does not get set by the UI, so if it is set
-    # that means that the request is coming from use of the API other than
-    # the UI in which case validation of the DocumentRequest instance will
-    # have already occurred by this point thus ensuring that the
-    # assembly_layout_kind is a valid choice given the other values of the
-    # DocumentRequest instance in which case we can simply return it.
-    # NOTE: This is important because the API allows a layout that is
-    # otherwise not available through the UI: scripture-left, script-right,
-    # compact (which we probably won't keep long term but it is there
-    # for now).
+    # that means that the request is coming from a client other than the UI
+    # which may set its value. In either case case validation of the
+    # DocumentRequest instance will have already occurred by this point thus
+    # ensuring that the document request's values are valid in which case we
+    # can simply return it the assembly_layout_kind that was set.
     if document_request.assembly_layout_kind:
         return document_request.assembly_layout_kind
 
+    # assembly_layout_kind was not yet chosen, but validation tells us
+    # that other values of the document request instance are valid, so now
+    # we can intelligently choose the right assembly_layout_kind for the
+    # user based on the other values of the document request instance.
     if (
         document_request.layout_for_print
         and document_request.assembly_strategy_kind == language_book_order
@@ -604,10 +599,9 @@ def select_assembly_layout_kind(
         and document_request.assembly_strategy_kind == language_book_order
     ):
         return one_column
-    elif (  # Validation (and the UI) has already ensured that we have two languages. In such situations with the UI, with book_language_order, we always use the sl_sr layout.
+    elif (
         not document_request.layout_for_print
         and document_request.assembly_strategy_kind == book_language_order
-        # and document_request.assembly_layout_kind == sl_sr
     ):
         return sl_sr
 
@@ -656,10 +650,6 @@ def main(document_request_json: Json[Any]) -> Json[Any]:
         "document_request: %s",
         document_request,
     )
-    # If an assembly_layout_kind has been chosen in the document request,
-    # then we know that the request originated from a unit test. The UI does
-    # not provide a way to choose an arbitrary layout, but unit tests can
-    # specify a layout arbitrarily. We must handle both situations.
     document_request.assembly_layout_kind = select_assembly_layout_kind(
         document_request
     )

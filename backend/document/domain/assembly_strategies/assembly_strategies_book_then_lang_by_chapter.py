@@ -190,24 +190,12 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_2c_sl_sr(
             # Add the chapter commentary.
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
-        # Use the usfm_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # usfm_with_most_verses = max(
-        #     usfm_book_content_units,
-        #     key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in usfm_with_most_verses.chapters[chapter_num].verses.keys():
-        # for verse_num in chapter.verses.keys():
         # Get lang_code of first USFM so that we can use it later
         # to make sure USFMs of the same language are on the same
         # side of the two column layout.
         lang0_code = zipped_usfm_book_content_units[0].lang_code
         # Add the interleaved USFM verses
         for idx, usfm_book_content_unit in enumerate(zipped_usfm_book_content_units):
-            # If the number of non-None USFM book content unit instances
             # The conditions for beginning a row are a simple
             # result of the fact that we can have between 2 and 4
             # non-None USFM content units in the collection one of which
@@ -222,7 +210,6 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_2c_sl_sr(
             if (
                 usfm_book_content_unit
                 and chapter_num in usfm_book_content_unit.chapters
-                # and verse_num in usfm_book_content_unit.chapters[chapter_num].verses
             ):
                 # lang0's USFM content units should always be on the
                 # left and lang1's should always be on the right.
@@ -244,11 +231,11 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_2c_sl_sr(
         tn_verses = None
         for idx, tn_book_content_unit3 in enumerate(tn_book_content_units):
             tn_verses = verses_for_chapter_tn(tn_book_content_unit3, chapter_num)
-            if tn_verses:  # and verse_num in tn_verses:
+            if tn_verses:
                 if is_even(idx):
                     yield html_row_begin
                 yield html_column_begin
-                yield "".join(tn_verses.values())  # [verse_num]
+                yield "".join(tn_verses.values())
                 yield html_column_end
         yield html_row_end
 
@@ -258,7 +245,7 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_2c_sl_sr(
         for idx, tq_book_content_unit in enumerate(tq_book_content_units):
             tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
             # Add TQ verse content, if any
-            if tq_verses:  # and verse_num in tq_verses:
+            if tq_verses:
                 if is_even(idx):
                     yield html_row_begin
                 yield html_column_begin
@@ -323,8 +310,8 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_1c(
         yield book_intro_commentary(bc_book_content_unit)
 
     # Use the usfm_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
+    # chapter_num pump to realize the most amount of content displayed
+    # to the user.
     usfm_with_most_chapters = max(
         usfm_book_content_units,
         key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters.keys(),
@@ -347,47 +334,31 @@ def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_1c(
             # Add the chapter commentary.
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
-        # Use the usfm_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # usfm_with_most_verses = max(
-        #     usfm_book_content_units,
-        #     key=lambda usfm_book_content_unit: usfm_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in usfm_with_most_verses.chapters[chapter_num].verses.keys():
-        # for verse_num in chapter.verses.keys():
         # Add the interleaved USFM verses
         for usfm_book_content_unit in usfm_book_content_units:
-            if (
-                chapter_num
-                in usfm_book_content_unit.chapters
-                # and verse_num in usfm_book_content_unit.chapters[chapter_num].verses
-            ):
+            if chapter_num in usfm_book_content_unit.chapters:
                 # Add scripture chapter
                 yield "".join(
                     usfm_book_content_unit.chapters[chapter_num].verses.values()
-                    # usfm_book_content_unit.chapters[chapter_num].content
-                )  # .verses[verse_num]
+                )
 
         # Add the interleaved tn notes
         tn_verses = None
         for tn_book_content_unit3 in tn_book_content_units:
             tn_verses = verses_for_chapter_tn(tn_book_content_unit3, chapter_num)
-            if tn_verses:  # and verse_num in tn_verses:
                 yield tn_verse_notes_enclosing_div_fmt_str.format(
                     "".join(tn_verses.values())
                 )
                 # yield "".join(tn_verses.values())  # [verse_num]
+            if tn_verses:
 
         # Add the interleaved tq questions
         tq_verses = None
         for tq_book_content_unit in tq_book_content_units:
             tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
             # Add TQ verse content, if any
-            if tq_verses:  # and verse_num in tq_verses:
                 yield "".join(tq_verses.values())  # [verse_num]
+            if tq_verses:
 
         # Add the footnotes
         for usfm_book_content_unit in usfm_book_content_units:
@@ -438,8 +409,8 @@ def assemble_tn_as_iterator_by_chapter_for_book_then_lang(
         yield book_intro_commentary(bc_book_content_unit)
 
     # Use the tn_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
+    # chapter_num pump to realize the most amount of content displayed
+    # to user.
     tn_with_most_chapters = max(
         tn_book_content_units,
         key=lambda tn_book_content_unit: tn_book_content_unit.chapters.keys(),
@@ -456,16 +427,6 @@ def assemble_tn_as_iterator_by_chapter_for_book_then_lang(
             # Add the chapter commentary.
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
-        # Use the tn_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # tn_with_most_verses = max(
-        #     tn_book_content_units,
-        #     key=lambda tn_book_content_unit: tn_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in tn_with_most_verses.chapters[chapter_num].verses.keys():
         # Add the interleaved tn notes
         for tn_book_content_unit in tn_book_content_units:
             tn_verses = verses_for_chapter_tn(tn_book_content_unit, chapter_num)
@@ -476,8 +437,8 @@ def assemble_tn_as_iterator_by_chapter_for_book_then_lang(
         for tq_book_content_unit in tq_book_content_units:
             tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
             # Add TQ verse content, if any
-            if tq_verses:  # and verse_num in tq_verses:
                 yield "".join(tq_verses.values())  # [verse_num]
+            if tq_verses:
 
 
 def assemble_tq_as_iterator_by_chapter_for_book_then_lang(
@@ -496,16 +457,11 @@ def assemble_tq_as_iterator_by_chapter_for_book_then_lang(
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    # usfm_book_content_units = sorted(usfm_book_content_units, key=sort_key)
-    # tn_book_content_units = sorted(tn_book_content_units, key=sort_key)
     tq_book_content_units = sorted(tq_book_content_units, key=sort_key)
-    # tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Use the tq_book_content_unit that has the most chapters as a
-    # chapter_num pump.
-    # Realize the most amount of content displayed to user.
-    # chapter_key = lambda tq_book_content_unit: tq_book_content_unit.chapters.keys()
+    # chapter_num pump to realize the most amount of content displayed to user.
     tq_with_most_chapters = max(
         tq_book_content_units,
         key=lambda tq_book_content_unit: tq_book_content_unit.chapters.keys(),
@@ -517,52 +473,12 @@ def assemble_tq_as_iterator_by_chapter_for_book_then_lang(
             # Add the chapter commentary.
             yield chapter_commentary(bc_book_content_unit, chapter_num)
 
-        # Use the tn_book_content_unit that has the most verses for
-        # this chapter_num chapter as a verse_num pump.
-        # I.e., realize the most amount of content displayed to user.
-        # tq_with_most_verses = max(
-        #     tq_book_content_units,
-        #     key=lambda tq_book_content_unit: tq_book_content_unit.chapters[
-        #         chapter_num
-        #     ].verses.keys(),
-        # )
-        # for verse_num in tq_with_most_verses.chapters[chapter_num].verses.keys():
         # Add the interleaved tq questions
         for tq_book_content_unit in tq_book_content_units:
             tq_verses = verses_for_chapter_tq(tq_book_content_unit, chapter_num)
             # Add TQ verse content, if any
-            if tq_verses:  # and verse_num in tq_verses:
                 yield "".join(tq_verses.values())  # [verse_num]
-
-        # Add the interleaved translation word links
-        # for tw_book_content_unit in tw_book_content_units:
-        #     # Get the usfm_book_content_unit instance associated with the
-        #     # tw_book_content_unit, i.e., having same lang_code and
-        #     # resource_code.
-        #     usfm_book_content_unit_lst = [
-        #         usfm_book_content_unit
-        #         for usfm_book_content_unit in usfm_book_content_units
-        #         if usfm_book_content_unit.lang_code
-        #         == tw_book_content_unit.lang_code
-        #         and usfm_book_content_unit.resource_code
-        #         == tw_book_content_unit.resource_code
-        #     ]
-        #     if usfm_book_content_unit_lst:
-        #         usfm_book_content_unit_ = usfm_book_content_unit_lst[0]
-        #     else:
-        #         usfm_book_content_unit_ = None
-        #     # Add the translation words links section.
-        #     if (
-        #         usfm_book_content_unit_ is not None
-        #         and verse_num
-        #         in usfm_book_content_unit_.chapters[chapter_num].verses
-        #     ):
-        #         yield from translation_word_links(
-        #             tw_book_content_unit,
-        #             chapter_num,
-        #             verse_num,
-        #             usfm_book_content_unit_.chapters[chapter_num].verses[verse_num],
-        #         )
+            if tq_verses:
 
 
 def assemble_tw_as_iterator_by_chapter_for_book_then_lang(
@@ -578,7 +494,6 @@ def assemble_tw_as_iterator_by_chapter_for_book_then_lang(
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
-    # tw_book_content_units = sorted(tw_book_content_units, key=sort_key)
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add the bible commentary

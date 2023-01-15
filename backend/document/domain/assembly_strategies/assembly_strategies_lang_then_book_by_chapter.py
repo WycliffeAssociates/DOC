@@ -87,33 +87,12 @@ def assemble_by_usfm_as_iterator_by_chapter_for_lang_then_book_1c(
                 yield tn_verse_notes_enclosing_div_fmt_str.format(
                     "".join(tn_verses.values())
                 )
-            # yield from format_tn_verse(
-            #     tn_book_content_unit,
-            #     chapter_num,
-            #     verse_num,
-            #     tn_verses[verse_num],
-            # )
             # Add TQ verse content, if any
             if tq_book_content_unit and tq_verses:
                 yield tq_heading_fmt_str.format(
                     tq_book_content_unit.resource_type_name, "".join(tq_verses.values())
                 )
-                # yield from format_tq_verse(
-                #     tq_book_content_unit.resource_type_name,
-                #     chapter_num,
-                #     verse_num,
-                #     tq_verses[verse_num],
-                # )
 
-            # TODO
-            # if tw_book_content_unit:
-            #     # Add the translation words links section.
-            #     yield from translation_word_links(
-            #         tw_book_content_unit,
-            #         chapter_num,
-            #         verse_num,
-            #         verse,
-            #     )
 
             # Add scripture footnotes if available
             if chapter.footnotes:
@@ -185,25 +164,11 @@ def assemble_tn_as_iterator_by_chapter_for_lang_then_book_1c(
                 yield tn_verse_notes_enclosing_div_fmt_str.format(
                     "".join(tn_verses.values())
                 )
-                # yield "".join(tn_verses.values())
-            # yield from format_tn_verse(
-            #     tn_book_content_unit,
-            #     chapter_num,
-            #     verse_num,
-            #     tn_verses[verse_num],
-            # )
             # Add TQ verse content, if any
             if tq_book_content_unit and tq_verses:
                 yield tq_heading_fmt_str.format(
                     tq_book_content_unit.resource_type_name, "".join(tq_verses.values())
                 )
-                # yield "".join(tq_verses.values())
-                # yield from format_tq_verse(
-                #     tq_book_content_unit.resource_type_name,
-                #     chapter_num,
-                #     verse_num,
-                #     tq_verses[verse_num],
-                # )
 
 
 def assemble_tq_tw_for_by_chapter_lang_then_book_1c(
@@ -248,4 +213,3 @@ def assemble_tq_tw_for_by_chapter_lang_then_book_1c(
                 yield tq_heading_fmt_str.format(
                     tq_book_content_unit.resource_type_name, "".join(tq_verses.values())
                 )
-                # yield "".join(tq_verses.values())

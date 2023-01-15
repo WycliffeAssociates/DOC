@@ -22,7 +22,7 @@ RUN cd /tmp \
 # Refresh system font cache.
 RUN fc-cache -f -v
 
-# Get and install Pandoc for HTML to ePub conversion.
+# Get and install Pandoc for HTML to Docx conversion.
 ARG PANDOC_LOC=https://github.com/jgm/pandoc/releases/download/2.19.2/pandoc-2.19.2-1-amd64.deb
 RUN PANDOC_TEMP="$(mktemp)" && \
     wget -O "$PANDOC_TEMP" ${PANDOC_LOC} && \
@@ -34,8 +34,6 @@ RUN PANDOC_TEMP="$(mktemp)" && \
 # Source: https://gist.github.com/lobermann/ca0e7bb2558b3b08923c6ae2c37a26ce
 # How to get wkhtmltopdf - don't use what Debian provides as it can have
 # headless display issues that mess with wkhtmltopdf.
-
-# Make a build arg available to this Dockerfile with default
 ARG WKHTMLTOX_LOC=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
 RUN WKHTMLTOX_TEMP="$(mktemp)" && \
     wget -O "$WKHTMLTOX_TEMP" ${WKHTMLTOX_LOC} && \
@@ -79,7 +77,6 @@ COPY ./tests ./tests
 # in turn build them with the resident C compiler, usually clang or
 # gcc.
 RUN cd backend && mypyc --strict --install-types --non-interactive --verbose document/domain/assembly_strategies/assembly_strategies.py document/domain/parsing.py document/domain/resource_lookup.py # document/domain/document_generator.py
-
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests

@@ -979,7 +979,7 @@ def assembly_factory_for_lang_then_book_strategy(
             False,
             AssemblyLayoutEnum.ONE_COLUMN,
             ChunkSizeEnum.CHAPTER,
-        ): assemble_tn_as_iterator_by_chapter_for_lang_then_book_1c,
+        ): assemble_tq_tw_for_by_chapter_lang_then_book_1c,
         (
             False,
             False,

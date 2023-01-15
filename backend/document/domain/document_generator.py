@@ -503,7 +503,10 @@ def convert_html_to_docx(
         docx_filepath,
     )
     logger.debug("Generate Docx command: %s", pandoc_command)
+    t0 = time.time()
     subprocess.call(pandoc_command, shell=True)
+    t1 = time.time()
+    logger.debug("Time for converting HTML to Docx: %s", t1 - t0)
     copy_file_to_docker_output_dir(docx_filepath)
     if should_send_email(email_address):
         attachments = [

@@ -3,55 +3,81 @@ name: Docker
 on: [push, pull_request]
 
 jobs:
-  #build and publish image
-  test-and-conditional-publish:
-
+  build-and-test-api:
     runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: FranzDiebold/github-env-vars-action@v2
+
+      - name: Build API image
+        shell: bash
+        run: docker build -t wycliffeassociates/doc:$GITHUB_SHA -t wycliffeassociates/doc:$GITHUB_REF_NAME -t wycliffeassociates/doc:latest .
+
+      - name: Test API image
+        shell: bash
+        run: docker compose up -d && docker-compose run --rm --no-deps --entrypoint=pytest api -v -m "not randomized" -n auto /app/tests/unit /app/tests/e2e
+
+  build-and-test-ui:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: FranzDiebold/github-env-vars-action@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 19
+
+      - name: Build UI image
+        shell: bash
+        run: docker build -t wycliffeassociates/doc-ui:$GITHUB_SHA -t wycliffeassociates/doc-ui:$GITHUB_REF_NAME -t wycliffeassociates/doc-ui:latest ./frontend
+
+      - name: Run API for UI
+        shell: bash
+        run: docker compose up -d
+
+      - name: Install dependencies outside Docker for Playwright use
+        shell: bash
+        run: cd frontend && npm ci
+
+      - name: Substitute frontend env var for Playwright
+        shell: bash
+        run: cd frontend && envsubst < playwright.config.ts | sponge playwright.config.ts
+
+      - name: Install Playwright
+        shell: bash
+        run: npx playwright install --with-deps
+
+      - name: Test UI image
+        shell: bash
+        run: cd frontend && npx playwright test
+
+  publish:
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'push'
+    needs: [build-and-test-api, build-and-test-ui]
 
     steps:
       - uses: actions/checkout@v2
       - uses: FranzDiebold/github-env-vars-action@v2
-      
-      - name: Set DOC docker tags
+
+      - name: Build API image
+        shell: bash
+        run: docker build -t wycliffeassociates/doc:$GITHUB_SHA -t wycliffeassociates/doc:$GITHUB_REF_NAME -t wycliffeassociates/doc:latest .
+
+      - name: Build UI image
+        shell: bash
+        run: docker build -t wycliffeassociates/doc-ui:$GITHUB_SHA -t wycliffeassociates/doc-ui:$GITHUB_REF_NAME -t wycliffeassociates/doc-ui:latest ./frontend
+
+      - name: Log into registry
+        shell: bash
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      - name: Docker push api image
         run: |
-          echo "DOC_TAG_SHA=wycliffeassociates/doc:$GITHUB_SHA" >> $GITHUB_ENV && \
-          echo "DOC_TAG_BRANCH=wycliffeassociates/doc:$CI_REF_NAME_SLUG" >> $GITHUB_ENV && \
-          echo "DOC_TAG_LATEST=wycliffeassociates/doc:latest" >> $GITHUB_ENV
-      - name: Set DOC-UI docker tags
+          docker push -a wycliffeassociates/doc
+
+      - name: Docker push ui image
         run: |
-          echo "DOC_UI_TAG_SHA=wycliffeassociates/doc:$GITHUB_SHA" >> $GITHUB_ENV && \
-          echo "DOC_UI_TAG_BRANCH=wycliffeassociates/doc:$CI_REF_NAME_SLUG" >> $GITHUB_ENV && \
-          echo "DOC_UI_TAG_LATEST=wycliffeassociates/doc:latest" >> $GITHUB_ENV
-      
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      -
-        name: Build and conditional push API image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: ${{ contains(fromJson('["push"]'), github.event_name) }}
-          build-args: RUN_TESTS=true
-          tags: |
-            ${{ env.DOC_TAG_SHA }}
-            ${{ env.DOC_TAG_BRANCH }}
-            ${{ env.DOC_TAG_LATEST }}
-      -
-        name: Build and conditional push UI image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./frontend
-          push: ${{ contains(fromJson('["push"]'), github.event_name) }}
-          tags: |
-            ${{ env.DOC_UI_TAG_SHA }}
-            ${{ env.DOC_UI_TAG_BRANCH }}
-            ${{ env.DOC_UI_TAG_LATEST }}
+          docker push -a wycliffeassociates/doc-ui

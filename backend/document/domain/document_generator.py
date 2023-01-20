@@ -418,12 +418,12 @@ def send_email_with_attachment(
 
 # HTML to PDF converters:
 # princexml ($$$$) or same through docraptor ($$),
-# wkhtmltopdf via pdfkit (can't handle column-count directive, we
-# overcome with manual two column layout),
+# wkhtmltopdf via pdfkit (can't handle column-count directive),
 # weasyprint (does a nice job, but is slow),
-# pagedjs-cli (does a really nice job, but is really slow - research combining with chrome),
+# pagedjs-cli (does a really nice job, but is really slow - uses puppeteer underneath),
 # electron-pdf (similar speed to wkhtmltopdf) which uses chrome underneath the hood,
 # gotenburg which uses chrome under the hood and provides a nice api in Docker (untested),
+# raw chrome headless (works well and is about the same speed as weasyprint),
 # ebook-convert (currently blows up because docker runs chrome as root)
 def convert_html_to_pdf(
     html_filepath: str,
@@ -460,9 +460,9 @@ def convert_html_to_pdf(
 
 
 # HTML to ePub converters:
-# pandoc (this doesn't seem to respect two column),
-# html-to-epub which is written in go (this didn't seem to respect two column),
-# ebook-convert (this respects two column)
+# pandoc (this doesn't respect two column),
+# html-to-epub which is written in go (this doesn't respect two column),
+# ebook-convert (this respects two column).
 def convert_html_to_epub(
     html_filepath: str,
     epub_filepath: str,
@@ -505,6 +505,9 @@ def convert_html_to_epub(
 # gave the greatest control over document creation we could get PDFs
 # from the Docx possibly. If we went this direction it would mean
 # modifying the USFM parser to have a Docx renderer.
+# pdf2docx can (with some bugginess/imperfections) create a Docx from
+# a PDF including two column layout, but it takes a really long time
+# and for documents that include, say, TW resource, it could take hours.
 def convert_html_to_docx(
     html_filepath: str,
     docx_filepath: str,

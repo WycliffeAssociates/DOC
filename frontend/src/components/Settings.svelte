@@ -44,6 +44,13 @@
 
   $: console.log(`$assemblyStrategyKindStore: ${$assemblyStrategyKindStore}`)
   $: console.log(`$assemblyStrategyChunkSizeStore: ${$assemblyStrategyChunkSizeStore}`)
+  $: {
+    if ($layoutForPrintStore) {
+      $generateDocxStore = false
+      $generateEpubStore = false
+      console.log("Print optimization selected, therefore Docx and ePub output disabled")
+    }
+  }
 </script>
 
 <h3 class="bg-white text-secondary-content text-lg pb-8 pt-2 pl-2">

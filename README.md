@@ -11,12 +11,12 @@ generates a PDF, ePub, or Docx from the HTML document if requested.
 Each Resource is composed of lang_code, resource_type, and
 resource_code.
 
-There are over hundreds lang_codes, several different resource_types, and
+There are hundreds of lang_codes, several different resource_types, and
 at least 66 resource_codes.
 
-There are a few different assembly strategies available and a few
-layout strategies available.
+There are a few different assembly strategies available some of which 
+also have different layout sub-strategies.
 
 In this way, the API can produce multi-language, multi-book,
 multi-resource PDFs assembled according to the resources, assembly
-strategy, and assembly laytout combinations chosen.
+strategy, and layout combinations chosen.

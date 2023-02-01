@@ -50,6 +50,7 @@ jobs:
         with:
           context: .
           tags: wycliffeassociates/doc:local
+          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -71,6 +72,7 @@ jobs:
         with:
           context: ./frontend
           tags: wycliffeassociates/doc-ui:local
+          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

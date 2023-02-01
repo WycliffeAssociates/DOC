@@ -20,6 +20,22 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  Build-Frontend-Image:
+    name: Build Frontend image
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: FranzDiebold/github-env-vars-action@v2
+      - uses: docker/setup-qemu-action@v2      
+      - uses: docker/setup-buildx-action@v2
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./frontend
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
   Test-API-Image:
     name: Test API image
     runs-on: ubuntu-20.04
@@ -41,23 +57,6 @@ jobs:
         run: |
           docker compose -f docker-compose.api-test.yml up --exit-code-from test-runner
 
-  Build-Frontend-Image:
-    name: Build Frontend image
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: FranzDiebold/github-env-vars-action@v2
-      - uses: docker/setup-qemu-action@v2      
-      - uses: docker/setup-buildx-action@v2
-
-      - name: Build frontend image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./frontend
-          tags: wycliffeassociates/doc-ui:local
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
   Test-Frontend-Image:
     name: Test Frontend image
     runs-on: ubuntu-20.04
@@ -67,6 +66,13 @@ jobs:
       - uses: FranzDiebold/github-env-vars-action@v2
       - uses: docker/setup-qemu-action@v2      
       - uses: docker/setup-buildx-action@v2
+      - name: Build frontend image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./frontend
+          tags: wycliffeassociates/doc-ui:local
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Test API image with docker-compose
         run: echo "TODO" && exit 2

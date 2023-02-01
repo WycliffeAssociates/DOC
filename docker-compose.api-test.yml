@@ -1,0 +1,36 @@
+version: "3"
+services:
+  api:
+    extends:
+      file: docker-compose.yml
+      service: api
+    restart: "no"
+  worker:
+    extends:
+      file: docker-compose.yml
+      service: worker
+    restart: "no"
+  redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
+    restart: "no"
+    command: ["--loglevel","verbose"]
+  fileserver:
+    extends:
+      file: docker-compose.yml
+      service: fileserver
+    restart: "no"
+
+  test-runner:
+    image: wycliffeassociates/doc:${IMAGE_TAG}
+    depends_on:
+      - api
+    entrypoint: pytest
+    command: ["-v","-m","not\ randomized","-n","auto","/app/tests/unit","/app/tests/e2e"]
+    environment:
+      - BACKEND_API_URL=http://localhost:5005
+      - FILE_SERVER_URL=http://localhost:8089
+
+volumes:
+  shared:

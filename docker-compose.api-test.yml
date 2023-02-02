@@ -5,11 +5,20 @@ services:
       file: docker-compose.yml
       service: api
     restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
   worker:
     extends:
       file: docker-compose.yml
       service: worker
     restart: "no"
+    depends_on:
+      api:
+        condition: service_healthy
   redis:
     extends:
       file: docker-compose.yml
@@ -21,16 +30,32 @@ services:
       file: docker-compose.yml
       service: fileserver
     restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   test-runner:
     image: wycliffeassociates/doc:${IMAGE_TAG}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+      worker:
+        condition: service_started
+      fileserver:
+        condition: service_healthy
+
     entrypoint: pytest
     command: ["-v","-m","not\ randomized","-n","auto","/app/tests/unit","/app/tests/e2e"]
     environment:
-      - BACKEND_API_URL=http://localhost:5005
-      - FILE_SERVER_URL=http://localhost:8089
+      BACKEND_API_URL: http://localhost:5005
+      FILE_SERVER_URL: http://localhost:8089
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+    volumes:
+      - shared:/app/document_output
 
 volumes:
   shared:

@@ -36,10 +36,8 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // NOTE This gets envsubt'ituted right before executing the playwright tests
-    // so that we can inject the FRONTEND_API_URL from the environment
-    // at runtime.
-    baseURL: '${FRONTEND_API_URL}',
+    // default set with option to override via environment var
+    baseURL: process.env.FRONTEND_API_URL || 'http://localhost:8001',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry'

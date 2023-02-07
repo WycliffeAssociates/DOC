@@ -1,5 +1,13 @@
 version: "3"
 services:
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
   api:
     image: wycliffeassociates/doc:${IMAGE_TAG}
     env_file:
@@ -19,9 +27,16 @@ services:
     command: gunicorn --name document:entrypoints:app --worker-class uvicorn.workers.UvicornWorker --pythonpath /app/backend --conf /app/backend/gunicorn.conf.py document.entrypoints.app:app
     volumes:
       - shared:/app/document_output
-    restart: unless-stopped
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
   worker:
     image: wycliffeassociates/doc:${IMAGE_TAG}
     command: celery --app=document.domain.worker.app worker --hostname=worker@%h --loglevel=DEBUG -E
@@ -31,12 +46,19 @@ services:
     volumes:
       - shared:/app/document_output
     depends_on:
-      - api
-      - redis
-    restart: unless-stopped
-  redis:
-    image: redis:latest
-  celery-dashboad:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: celery -A document.domain.worker.app inspect ping
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+    restart: unless-stopped    
+  celery-dashboard:
     image: mher/flower
     environment:
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
@@ -45,8 +67,11 @@ services:
     ports:
       - 5555:5555
     depends_on:
-      - redis
-      - worker
+      redis:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+    restart: unless-stopped
   fileserver:
     build: ./web
     ports:
@@ -54,6 +79,11 @@ services:
     volumes:
       - shared:/srv/content
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   frontend:
     image: wycliffeassociates/doc-ui:${IMAGE_TAG}
     environment:
@@ -62,8 +92,19 @@ services:
     ports:
       - 8001:80
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+      fileserver:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      
 
 volumes:
   shared:

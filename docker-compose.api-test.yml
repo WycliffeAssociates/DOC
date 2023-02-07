@@ -1,41 +1,5 @@
 version: "3"
 services:
-  api:
-    extends:
-      file: docker-compose.yml
-      service: api
-    restart: "no"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5005/health/status"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-  worker:
-    extends:
-      file: docker-compose.yml
-      service: worker
-    restart: "no"
-    depends_on:
-      api:
-        condition: service_healthy
-  redis:
-    extends:
-      file: docker-compose.yml
-      service: redis
-    restart: "no"
-    command: ["--loglevel","verbose"]
-  fileserver:
-    extends:
-      file: docker-compose.yml
-      service: fileserver
-    restart: "no"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
 
   test-runner:
     image: wycliffeassociates/doc:${IMAGE_TAG}
@@ -43,7 +7,7 @@ services:
       api:
         condition: service_healthy
       worker:
-        condition: service_started
+        condition: service_healthy
       fileserver:
         condition: service_healthy
 
@@ -59,3 +23,4 @@ services:
 
 volumes:
   shared:
+  

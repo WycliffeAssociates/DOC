@@ -1,6 +1,9 @@
 version: "3"
 services:
 
+  frontend:
+    image: nginx:alpine
+
   test-runner:
     image: wycliffeassociates/doc:${IMAGE_TAG}
     depends_on:

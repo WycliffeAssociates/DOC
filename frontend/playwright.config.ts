@@ -37,7 +37,7 @@ const config: PlaywrightTestConfig = {
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
     // default set with option to override via environment var
-    baseURL: process.env.FRONTEND_API_URL || 'http://localhost:8001',
+    baseURL: 'http://localhost:8001',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry'

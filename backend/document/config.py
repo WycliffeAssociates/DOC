@@ -55,12 +55,16 @@ class Settings(BaseSettings):
     RESOURCE_TYPE_NAME_FMT_STR: str = "<h1>{}</h1>"
     TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR: str = "<div style='column-count: 2;'>{}</div>"
     TQ_HEADING_FMT_STR: str = "<h3>{}</h3>"
+    TQ_HEADING_AND_QUESTIONS_FMT_STR: str = (
+        "<h3>{}</h3>\n<div style='column-count: 2;'>{}</div>"
+    )
     HTML_ROW_BEGIN: str = model.HtmlContent("<div class='row'>")
     HTML_ROW_END: str = model.HtmlContent("</div>")
     HTML_COLUMN_BEGIN: str = model.HtmlContent("<div class='column'>")
     HTML_COLUMN_END: str = model.HtmlContent("</div>")
     HTML_COLUMN_LEFT_BEGIN: str = model.HtmlContent("<div class='column-left'>")
     HTML_COLUMN_RIGHT_BEGIN: str = model.HtmlContent("<div class='column-right'>")
+    BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
     BOOK_FMT_STR: str = "<h2>Book: {}</h2>"
     BOOK_AS_GROUPER_FMT_STR: str = "<h1>Book: {}</h1>"
     VERSE_FMT_STR: str = "<h3>Verse {}:{}</h3>"
@@ -238,12 +242,15 @@ class Settings(BaseSettings):
     TEMPLATE_PATHS_MAP: Mapping[str, str] = {
         "book_intro": "backend/templates/tn/book_intro_template.md",
         "header_enclosing": "backend/templates/html/header_enclosing.html",
+        "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
         "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
         "footer_enclosing": "backend/templates/html/footer_enclosing.html",
         "cover": "backend/templates/html/cover.html",
         "email-html": "backend/templates/html/email.html",
         "email": "backend/templates/text/email.txt",
     }
+
+    DOCX_TEMPLATE_PATH: str = "/app/template.docx"
 
     # Return boolean indicating if caching of generated documents should be
     # cached.

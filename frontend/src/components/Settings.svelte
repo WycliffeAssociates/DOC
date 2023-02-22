@@ -5,6 +5,7 @@
     layoutForPrintStore,
     assemblyStrategyKindStore,
     assemblyStrategyChunkSizeStore,
+    docTypeStore,
     generatePdfStore,
     generateEpubStore,
     generateDocxStore,
@@ -89,7 +90,7 @@
       >
     </div>
   </li>
-  {/if}
+  {/if} {#if false}
   <li class="bg-white p-2">
     <div class="flex justify-between">
       <span class="text-primary-content">{assemblyStrategyChunkingHeader}</span>
@@ -117,10 +118,13 @@
       >
     </div>
   </li>
+  {/if}
   <li class="bg-white p-2">
     <div class="flex justify-between">
-      <span class="text-primary-content">{import.meta.env.VITE_PDF_LABEL}</span>
-      <Switch bind:checked="{$generatePdfStore}" id="generate-pdf-store" />
+      <label>
+        <input name="docType" value={"pdf"} bind:group={$docTypeStore} type="radio">
+        <span class="text-primary-content">{import.meta.env.VITE_PDF_LABEL}</span>
+      </label>
     </div>
     <div>
       <span class="text-sm text-neutral-content"
@@ -132,8 +136,10 @@
   !$layoutForPrintStore}
   <li class="bg-white p-2">
     <div class="flex justify-between">
-      <span class="text-primary-content">{import.meta.env.VITE_EPUB_LABEL}</span>
-      <Switch bind:checked="{$generateEpubStore}" id="generate-epub-store" />
+      <label>
+        <input name="docType" value={"epub"} bind:group={$docTypeStore} type="radio">
+        <span class="text-primary-content">{import.meta.env.VITE_EPUB_LABEL}</span>
+      </label>
     </div>
     <div>
       <span class="text-sm text-neutral-content"
@@ -143,8 +149,10 @@
   </li>
   <li class="bg-white p-2">
     <div class="flex justify-between">
-      <span class="text-primary-content">{import.meta.env.VITE_DOCX_LABEL}</span>
-      <Switch bind:checked="{$generateDocxStore}" id="generate-docx-store" />
+      <label>
+        <input name="docType" value={"docx"} bind:group={$docTypeStore} type="radio">
+        <span class="text-primary-content">{import.meta.env.VITE_DOCX_LABEL}</span>
+      </label>
     </div>
     <div>
       <span class="text-sm text-neutral-content"

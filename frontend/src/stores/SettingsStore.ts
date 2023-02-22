@@ -8,6 +8,7 @@ export let assemblyStrategyKindStore: Writable<string> =
   writable<string>(groupingOrderDefault)
 export let assemblyStrategyChunkSizeStore: Writable<string> =
   writable<string>(chunkSizeDefault)
+export let docTypeStore: Writable<string> = writable<string>('')
 export let generatePdfStore: Writable<boolean> = writable<boolean>(false)
 export let generateEpubStore: Writable<boolean> = writable<boolean>(false)
 export let generateDocxStore: Writable<boolean> = writable<boolean>(false)

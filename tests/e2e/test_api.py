@@ -1654,4 +1654,3 @@ def test_fa_ulb_tn_lbo_1c_chapter() -> None:
             },
         )
         check_result(response, suffix="docx")
-

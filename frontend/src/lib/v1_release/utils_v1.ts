@@ -1,3 +1,7 @@
+// The dumbed-down version and the full version of the app each
+// maintain their own stores since they are stateful and you
+// don't want a user navigating from the dumbed-down version
+// of the app to the full version to share state between them.
 import {
   langCodeAndNamesStore,
   lang0NameAndCodeStore,
@@ -7,18 +11,22 @@ import {
   lang0NameStore,
   lang1NameStore,
   langCountStore
-} from '../stores/LanguagesStore'
-import { otBookStore, ntBookStore, bookCountStore } from '../stores/BooksStore'
+} from '../../stores/v1_release/LanguagesStore_v1'
+import {
+  otBookStore,
+  ntBookStore,
+  bookCountStore
+} from '../../stores/v1_release/BooksStore_v1'
 import {
   lang0ResourceTypesStore,
   lang1ResourceTypesStore,
   resourceTypesCountStore
-} from '../stores/ResourceTypesStore'
+} from '../../stores/v1_release/ResourceTypesStore_v1'
 import {
   documentReadyStore,
   errorStore,
   resetValuesStore
-} from '../stores/NotificationStore'
+} from '../../stores/v1_release/NotificationStore_v1'
 import {
   layoutForPrintStore,
   assemblyStrategyKindStore,
@@ -27,7 +35,7 @@ import {
   generateDocxStore,
   emailStore,
   documentRequestKeyStore
-} from '../stores/SettingsStore'
+} from '../../stores/v1_release/SettingsStore_v1'
 
 const languageBookOrder: string = <string>import.meta.env.VITE_LANGUAGE_BOOK_ORDER
 
@@ -108,8 +116,27 @@ export function setShowTopMatter(): boolean {
   let showTopMatter = false
   // .env vars come over as strings always by default (PROD .env var
   //  above is an exception because Vite handles setting it.
-  if (<string>import.meta.env.VITE_SHOW_TOP_MATTER === 'true') {
+  if (<string>import.meta.env.VITE_SHOW_TOP_MATTER_IN_V1 === 'true') {
     showTopMatter = true
   }
   return showTopMatter
+}
+
+export function printToConsole(s: string) {
+  if (<string>import.meta.env.VITE_PRINT_TO_CONSOLE === 'true') {
+    console.log(s)
+  }
+}
+
+/**
+ * Indicate whether to show resource types on the Home/Content page
+ **/
+export function setShowResourceTypes(): boolean {
+  let showResourceTypes = false
+  // .env vars come over as strings always by default (PROD .env var
+  //  above is an exception because Vite handles setting it.
+  if (<string>import.meta.env.VITE_SHOW_RESOURCE_TYPES_V1 === 'true') {
+    showResourceTypes = true
+  }
+  return showResourceTypes
 }

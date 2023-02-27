@@ -1,19 +1,23 @@
 <script lang="ts">
-  import { langCodeAndNamesStore } from '../stores/LanguagesStore'
-  import { otBookStore, ntBookStore, bookCountStore } from '../stores/BooksStore'
+  // The dumbed-down version and the full version of the app each
+  // maintain their own stores since they are stateful and you
+  // don't want a user navigating from the dumbed-down version
+  // of the app to the full version to share state between them.
+  import { langCodeAndNamesStore } from '../../stores/v1_release/LanguagesStore_v1'
+  import { otBookStore, ntBookStore, bookCountStore } from '../../stores/v1_release/BooksStore_v1'
   import {
     lang0ResourceTypesStore,
     lang1ResourceTypesStore,
     resourceTypesCountStore
-  } from '../stores/ResourceTypesStore'
-  import { resetValuesStore } from '../stores/NotificationStore'
+  } from '../../stores/v1_release/ResourceTypesStore_v1'
+  import { resetValuesStore } from '../../stores/v1_release/NotificationStore_v1'
   import { push } from 'svelte-spa-router'
-  import GenerateDocument from './GenerateDocument.svelte'
-  import RightArrow from './RightArrow.svelte'
-  import Mast from './Mast.svelte'
-  import Tabs from './Tabs.svelte'
-  import Sidebar from './Sidebar.svelte'
-  import { setShowTopMatter } from '../lib/utils'
+  import GenerateDocument from './GenerateDocument_v1.svelte'
+  import RightArrow from '../RightArrow.svelte'
+  import Mast from './Mast_v1.svelte'
+  import Tabs from './Tabs_v1.svelte'
+  import Sidebar from './Sidebar_v1.svelte'
+  import { setShowTopMatter, setShowResourceTypes, printToConsole } from '../../lib/v1_release/utils_v1'
 
   // Handle notification of reset of values originating from other
   // pages.
@@ -24,7 +28,7 @@
     }
   }
 
-  $: console.log(`$resetValuesStore: ${$resetValuesStore}`)
+  $: printToConsole(`$resetValuesStore: ${$resetValuesStore}`)
 
   // Get the book names from the store reactively.
   $: otBookNames = $otBookStore.map(
@@ -133,16 +137,26 @@
     }
   }
 
+
   // For sidebar
   let open = false
   let showTopMatter: boolean = setShowTopMatter()
-  $: console.log(`showTopMatter: ${showTopMatter}`)
+  let showResourceTypes: boolean = setShowResourceTypes()
+  // let showResourceTypesListStyles: str
+  // $: {
+  //   if (showResourceTypes) {
+  //     showResourceTypesListStyles = "bg-white border-b-2 border-grey-500 p-2"
+  //   } else {
+  //     showResourceTypesListStyles = "bg-white border-grey-500 p-2"
+  //   }
+  // }
+  $: printToConsole(`showTopMatter: ${showTopMatter}`)
 </script>
 
 {#if showTopMatter}
-<Sidebar bind:open />
-<Mast bind:sidebar="{open}" />
-<Tabs />
+  <Sidebar bind:open />
+  <Mast bind:sidebar="{open}" />
+  <Tabs />
 {/if}
 
 <div class="bg-white">
@@ -150,7 +164,7 @@
     <li class="bg-white border-b-2 border-grey-500 p-2">
       <button
         class="inline-flex items-center w-full justify-between py-2 px-4 rounded"
-        on:click={() => push('#/languages')}
+        on:click={() => push('#/v1/languages')}
       >
         <div class="flex items-center">
           <svg
@@ -185,7 +199,7 @@
     <li class="bg-white border-b-2 border-grey-500 p-2">
       <button
         class="inline-flex items-center w-full justify-between py-2 px-4 rounded"
-        on:click={() => push('#/books')}
+        on:click={() => push('#/v1/books')}
       >
         <div class="flex items-center">
           <svg
@@ -220,10 +234,14 @@
         </div>
       {/if}
     </li>
+    {#if showResourceTypes}
     <li class="bg-white p-2">
+      <!-- <button -->
+      <!--   class="inline-flex items-center w-full justify-between  py-2 px-4 rounded" -->
+      <!--   on:click={() => push('#/resource_types')} -->
+      <!-- > -->
       <button
         class="inline-flex items-center w-full justify-between  py-2 px-4 rounded"
-        on:click={() => push('#/resource_types')}
       >
         <div class="flex items-center">
           <svg
@@ -247,7 +265,7 @@
             <span class="ml-4 text-xl text-neutral-content">3. Resource types</span>
           {/if}
         </div>
-        <RightArrow />
+      <!--   <RightArrow /> -->
       </button>
       {#if $resourceTypesCountStore > 0}
         <div>
@@ -255,12 +273,13 @@
             >{resourceTypesDisplayString}
           </span>
         </div>
-      {:else}
-        <div>
-          <span class="text-neutral-content text-sm ml-14">Select resource types</span>
-        </div>
+      <!-- {:else} -->
+      <!--   <div> -->
+      <!--     <span class="text-neutral-content text-sm ml-14">Select resource types</span> -->
+      <!--   </div> -->
       {/if}
     </li>
+    {/if}
   </ul>
   <GenerateDocument />
   <!-- NOTE For unsophisticated users and for users whose language is not -->

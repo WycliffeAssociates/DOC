@@ -13,6 +13,10 @@
   } from '../stores/SettingsStore'
   import { lang1CodeStore } from '../stores/LanguagesStore'
   import GenerateDocument from './GenerateDocument.svelte'
+  import Mast from './Mast.svelte'
+  import Tabs from './Tabs.svelte'
+  import Sidebar from './Sidebar.svelte'
+  import { setShowTopMatter } from '../lib/utils'
 
   let bookLanguageOrderStrategy: SelectElement = {
     id: 'blo',
@@ -49,10 +53,21 @@
     if ($layoutForPrintStore) {
       $generateDocxStore = false
       $generateEpubStore = false
-      console.log("Print optimization selected, therefore Docx and ePub output disabled")
+      console.log('Print optimization selected, therefore Docx and ePub output disabled')
     }
   }
+
+  // For sidebar
+  let open = false
+
+  let showTopMatter: boolean = setShowTopMatter()
 </script>
+
+{#if showTopMatter}
+<Sidebar bind:open />
+<Mast bind:sidebar="{open}" />
+<Tabs />
+{/if}
 
 <h3 class="bg-white text-secondary-content text-lg pb-8 pt-2 pl-2">
   Interleave Settings

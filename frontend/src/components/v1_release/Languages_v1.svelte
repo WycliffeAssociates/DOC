@@ -1,8 +1,13 @@
 <script lang="ts">
   import { z } from 'zod'
-  import ProgressIndicator from './ProgressIndicator.svelte'
-  import LeftArrow from './LeftArrow.svelte'
+  import ProgressIndicator from './ProgressIndicator_v1.svelte'
+  import LeftArrow from '../LeftArrow.svelte'
   import { push } from 'svelte-spa-router'
+
+  // The dumbed-down version and the full version of the app each
+  // maintain their own stores since they are stateful and you
+  // don't want a user navigating from the dumbed-down version
+  // of the app to the full version to share state between them.
   import {
     lang0CodeStore,
     lang1CodeStore,
@@ -10,25 +15,25 @@
     lang1NameStore,
     langCodeAndNamesStore,
     langCountStore
-  } from '../stores/LanguagesStore'
-  import { bookCountStore, otBookStore } from '../stores/BooksStore'
-  import { resourceTypesCountStore } from '../stores/ResourceTypesStore'
-  import { resetValuesStore } from '../stores/NotificationStore'
-  import { getApiRootUrl, resetStores } from '../lib/utils'
-  import Mast from './Mast.svelte'
-  import Tabs from './Tabs.svelte'
-  import Sidebar from './Sidebar.svelte'
-  import { setShowTopMatter } from '../lib/utils'
+  } from '../../stores/v1_release/LanguagesStore_v1'
+  import { bookCountStore, otBookStore } from '../../stores/v1_release/BooksStore_v1'
+  import { resourceTypesCountStore } from '../../stores/v1_release/ResourceTypesStore_v1'
+  import { resetValuesStore } from '../../stores/v1_release/NotificationStore_v1'
+  import { getApiRootUrl, resetStores } from '../../lib/v1_release/utils_v1'
+  import Mast from './Mast_v1.svelte'
+  import Tabs from './Tabs_v1.svelte'
+  import Sidebar from './Sidebar_v1.svelte'
+  import { setShowTopMatter, printToConsole } from '../../lib/v1_release/utils_v1'
 
   async function getLangCodesNames(
     apiRootUrl: string = getApiRootUrl(),
-    langCodesAndNamesUrl: string = <string>import.meta.env.VITE_LANG_CODES_NAMES_URL
+    langCodesAndNamesUrl: string = <string>import.meta.env.VITE_LANG_CODES_NAMES_URL_V1
   ): Promise<Array<string>> {
-    console.log(`apiRootUrl: ${getApiRootUrl}`)
+    printToConsole(`apiRootUrl: ${getApiRootUrl}`)
     const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
     const langCodesAndNames: Array<string> = await response.json()
     if (!response.ok) {
-      console.log(`Error: ${response.statusText}`)
+      printToConsole(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
     return langCodesAndNames
@@ -41,7 +46,7 @@
       .then(langCodesAndNames_ => {
         langCodesAndNames = langCodesAndNames_
       })
-      .catch(err => console.log(err)) // FIXME Trigger toast for error
+      .catch(err => printToConsole(err)) // FIXME Trigger toast for error
   }
 
   let resourceCodesAndTypesMapSchema = z.map(
@@ -54,7 +59,7 @@
   let resourceCodesAndTypesMap: ResourceCodesAndTypesMap
   $: {
     if (resourceCodesAndTypesMap) {
-      console.log(`resourceCodesAndTypesMap: ${resourceCodesAndTypesMap}`)
+      printToConsole(`resourceCodesAndTypesMap: ${resourceCodesAndTypesMap}`)
     }
   }
 
@@ -68,13 +73,14 @@
     // If books store or resource types store are not empty, then we
     // should reset them when we change the languages.
     if ($bookCountStore > 0 || $resourceTypesCountStore > 0) {
+    // if ($bookCountStore > 0) {
       resetValuesStore.set(true)
     }
     resetStores('books')
     resetStores('resource_types')
     resetStores('settings')
     resetStores('notifications')
-    push('#/')
+    push('#/v1/')
   }
 
   // Update the langCountStore reactively
@@ -110,16 +116,16 @@
 </script>
 
 {#if showTopMatter}
-<Sidebar bind:open />
-<Mast bind:sidebar="{open}" />
-<Tabs />
+  <Sidebar bind:open />
+  <Mast bind:sidebar="{open}" />
+  <Tabs />
 {/if}
 
 <div class="bg-white">
   <div class="bg-white flex">
     <button
       class="bg-white hover:bg-grey-100 py-2 px-4 rounded inline-flex items-center"
-      on:click={() => push('#/')}
+      on:click={() => push('#/v1/')}
     >
       <LeftArrow backLabel="Languages" />
     </button>

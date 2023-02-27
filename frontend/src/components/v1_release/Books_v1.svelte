@@ -1,23 +1,28 @@
 <script lang="ts">
   import { push } from 'svelte-spa-router'
-  import otBooks from '../data/ot_books'
-  import { ntBookStore, otBookStore, bookCountStore } from '../stores/BooksStore'
+  import otBooks from '../../data/ot_books'
+
+  // The dumbed-down version and the full version of the app each
+  // maintain their own stores since they are stateful and you
+  // don't want a user navigating from the dumbed-down version
+  // of the app to the full version to share state between them.
+  import { ntBookStore, otBookStore, bookCountStore } from '../../stores/v1_release/BooksStore_v1'
   import {
     lang0CodeStore,
     lang1CodeStore,
     lang0NameStore,
     lang1NameStore,
     langCountStore
-  } from '../stores/LanguagesStore'
-  import { resourceTypesCountStore } from '../stores/ResourceTypesStore'
-  import ProgressIndicator from './ProgressIndicator.svelte'
-  import { resetValuesStore } from '../stores/NotificationStore'
-  import LeftArrow from './LeftArrow.svelte'
-  import { getApiRootUrl, resetStores } from '../lib/utils'
-  import Mast from './Mast.svelte'
-  import Tabs from './Tabs.svelte'
-  import Sidebar from './Sidebar.svelte'
-  import { setShowTopMatter } from '../lib/utils'
+  } from '../../stores/v1_release/LanguagesStore_v1'
+  import { resourceTypesCountStore } from '../../stores/v1_release/ResourceTypesStore_v1'
+  import ProgressIndicator from '../ProgressIndicator.svelte'
+  import { resetValuesStore } from '../../stores/v1_release/NotificationStore_v1'
+  import LeftArrow from '../LeftArrow.svelte'
+  import { getApiRootUrl, resetStores } from '../../lib/v1_release/utils_v1'
+  import Mast from './Mast_v1.svelte'
+  import Tabs from './Tabs_v1.svelte'
+  import Sidebar from './Sidebar_v1.svelte'
+  import { setShowTopMatter, printToConsole } from '../../lib/v1_release/utils_v1'
 
   async function getSharedResourceCodesAndNames(
     lang0Code: string,
@@ -109,7 +114,10 @@
     resetStores('resource_types')
     resetStores('settings')
     resetStores('notifications')
-    push('#/')
+    // NOTE In the full version we do this:
+    push('#/v1/')
+    // TODO Decide if we want to make a wizard with
+    // next and back buttons.
   }
 
   function selectAllOtResourceCodes(event: Event) {
@@ -180,13 +188,13 @@
   }
 
   // DEBUG
-  $: console.log(`$otBookStore: ${$otBookStore}`)
-  $: console.log(`$ntBookStore: ${$ntBookStore}`)
-  $: console.log(`otResourceCodes: ${otResourceCodes}`)
-  $: console.log(`ntResourceCodes: ${ntResourceCodes}`)
+  $: printToConsole(`$otBookStore: ${$otBookStore}`)
+  $: printToConsole(`$ntBookStore: ${$ntBookStore}`)
+  $: printToConsole(`otResourceCodes: ${otResourceCodes}`)
+  $: printToConsole(`ntResourceCodes: ${ntResourceCodes}`)
   $: {
     if (otResourceCodes) {
-      console.log(
+      printToConsole(
         `checked OT items: ${otResourceCodes.map(resourceCodeAndName =>
           $otBookStore.some(item => item.split(', ')[0] === resourceCodeAndName[0])
         )}`
@@ -195,7 +203,7 @@
   }
   $: {
     if (ntResourceCodes) {
-      console.log(
+      printToConsole(
         `checked NT items: ${ntResourceCodes.map(resourceCodeAndName =>
           $ntBookStore.some(item => item.split(', ')[0] === resourceCodeAndName[0])
         )}`
@@ -219,24 +227,24 @@
     }
   }
 
-
   // For sidebar
   let open = false
   let showTopMatter: boolean = setShowTopMatter()
+  $: printToConsole(`showTopMatter: ${showTopMatter}`)
+
 </script>
 
-
 {#if showTopMatter}
-<Sidebar bind:open />
-<Mast bind:sidebar="{open}" />
-<Tabs />
+  <Sidebar bind:open />
+  <Mast bind:sidebar="{open}" />
+  <Tabs />
 {/if}
 
 <div class="bg-white">
   <div class="bg-white flex">
     <button
       class="bg-white hover:bg-grey-100 text-grey-darkest font-bold py-2 px-4 rounded inline-flex items-center"
-      on:click={() => push('#/')}
+      on:click={() => push('#/v1/')}
     >
       <LeftArrow backLabel="Books" />
     </button>

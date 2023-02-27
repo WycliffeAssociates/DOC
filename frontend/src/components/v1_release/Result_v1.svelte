@@ -1,30 +1,34 @@
 <script lang="ts">
   import { ProgressRing } from 'fluent-svelte'
-  import DownloadButton from './DownloadButton.svelte'
+  import DownloadButton from '../DownloadButton.svelte'
+  import LeftArrow from '../LeftArrow.svelte'
   import { push } from 'svelte-spa-router'
-  import { documentReadyStore, errorStore } from '../stores/NotificationStore'
-  import LeftArrow from './LeftArrow.svelte'
+  // The dumbed-down version and the full version of the app each
+  // maintain their own stores since they are stateful and you
+  // don't want a user navigating from the dumbed-down version
+  // of the app to the full version to share state between them.
+  import { documentReadyStore, errorStore } from '../../stores/v1_release/NotificationStore_v1'
   import {
     generatePdfStore,
     generateEpubStore,
     generateDocxStore,
     documentRequestKeyStore
-  } from '../stores/SettingsStore'
-  import { taskIdStore, taskStateStore } from '../stores/TaskStore'
-  import { getApiRootUrl, getFileServerUrl, resetStores } from '../lib/utils'
-  import Mast from './Mast.svelte'
-  import Tabs from './Tabs.svelte'
-  import Sidebar from './Sidebar.svelte'
-  import { setShowTopMatter } from '../lib/utils'
+  } from '../../stores/v1_release/SettingsStore_v1'
+  import { taskIdStore, taskStateStore } from '../../stores/v1_release/TaskStore_v1'
+  import { getApiRootUrl, getFileServerUrl, resetStores } from '../../lib/utils'
+  import Mast from './Mast_v1.svelte'
+  import Tabs from './Tabs_v1.svelte'
+  import Sidebar from './Sidebar_v1.svelte'
+  import { setShowTopMatter, printToConsole } from '../../lib/v1_release/utils_v1'
 
   function cancelDocument() {
-    console.log('Called cancelDocument')
+    printToConsole('Called cancelDocument')
     resetStores('languages')
     resetStores('books')
     resetStores('resource_types')
     resetStores('settings')
     resetStores('notifications')
-    push('#/')
+    push('#/v1/')
   }
 
   let apiRootUrl: string = getApiRootUrl()
@@ -40,7 +44,7 @@
   $: htmlDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.html`
 
   function viewFromUrl(url: string) {
-    console.log(`url: ${url}`)
+    printToConsole(`url: ${url}`)
     window.open(url, '_blank')
   }
 
@@ -51,15 +55,15 @@
 </script>
 
 {#if showTopMatter}
-<Sidebar bind:open />
-<Mast bind:sidebar="{open}" />
-<Tabs />
+  <Sidebar bind:open />
+  <Mast bind:sidebar="{open}" />
+  <Tabs />
 {/if}
 
 <div class="bg-white flex">
   <button
     class="bg-white hover:bg-grey-100 text-primary-content font-bold py-2 px-4 rounded inline-flex items-center"
-    on:click={() => push('#/')}
+    on:click={() => push('#/v1/')}
   >
     <LeftArrow backLabel="Go Back" />
   </button>
@@ -104,7 +108,7 @@
       </svg>
       <div class="m-auto"><h3 class="text-[#82A93F] text-center">Success!</h3></div>
       <p class="text-center text-secondary-content">
-        Your document was generated successfully. You may {#if $generatePdfStore || $generateEpubStore || $generateDocxStore}download it{/if}{#if !$generateDocxStore} or view it online{/if}.
+        Your document was generated successfully.
       </p>
       {#if $generatePdfStore}
         <div class="m-auto text-center mt-4">
@@ -121,30 +125,30 @@
           <DownloadButton buttonText="Download Docx" url={docxDownloadUrl} />
         </div>
       {/if}
-      {#if !$generateDocxStore}
-      <div class="m-auto text-center mt-4">
-        <button
-          class="btn gray-gradient hover:gray-gradient-hover w-5/6 rounded capitalize"
-          on:click={() => viewFromUrl(htmlDownloadUrl)}
-        >
-          <svg
-            class="rm-3"
-            width="23"
-            height="16"
-            viewBox="0 0 23 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M11.5 0.5C6.5 0.5 2.23 3.61 0.5 8C2.23 12.39 6.5 15.5 11.5 15.5C16.5 15.5 20.77 12.39 22.5 8C20.77 3.61 16.5 0.5 11.5 0.5ZM11.5 13C8.74 13 6.5 10.76 6.5 8C6.5 5.24 8.74 3 11.5 3C14.26 3 16.5 5.24 16.5 8C16.5 10.76 14.26 13 11.5 13ZM11.5 5C9.84 5 8.5 6.34 8.5 8C8.5 9.66 9.84 11 11.5 11C13.16 11 14.5 9.66 14.5 8C14.5 6.34 13.16 5 11.5 5Z"
-              fill="#1A130B"
-              fill-opacity="0.8"
-            />
-          </svg>
-          View HTML Online</button
-        >
-      </div>
-      {/if}
+      <!-- {#if !$generateDocxStore} -->
+      <!-- <div class="m-auto text-center mt-4"> -->
+      <!--   <button -->
+      <!--     class="btn gray-gradient hover:gray-gradient-hover w-5/6 rounded capitalize" -->
+      <!--     on:click={() => viewFromUrl(htmlDownloadUrl)} -->
+      <!--   > -->
+      <!--     <svg -->
+      <!--       class="rm-3" -->
+      <!--       width="23" -->
+      <!--       height="16" -->
+      <!--       viewBox="0 0 23 16" -->
+      <!--       fill="none" -->
+      <!--       xmlns="http://www.w3.org/2000/svg" -->
+      <!--     > -->
+      <!--       <path -->
+      <!--         d="M11.5 0.5C6.5 0.5 2.23 3.61 0.5 8C2.23 12.39 6.5 15.5 11.5 15.5C16.5 15.5 20.77 12.39 22.5 8C20.77 3.61 16.5 0.5 11.5 0.5ZM11.5 13C8.74 13 6.5 10.76 6.5 8C6.5 5.24 8.74 3 11.5 3C14.26 3 16.5 5.24 16.5 8C16.5 10.76 14.26 13 11.5 13ZM11.5 5C9.84 5 8.5 6.34 8.5 8C8.5 9.66 9.84 11 11.5 11C13.16 11 14.5 9.66 14.5 8C14.5 6.34 13.16 5 11.5 5Z" -->
+      <!--         fill="#1A130B" -->
+      <!--         fill-opacity="0.8" -->
+      <!--       /> -->
+      <!--     </svg> -->
+      <!--     View HTML Online</button -->
+      <!--   > -->
+      <!-- </div> -->
+      <!-- {/if} -->
     </div>
   {/if}
   {#if $errorStore}

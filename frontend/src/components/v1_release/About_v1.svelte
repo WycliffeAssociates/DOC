@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Mast from './Mast.svelte'
-  import Tabs from './Tabs.svelte'
-  import Sidebar from './Sidebar.svelte'
-  import { setShowTopMatter } from '../lib/utils'
+  import Mast from './Mast_v1.svelte'
+  import Tabs from './Tabs_v1.svelte'
+  import Sidebar from './Sidebar_v1.svelte'
+  import { setShowTopMatter } from '../../lib/v1_release/utils_v1'
 
   // For sidebar
   let open = false
@@ -21,9 +21,9 @@
     <div>
       <span class="text-neutral-content"
         ><p>
-          This document generator allows you to interleave different types of resources
-          from different languages into a single document. You can find a more basic
-          (limited) version of this app <a href="#/v1/">here</a>.
+          This basic version of the document generator allows you to generate documents
+          containing scripture and translation notes only for gateway languages only.
+          There is a full version of this system available <a href="#/">here</a>.
         </p>
         <p>Larger documents will take more time to generate.</p></span
       >

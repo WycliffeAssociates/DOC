@@ -59,6 +59,7 @@ RUN mkdir -p working/output
 RUN mkdir -p document_output
 
 COPY .env .
+COPY pyproject.toml .
 COPY ./backend/requirements.txt .
 COPY ./backend/requirements-prod.txt .
 COPY template.docx .

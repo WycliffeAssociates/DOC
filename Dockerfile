@@ -5,13 +5,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     unzip \
-    # Next packages are for wkhtmltopdf
-    fontconfig \
-    fonts-noto-cjk \
-    libxrender1 \
-    xfonts-75dpi \
-    xfonts-base \
-    libjpeg62-turbo \
     # For mypyc
     gcc \
     # For ebook-convert
@@ -36,17 +29,6 @@ RUN fc-cache -f -v
 # Get and install calibre for use of its ebook-convert binary for HTML
 # to ePub conversion.
 RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/calibre-bin isolated=y
-
-# Install wkhtmltopdf
-# Source: https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037
-# Source: https://gist.github.com/lobermann/ca0e7bb2558b3b08923c6ae2c37a26ce
-# How to get wkhtmltopdf - don't use what Debian provides as it can have
-# headless display issues that mess with wkhtmltopdf.
-ARG WKHTMLTOX_LOC=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN WKHTMLTOX_TEMP=$(mktemp) && \
-    wget -O ${WKHTMLTOX_TEMP} ${WKHTMLTOX_LOC} && \
-    dpkg -i ${WKHTMLTOX_TEMP} && \
-    rm -f ${WKHTMLTOX_TEMP}
 
 WORKDIR /app
 
@@ -77,6 +59,7 @@ RUN pip install -v -r requirements-prod.txt
 RUN cd /tmp && git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
 RUN cd /tmp/USFM-Tools && python setup.py build install
 RUN cp -r /tmp/USFM-Tools/usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
+RUN pip install weasyprint
 
 COPY ./backend ./backend
 COPY ./tests ./tests

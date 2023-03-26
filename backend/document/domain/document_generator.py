@@ -1034,6 +1034,16 @@ def alt_main(document_request_json: Json[Any]) -> Json[Any]:
         composer = assemble_docx_content(
             document_request_key_, document_request, book_content_units
         )
+        # Construct sensical phrases to display for title1 and title2 on first
+        # page of Word document.
+        titles = [
+            "{}: {}".format(pair[0], ", ".join(pair[1]))
+            for pair in _languages_and_books_requested(found_resource_lookup_dtos)
+        ]
+
+        # Isolate each title
+        title1 = titles[0]  # Example: 'Engish: Matthew, Mark'
+        title2 = titles[1] if len(titles) >= 2 else ""  # Example: 'Chinese: Genesis'
 
         current_task.update_state(state="Converting to Docx format")
         convert_html_to_docx(
@@ -1043,8 +1053,85 @@ def alt_main(document_request_json: Json[Any]) -> Json[Any]:
             document_request.email_address,
             document_request_key_,
             document_request.resource_requests,
+            title1,
+            title2,
         )
     else:
         logger.debug("Cache hit for %s", docx_filepath_)
 
     return document_request_key_
+
+
+def _languages_and_books_requested(
+    resource_lookup_dtos: Sequence[ResourceLookupDto],
+    # non_en_usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    # en_usfm_resource_types: Sequence[str] = settings.EN_USFM_RESOURCE_TYPES,
+) -> Sequence[tuple[str, Sequence[str]]]:
+    """
+    Return a list of tuples with the following form:
+    [(lang_name, [resource_code1, resource_code2, ...]), ...]
+
+    E.g.,
+    [("English", ["mat", "mrk"]), ("français (French)", ["mat", "mrk"])]
+
+    >>> from document.domain import document_generator, model
+    >>> resource_lookup_dtos=[model.ResourceLookupDto(lang_code="en", lang_name="English", resource_type="ulb-wa", resource_type_name="Scripture", resource_code="mat", source="usfm"), model.ResourceLookupDto(lang_code="fr", lang_name="français (French)", resource_type="ulb", resource_type_name="Translation Notes", resource_code="mat", source="usfm")]
+    >>> resource_lookup_dtos
+    >>> document_generator._languages_and_books_requested(resource_lookup_dtos)
+    [('English', ['Matthew']), ('français (French)', ['Matthew'])]
+    """
+
+    unique_resource_lookup_dtos = unique(
+        resource_lookup_dtos, key=lambda dto: (dto.lang_name, dto.resource_code)
+    )
+
+    # for tw_book_content_unit in unique(
+    #     tw_book_content_units, key=lambda unit: unit.lang_code
+    # ):
+
+    # Get frontmatter titles for Word doc
+    # usfm_resource_types = [
+    #     *non_en_usfm_resource_types,
+    #     *en_usfm_resource_types,
+    # ]
+
+    # Partition USFM resource requests by language.
+    language_groups = itertoolz.groupby(
+        lambda r: r.lang_name,
+        unique_resource_lookup_dtos,
+        # filter(
+        #     lambda r: r.resource_type in usfm_resource_types,
+        #     resource_lookup_dtos,
+        # ),
+    )
+
+    # Example language_groups: [{English, [resource_lookup_dto{ulb}]}, [{Chinese, [resource_request{cuv}]}]]
+
+    # Get a list of the sorted set of books for each language for later
+    # use.
+    list_of_language_to_books_tuples = [
+        (
+            lang_name,
+            sorted(
+                {
+                    bible_books.BOOK_NAMES[resource_lookup_dto.resource_code]
+                    for resource_lookup_dto in resource_lookup_dtos
+                }
+            ),
+        )
+        for lang_name, resource_lookup_dtos in language_groups.items()
+    ]
+    return list_of_language_to_books_tuples
+
+
+if __name__ == "__main__":
+
+    # To run the doctests in the this module, in the root of the project do:
+    # python backend/document/domain/resource_lookup.py
+    # or
+    # python backend/document/domain/resource_lookup.py -v
+    # See https://docs.python.org/3/library/doctest.html
+    # for more details.
+    import doctest
+
+    doctest.testmod()

@@ -53,6 +53,7 @@
     if ($layoutForPrintStore) {
       $generateDocxStore = false
       $generateEpubStore = false
+      $docTypeStore = ''
       console.log('Print optimization selected, therefore Docx and ePub output disabled')
     }
   }

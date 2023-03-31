@@ -435,27 +435,39 @@ def assemble_tq_as_iterator_by_chapter_for_book_then_lang(
     return composer
 
 
-# NOTE v1 always forces USFM, so this will never be called in v1
 def assemble_tw_as_iterator_by_chapter_for_book_then_lang(
     usfm_book_content_units: Sequence[USFMBook],
     tn_book_content_units: Sequence[TNBook],
     tq_book_content_units: Sequence[TQBook],
     tw_book_content_units: Sequence[TWBook],
     bc_book_content_units: Sequence[BCBook],
-) -> Iterable[Composer]:
+) -> Composer:
     """Construct the HTML for BC and TW."""
+
+    html_to_docx = HtmlToDocx()
+    doc = Document()
+    composer = Composer(doc)
 
     # Sort resources by language
     def sort_key(resource: BookContent) -> str:
         return resource.lang_code
 
+    html = []
     bc_book_content_units = sorted(bc_book_content_units, key=sort_key)
 
     # Add the bible commentary
     for bc_book_content_unit in bc_book_content_units:
-        yield bc_book_content_unit.book_intro
+        html.append(bc_book_content_unit.book_intro)
         for chapter in bc_book_content_unit.chapters.values():
-            yield chapter.commentary
+            html.append(chapter.commentary)
+
+    if html:
+        subdoc = html_to_docx.parse_html_string(html)
+        composer.append(subdoc)
+
+    return composer
+
+
 def assemble_usfm_as_iterator_by_chapter_for_book_then_lang_2c_sl_sr(
     usfm_book_content_units: Sequence[USFMBook],
     tn_book_content_units: Sequence[TNBook],

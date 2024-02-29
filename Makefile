@@ -33,7 +33,7 @@ install-cython: checkvenv
 build: checkvenv down clean-mypyc-artifacts install-cython local-install-deps-dev local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
 	docker build --progress=plain -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-pip-update

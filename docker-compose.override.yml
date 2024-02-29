@@ -1,6 +1,7 @@
 version: "3"
 services:
-  api:
+
+  worker:
     volumes:
       - ./docker_document_output:/app/document_output
 

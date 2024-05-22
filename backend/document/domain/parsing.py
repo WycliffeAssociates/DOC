@@ -554,12 +554,17 @@ def glob_chapter_dirs(
     glob_in_subdirs_fmt_str: str = "{}/**/*{}/*[0-0]*",
     glob_fmt_str: str = "{}/*{}/*[0-0]*",
 ) -> list[str]:
-    # Some languages are organized differently on disk (e.g., depending
-    # on if their assets were acquired as a git repo or a zip).
-    chapter_dirs = sorted(glob(glob_in_subdirs_fmt_str.format(resource_dir, book_code)))
+    chapter_dirs = glob(glob_in_subdirs_fmt_str.format(resource_dir, book_code))
+    # Some languages are organized differently on disk
     if not chapter_dirs:
-        chapter_dirs = sorted(glob(glob_fmt_str.format(resource_dir, book_code)))
-    return chapter_dirs
+        chapter_dirs = glob(
+            glob_in_subdirs_fmt_str.format(resource_dir, book_code.upper())
+        )
+    if not chapter_dirs:
+        chapter_dirs = glob(glob_fmt_str.format(resource_dir, book_code))
+    if not chapter_dirs:
+        chapter_dirs = glob(glob_fmt_str.format(resource_dir, book_code.upper()))
+    return sorted(chapter_dirs)
 
 
 def tn_chapter_verses(

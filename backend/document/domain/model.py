@@ -11,7 +11,7 @@ from typing import Any, NamedTuple, Optional, Sequence, Union, final
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
 from document.utils.number_utils import is_even
-from docx import Document  # type: ignore
+from docx import Document
 from more_itertools import all_equal
 from pydantic import BaseModel, EmailStr
 from pydantic.functional_validators import model_validator

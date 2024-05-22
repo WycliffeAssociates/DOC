@@ -42,10 +42,10 @@ from document.domain.model import (
     USFMBook,
 )
 from document.utils.file_utils import asset_file_needs_update, write_file
-from docx import Document  # type: ignore
-from docx.enum.section import WD_SECTION  # type: ignore
-from docx.oxml import OxmlElement  # type: ignore
-from docx.oxml.ns import qn  # type: ignore
+from docx import Document
+from docx.enum.section import WD_SECTION
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore

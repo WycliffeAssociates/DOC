@@ -200,7 +200,7 @@
                       value={lang0ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="text-primary-content pl-1 text-xl"
+                    <span class="pl-1 text-xl"
                       >{getResourceTypeName(lang0ResourceTypeAndName)}</span
                     >
                   </li>
@@ -238,7 +238,7 @@
                       value={lang1ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="text-primary-content pl-1 text-xl"
+                    <span class="pl-1 text-xl"
                       >{getResourceTypeName(lang1ResourceTypeAndName)}</span
                     >
                   </li>
@@ -286,7 +286,7 @@
                       value={lang0ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="text-primary-content pl-1"
+                    <span class="pl-1"
                       >{getResourceTypeName(lang0ResourceTypeAndName)}</span
                     >
                   </li>
@@ -319,7 +319,7 @@
                       value={lang1ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="text-primary-content pl-1 text-xl"
+                    <span class="pl-1 text-xl"
                       >{getResourceTypeName(lang1ResourceTypeAndName)}</span
                     >
                   </li>

@@ -1,4 +1,4 @@
-# Interleaved Resource Generator API otherwise known as DOC
+# Interleaved Resource Generator API, otherwise known as DOC
 
 A DocumentRequest, composed of ResourceRequests, and a few other
 values, is submitted to the API. The API then uses that information

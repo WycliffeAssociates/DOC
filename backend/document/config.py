@@ -20,9 +20,6 @@ class Settings(BaseSettings):
     (which have higher priority).
     """
 
-    REPO_URL_DICT_KEY: str = "../download-scripture?repo_url"
-    ALT_REPO_URL_DICT_KEY: str = "/download-scripture?repo_url"
-
     # The location where the JSON data file that we use to lookup
     # location of resources is located.
     TRANSLATIONS_JSON_LOCATION: HttpUrl
@@ -119,7 +116,7 @@ class Settings(BaseSettings):
         *EN_USFM_RESOURCE_TYPES,
     ]
     TN_RESOURCE_TYPES: Sequence[str] = ["tn"]
-    EN_TN_RESOURCE_TYPES: Sequence[str] = ["tn-wa"]
+    EN_TN_RESOURCE_TYPES: Sequence[str] = ["tn-wa", "tn-condensed"]
     ALL_TN_RESOURCE_TYPES: Sequence[str] = [*EN_TN_RESOURCE_TYPES, *TN_RESOURCE_TYPES]
     TQ_RESOURCE_TYPES: Sequence[str] = ["tq"]
     EN_TQ_RESOURCE_TYPES: Sequence[str] = ["tq-wa"]
@@ -294,6 +291,7 @@ class Settings(BaseSettings):
         "ulb-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_ulb",
         "udb-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_udb",
         "tn-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn",
+        "tn-condensed": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn_condensed",
         "tw-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tw",
         "tq-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tq",
         "bc-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc",
@@ -309,6 +307,7 @@ class Settings(BaseSettings):
         "ulb-wa": "Unlocked Literal Bible (ULB)",
         # "udb-wa": "Unlocked Dynamic Bible (UDB)",
         "tn-wa": "ULB Translation Notes",
+        "tn-condensed": "ULB Condensed Translation Notes",
         "tq-wa": "ULB Translation Questions",
         "tw-wa": "ULB Translation Words",
         "bc-wa": "Bible Commentary",

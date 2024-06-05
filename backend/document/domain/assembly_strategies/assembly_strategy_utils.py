@@ -264,7 +264,11 @@ def chapter_intro(
     hr: HtmlContent = HtmlContent("<hr/>"),
 ) -> Iterable[HtmlContent]:
     """Get the chapter intro."""
-    if book_content_unit and chapter_num in book_content_unit.chapters:
+    if (
+        book_content_unit
+        and chapter_num in book_content_unit.chapters
+        and book_content_unit.chapters[chapter_num].intro_html
+    ):
         yield book_content_unit.chapters[chapter_num].intro_html
         yield hr
     else:
@@ -321,7 +325,11 @@ def chapter_commentary(
     hr: HtmlContent = HtmlContent("<hr/>"),
 ) -> Iterable[HtmlContent]:
     """Get the chapter commentary."""
-    if book_content_unit and chapter_num in book_content_unit.chapters:
+    if (
+        book_content_unit
+        and chapter_num in book_content_unit.chapters
+        and book_content_unit.chapters[chapter_num].commentary
+    ):
         yield book_content_unit.chapters[chapter_num].commentary
         yield hr
     else:

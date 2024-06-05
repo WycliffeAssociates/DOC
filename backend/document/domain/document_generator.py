@@ -891,8 +891,8 @@ def copy_file_to_docker_output_dir(
     Copy file to docker_container_document_output_dir.
     """
     assert exists(filepath)
-    logger.debug("About to cp file to %s", document_output_dir)
     shutil.copy(filepath, document_output_dir)
+    logger.debug("About to cp file: %s to directory: %s", filepath, document_output_dir)
 
 
 @worker.app.task(

@@ -1642,3 +1642,72 @@ def test_fa_ulb_tn_lbo_1c_chapter() -> None:
             },
         )
         check_result(response, suffix="docx")
+
+
+@pytest.mark.docx
+def test_en_ulb_wa_col_en_tn_condensed_col_language_book_order_with_no_email_1c_docx() -> None:
+    """
+    Produce chapter interleaved document for English scripture and
+    translation notes for the book of Colossians.
+    """
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents_docx",
+            json={
+                # "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": True,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn-condensed",
+                        "book_code": "col",
+                    },
+                ],
+            },
+        )
+        check_result(response, suffix="docx")
+
+
+def test_en_ulb_wa_col_en_tn_condensed_col_language_book_order_with_no_email_1c() -> None:
+    """
+    Produce chapter interleaved document for English scripture and
+    translation notes for the book of Colossians.
+    """
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents_docx",
+            json={
+                # "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb-wa",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn-condensed",
+                        "book_code": "col",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response, suffix="pdf")

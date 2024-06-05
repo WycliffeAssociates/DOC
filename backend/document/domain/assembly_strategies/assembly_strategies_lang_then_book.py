@@ -121,7 +121,7 @@ def assemble_content_by_lang_then_book(
         key=lambda book_content_unit: book_content_unit.lang_name,
     )
 
-    book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
+    book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
 
     for language, group_by_lang in groupby(
         book_units_sorted_by_language,

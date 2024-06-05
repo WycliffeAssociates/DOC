@@ -20,9 +20,6 @@ class Settings(BaseSettings):
     (which have higher priority).
     """
 
-    REPO_URL_DICT_KEY: str = "../download-scripture?repo_url"
-    ALT_REPO_URL_DICT_KEY: str = "/download-scripture?repo_url"
-
     # The location where the JSON data file that we use to lookup
     # location of resources is located.
     TRANSLATIONS_JSON_LOCATION: HttpUrl

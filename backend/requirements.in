@@ -28,7 +28,7 @@ setuptools
 termcolor
 toolz
 trio
-usfm_tools @ https://github.com/linearcombination/USFM-Tools/archive/refs/tags/0.0.9.zip
+usfm_tools @ https://github.com/linearcombination/USFM-Tools/archive/refs/tags/0.1.3.zip
 uvicorn
 weasyprint
 

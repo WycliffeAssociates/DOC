@@ -1,5 +1,6 @@
 <script lang="ts">
   import { settingsUpdated } from '$lib/stores/SettingsStore'
+  import { errorStore } from '$lib/stores/NotificationStore'
   export let id = ''
   export let checked = false
   export let disabled = false
@@ -14,7 +15,10 @@
       class="sr-only"
       {disabled}
       bind:checked
-      on:change={() => ($settingsUpdated = true)}
+      on:change={() => {
+        $settingsUpdated = true
+        $errorStore = ''
+      }}
     />
     <div class="track" />
     <div class="thumb" />

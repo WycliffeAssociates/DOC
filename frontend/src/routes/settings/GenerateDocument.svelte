@@ -45,7 +45,6 @@
     // Update some UI-related state
     generatingDocument = true
     $settingsUpdated = false
-
     let resourceRequests = []
     let bookCodes = [...$otBookStore, ...$ntBookStore]
     for (let bookCode of bookCodes) {
@@ -70,7 +69,6 @@
         }
       }
     }
-
     // Create the JSON structure to POST.
     let documentRequest = {
       email_address: $emailStore,
@@ -87,11 +85,11 @@
     $errorStore = null
     $documentReadyStore = false
     $documentRequestKeyStore = ''
-    let endpointUrl = 'documents'
+    let endpointUrl = `${apiRootUrl}/documents`
     if ($generateDocxStore) {
-      endpointUrl = 'documents_docx'
+      endpointUrl = `${apiRootUrl}/documents_docx`
     }
-    const response = await fetch(`${apiRootUrl}/${endpointUrl}`, {
+    const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(documentRequest)
@@ -102,9 +100,32 @@
       $errorStore = data.detail
     } else {
       console.log(`data: ${JSON.stringify(data)}`)
-      // Setting value of taskIdStore will reactively trigger polling
-      // of task status.
-      $taskIdStore = data.task_id
+      const timerIntervalId = setInterval(async function () {
+        // Poll the server for the task state and result
+        let results = await poll(data.task_id)
+        console.log(`results: ${results}`)
+        $taskStateStore = Array.isArray(results) ? results[0] : results
+        console.log(`$taskStateStore: ${$taskStateStore}`)
+        if ($taskStateStore === 'SUCCESS' && Array.isArray(results) && results[1]) {
+          let finishedDocumentRequestKey = results[1]
+          console.log(`finishedDocumentReuestKey: ${finishedDocumentRequestKey}`)
+          // Update some UI-related state
+          $documentReadyStore = true
+          $documentRequestKeyStore = finishedDocumentRequestKey
+          $errorStore = null
+          $taskStateStore = ''
+          generatingDocument = false
+          clearInterval(timerIntervalId)
+        } else if ($taskStateStore === 'FAILURE') {
+          console.log("We're sorry, an internal error occurred which we'll investigate.")
+          // Update some UI-related state
+          $errorStore =
+            "We're sorry. An error occurred. The document you requested may not yet be supported or we may have experienced an internal problem which we'll investigate. Please try another document request."
+          $taskStateStore = ''
+          generatingDocument = false
+          clearInterval(timerIntervalId)
+        }
+      }, 5000)
     }
   }
 
@@ -168,46 +189,30 @@
       event.returnValue = `Are you sure you want to leave while your document is being generated?`
     }
   })
-
-  $: {
-    if ($taskIdStore) {
-      console.log(`$taskIdStore: ${$taskIdStore}`)
-      generatingDocument = true
-      const timer = setInterval(async function () {
-        // Poll the server for the task state and result
-        let results = await poll($taskIdStore)
-        console.log(`results: ${results}`)
-        $taskStateStore = Array.isArray(results) ? results[0] : results
-        console.log(`$taskStateStore: ${$taskStateStore}`)
-        if ($taskStateStore === 'SUCCESS' && Array.isArray(results) && results[1]) {
-          let finishedDocumentRequestKey = results[1]
-          console.log(`finishedDocumentReuestKey: ${finishedDocumentRequestKey}`)
-
-          // Update some UI-related state
-          $documentReadyStore = true
-          $documentRequestKeyStore = finishedDocumentRequestKey
-          $errorStore = null
-          $taskStateStore = ''
-          generatingDocument = false
-
-          clearInterval(timer)
-        } else if ($taskStateStore === 'FAILURE') {
-          console.log("We're sorry, an internal error occurred which we'll investigate.")
-          // Update some UI-related state
-          $errorStore =
-            "We're sorry. An error occurred. The document you requested may not yet be supported or we may have experienced an internal problem which we'll investigate. Please try another document request."
-          $taskStateStore = ''
-          generatingDocument = false
-
-          clearInterval(timer)
-        }
-      }, 5000)
-    }
-  }
 </script>
 
 <div class="bg-white pb-4 pt-12">
-  {#if !generatingDocument || $settingsUpdated}
+  {#if $errorStore}
+    <div class="bg-white">
+      <svg
+        class="m-auto"
+        width="44"
+        height="38"
+        viewBox="0 0 44 38"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M24 24H20V14H24V24ZM24 32H20V28H24V32ZM0 38H44L22 0L0 38Z" fill="#B85659" />
+      </svg>
+      <div class="m-auto"><h3 class="text-center text-[#B85659]">Uh Oh...</h3></div>
+      <div class="m-auto">
+        <p class="text-xl text-[#B3B9C2]">
+          Something went wrong. Please review your selections or contact tech support for
+          assistance.
+        </p>
+      </div>
+    </div>
+  {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdated}
     {#if ($langCountStore > 0 || $langCountStore <= 2) && $assemblyStrategyKindStore && $bookCountStore > 0 && $resourceTypesCountStore > 0}
       <div class="pb-4">
         <button
@@ -225,10 +230,10 @@
       </div>
     {/if}
   {:else}
-    {#if !$documentReadyStore && !$errorStore}
+    {#if !$documentReadyStore}
       <TaskStatus />
     {/if}
-    {#if $documentReadyStore && !$errorStore}
+    {#if $documentReadyStore}
       <div class="bg-white">
         <div class="h-1 w-1/2 bg-[#F2F3F5]">
           <div class="blue-gradient-bar h-1" style="width: 100%" />
@@ -296,8 +301,8 @@
     {:else}
       <button
         class="mb-4 mt-2 w-1/2 rounded-md
-                     border border-[#E5E8EB] bg-[#F2F3F5] p-4
-                     text-center text-xl text-[#B3B9C2] hover:bg-[#efefef]"
+                    border border-[#E5E8EB] bg-[#F2F3F5] p-4
+                    text-center text-xl text-[#B3B9C2] hover:bg-[#efefef]"
         disabled
       >
         Download
@@ -305,27 +310,6 @@
       <p class="mt-4 text-xl italic text-[#B3B9C2]">
         We appreciate your patience as this can take several minutes for larger documents.
       </p>
-    {/if}
-    {#if $errorStore}
-      <div class="bg-white">
-        <svg
-          class="m-auto"
-          width="44"
-          height="38"
-          viewBox="0 0 44 38"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M24 24H20V14H24V24ZM24 32H20V28H24V32ZM0 38H44L22 0L0 38Z" fill="#B85659" />
-        </svg>
-        <div class="m-auto"><h3 class="text-center text-[#B85659]">Uh Oh...</h3></div>
-        <div class="m-auto">
-          <p class="text-xl text-[#B3B9C2]">
-            Something went wrong. Please review your selections or contact tech support for
-            assistance.
-          </p>
-        </div>
-      </div>
     {/if}
   {/if}
 </div>

@@ -12,14 +12,12 @@
     emailStore,
     limitTwStore,
     documentRequestKeyStore,
-    settingsUpdated
+    settingsUpdated,
+    twResourceRequestedStore,
+    usfmResourceRequestedStore
   } from '$lib/stores/SettingsStore'
-  import { documentReadyStore } from '$lib/stores/NotificationStore'
-  import {
-    resourceTypesStore,
-    resourceTypesCountStore,
-    twResourceRequestedStore
-  } from '$lib/stores/ResourceTypesStore'
+  import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
+  import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { bookCountStore } from '$lib/stores/BooksStore'
   import GenerateDocument from './GenerateDocument.svelte'
@@ -35,14 +33,34 @@
   // Set whether TW has been requested for any of the languages
   // requested so that we can use this fact in the UI to trigger the
   // presence or absence of the toggle to limit TW words.
-  let regexp = new RegExp('.*tw.*')
+  let twRegexp = new RegExp('.*tw.*')
+  let usfmRegexp = new RegExp('ayt|cuv|f10|nav|reg|udb|ugnt|uhb|ulb')
   $: {
     if ($resourceTypesStore) {
-      $twResourceRequestedStore = $resourceTypesStore.some((item) => regexp.test(item))
+      $twResourceRequestedStore = $resourceTypesStore.some((item) => twRegexp.test(item))
+      $usfmResourceRequestedStore = $resourceTypesStore.some((item) => usfmRegexp.test(item))
     }
   }
   $: {
-    if ($twResourceRequestedStore) {
+    // If you use the commented out conditional, the user is always
+    // given the option of limiting translation words to those
+    // occuring in scripture (USFM) for the selected book(s) even
+    // if they have not requested scripture (USFM). Doing this is
+    // very inefficient to since, if limit is chosen, the USFM must be
+    // acquired, parsed, and analyzed during this last step and
+    // because it is done separately from the normal flow it leads to
+    // code duplication due to subtle differences in requesting USFM this
+    // late in the process, i.e., on the last step, which cannot be reused.
+    //
+    // The other option, and the one used here, is to only provide the
+    // option of limiting translation words if scripture (USFM) was
+    // actually requested by the user. This can make sense because
+    // translation words are a language scoped resource and not a
+    // book scoped resource so, presumably, if the user has requested
+    // translations words without scripture they very likely could
+    // want to just see all the translation words for that language.
+    // if ($twResourceRequestedStore) {
+    if ($twResourceRequestedStore && $usfmResourceRequestedStore) {
       $limitTwStore = true
     } else {
       $limitTwStore = false
@@ -141,7 +159,10 @@
               value={'docx'}
               bind:group={$docTypeStore}
               type="radio"
-              on:change={() => ($settingsUpdated = true)}
+              on:change={() => {
+                $settingsUpdated = true
+                $errorStore = ''
+              }}
               class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
             />
             <span class="text-xl text-[#33445C]">Docx</span>
@@ -154,7 +175,10 @@
               value={'epub'}
               bind:group={$docTypeStore}
               type="radio"
-              on:change={() => ($settingsUpdated = true)}
+              on:change={() => {
+                $settingsUpdated = true
+                $errorStore = ''
+              }}
               class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
             />
             <span class="text-xl text-[#33445C]">ePub</span>
@@ -168,7 +192,10 @@
                 value={'pdf'}
                 bind:group={$docTypeStore}
                 type="radio"
-                on:change={() => ($settingsUpdated = true)}
+                on:change={() => {
+                  $settingsUpdated = true
+                  $errorStore = ''
+                }}
                 class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
               />
               <span class="text-xl text-[#33445C]">PDF</span>
@@ -186,7 +213,10 @@
                 value={'lbo'}
                 bind:group={$assemblyStrategyKindStore}
                 type="radio"
-                on:change={() => ($settingsUpdated = true)}
+                on:change={() => {
+                  $settingsUpdated = true
+                  $errorStore = ''
+                }}
                 class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
               />
               <span class="text-xl text-[#33445C]">Interleave content by book</span>
@@ -199,7 +229,10 @@
                 value={'blo'}
                 bind:group={$assemblyStrategyKindStore}
                 type="radio"
-                on:change={() => ($settingsUpdated = true)}
+                on:change={() => {
+                  $settingsUpdated = true
+                  $errorStore = ''
+                }}
                 class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
               />
               <span class="text-xl text-[#33445C]">Interleave content by chapter</span>
@@ -215,7 +248,7 @@
             >Enabling this option will remove extra whitespace</span
           >
         </div>
-        {#if $twResourceRequestedStore}
+        {#if $twResourceRequestedStore && $usfmResourceRequestedStore}
           <div class="mb-2 mt-6 flex">
             <Switch bind:checked={$limitTwStore} id="limit-tw-store" />
             <span class="ml-2 text-xl text-[#33445C]">Limit TW words</span>

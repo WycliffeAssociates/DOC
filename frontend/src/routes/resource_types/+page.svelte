@@ -22,7 +22,7 @@
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
     // resource_lookup.shared_resource_types.
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/`
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
     const url = new URL(url_)
     bookCodeAndNames.map((bookCodeAndName) =>
       url.searchParams.append('book_codes', bookCodeAndName[0])
@@ -209,7 +209,7 @@
             </ul>
           </div>
         {/if}
-        {#if $langCountStore > 1 && lang1ResourceTypesAndNames}
+        {#if $langCountStore > 1}
           <div>
             <h3 class="text-2xl text-[#33445C]">{$langNamesStore[1]}</h3>
           </div>

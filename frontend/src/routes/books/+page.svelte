@@ -49,40 +49,67 @@
   if ($langCountStore > 1) {
     getSharedBookCodesAndNames($langCodesStore[0], $langCodesStore[1])
       .then((bookCodesAndNames) => {
-        // Filter set of all resource codes into old testament
-        // book codes.
-        otBookCodes = bookCodesAndNames
-          .filter((element: [string, string]) => {
-            return otBooks.some((item) => item === element[0])
-          })
-          .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
+        if (bookCodesAndNames) {
+          // Filter set of all resource codes into old testament
+          // book codes.
+          otBookCodes = bookCodesAndNames
+            .filter((element: [string, string]) => {
+              return otBooks.some((item) => item === element[0])
+            })
+            .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
 
-        // If otBookStore has contents, then assume we are coming
-        // back here from the user clicking to edit their book
-        // selections in the wizard basket, so we want to eliminate
-        // any otBookStore elements that are not in otBookCodes.
-        if ($otBookStore.length > 0) {
-          $otBookStore = $otBookStore.filter((item) => {
-            return otBookCodes.some((element) => element === item)
-          })
-        }
+          // If otBookStore has contents, then assume we are coming
+          // back here from the user clicking to edit their book
+          // selections in the wizard basket, so we want to eliminate
+          // any otBookStore elements that are not in otBookCodes.
+          if ($otBookStore.length > 0) {
+            $otBookStore = $otBookStore.filter((item) => {
+              return otBookCodes.some((element) => element === item)
+            })
+          }
 
-        // Filter set of all book codes into new testament
-        // book codes.
-        ntBookCodes = bookCodesAndNames
-          .filter((element: [string, string]) => {
-            return !otBooks.some((item) => item === element[0])
-          })
-          .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
+          // Filter set of all book codes into new testament
+          // book codes.
+          ntBookCodes = bookCodesAndNames
+            .filter((element: [string, string]) => {
+              return !otBooks.some((item) => item === element[0])
+            })
+            .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
 
-        // If ntBookStore has contents, then assume we are coming
-        // back here from the user clicking to edit their book
-        // selections in the wizard basket, so we want to eliminate
-        // any ntBookStore elements that are not in ntBookCodes.
-        if ($ntBookStore.length > 0) {
-          $ntBookStore = $ntBookStore.filter((item) => {
-            return ntBookCodes.some((element) => element === item)
-          })
+          // If ntBookStore has contents, then assume we are coming
+          // back here from the user clicking to edit their book
+          // selections in the wizard basket, so we want to eliminate
+          // any ntBookStore elements that are not in ntBookCodes.
+          if ($ntBookStore.length > 0) {
+            $ntBookStore = $ntBookStore.filter((item) => {
+              return ntBookCodes.some((element) => element === item)
+            })
+          }
+        } else {
+          // Filter set of all resource codes into old testament
+          // book codes.
+          otBookCodes = []
+          // If otBookStore has contents, then assume we are coming
+          // back here from the user clicking to edit their book
+          // selections in the wizard basket, so we want to eliminate
+          // any otBookStore elements that are not in otBookCodes.
+          if ($otBookStore.length > 0) {
+            $otBookStore = $otBookStore.filter((item) => {
+              return otBookCodes.some((element) => element === item)
+            })
+          }
+          // Filter set of all book codes into new testament
+          // book codes.
+          ntBookCodes = []
+          // If ntBookStore has contents, then assume we are coming
+          // back here from the user clicking to edit their book
+          // selections in the wizard basket, so we want to eliminate
+          // any ntBookStore elements that are not in ntBookCodes.
+          if ($ntBookStore.length > 0) {
+            $ntBookStore = $ntBookStore.filter((item) => {
+              return ntBookCodes.some((element) => element === item)
+            })
+          }
         }
       })
       .catch((err) => console.error(err))

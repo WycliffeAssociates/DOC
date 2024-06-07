@@ -225,18 +225,18 @@ local-gunicorn-server: checkvenv
 
 .PHONY: local-update-deps-base
 local-update-deps-base: pyupgrade
-	# pip-compile --resolver=backtracking -v ./backend/requirements.in
-	pip-compile --upgrade ./backend/requirements.in
+	pip-compile --resolver=backtracking -v ./backend/requirements.in
+	# pip-compile --upgrade ./backend/requirements.in
 
 .PHONY: local-update-deps-prod
 local-update-deps-prod: local-update-deps-base
-	# pip-compile --resolver=backtracking -v ./backend/requirements-prod.in
-	pip-compile --upgrade ./backend/requirements-prod.in
+	pip-compile --resolver=backtracking -v ./backend/requirements-prod.in
+	# pip-compile --upgrade ./backend/requirements-prod.in
 
 .PHONY: local-update-deps-dev
 local-update-deps-dev: local-update-deps-base
-	# pip-compile --resolver=backtracking -v ./backend/requirements-dev.in
-	pip-compile --upgrade ./backend/requirements-dev.in
+	pip-compile --resolver=backtracking -v ./backend/requirements-dev.in
+	# pip-compile --upgrade ./backend/requirements-dev.in
 
 .PHONY: local-install-deps-base
 local-install-deps-base: install-cython local-update-deps-base

@@ -33,35 +33,35 @@ install-cython: checkvenv
 build: checkvenv down clean-mypyc-artifacts install-cython local-install-deps-dev local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
         docker build --progress=plain -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-pip-update
 build-no-pip-update: checkvenv down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
         docker build --progress=plain -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-pip-update-run-tests
 build-no-pip-update-run-tests: checkvenv down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --build-arg RUN_TESTS=true --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
         docker build --progress=plain -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-cache
 build-no-cache: checkvenv down clean-mypyc-artifacts local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
         docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-cache-no-pip-update
 build-no-cache-no-pip-update: checkvenv down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
-	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend
+	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
         docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: up

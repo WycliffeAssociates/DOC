@@ -1,4 +1,3 @@
-version: "3"
 services:
   frontend:
     # use nginx as a mock frontend since the frontend isn't built or used at this stage

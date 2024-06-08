@@ -1,4 +1,3 @@
-version: "3"
 services:
   frontend-test-runner:
     image: wycliffeassociates/doc-ui-tests:local

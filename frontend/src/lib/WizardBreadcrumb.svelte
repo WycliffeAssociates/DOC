@@ -6,7 +6,7 @@
   import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
   import {
     getResourceTypeLangCode,
-    // resetStores,
+    resetStores,
     langRegExp,
     bookRegExp,
     resourceTypeRegExp,
@@ -17,33 +17,17 @@
   import DesktopBreadcrumb from '$lib/DesktopBreadcrumb.svelte'
 
   function submitLanguages() {
-    // If books store or resource types store are not empty, then we
-    // should reset them when we change the languages.
-    if ($bookCountStore > 0 || $resourceTypesCountStore > 0) {
-      $resetValuesStore = true
-    }
-    // resetStores('books')
-    // resetStores('resource_types')
-    // resetStores('settings')
-    // resetStores('notifications')
+    resetStores('notifications')
     goto('/books')
   }
 
   function submitBooks() {
-    // If resource types store is not empty, then we
-    // should reset it when we change books.
-    if ($resourceTypesCountStore > 0) {
-      $resetValuesStore = true
-    }
-    // resetStores('resource_types')
-    // resetStores('settings')
-    // resetStores('notifications')
+    resetStores('notifications')
     goto('/resource_types')
   }
 
   function submitResourceTypes() {
-    // resetStores('settings')
-    // resetStores('notifications')
+    resetStores('notifications')
     goto('/settings')
   }
 

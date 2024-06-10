@@ -16,8 +16,7 @@ import {
   // TODO should we include resourceTypesStore and reset it also?
   lang0ResourceTypesStore,
   lang1ResourceTypesStore,
-  resourceTypesCountStore,
-  twResourceRequestedStore
+  resourceTypesCountStore
 } from '$lib/stores/ResourceTypesStore'
 import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
 import {
@@ -26,7 +25,8 @@ import {
   generatePdfStore,
   generateEpubStore,
   generateDocxStore,
-  documentRequestKeyStore
+  documentRequestKeyStore,
+  twResourceRequestedStore
 } from '$lib/stores/SettingsStore'
 
 const languageBookOrder: string = <string>PUBLIC_LANGUAGE_BOOK_ORDER
@@ -76,23 +76,6 @@ export function resetStores(storeGroup: StoreGroup) {
     errorStore.set(null)
   }
 }
-
-// FIXME: These are too inconsequential to be here, just use them from $env/dynamic/private where needed
-// export function getApiRootUrl(): string {
-//   return <string>PUBLIC_BACKEND_API_URL
-// }
-
-// export function getFileServerUrl(): string {
-//   return <string>env.PUBLIC_FILE_SERVER_URL
-// }
-
-// export function getLogRocketId(): string {
-//   return <string>env.PUBLIC_LOGROCKET_ID
-// }
-
-/**
- * Indicate whether to show Mast, Tabs, and Sidebar
- **/
 
 export function getName(codeAndName: string): string {
   return codeAndName?.split(/, (.*)/s)[1]

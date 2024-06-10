@@ -58,13 +58,11 @@
     .then((langCodeNameAndTypes_) => {
       // Save result for later use
       langCodeNameAndTypes = langCodeNameAndTypes_
-
       gatewayCodesAndNames = langCodeNameAndTypes_
         .filter((element: [string, string, boolean]) => {
           return element[2]
         })
         .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-
       heartCodesAndNames = langCodeNameAndTypes_
         .filter((element: [string, string, boolean]) => {
           return !element[2]

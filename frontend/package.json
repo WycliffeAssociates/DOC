@@ -41,7 +41,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@sveltejs/adapter-static": "^3.0.2",
+    "@sveltejs/adapter-auto": "^3.2.2",
+    "@sveltejs/adapter-node": "^5.2.0",
     "daisyui": "^4.7.2",
     "logrocket": "^7.0.0"
   }

@@ -105,7 +105,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/index.html"]
       interval: 5s
       timeout: 5s
       retries: 10

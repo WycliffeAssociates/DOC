@@ -27,6 +27,7 @@
     bookCodeAndNames.map((bookCodeAndName) =>
       url.searchParams.append('book_codes', bookCodeAndName[0])
     )
+    console.log(`About to send request ${url} to backend`)
     const response = await fetch(url)
     const resourceTypesAndNames: Array<[string, string]> = await response.json()
     if (!response.ok) {

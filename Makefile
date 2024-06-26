@@ -144,13 +144,13 @@ test-randomized:
 # 	cd ./USFM-Tools && \
 # 	cp -r ./usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
 
-.PHONY: build-usfm-tools
-build-usfm-tools:
-	cd /tmp && \
-	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
-	cd /tmp/USFM-Tools && python setup.py build install
-	cp -r /tmp/USFM-Tools/usfm_tools ~/src/WA/github.com/linearcombination/DOC/.venv/lib/python3.11/site-packages/
-	rm -rf /tmp/USFM-Tools
+# .PHONY: build-usfm-tools
+# build-usfm-tools:
+# 	cd /tmp && \
+# 	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
+# 	cd /tmp/USFM-Tools && python setup.py build install
+# 	cp -r /tmp/USFM-Tools/usfm_tools ~/src/WA/github.com/linearcombination/DOC/.venv/lib/python3.11/site-packages/
+# 	rm -rf /tmp/USFM-Tools
 
 # You may need to run 'make build-usfm-tools' first if it
 # complains about usfm_tools not being available or typed.

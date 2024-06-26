@@ -64,10 +64,11 @@ build-no-cache-no-pip-update: checkvenv down clean-mypyc-artifacts
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
         docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
+todays_date := $(shell date +%FT%T%Z)
 .PHONY: up
 up: checkvenv
 	export IMAGE_TAG=local && \
-	PUBLIC_DOC_VERSION=0.0.2 PUBLIC_DOC_BUILD_TIMESTAMP=03-16-2024 PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 docker compose up --remove-orphans
+	PUBLIC_DOC_VERSION=0.0.2 PUBLIC_DOC_BUILD_TIMESTAMP=$(todays_date) PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 docker compose up --remove-orphans
 
 .PHONY: up-as-daemon
 up-as-daemon: checkvenv

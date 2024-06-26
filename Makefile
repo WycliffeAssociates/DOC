@@ -64,10 +64,11 @@ build-no-cache-no-pip-update: checkvenv down clean-mypyc-artifacts
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui:$${IMAGE_TAG} ./frontend && \
         docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
+todays_date := $(shell date +%FT%T%Z)
 .PHONY: up
 up: checkvenv
 	export IMAGE_TAG=local && \
-	PUBLIC_DOC_VERSION=0.0.2 PUBLIC_DOC_BUILD_TIMESTAMP=03-16-2024 PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 docker compose up --remove-orphans
+	PUBLIC_DOC_VERSION=0.0.2 PUBLIC_DOC_BUILD_TIMESTAMP=$(todays_date) PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 docker compose up --remove-orphans
 
 .PHONY: up-as-daemon
 up-as-daemon: checkvenv
@@ -121,22 +122,10 @@ e2e-docx-tests: clean-local-docker-output-dir
 
 .PHONY: frontend-tests
 frontend-tests:
-	# NOTE While we are experiencing some issues with the docker
+	# NOTE If we are experiencing some issues with the docker
 	# compose running of frontend tests, we can still use the
 	# non-Dockerized approach successfully. Doing so requires that
 	# 'make up' be called first though.
-	# cd frontend && FRONTEND_API_URL=http://localhost:8001 FILE_SERVER_URL=http://localhost:8089 envsubst < playwright.config.ts | sponge playwright.config.ts
-	# cd frontend && npx playwright install --with-deps && npx playwright test
-	# NOTE The preferred way to run the tests is with docker
-	# compose as in the next cli line, however, this times out
-	# when run locally as the Dockerfile for the frontend tests
-	# does not appear to be putting the playwright.config.ts
-	# config file in the correct location for the playwright
-	# Docker container to find it and thus default timeouts are
-	# used which are not long enough for some tests to complete
-	# with our local network latency. They do seem to complete
-	# fine within the timeouts in the github actions network
-	# environment though.
 	docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml up --exit-code-from frontend-test-runner
 
 .PHONY: test-randomized
@@ -155,13 +144,13 @@ test-randomized:
 # 	cd ./USFM-Tools && \
 # 	cp -r ./usfm_tools ${VIRTUAL_ENV}/lib/python3.11/site-packages/
 
-.PHONY: build-usfm-tools
-build-usfm-tools:
-	cd /tmp && \
-	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
-	cd /tmp/USFM-Tools && python setup.py build install
-	cp -r /tmp/USFM-Tools/usfm_tools ~/src/WA/github.com/linearcombination/DOC/.venv/lib/python3.11/site-packages/
-	rm -rf /tmp/USFM-Tools
+# .PHONY: build-usfm-tools
+# build-usfm-tools:
+# 	cd /tmp && \
+# 	git clone -b develop --depth 1 https://github.com/linearcombination/USFM-Tools
+# 	cd /tmp/USFM-Tools && python setup.py build install
+# 	cp -r /tmp/USFM-Tools/usfm_tools ~/src/WA/github.com/linearcombination/DOC/.venv/lib/python3.11/site-packages/
+# 	rm -rf /tmp/USFM-Tools
 
 # You may need to run 'make build-usfm-tools' first if it
 # complains about usfm_tools not being available or typed.

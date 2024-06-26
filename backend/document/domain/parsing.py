@@ -616,7 +616,7 @@ def tn_verses_html(
     book_code: str,
     md: markdown.Markdown,
     book_names: Mapping[str, str] = BOOK_NAMES,
-    verse_fmt_str: str = "<h4>{} {}</h4>\n{}",
+    verse_fmt_str: str = "<h4>{} {}:{}</h4>\n{}",
     glob_md_fmt_str: str = "{}/*[0-9]*.md",
     glob_txt_fmt_str: str = "{}/*[0-9]*.md",
 ) -> dict[VerseRef, str]:
@@ -630,7 +630,10 @@ def tn_verses_html(
         verse_html_content = md.convert(verse_md_content)
         adjusted_verse_html_content = adjust_html_tags(verse_html_content)
         verses_html[verse_ref] = verse_fmt_str.format(
-            book_names[book_code], verse_ref, adjusted_verse_html_content
+            book_names[book_code],
+            int(Path(chapter_dir).stem),
+            int(verse_ref),
+            adjusted_verse_html_content,
         )
     return verses_html
 
@@ -688,7 +691,7 @@ def tq_chapter_verses(
             verses_html[verse_ref] = verse_label_fmt_str.format(
                 book_names[book_code],
                 chapter_num,
-                str(int(verse_ref)) if "0" in verse_ref else verse_ref,
+                int(verse_ref),
                 adjusted_verse_html_content,
             )
             chapter_verses[chapter_num] = TQChapter(verses=verses_html)

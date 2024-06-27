@@ -52,7 +52,7 @@
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
     // resource_lookup.shared_resource_types.
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/`
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
     const url = new URL(url_)
     bookCodeAndNames.map((bookCodeAndName) =>
       url.searchParams.append('book_codes', bookCodeAndName[0])
@@ -165,7 +165,7 @@
   } else if (components.length === 2) {
     // e.g., repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb
     langCode = components[0]
-    if (components[1] === 'ulb') {
+    if (components[1] === 'ulb' && langCode === 'en') {
       resource = 'ulb-wa'
     } else {
       resource = components[1]

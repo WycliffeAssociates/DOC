@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 test('test ui part 1', async ({ page }) => {
-  await page.goto('http://localhost')
+  await page.goto('http://localhost:8001')
   await page.getByText('Assamese').click()
   await page.getByText('Vietnamese').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -31,7 +31,7 @@ test('test ui part 1', async ({ page }) => {
 })
 
 test('test ui part 2', async ({ page }) => {
-  await page.goto('http://localhost')
+  await page.goto('http://localhost:8001')
   await page.getByText('Assamese as').click()
   await page.getByText('Español (Latin American Spanish)').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -47,7 +47,7 @@ test('test ui part 2', async ({ page }) => {
 test('test books retained in basket on back button to languages and then forward', async ({
   page
 }) => {
-  await page.goto('http://localhost')
+  await page.goto('http://localhost:8001')
   await page.getByText('Amharic').click()
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Languages').click()
@@ -74,7 +74,7 @@ test('test books retained in basket on back button to languages and then forward
 
 test('test transfer from biel', async ({ page }) => {
   await page.goto(
-    'http://localhost/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fbahasatech.indotengah%2Fbne_gal_text_reg&book_name=Galatians'
+    'http://localhost:8001/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fbahasatech.indotengah%2Fbne_gal_text_reg&book_name=Galatians'
   )
   await expect(page.getByText('Bintauna')).toBeVisible()
   await expect(page.getByText('Galatians')).toBeVisible()
@@ -99,7 +99,7 @@ test('test transfer from biel 3', async ({ page }) => {
 })
 
 test('test es-419 resource types', async ({ page }) => {
-  await page.goto('http://localhost')
+  await page.goto('http://localhost:8001')
   await page.getByText('Español (Latin American').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Matthew').click()

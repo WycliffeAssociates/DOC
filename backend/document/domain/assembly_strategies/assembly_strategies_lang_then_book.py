@@ -104,8 +104,6 @@ def assemble_content_by_lang_then_book(
     book_content_units: Iterable[BookContent],
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
-    language_fmt_str: str = settings.LANGUAGE_FMT_STR,
-    book_fmt_str: str = settings.BOOK_FMT_STR,
     book_names: Mapping[str, str] = BOOK_NAMES,
 ) -> Iterable[str]:
     """

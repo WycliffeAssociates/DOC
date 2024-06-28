@@ -1,6 +1,7 @@
 """This module provides fixtures for e2e tests."""
 
 import itertools
+import json
 import os
 import pathlib
 import random
@@ -35,7 +36,9 @@ PASSING_NON_ENGLISH_LANG_CODES: Sequence[str] = [
 # to choose from randomly of which it will choose a subset.
 if os.environ.get("ALL_LANGUAGE_CODES"):
     json_filepath = "../../language_codes.json"
-    ALL_LANGUAGE_CODES = file_utils.load_json_object(pathlib.Path(json_filepath))
+    ALL_LANGUAGE_CODES = ""
+    with open(json_filepath, "r") as fp:
+        ALL_LANGUAGE_CODES = json.load(fp)
     PASSING_NON_ENGLISH_LANG_CODES = ALL_LANGUAGE_CODES
 
 # No known failing languages at this time. It probably means a failing
@@ -104,14 +107,14 @@ def book_code(request: Any) -> Any:
 
 @pytest.fixture()
 def random_book_code() -> str:
-    """One random book name chosen at random."""
+    """One book name chosen at random."""
     book_ids: list[str] = list(bible_books.BOOK_NAMES.keys())
     return random.choice(book_ids)
 
 
 @pytest.fixture()
 def random_book_code2() -> str:
-    """One random book name chosen at random. This fixture exists so
+    """One book name chosen at random. This fixture exists so
     that we can have a separate book chosen in a two language document
     request."""
     book_ids: list[str] = list(bible_books.BOOK_NAMES.keys())
@@ -163,7 +166,9 @@ def generate_docx() -> bool:
 @pytest.fixture()
 def english_resource_types() -> Sequence[str]:
     """All the English resource types."""
-    return ["ulb-wa", "tn-wa", "tq-wa", "tw-wa", "bc-wa"]
+    # return ["ulb", "tn", "tq", "tw", "bc"]
+    # tq is not currently available through the graphql api
+    return ["ulb", "tn", "tw", "bc"]
 
 
 @pytest.fixture()
@@ -212,8 +217,8 @@ def random_english_resource_type_combo(
 ) -> Sequence[str]:
     """
     A random choice of one set of all possible English resource type
-    combination sets, e.g., ulb-wa, tn-wa, tw-wa; or, ulb-wa, tn-wa,
-    tw-wa; or ulb-wa, tn-wa, tq-wa, tw-wa; etc..
+    combination sets, e.g., ulb, tn, tw; or, ulb, tn,
+    tw; or ulb, tn, tq, tw; etc..
     """
     return random.choice(english_resource_type_combos)
 

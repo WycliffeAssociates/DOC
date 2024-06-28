@@ -1,6 +1,6 @@
 FROM python:3.12-slim-bookworm
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
     git \
@@ -38,6 +38,20 @@ RUN fc-cache -f -v
 RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/calibre-bin isolated=y
 
 WORKDIR /app
+
+RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
+    && chmod +x ./dotnet-install.sh \
+    && ./dotnet-install.sh --channel 8.0
+
+COPY dotnet ./
+
+RUN export DOTNET_ROOT=/root/.dotnet \
+    && export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools \
+    && export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+# Install dependencies and build the .NET project
+RUN cd USFMParserDriver && /root/.dotnet/dotnet restore
+
 
 # Make the output directory where resource asset files are cloned or
 # downloaded and unzipped.

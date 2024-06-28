@@ -6,10 +6,10 @@ resources that we use in multiple places.
 import os
 import pathlib
 from glob import glob
-from typing import Any, Iterable, Optional, Sequence
+from typing import Optional
 
 from document.config import settings
-from document.domain import model
+
 
 logger = settings.logger(__name__)
 
@@ -28,7 +28,7 @@ def translation_word_filepaths(resource_dir: str) -> list[str]:
 
 
 def localized_translation_word(
-    translation_word_content: model.MarkdownContent,
+    translation_word_content: str,
 ) -> str:
     """
     Get the localized translation word from the
@@ -100,18 +100,3 @@ def translation_words_dict(tw_resource_dir: Optional[str]) -> dict[str, str]:
             for word_filepath in filepaths
         }
     return translation_words_dict
-
-
-# NOTE There is nothing about this function that is specific to
-# translation words. If we start to accrue other utility functions
-# with which this would be better grouped, then we'll later move them
-# along with this function into their own module.
-def uniq(sequence: Sequence[Any]) -> Iterable[Any]:
-    """
-    Given a sequence, return a generator populated only with its
-    unique elements. Works for non-hashable elements too.
-    """
-    import itertools
-    import operator
-
-    return map(operator.itemgetter(0), itertools.groupby(sequence))

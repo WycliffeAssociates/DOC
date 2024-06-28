@@ -272,18 +272,18 @@ The system has two levels of caching:
 
 For (1), if the PDF document has previously been requested and built
 and is 'fresh' according to the caching policy expressed in
-=file_utils.asset_file_needs_update=, then immediately serve the PDF
+=file_utils.file_needs_update=, then immediately serve the PDF
 document to the requesting user.
 
 For (2), if any of the =DocumentRequest= instance's =ResourceRequest=
 instances have been obtained from the cloud before and are 'fresh'
 according to the caching policy expressed in
-=file_utils.asset_file_needs_update=, then don't fetch said resource
+=file_utils.file_needs_update=, then don't fetch said resource
 asset files again, instead reuse the asset files already obtained.
 
 Also, in level (2): =translations.json= is obtained
 according to the caching policy expressed in
-=file_utils.source_file_needs_update=.
+=file_utils.file_needs_update=.
 ** Handling links
 Translation notes can have links to translation words.
 

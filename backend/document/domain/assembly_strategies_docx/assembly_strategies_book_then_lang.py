@@ -38,7 +38,6 @@ def assemble_content_by_book_then_lang(
     book_content_units: Iterable[BookContent],
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
-    book_as_grouper_fmt_str: str = settings.BOOK_AS_GROUPER_FMT_STR,
     book_names: Mapping[str, str] = BOOK_NAMES,
 ) -> Composer:
     """

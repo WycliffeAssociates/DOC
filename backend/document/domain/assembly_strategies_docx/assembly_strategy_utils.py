@@ -2,32 +2,15 @@
 Utility functions used by assembly_strategies.
 """
 
-from itertools import chain, groupby, zip_longest
-from re import escape, search, sub
-from typing import Iterable, Mapping, Optional, Sequence
+from re import sub
 
 from document.config import settings
-from document.domain.bible_books import BOOK_NAMES, BOOK_NUMBERS
-from document.domain.model import (
-    BCBook,
-    BookContent,
-    HtmlContent,
-    TNBook,
-    TQBook,
-    TWBook,
-    TWNameContentPair,
-    TWUse,
-    USFMBook,
-)
-from document.utils.tw_utils import uniq
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docx.enum.text import WD_BREAK  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
 from docx.oxml.shared import OxmlElement  # type: ignore
-from docx.oxml.text.run import CT_R  # type: ignore
 from docx.text.paragraph import Paragraph  # type: ignore
-from docx.text.run import Run  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
 
 logger = settings.logger(__name__)
@@ -42,14 +25,14 @@ def adjust_book_intro_headings(
     h3: str = H3,
     h4: str = H4,
     h6: str = H6,
-) -> HtmlContent:
+) -> str:
     """Change levels on headings."""
     # Move the H2 out of the way, we'll deal with it last.
     book_intro = sub(h2, h6, book_intro)
     book_intro = sub(h1, h2, book_intro)
     book_intro = sub(h3, h4, book_intro)
     # Now adjust the temporary H6s.
-    return HtmlContent(sub(h6, h3, book_intro))
+    return sub(h6, h3, book_intro)
 
 
 def add_hr(paragraph: Paragraph) -> None:

@@ -72,14 +72,6 @@ def make_dir(
             raise IOError("Directory {0} is not writable.".format(dir_name))
 
 
-def load_json_object(file_name: pathlib.Path) -> Any:
-    """
-    Deserialized JSON file <file_name> into a Python dict.
-    :param file_name: The path of the file to read
-    """
-    return json.loads(read_file(str(file_name.resolve())))
-
-
 def read_file(file_name: str, encoding: str = "utf-8") -> str:
     r"""
     Read file into content and return content. If file doesn't exist
@@ -98,16 +90,13 @@ def write_file(
 ) -> None:
     """
     Writes the <file_contents> to <file_name>.
-
     If <file_contents> is not a string, it is serialized as JSON.
-
     :param file_name: The path of the file to write
     :param file_contents: The string to write or the object to serialize
     :param indent: Specify a value if you want the output formatted to be more easily readable
     """
     # Make sure the directory exists
     make_dir(os.path.dirname(file_name))
-
     if isinstance(file_contents, str):
         text_to_write = file_contents
     else:
@@ -115,24 +104,14 @@ def write_file(
             text_to_write = yaml.safe_dump(file_contents)
         else:
             text_to_write = json.dumps(file_contents, sort_keys=True, indent=indent)
-
     with codecs.open(file_name, "w", encoding="utf-8") as out_file:
         out_file.write(text_to_write)
 
 
-def source_file_needs_update(file_path: Union[str, pathlib.Path]) -> bool:
-    """See docstring in __file_needs_update."""
-    return __file_needs_update(file_path)
-
-
-def asset_file_needs_update(file_path: Union[str, pathlib.Path]) -> bool:
-    """See docstring in __file_needs_update."""
-    if not settings.ASSET_CACHING_ENABLED:
-        return True
-    return __file_needs_update(file_path)
-
-
-def __file_needs_update(file_path: Union[str, pathlib.Path]) -> bool:
+def file_needs_update(
+    file_path: Union[str, pathlib.Path],
+    asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
+) -> bool:
     """
     Return True if settings.ASSET_CACHING_ENABLED is False or if
     file_path either does not exist or does exist and has not been
@@ -143,6 +122,6 @@ def __file_needs_update(file_path: Union[str, pathlib.Path]) -> bool:
         return True
     file_mod_time: datetime = datetime.fromtimestamp(os.stat(file_path).st_mtime)
     now: datetime = datetime.today()
-    max_delay: timedelta = timedelta(minutes=60 * settings.ASSET_CACHING_PERIOD)
+    max_delay: timedelta = timedelta(minutes=60 * asset_caching_period)
     # Has it been more than settings.ASSET_CACHING_PERIOD hours since last modification time?
     return now - file_mod_time > max_delay

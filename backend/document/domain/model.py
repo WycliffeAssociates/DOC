@@ -6,21 +6,16 @@ validation and JSON serialization.
 """
 
 from enum import Enum
-from typing import Any, NamedTuple, Optional, Sequence, Union, final
+from typing import Any, NamedTuple, Optional, Sequence, final
 
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
 from document.utils.number_utils import is_even
-from docx import Document  # type: ignore
-from more_itertools import all_equal
 from pydantic import BaseModel, EmailStr
 from pydantic.functional_validators import model_validator
-from toolz import itertoolz  # type: ignore
 
 # These type aliases give us more self-documenting code, but of course
 # aren't strictly necessary.
-HtmlContent = str
-MarkdownContent = str
 VerseRef = str
 ChapterNum = int
 
@@ -184,44 +179,60 @@ class DocumentRequest(BaseModel):
         """
         See ValueError messages below for the rules we are enforcing.
         """
-
-        usfm_resource_types = settings.ALL_USFM_RESOURCE_TYPES
-
+        usfm_resource_types = settings.USFM_RESOURCE_TYPES
         non_usfm_resource_types = [
-            *settings.ALL_TN_RESOURCE_TYPES,
-            *settings.ALL_TQ_RESOURCE_TYPES,
-            *settings.ALL_TW_RESOURCE_TYPES,
-            *settings.BC_RESOURCE_TYPES,
+            settings.EN_TN_CONDENSED_RESOURCE_TYPE,
+            settings.TN_RESOURCE_TYPE,
+            settings.TQ_RESOURCE_TYPE,
+            settings.TW_RESOURCE_TYPE,
+            settings.BC_RESOURCE_TYPE,
         ]
         all_resource_types = [*usfm_resource_types, *non_usfm_resource_types]
         for resource_request in self.resource_requests:
             # Make sure resource_type for every ResourceRequest instance
             # is a valid value
-            if not resource_request.resource_type in all_resource_types:
+            if resource_request.resource_type not in all_resource_types:
                 raise ValueError(
                     f"{resource_request.resource_type} is not a valid resource type"
                 )
             # Make sure book_code is a valid value
-            if not resource_request.book_code in BOOK_NAMES.keys():
+            if resource_request.book_code not in BOOK_NAMES.keys():
                 raise ValueError(
                     f"{resource_request.book_code} is not a valid book code"
                 )
-
         # Partition USFM resource requests by language
-        language_groups = itertoolz.groupby(
-            lambda r: r.lang_code,
-            filter(
-                lambda r: r.resource_type in usfm_resource_types,
-                self.resource_requests,
-            ),
-        )
+        # language_groups = itertoolz.groupby(
+        #     lambda r: r.lang_code,
+        #     filter(
+        #         lambda r: r.resource_type in usfm_resource_types,
+        #         self.resource_requests,
+        #     ),
+        # )
+        language_groups: dict[str, list[ResourceRequest]] = {}
+        for resource in filter(
+            lambda r: r.resource_type in usfm_resource_types, self.resource_requests
+        ):
+            lang_code = resource.lang_code
+            if lang_code not in language_groups:
+                language_groups[lang_code] = []
+            language_groups[lang_code].append(resource)
         # Get a list of the sorted set of books for each language for later
         # comparison.
         sorted_book_set_for_each_language = [
             sorted({item.book_code for item in value})
             for key, value in language_groups.items()
         ]
-
+        # Next two assignments are later used to do a not all equal check.
+        # Check if all sets have equal lengths
+        are_lengths_equal = all(
+            len(set_) == len(sorted_book_set_for_each_language[0])
+            for set_ in sorted_book_set_for_each_language
+        )
+        # Check if all sets have equal elements
+        are_sets_equal = all(
+            set_ == sorted_book_set_for_each_language[0]
+            for set_ in sorted_book_set_for_each_language
+        )
         # Get the unique number of languages
         number_of_usfm_languages = len(
             # set(
@@ -232,7 +243,6 @@ class DocumentRequest(BaseModel):
             ]
             # )
         )
-
         if (
             self.assembly_strategy_kind != AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
             and self.assembly_layout_kind
@@ -270,27 +280,13 @@ class DocumentRequest(BaseModel):
             # asked for Swahili ulb for Lamentations and Spanish ulb for Nahum -
             # the set of books in each language are not the same and so do not make
             # sense to be displayed side by side.
-            and not all_equal(sorted_book_set_for_each_language)
+            # and not all_equal(sorted_book_set_for_each_language)
+            and not (are_lengths_equal and are_sets_equal)
         ):
             raise ValueError(
                 "Two column scripture left, scripture right layout requires the same books for each language chosen since they are displayed side by side. If you want a different set of books for each language you'll instead need to use the one column layout."
             )
-
         return self
-
-
-@final
-class AssetSourceEnum(str, Enum):
-    """
-    This class/enum captures the concept of: where did the resource's
-    asset files come from? At present they come from either a GIT
-    repository, an individual USFM file download, or a ZIP file
-    download.
-    """
-
-    GIT = "git"
-    USFM = "usfm"
-    ZIP = "zip"
 
 
 @final
@@ -316,9 +312,8 @@ class ResourceLookupDto(NamedTuple):
     resource_type: str
     resource_type_name: str
     book_code: str
+    lang_direction: LangDirEnum
     url: Optional[str]
-    source: AssetSourceEnum
-    jsonpath: Optional[str]
 
 
 @final
@@ -328,8 +323,8 @@ class TNChapter(NamedTuple):
     of its verse references to translation notes HTML content.
     """
 
-    intro_html: HtmlContent
-    verses: dict[VerseRef, HtmlContent]
+    intro_html: str
+    verses: dict[VerseRef, str]
 
 
 @final
@@ -343,7 +338,7 @@ class TNBook(NamedTuple):
     lang_name: str
     book_code: str
     resource_type_name: str
-    book_intro: HtmlContent
+    book_intro: str
     chapters: dict[ChapterNum, TNChapter]
     lang_direction: LangDirEnum
 
@@ -355,7 +350,7 @@ class TQChapter(NamedTuple):
     questions HTML content.
     """
 
-    verses: dict[VerseRef, HtmlContent]
+    verses: dict[VerseRef, str]
 
 
 @final
@@ -396,7 +391,7 @@ class TWNameContentPair:
     HTML content.
     """
 
-    def __init__(self, localized_word: str, content: HtmlContent):
+    def __init__(self, localized_word: str, content: str):
         self.localized_word = localized_word
         self.content = content
 
@@ -409,12 +404,12 @@ class TWBook(NamedTuple):
     resource_type_name: str
     lang_direction: LangDirEnum
     name_content_pairs: list[TWNameContentPair] = []
-    uses: dict[str, list[TWUse]] = {}
+    # uses: dict[str, list[TWUse]] = {}
 
 
 @final
 class BCChapter(NamedTuple):
-    commentary: HtmlContent
+    commentary: str
 
 
 @final
@@ -430,6 +425,7 @@ class BCBook(NamedTuple):
     book_code: str
     resource_type_name: str
     chapters: dict[ChapterNum, BCChapter]
+    lang_direction: LangDirEnum = LangDirEnum.LTR
 
 
 @final
@@ -445,9 +441,7 @@ class USFMChapter(NamedTuple):
     them at a time.
     """
 
-    content: list[HtmlContent]
-    verses: dict[VerseRef, HtmlContent]
-    footnotes: HtmlContent
+    content: str
 
 
 @final
@@ -460,9 +454,6 @@ class USFMBook(NamedTuple):
     resource_type_name: str
     chapters: dict[ChapterNum, USFMChapter]
     lang_direction: LangDirEnum
-
-
-BookContent = Union[USFMBook, TNBook, TQBook, TWBook, BCBook]
 
 
 @final

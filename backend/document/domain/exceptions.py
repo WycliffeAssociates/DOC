@@ -7,3 +7,19 @@ from typing import final
 class InvalidDocumentRequestException(Exception):
     def __init__(self, message: str):
         self.message: str = message
+
+
+@final
+class ResourceAssetFileNotFoundError(Exception):
+    """Raised when no supported resource asset URL could be found."""
+
+    def __init__(self, message: str):
+        self.message: str = message
+
+
+@final
+class MissingChapterMarkerError(Exception):
+    """Raised when USFM source chapter has no chapter, e.g., \\c 1, marker."""
+
+    def __init__(self, message: str):
+        self.message: str = message

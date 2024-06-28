@@ -68,7 +68,7 @@ todays_date := $(shell date +%FT%T%Z)
 .PHONY: up
 up: checkvenv
 	export IMAGE_TAG=local && \
-	PUBLIC_DOC_VERSION=0.0.2 PUBLIC_DOC_BUILD_TIMESTAMP=$(todays_date) PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 docker compose up --remove-orphans
+	PUBLIC_DOC_VERSION=0.0.2 PUBLIC_DOC_BUILD_TIMESTAMP=$(todays_date) PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator DATA_API_URL=https://api.bibleineverylanguage.org/v1/graphql PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 docker compose up --remove-orphans
 
 .PHONY: up-as-daemon
 up-as-daemon: checkvenv

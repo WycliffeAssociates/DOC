@@ -27,6 +27,9 @@ TW_RC_LINK_RE = re.compile(
 TW_WIKI_RC_LINK_RE = re.compile(
     r"\[\[rc:\/\/\*\/tw\/dict\/bible\/(?:kt|names|other)\/(?P<word>[^\]]+?)\]\]"
 )
+TW_WIKI_RC_LINK_RE2 = re.compile(
+    r"\[\[rc:\/\/\*\/tw\/bible\/(?:kt|names|other)\/(?P<word>[^\]]+?)\]\]"
+)
 
 # TW prefixed rc wikilink regex
 # (See: [[rc://en/tw/dict/bible/kt/reveal]])
@@ -63,7 +66,7 @@ TA_WIKI_PREFIXED_RC_LINK_RE = re.compile(
 TA_WIKI_RC_LINK_RE = re.compile(
     r",* *\[\[rc://(?P<lang_code>[^\[\]\(\)]+?)\/ta\/man\/\w+?\/(?P<word>[^\[\]]+?)\]\]\)*"
 )
-
+TA_STAR_RC_LINK_RE = re.compile(r"\[\[rc://\*\/ta\/man\/[^\]]+\]\]")
 
 # TA markdown style links
 # e.g., [*](rc://lang_code/ta/man/translate/*.md)

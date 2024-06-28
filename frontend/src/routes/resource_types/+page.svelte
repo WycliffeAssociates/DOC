@@ -16,14 +16,12 @@
 
   async function getResourceTypesAndNames(
     langCode: string,
-    bookCodeAndNames: Array<[string, string]>,
     apiRootUrl = <string>env.PUBLIC_BACKEND_API_URL,
     sharedResourceTypesUrl = <string>PUBLIC_SHARED_RESOURCE_TYPES_URL
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
     // resource_lookup.shared_resource_types.
-    let book_codes = bookCodeAndNames.map(bookCodeAndName => bookCodeAndName[0]).join(",")
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
     const url = new URL(url_)
     console.log(`About to send request ${url} to backend`)
     const response = await fetch(url)
@@ -48,7 +46,7 @@
   // Resolve promise for data
   let lang0ResourceTypesAndNames: Array<string>
   if ($langCodesStore[0]) {
-    getResourceTypesAndNames($langCodesStore[0], [...otResourceCodes_, ...ntResourceCodes_])
+    getResourceTypesAndNames($langCodesStore[0])
       .then((resourceTypesAndNames) => {
         lang0ResourceTypesAndNames = resourceTypesAndNames.map(
           (tuple) => `${tuple[0]}, ${tuple[1]}, ${tuple[2]}`
@@ -60,7 +58,7 @@
   // Resolve promise for data for language
   let lang1ResourceTypesAndNames: Array<string>
   if ($langCodesStore[1]) {
-    getResourceTypesAndNames($langCodesStore[1], [...otResourceCodes_, ...ntResourceCodes_])
+    getResourceTypesAndNames($langCodesStore[1])
       .then((resourceTypesAndNames) => {
         lang1ResourceTypesAndNames = resourceTypesAndNames.map(
           (tuple) => `${tuple[0]}, ${tuple[1]}, ${tuple[2]}`

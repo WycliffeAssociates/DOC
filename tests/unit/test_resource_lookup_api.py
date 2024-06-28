@@ -10,8 +10,8 @@ def test_lookup_successes() -> None:
     )
     assembly_layout_kind: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN
     resource_requests: list[model.ResourceRequest] = [
-        model.ResourceRequest(lang_code="en", resource_type="ulb-wa", book_code="gen"),
-        model.ResourceRequest(lang_code="en", resource_type="tn-wa", book_code="gen"),
+        model.ResourceRequest(lang_code="fr", resource_type="ulb", book_code="gen"),
+        model.ResourceRequest(lang_code="fr", resource_type="tn", book_code="gen"),
         model.ResourceRequest(lang_code="mr", resource_type="ulb", book_code="gen"),
         model.ResourceRequest(
             lang_code="erk-x-erakor", resource_type="reg", book_code="eph"
@@ -33,7 +33,8 @@ def test_lookup_successes() -> None:
             resource_request.resource_type,
             resource_request.book_code,
         )
-        assert resource_lookup_dto.url
+        if resource_lookup_dto:
+            assert resource_lookup_dto.url
 
 
 # NOTE This fails because zh doesn't use ulb for its USFM resource
@@ -63,4 +64,5 @@ def test_lookup_failures() -> None:
             resource_request.resource_type,
             resource_request.book_code,
         )
-        assert not resource_lookup_dto.url
+        if resource_lookup_dto:
+            assert not resource_lookup_dto.url

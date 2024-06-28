@@ -149,16 +149,17 @@ async def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
     return resource_lookup.shared_book_codes(lang0_code, lang1_code)
 
 
-@app.get("/resource_types/{lang_code}/")
+@app.get("/resource_types/{lang_code}/{book_codes}")
 async def shared_resource_types(
     lang_code: str,
-    book_codes: Sequence[str] = Query(default=None),
+    book_codes: str,
 ) -> Iterable[tuple[str, str]]:
     """
     Return the list of available resource types tuples for lang_code
     with book_codes.
     """
-    return resource_lookup.shared_resource_types(lang_code, book_codes)
+    book_codes_list = book_codes.split(",")
+    return resource_lookup.shared_resource_types(lang_code, book_codes_list)
 
 
 @app.get("/book_codes_for_lang/{lang_code}")

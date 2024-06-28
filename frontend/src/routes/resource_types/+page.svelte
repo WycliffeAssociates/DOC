@@ -22,11 +22,9 @@
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
     // resource_lookup.shared_resource_types.
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
+    let book_codes = bookCodeAndNames.map(bookCodeAndName => bookCodeAndName[0]).join(",")
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`
     const url = new URL(url_)
-    bookCodeAndNames.map((bookCodeAndName) =>
-      url.searchParams.append('book_codes', bookCodeAndName[0])
-    )
     console.log(`About to send request ${url} to backend`)
     const response = await fetch(url)
     const resourceTypesAndNames: Array<[string, string]> = await response.json()

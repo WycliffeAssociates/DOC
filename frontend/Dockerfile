@@ -1,4 +1,4 @@
-FROM node:21-bookworm-slim as build-stage
+FROM node:21-bookworm-slim AS build-stage
 
 WORKDIR /app
 
@@ -8,12 +8,12 @@ COPY . .
 RUN npm run check
 RUN npm run build
 
-FROM nginx:1.25-bookworm as production
+FROM nginx:1.25-bookworm AS production
 
 ARG PUBLIC_DOC_VERSION_ARG
 ARG PUBLIC_DOC_BUILD_TIMESTAMP_ARG
-ENV PUBLIC_DOC_VERSION ${PUBLIC_DOC_VERSION_ARG}
-ENV PUBLIC_DOC_BUILD_TIMESTAMP ${PUBLIC_DOC_BUILD_TIMESTAMP_ARG}
+ENV PUBLIC_DOC_VERSION=${PUBLIC_DOC_VERSION_ARG}
+ENV PUBLIC_DOC_BUILD_TIMESTAMP=${PUBLIC_DOC_BUILD_TIMESTAMP_ARG}
 
 RUN apt-get update && apt-get install nodejs npm -y
 RUN npm install pm2 -g

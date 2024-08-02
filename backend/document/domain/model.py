@@ -188,6 +188,8 @@ class DocumentRequest(BaseModel):
             settings.BC_RESOURCE_TYPE,
         ]
         all_resource_types = [*usfm_resource_types, *non_usfm_resource_types]
+        if not self.resource_requests:
+            raise ValueError("DocumentRequest has no resource requests.")
         for resource_request in self.resource_requests:
             # Make sure resource_type for every ResourceRequest instance
             # is a valid value
@@ -201,13 +203,6 @@ class DocumentRequest(BaseModel):
                     f"{resource_request.book_code} is not a valid book code"
                 )
         # Partition USFM resource requests by language
-        # language_groups = itertoolz.groupby(
-        #     lambda r: r.lang_code,
-        #     filter(
-        #         lambda r: r.resource_type in usfm_resource_types,
-        #         self.resource_requests,
-        #     ),
-        # )
         language_groups: dict[str, list[ResourceRequest]] = {}
         for resource in filter(
             lambda r: r.resource_type in usfm_resource_types, self.resource_requests

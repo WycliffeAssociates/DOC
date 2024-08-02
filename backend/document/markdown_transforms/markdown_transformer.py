@@ -23,6 +23,7 @@ from document.markdown_transforms.link_regexes import (
     TN_OBS_MARKDOWN_LINK_RE,
     TW_MARKDOWN_LINK_RE,
     TW_RC_LINK_RE,
+    TW_STAR_RC_LINK_RE,
     TW_WIKI_PREFIXED_RC_LINK_RE,
     TW_WIKI_RC_LINK_RE,
     TW_WIKI_RC_LINK_RE2,
@@ -84,6 +85,9 @@ def transform_tw_links(
     # (Blah blah blah: ).
     for wiki_link in wiki_link_parser(source):
         source = transform_tw_rc_link(
+            wiki_link, source, lang_code, resource_requests, translation_words_dict
+        )
+        source = transform_tw_star_rc_link(
             wiki_link, source, lang_code, resource_requests, translation_words_dict
         )
     # Handle links pointing at TW resource assets
@@ -347,6 +351,114 @@ def transform_tw_wiki_rc_links2(
             # actually seen this case though in practice.
             source = source.replace(match.group(0), "")
     return source
+
+
+def transform_tw_star_rc_link(
+    wikilink: WikiLink,
+    source: str,
+    lang_code: str,
+    resource_requests: Sequence[ResourceRequest],
+    translation_words_dict: dict[str, str],
+    tw: str = "tw",
+    fmt_str: str = settings.TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+) -> str:
+    """
+    Transform the translation word rc wikilink into a Markdown
+    source anchor link pointing to a destination anchor link for
+    the translation word definition if it exists or replace the
+    link with the non-localized word if it doesn't.
+    """
+    match = search(TW_STAR_RC_LINK_RE, wikilink.url)
+    if match:
+        # Determine if resource_type TW was one of the requested
+        # resources.
+        url = wikilink.url
+        tw_resources_requests = [
+            resource_request
+            for resource_request in resource_requests
+            if tw in resource_request.resource_type
+        ]
+        filename_sans_suffix = match.group("word")
+        # Check that there are translation word asset files available for this
+        # resource _and_ that the document request included a request for them.
+        # The check is necessary because TW resource asset files might be
+        # available on disk, in the cache, from a previous document request but
+        # the current document request may not have requested them
+        # - if it hasn't requested the TW resource in this document request then
+        # we should not make links to TW word definitions. Hence the need to
+        # also check tw_resources_requests.
+        if filename_sans_suffix in translation_words_dict and tw_resources_requests:
+            # Localize the translation word.
+            file_content = read_file(translation_words_dict[filename_sans_suffix])
+            # Get the localized name for the translation word.
+            localized_translation_word_ = localized_translation_word(file_content)
+            # Build the anchor link.
+            url = url.replace(
+                match.group(0),  # The whole match
+                fmt_str.format(
+                    localized_translation_word_,
+                    lang_code,
+                    localized_translation_word_,
+                ),
+            )
+        else:
+            url = url.replace(match.group(0), filename_sans_suffix)
+        regexp = r"\[\[{}\]\]".format(wikilink.url)
+        for match2 in finditer(regexp, source):
+            source = source.replace(match2.group(0), url)
+    return source
+
+
+# def transform_tw_star_rc_links(
+#     source: str,
+#     lang_code: str,
+#     resource_requests: Sequence[ResourceRequest],
+#     translation_words_dict: dict[str, str],
+#     tw: str = "tw",
+#     fmt_str: str = settings.TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+# ) -> str:
+#     """
+#     Transform the translation word rc link into source anchor link
+#     pointing to a destination anchor link for the translation word
+#     definition.
+#     """
+#     # Determine if resource_type TW was one of the requested
+#     # resources.
+#     tw_resources_requests = [
+#         resource_request
+#         for resource_request in resource_requests
+#         if tw in resource_request.resource_type
+#     ]
+#     for match in finditer(TW_STAR_RC_LINK_RE, source):
+#         filename_sans_suffix = match.group("word")
+#         if filename_sans_suffix in translation_words_dict and tw_resources_requests:
+#             # Localize non-English languages.
+#             file_content = read_file(translation_words_dict[filename_sans_suffix])
+#             # Get the localized name for the translation word
+#             localized_translation_word_ = localized_translation_word(file_content)
+#             # Build the anchor links
+#             source = source.replace(
+#                 match.group(0),  # The whole match
+#                 fmt_str.format(
+#                     localized_translation_word_,
+#                     lang_code,
+#                     localized_translation_word_,
+#                 ),
+#             )
+#         else:
+#             logger.debug(
+#                 "TW file for filename_sans_suffix: %s not found for lang_code: %s",
+#                 filename_sans_suffix,
+#                 lang_code,
+#             )
+#             # Search for translation word relative link
+#             # and remove it along with any trailing comma from
+#             # the source text.
+#             # FIXME Theoretically, this will leave a trailing comma after the link
+#             # if the link is not the last link in a list of links. I haven't
+#             # actually seen this case though in practice.
+#             source = source.replace(match.group(0), "")
+#     return source
 
 
 def transform_tw_wiki_prefixed_rc_links(

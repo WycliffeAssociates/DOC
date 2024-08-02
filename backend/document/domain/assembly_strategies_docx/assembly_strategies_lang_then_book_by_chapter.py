@@ -107,16 +107,16 @@ def assemble_content_by_lang_then_book(
                 if tq_book.lang_code == lang_code and tq_book.book_code == book_code
             ]
             tq_book = selected_tq_books[0] if selected_tq_books else None
-            # TODO TWBook doesn't need to have a book_code attribute
+            # TWBook doesn't really need to have a book_code attribute
             # because TW resources are language centric not book centric.
+            # We could do something about that later if desired for
+            # design cleanness sake.
             selected_tw_books = [
                 tw_book
                 for tw_book in tw_books
                 if tw_book.lang_code == lang_code and tw_book.book_code == book_code
             ]
             tw_book = selected_tw_books[0] if selected_tw_books else None
-            # TODO Is this also true? BCBook doesn't need to have a book_code attribute
-            # because BC resources are language centric not book centric.
             selected_bc_books = [
                 bc_book
                 for bc_book in bc_books
@@ -124,7 +124,6 @@ def assemble_content_by_lang_then_book(
             ]
             bc_book = selected_bc_books[0] if selected_bc_books else None
         if usfm_book is not None:
-
             composers.append(
                 assemble_usfm_by_book(
                     usfm_book,
@@ -147,7 +146,6 @@ def assemble_content_by_lang_then_book(
                 )
             )
         elif usfm_book is None and tn_book is None and tq_book is not None:
-
             composers.append(
                 assemble_tq_by_book(
                     usfm_book,
@@ -174,7 +172,6 @@ def assemble_content_by_lang_then_book(
                     bc_book,
                 )
             )
-
     first_composer = composers[0]
     for composer in composers[1:]:
         first_composer.append(composer.doc)
@@ -195,7 +192,6 @@ def assemble_usfm_by_book(
     """
     doc = Document()
     composer = Composer(doc)
-
     if tn_book:
         if tn_book.book_intro:
             subdoc = create_docx_subdoc(
@@ -237,21 +233,12 @@ def assemble_usfm_by_book(
                 chapter_commentary_ = chapter_commentary(bc_book, chapter_num)
             if tq_book:
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
-            # Footnotes are rendered to HTML by USFM-TOOLS after the chapter's
-            # verse content so we don't want them included additionally/accidentally
-            # here also since we explicitly include footnotes after this. Later, if
-            # we ditch the verse level interleaving, we can move this into the
-            # parsing module.
-            #
-            # Find the index of where footnotes occur at the end of
-            # chapter.content, if the chapter has footnotes.
             subdoc = create_docx_subdoc(
                 chapter.content,
                 usfm_book.lang_code,
                 is_rtl,
             )
             composer.append(subdoc)
-            # Add scripture footnotes if available
             if chapter_intro_:
                 subdoc = create_docx_subdoc(chapter_intro_, usfm_book.lang_code, is_rtl)
                 composer.append(subdoc)
@@ -314,10 +301,8 @@ def assemble_tn_by_book(
     """
     doc = Document()
     composer = Composer(doc)
-
     if tn_book:
         if tn_book.book_intro:
-            # Add the chapter intro
             subdoc = create_docx_subdoc(
                 tn_book.book_intro,
                 tn_book.lang_code,
@@ -392,7 +377,6 @@ def assemble_tq_by_book(
     """
     doc = Document()
     composer = Composer(doc)
-
     if tq_book:
         for chapter_num in tq_book.chapters:
             add_one_column_section(doc)
@@ -436,7 +420,6 @@ def assemble_tw_by_book(
     """
     doc = Document()
     composer = Composer(doc)
-
     if bc_book:
         subdoc = create_docx_subdoc(bc_book.book_intro, bc_book.lang_code)
         composer.append(subdoc)

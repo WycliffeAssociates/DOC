@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     (which have higher priority).
     """
 
-    SOURCE_DATA_JSON_FILENAME: str = "resources.json"
+    # GITHUB_API_TOKEN: str = "FOO"  # This might be used in a later version
     DATA_API_URL: HttpUrl
 
     LTR_DIRECTION_HTML: str = "<div style='direction: ltr;'>"
@@ -45,149 +45,142 @@ class Settings(BaseSettings):
     TRANSLATION_WORD_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{})"
     TRANSLATION_WORD_PREFIX_ANCHOR_LINK_FMT_STR: str = "({}: [{}](#{}-{}))"
     TRANSLATION_WORD_PREFIX_FMT_STR: str = "({}: {})"
-    # TODO
+    # TODO This needs to be changed to the .NET USFM renderer's marker
+    # pattern. This is the USFM-Tools singlePageRenderer's expected output,
+    # i.e., the output from the previous renderer.
     TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{}-ch-{}-v-{})"
 
     USFM_RESOURCE_TYPES: Sequence[str] = [
+        "avd",
         "ayt",
+        "blv",
         "cuv",
         "f10",
         "nav",
         "reg",
-        "udb",  # 2023-06-20 Content team doesn't want this used.
-        # "udb-wa", # 2022-05-12 - Content team doesn't want this used.
+        # "udb",  # 2023-06-20 Content team doesn't want this used. This should probably be filtered at the graphql level though.
         "ugnt",
-        "uhb",  # parser blows on: AttributeError: 'SingleHTMLRenderer' object has no attribute 'renderCAS'
+        "uhb",
         "ulb",
         "usfm",
-    ]
-    EN_USFM_RESOURCE_TYPES: Sequence[str] = ["ulb-wa"]
-    ALL_USFM_RESOURCE_TYPES: Sequence[str] = [
-        *USFM_RESOURCE_TYPES,
-        *EN_USFM_RESOURCE_TYPES,
     ]
     TN_RESOURCE_TYPE: str = "tn"
     EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
     TQ_RESOURCE_TYPE: str = "tq"
     TW_RESOURCE_TYPE: str = "tw"
     BC_RESOURCE_TYPE: str = "bc"
-    # List of language codes for which there is a content issue
-    # such that a complete document request cannot
-    # be formed.
-    # Now that we use graphql, likely some of these can be added back
-    LANG_CODE_FILTER_LIST: Sequence[str] = [
-        # "aez",  # Has no chapter markers
-        # "acq",
-        # "gaj-x-ymnk",
-        # "fa",
-        # "hr",
-        # "hu",
-        # # "id",  # Was on this list because of licensing issues: it cannot be shown on BIEL
-        # "kbt",
-        # "kip",
-        # "lus",
-        # "mor",
-        # "mve",
-        # "pmy",  # Currently doesn't provide USFM, but might soon
-        # "sr-Latn",
-        # "tig",
-        # "tem",
+    NON_USFM_RESOURCE_TYPES: Sequence[str] = [
+        TN_RESOURCE_TYPE,
+        EN_TN_CONDENSED_RESOURCE_TYPE,
+        TQ_RESOURCE_TYPE,
+        TW_RESOURCE_TYPE,
+        BC_RESOURCE_TYPE,
     ]
     # NOTE This is only used to see if a lang_code is in the collection
     # otherwise it is a heart language. Eventually the graphql data api may
     # provide gateway/heart boolean value.
     GATEWAY_LANGUAGES: Sequence[str] = [
+        "abs",
+        "aju",
         "am",
-        "arb",
+        "apd",
+        "ar",
+        "ar-x-dcv",
+        "ary",
+        "arz",
         "as",
+        "ase",
+        "bem",
+        "bg",
+        "bgw",
+        "bi",
         "bn",
-        "pt-br",
-        "my",
         "ceb",
-        "zh",
+        "cmn",
+        "cmn-x-omc",
+        "csl",
+        "dz",
         "en",
-        "fr",
-        "gu",
-        "ha",
-        "hi",
-        "ilo",
-        "id",
-        "kn",
-        "km",
-        "lo",
+        "es",
         "es-419",
-        "plt",
+        "fa",
+        "fil",
+        "fr",
+        "grt",
+        "gu",
+        "gug",
+        "ha",
+        "hbs",
+        "hca",
+        "he",
+        "hi",
+        "hne",
+        "hu",
+        "id",
+        "id-x-dcv",
+        "idb",
+        "ilo",
+        "ins",
+        "ja",
+        "jv",
+        "kas",
+        "km",
+        "kn",
+        "lbj",
+        "ln",
+        "lo",
+        "mai",
+        "mg",
         "ml",
+        "mn",
+        "mni",
+        "mnk",
         "mr",
+        "ms",
+        "my",
         "ne",
+        "nl",
+        "npi",
         "or",
-        "pmy",  # Not returned by data API
-        "fa",  # Not returned by data API
         "pa",
+        "pbt",
+        "pes",
+        "pis",
+        "plt",
+        "pmy",
+        "pnb",
+        "prs",
+        "ps",
+        "psr",
+        "pt",
+        "pt-br",
+        "raj",
+        "rsl",
         "ru",
+        "rwr",
+        "sn",
         "sw",
-        "tl",
+        "swc",
+        "swh",
         "ta",
         "te",
         "th",
+        "ti",
+        "tl",
+        "tn",
         "tpi",
-        "ur",  # Not returned by data API
-        "ur-deva",
+        "tr",
+        "tsg",
+        "ug",
+        "ur",
         "vi",
+        "zh",
+        "zlm",
     ]
 
     # fmt: off
     BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
     # fmt: on
-
-    OXML_LANGUAGE_LIST: list[str] = [
-        "ar-SA",
-        "bg-BG",
-        "zh-CN",
-        "zh-TW",
-        "hr-HR",
-        "cs-CZ",
-        "da-DK",
-        "nl-NL",
-        "en-US",
-        "et-EE",
-        "fi-FI",
-        "fr-FR",
-        "de-DE",
-        "el-GR",
-        "he-IL",
-        "hi-IN",
-        "hu-HU",
-        "id-ID",
-        "it-IT",
-        "ja-JP",
-        "kk-KZ",
-        "ko-KR",
-        "lv-LV",
-        "lt-LT",
-        "ms-MY",
-        "nb-NO",
-        "pl-PL",
-        "pt-BR",
-        "pt-PT",
-        "ro-RO",
-        "ru-RU",
-        "sr-latn-RS",
-        "sk-SK",
-        "sl-SI",
-        "es-ES",
-        "sv-SE",
-        "th-TH",
-        "tr-TR",
-        "uk-UA",
-        "vi-VN",
-    ]
-    OXML_LANGUAGE_LIST_LOWERCASE: list[str] = [
-        language.lower() for language in OXML_LANGUAGE_LIST
-    ]
-    OXML_LANGUAGE_LIST_LOWERCASE_SPLIT: list[str] = [
-        language for language in OXML_LANGUAGE_LIST_LOWERCASE if "-" in language
-    ]
 
     def logger(self, name: str) -> logging.Logger:
         """
@@ -222,62 +215,6 @@ class Settings(BaseSettings):
 
     BACKEND_CORS_ORIGINS: list[str]
 
-    # Return the file names, excluding suffix, of files that do not
-    # contain content but which may be in the same directory or
-    # subdirectories of a resource's acquired files.
-
-    # -    ENGLISH_GIT_REPO_MAP: Mapping[str, str] = {
-    # -        "ulb-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_ulb",
-    # -        "udb-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_udb",
-    # -        "tn-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn",
-    # -        "tn-condensed": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn_condensed",
-    # -        "tw-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tw",
-    # -        "tq-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tq",
-    # -        "bc-wa": "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc",
-    # -    }
-    # -    ID_GIT_REPO_MAP: Mapping[str, str] = {
-    # -        "ayt": "https://content.bibletranslationtools.org/WA-Catalog/id_ayt",
-    # -        "tn": "https://content.bibletranslationtools.org/WA-Catalog/id_tn",
-    # -        "tq": "https://content.bibletranslationtools.org/WA-Catalog/id_tq",
-    # -        "tw": "https://content.bibletranslationtools.org/WA-Catalog/id_tw",
-    # -    }
-    # -
-    # -    ENGLISH_RESOURCE_TYPE_MAP: Mapping[str, str] = {
-    # -        "ulb-wa": "Unlocked Literal Bible (ULB)",
-    # -        # "udb-wa": "Unlocked Dynamic Bible (UDB)",
-    # -        "tn-wa": "ULB Translation Notes",
-    # -        "tn-condensed": "ULB Condensed Translation Notes",
-    # -        "tq-wa": "ULB Translation Questions",
-    # -        "tw-wa": "ULB Translation Words",
-    # -        "bc-wa": "Bible Commentary",
-    # -    }
-    TN_CONDENSED_GIT_REPO_URL: str = (
-        "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn_condensed"
-    )
-
-    # -    ID_LANGUAGE_NAME: str = "Bahasa Indonesian"
-    # -    ID_RESOURCE_TYPE_MAP: Mapping[str, str] = {
-    # -        "ayt": "Bahasa Indonesian Bible (ayt)",
-    # -        "tn": "Translation Helps (tn)",
-    # -        "tq": "Translation Questions (tq)",
-    # -        "tw": "Translation Words (tw)",
-    # -    }
-    ID_AYT_GIT_REPO_URL: str = (
-        "https://content.bibletranslationtools.org/WA-Catalog/id_ayt"
-    )
-
-    TEMPLATE_PATHS_MAP: Mapping[str, str] = {
-        "book_intro": "backend/templates/tn/book_intro_template.md",
-        "header_enclosing": "backend/templates/html/header_enclosing.html",
-        "header_enclosing_landscape": "backend/templates/html/header_enclosing_landscape.html",  # used by dft project
-        "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
-        "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
-        "footer_enclosing": "backend/templates/html/footer_enclosing.html",
-        "cover": "backend/templates/html/cover.html",
-        "email-html": "backend/templates/html/email.html",
-        "email": "backend/templates/text/email.txt",
-    }
-
     DOCX_TEMPLATE_PATH: str = "template.docx"
     DOCX_COMPACT_TEMPLATE_PATH: str = "template_compact.docx"
 
@@ -288,12 +225,6 @@ class Settings(BaseSettings):
     # the case of resource asset files) or re-generating them (in the
     # case of the final PDF). In hours.
     ASSET_CACHING_PERIOD: int
-
-    # It doesn't yet make sense to offer the (high level)
-    # assembly strategy _and_ the assembly sub-strategy to the end user
-    # as a document request parameter so we'll just choose an arbitrary
-    # sub-strategy here. This means that we can write code for multiple
-    # sub-strategies and choose one to put in play at a time here.
 
     # Return a list of the Markdown section titles that our
     # Python-Markdown remove_section_processor extension should remove.

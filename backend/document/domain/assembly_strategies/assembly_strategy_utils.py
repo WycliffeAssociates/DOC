@@ -212,20 +212,6 @@ def tq_chapter_verses(
     return "".join(content)
 
 
-# Equivalent to:
-# sorted(
-#     list(
-#         set(
-#             [
-#                 lang_group[0]
-#                 for lang_group in groupby(
-#                     usfm_books,
-#                     key=lambda unit: unit.lang_code,
-#                 )
-#             ]
-#         )
-#     )
-# )
 def languages_in_books(usfm_books: Sequence[USFMBook]) -> Sequence[str]:
     """
     Return the distinct languages in the usfm_books.
@@ -258,13 +244,6 @@ def ensure_primary_usfm_books_for_different_languages_are_adjacent(
         logger.debug("Error: %s", exc)
         return lang0_usfm_books
     else:
-        # NOTE We used to do this for the next line
-        # return list(
-        #     # Flatten iterable of tuples into regular flat iterable.
-        #     chain.from_iterable(
-        #         # Interleave the two different languages' usfm units.
-        #         zip_longest(lang0_usfm_books, lang1_usfm_books)
-        #     )
         return interleave(lang0_usfm_books, lang1_usfm_books)
 
 
@@ -274,12 +253,6 @@ def interleave(
     """
     Interleave USFM books and then flatten list of tuples into regular flat list
     """
-    # NOTE Equivalent to:
-    # list(
-    #     chain.from_iterable(
-    #         zip_longest(lang0_usfm_books, lang1_usfm_books)
-    #     )
-    # )
     interleaved = []
     max_len = max(len(lang0_usfm_books), len(lang1_usfm_books))
     for i in range(max_len):
@@ -288,30 +261,6 @@ def interleave(
         if i < len(lang1_usfm_books):
             interleaved.append(lang1_usfm_books[i])
     return interleaved
-
-
-# def chapter_content_sans_footnotes(chapter_content: Sequence[str]) -> str:
-#     """
-#     Return chapter content sans footnotes at end of each chapter.
-#     """
-#     # Footnotes are rendered to HTML by USFM-TOOLS at the end of each
-#     # chapter's verse content. So, we have to make sure we remove footnotes
-#     # from the end of chapter content when displaying chapter verse content
-#     # because we display footnotes explicitly later below.
-#     #
-#     # Find the index of where footnotes occur at the end of
-#     # chapter.content, if the chapter has footnotes.
-#     index_of_footnotes = 0
-#     for idx, element in enumerate(chapter_content):
-#         if search("footnotes", element):
-#             index_of_footnotes = idx
-
-#     # Now let's interleave USFM chapter.
-#     if index_of_footnotes != 0:  # chapter_content includes footnote
-#         chapter_content_sans_footnotes = chapter_content[0 : index_of_footnotes - 1]
-#         return "".join(chapter_content_sans_footnotes)
-#     else:
-#         return "".join(chapter_content)
 
 
 if __name__ == "__main__":

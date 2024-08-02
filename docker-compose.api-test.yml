@@ -18,9 +18,9 @@ services:
     entrypoint: pytest
     command:
       [
-        "-v",
+        "-vv",
         "-m",
-        "not\ randomized",
+        "not all and not randomized",
         "-n",
         "auto",
         "/app/tests/unit",

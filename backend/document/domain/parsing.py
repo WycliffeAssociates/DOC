@@ -21,7 +21,6 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
 
-# from document.utils.file_utils import file_needs_update
 from document.domain.exceptions import MissingChapterMarkerError
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import (
@@ -110,11 +109,7 @@ def convert_usfm_chapter_to_html(
 ) -> None:
     """
     Invoke the dotnet USFM parser to parse the USFM file, if it exists,
-    into HTML and store on disk.
-    N.B. USFM-Tools books.py can raise MalformedUsfmError when the
-    following code is called. The document_generator module will catch
-    that error but continue with other resource requests in the same
-    document request.
+    and render it into HTML and store on disk.
     """
     content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
     logger.debug("About to convert USFM to HTML")
@@ -145,12 +140,9 @@ def usfm_asset_file(
             usfm_files, resource_lookup_dto.book_code
         )
     if filtered_usfm_files:
-        # Some languages, like ndh-x-chindali, provide their USFM files in
-        # a git repo rather than as standalone USFM files. A USFM git repo can
-        # have each USFM chapter in a separate directory and each verse in a
-        # separate file in that directory. However, the parser expects one USFM
-        # file per book, therefore we need to concatenate the book's USFM files
-        # into one USFM file.
+        # A USFM git repo can have each USFM chapter in a separate directory and
+        # each verse in a separate file in that directory. We concatenate the
+        # book's USFM files into one USFM file.
         if len(filtered_usfm_files) > 1:
             return attempt_to_make_usfm_parseable(resource_dir, resource_lookup_dto)
         else:
@@ -185,19 +177,10 @@ def usfm_chapter_html(
     return None
 
 
-# def remove_links(parser: BeautifulSoup) -> None:
-#     """
-#     Turn HTML links into spans
-#     """
-#     a_tags = parser.find_all("a")
-#     # Now we modify the footnote links to be inactive, i.e., suitable for printing.
-#     for a_tag in a_tags:
-#         a_tag.name = "span"
 def remove_links(html: str) -> str:
     """
     Turn HTML links into spans
     """
-    # Replace all <a> tags with <span> tags
     html = html.replace("<a ", "<span ").replace("</a>", "</span>")
     return html
 
@@ -456,7 +439,7 @@ def tq_chapter_verses(
             verses_html[verse_ref] = verse_label_fmt_str.format(
                 book_names[book_code],
                 chapter_num,
-                str(int(verse_ref)) if "0" in verse_ref else verse_ref,
+                int(verse_ref),
                 adjusted_verse_html_content,
             )
             chapter_verses[chapter_num] = TQChapter(verses=verses_html)
@@ -466,7 +449,6 @@ def tq_chapter_verses(
 def tq_book_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
-    # Next two params are not used in this function but are here to make the dispatch table work that invokes this function.
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
 ) -> TQBook:
@@ -602,21 +584,6 @@ def bc_chapters(
         chapter_commentary_html_content = mistune.markdown(
             chapter_commentary_md_content
         )
-        # NOTE This is how we used to do the next section
-        # parser = BeautifulSoup(chapter_commentary_html_content, parser_type)
-        # if chapter_num == 1:
-        #     # Change the chapter heading to indicate that it is
-        #     # commentary.
-        #     h1 = parser.find("h1")
-        #     if h1:
-        #         h1.append(" Commentary")
-        # # Replace relative links to bible commentary articles with
-        # # absolute links to the same resource online.
-        # for link in parser.find_all("a"):
-        #     old_link_ref = link.get("href")
-        #     new_link_ref = url_fmt_str.format(old_link_ref[3:])
-        #     new_link = parser.new_tag("a", href=new_link_ref, target="_blank")
-        #     new_link.string = link.string
         chapter_commentary_html_content = modify_commentary_label(
             chapter_commentary_html_content, chapter_num
         )
@@ -715,10 +682,6 @@ def books(
     return usfm_books, tn_books, tq_books, tw_books, bc_books
 
 
-# TODO Not sure yet if this next fn is needed now that we get data
-# from graphql which points to different assets which may all be uniform
-# having no flaws such as this and because we now use the dotnet USFM parser
-# which has a different spec wrt validation.
 def ensure_paragraph_before_verses(
     usfm_file: str,
     verse_content: str,
@@ -744,7 +707,7 @@ def ensure_paragraph_before_verses(
         if (
             compile(chapter_marker_not_on_own_line_regex).match(verse_content)
             is not None
-        ):  # Chapter marker not on own line
+        ):  # Chapter marker not on own line.
             # Make chapter marker occupy its own line and add a USFM paragraph
             # marker right after it. Why? Because languages which render correctly
             # in Docx have a \p USFM marker after the chapter marker and languages
@@ -788,9 +751,8 @@ def attempt_to_make_usfm_parseable(
         file
         for file in scandir(resource_dir)
         if file.is_dir()
-        and file.name != ".git"
-        and file.name != "front"
-        and file.name != "00"
+        and file.name not in ["front", "00"]
+        and not file.name.startswith(".")
     ]
     for chapter_dir in sorted(subdirs, key=lambda dir_entry: dir_entry.name):
         chapter_usfm_content = []
@@ -798,17 +760,30 @@ def attempt_to_make_usfm_parseable(
             [
                 file.path
                 for file in scandir(chapter_dir)
-                if file.is_file() and file.name != "title.txt"
+                if file.is_file()
+                and file.name != "title.txt"
+                and not file.name.startswith(".")
             ]
         )
         if chapter_verse_files:
+            try:
+                chapter_marker = int(str(chapter_dir.name))
+            except ValueError:
+                logger.debug(
+                    "%s is not a valid chapter number, assigning -999 as chapter marker",
+                    str(chapter_dir.name),
+                )
+                chapter_marker = (
+                    -999
+                )  # The chapter number in source text was not a parseable integer, so we use this as a sentinal and parseable integer
             logger.debug(
                 "Adding a USFM chapter marker for chapter: %s",
-                int(str(chapter_dir.name)),
+                chapter_marker,
             )
-            chapter_usfm_content.append(f"\n\c {int(str(chapter_dir.name))}\n")
+            chapter_usfm_content.append(f"\n\c {int(chapter_marker)}\n")
         for usfm_file in chapter_verse_files:
             with open(usfm_file, "r") as fin:
+                logger.debug("usfm_file: %s", usfm_file)
                 verse_content = fin.read()
                 verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
                 chapter_usfm_content.append(verse_content)

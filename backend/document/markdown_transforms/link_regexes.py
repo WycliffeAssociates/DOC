@@ -13,6 +13,9 @@ TW_RC_LINK_RE = re.compile(
     )
 )
 
+# Regex pattern to match TW STAR markdown style links and capture the last segment
+TW_STAR_RC_LINK_RE = re.compile(r"\[\[rc://[^/]+/[^/]+/[^/]+/[^/]+/(?P<word>[^/]+)\]\]")
+
 # Handle wiki style rc links.
 # e.g., [[rc://*/tw/dict/bible/kt/foo.md]]
 # NOTE(id:regex_transformation_order) Ensure this doesn't interfere with

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { PUBLIC_LANGUAGE_BOOK_ORDER } from '$env/static/public'
   import {
     PUBLIC_LANG_CODES_NAMES_URL,
     PUBLIC_TAILWIND_SM_MIN_WIDTH,
@@ -22,6 +23,7 @@
   import { ntBookStore, otBookStore, bookCountStore } from '$lib/stores/BooksStore'
   import { getCode, getName, getResourceTypeLangCode } from '$lib/utils'
   import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
+  import { assemblyStrategyKindStore } from '$lib/stores/SettingsStore'
 
   let showGatewayLanguages = true
   // If user has previously chosen (during this session, i.e., prior
@@ -154,6 +156,7 @@
       $otBookStore = []
       $ntBookStore = []
       $bookCountStore = 0
+      $assemblyStrategyKindStore = <string>PUBLIC_LANGUAGE_BOOK_ORDER
     }
   }
 

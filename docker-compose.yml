@@ -7,26 +7,6 @@ services:
       timeout: 3s
       retries: 5
     restart: unless-stopped
-  go-api:
-    image: wycliffeassociates/doc-go:${IMAGE_TAG}
-    env_file:
-      - .env
-    environment:
-      DATA_API_URL: ${DATA_API_URL:-https://api.bibleineverylanguage.org/v1/graphql}
-    ports:
-      - ${GO_API_HOST_PORT:-8080}:8080
-    volumes:
-      - shared:/app/document_output
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
-    depends_on:
-      api:
-        condition: service_healthy
   api:
     image: wycliffeassociates/doc:${IMAGE_TAG}
     env_file:
@@ -114,7 +94,7 @@ services:
       PUBLIC_BACKEND_API_URL: ${PUBLIC_BACKEND_API_URL:-http://localhost:5005}
       PUBLIC_GO_BACKEND_API_URL: ${PUBLIC_GO_BACKEND_API_URL:-http://localhost:8080}
       PUBLIC_FILE_SERVER_URL: ${PUBLIC_FILE_SERVER_URL:-http://localhost:8089}
-      PUBLIC_LOGROCKET_ID: ${PUBLIC_LOGROCKET_ID:-ct7zyg/interleaved-resource-generator}
+      PUBLIC_LOGROCKET_ID: ${PUBLIC_LOGROCKET_ID:-ct7zyg/bible-in-every-language}
     ports:
       - ${FRONTEND_HOST_PORT:-8001}:80
     depends_on:

@@ -38,7 +38,11 @@ def localized_translation_word(
     of various forms of the word. If that is the case we use the first
     form of the word in the list.
     """
-    localized_translation_word = translation_word_content.split("\n")[0].split("# ")[1]
+    first_line = translation_word_content.split("\n")[0]
+    first_line_components = first_line.split("# ")
+    localized_translation_word = (
+        first_line_components[1] if len(first_line_components) >= 2 else ""
+    )
     if "," in localized_translation_word:
         # logger.debug(
         #     "localized_translation_word: %s", localized_translation_word

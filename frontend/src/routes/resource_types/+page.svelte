@@ -10,7 +10,11 @@
   import { ntBookStore, otBookStore } from '$lib/stores/BooksStore'
   import { langCodesStore, langNamesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { bookCountStore } from '$lib/stores/BooksStore'
-  import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
+  import {
+    resourceTypesStore,
+    resourceTypesCountStore,
+    usfmAvailableStore
+  } from '$lib/stores/ResourceTypesStore'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import { getCode, getName, getResourceTypeLangCode, getResourceTypeName } from '$lib/utils'
 
@@ -112,6 +116,26 @@
       )
     }
   }
+
+  // Set whether a USFM type is available for any of the languages
+  // requested so that we can use this fact in the UI to trigger the
+  // presence or absence of the toggle to limit TW words.
+  let usfmRegexp = /\S*(avd|ayt|blv|cuv|f10|nav|reg|ugnt|uhb|ulb|usfm)\S*/
+  $: {
+    if (
+      lang0ResourceTypesAndNames &&
+      lang0ResourceTypesAndNames.length > 0 &&
+      lang1ResourceTypesAndNames &&
+      lang1ResourceTypesAndNames.length > 0
+    ) {
+      $usfmAvailableStore =
+        lang0ResourceTypesAndNames.some((item) => usfmRegexp.test(item)) ||
+        lang1ResourceTypesAndNames.some((item) => usfmRegexp.test(item))
+    } else if (lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length > 0 && !lang1ResourceTypesAndNames) {
+      $usfmAvailableStore = lang0ResourceTypesAndNames.some((item) => usfmRegexp.test(item))
+    }
+  }
+
   let windowWidth: number
   $: console.log(`windowWidth: ${windowWidth}`)
 
@@ -197,8 +221,7 @@
                       value={lang0ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1 text-xl"
-                      >{getResourceTypeName(lang0ResourceTypeAndName)}</span
+                    <span class="pl-1 text-xl">{getResourceTypeName(lang0ResourceTypeAndName)}</span
                     >
                   </li>
                 </label>
@@ -235,8 +258,7 @@
                       value={lang1ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1 text-xl"
-                      >{getResourceTypeName(lang1ResourceTypeAndName)}</span
+                    <span class="pl-1 text-xl">{getResourceTypeName(lang1ResourceTypeAndName)}</span
                     >
                   </li>
                 </label>
@@ -283,9 +305,7 @@
                       value={lang0ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1"
-                      >{getResourceTypeName(lang0ResourceTypeAndName)}</span
-                    >
+                    <span class="pl-1">{getResourceTypeName(lang0ResourceTypeAndName)}</span>
                   </li>
                 </label>
               {/each}
@@ -316,8 +336,7 @@
                       value={lang1ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1 text-xl"
-                      >{getResourceTypeName(lang1ResourceTypeAndName)}</span
+                    <span class="pl-1 text-xl">{getResourceTypeName(lang1ResourceTypeAndName)}</span
                     >
                   </li>
                 </label>

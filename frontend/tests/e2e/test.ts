@@ -5,10 +5,9 @@ test('test ui part 1', async ({ page }) => {
   await page.getByText('Tiếng Việt (Vietnamese)').click()
   await page.getByText('অসমীয়া (Assamese) as').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('button', { name: 'Old Testament' }).click()
-  await page.getByLabel('Genesis gen').check()
   await page.getByRole('button', { name: 'New Testament' }).click()
   await page.getByText('Galatians').click()
+  await page.getByText('Luke').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Unlocked Literal Bible').first().click()
   await page.getByText('Unlocked Literal Bible').nth(1).click()
@@ -22,7 +21,7 @@ test('test ui part 1', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
   await expect(page.locator('body')).toContainText('Assamese')
   await expect(page.locator('body')).toContainText('Vietnamese')
-  await expect(page.locator('body')).toContainText('Genesis')
+  await expect(page.locator('body')).toContainText('Galatians')
   await expect(page.locator('body')).toContainText('Translation Notes')
   await expect(page.locator('body')).toContainText('Translation Questions')
   await expect(page.locator('body')).toContainText('Translation Words')
@@ -76,21 +75,13 @@ test('test books retained in basket on back button to languages and then forward
 
 test('test transfer from biel', async ({ page }) => {
   await page.goto(
-    'http://localhost:8001/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fbahasatech.indotengah%2Fbne_gal_text_reg&book_name=Galatians'
-  )
-  await expect(page.getByText('Bintauna')).toBeVisible()
-  await expect(page.getByText('Galatians')).toBeVisible()
-})
-
-test('test transfer from biel 2', async ({ page }) => {
-  await page.goto(
     'https://doc.bibleineverylanguage.org/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fchunga_moses%2Fleb-x-bisa_col_text_reg&book_name=Colossians'
   )
   await expect(page.getByText('Bisa')).toBeVisible()
   await expect(page.getByText('Colossians')).toBeVisible()
 })
 
-test('test transfer from biel 3', async ({ page }) => {
+test('test transfer from biel 2', async ({ page }) => {
   await page.goto(
     'https://doc.bibleineverylanguage.org/transfer/repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb'
   )

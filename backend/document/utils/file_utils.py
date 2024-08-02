@@ -108,6 +108,28 @@ def write_file(
         out_file.write(text_to_write)
 
 
+def dir_needs_update(
+    file_path: Union[str, pathlib.Path],
+    asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
+) -> bool:
+    """
+    Return True if settings.ASSET_CACHING_ENABLED is False or if
+    file_path either does not exist or does exist and has not been
+    updated within settings.ASSET_CACHING_PERIOD hours.
+    """
+    if not os.path.isdir(file_path):
+        logger.debug("Cache miss for %s", file_path)
+        return True
+    else:
+        return False
+    # else:
+    #     file_mod_time: datetime = datetime.fromtimestamp(os.stat(file_path).st_mtime)
+    #     now: datetime = datetime.today()
+    #     max_delay: timedelta = timedelta(minutes=60 * asset_caching_period)
+    #     # Has it been more than settings.ASSET_CACHING_PERIOD hours since last modification time?
+    #     return now - file_mod_time > max_delay
+
+
 def file_needs_update(
     file_path: Union[str, pathlib.Path],
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,

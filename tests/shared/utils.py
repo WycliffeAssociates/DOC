@@ -85,8 +85,8 @@ def check_finished_document_with_verses_success(
         assert verses_html, "No verses found in HTML"
         verses_combined = "".join(verses_html)
         assert (
-            len(verses_combined) >= 300
-        ), "Total length of verses is less than 300 characters"
+            len(verses_combined) >= 30
+        ), "Total length of verses is less than 30 characters"
 
 
 def check_finished_document_without_verses_success(

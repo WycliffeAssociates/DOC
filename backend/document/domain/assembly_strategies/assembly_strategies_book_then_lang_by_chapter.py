@@ -1,6 +1,6 @@
 from typing import Mapping, Sequence
 
-from document.domain.bible_books import BOOK_NAMES
+from document.domain.bible_books import BOOK_NAMES, BOOK_CHAPTERS
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_book_intro_headings,
@@ -44,21 +44,22 @@ def assemble_content_by_book_then_lang(
     delegating more atomic ordering/interleaving to an assembly
     sub-strategy.
     """
+    content = []
     book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
-    most_book_codes = max(
-        [
-            [usfm_book.book_code for usfm_book in usfm_books],
-            [tn_book.book_code for tn_book in tn_books],
-            [tq_book.book_code for tq_book in tq_books],
-            [tw_book.book_code for tw_book in tw_books],
-            [bc_book.book_code for bc_book in bc_books],
-        ],
-        key=lambda x: len(x),
+    # Collect and deduplicate book codes
+    all_book_codes = (
+        {usfm_book.book_code for usfm_book in usfm_books}
+        .union(tn_book.book_code for tn_book in tn_books)
+        .union(tq_book.book_code for tq_book in tq_books)
+        .union(tw_book.book_code for tw_book in tw_books)
+        .union(bc_book.book_code for bc_book in bc_books)
     )
-    for book_code in sorted(
-        set(most_book_codes),
-        key=lambda book_code: book_id_map[book_code],
-    ):
+    most_book_codes = list(all_book_codes)
+    # Cache book_id_map lookup
+    book_codes_sorted = sorted(
+        most_book_codes, key=lambda book_code: book_id_map[book_code]
+    )
+    for book_code in book_codes_sorted:
         selected_usfm_books = [
             usfm_book for usfm_book in usfm_books if usfm_book.book_code == book_code
         ]
@@ -78,12 +79,14 @@ def assemble_content_by_book_then_lang(
             assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN
             or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
         ):
-            return assemble_usfm_by_chapter(
-                selected_usfm_books,
-                selected_tn_books,
-                selected_tq_books,
-                selected_tw_books,
-                selected_bc_books,
+            content.append(
+                assemble_usfm_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                )
             )
         elif (
             not selected_usfm_books
@@ -93,12 +96,14 @@ def assemble_content_by_book_then_lang(
                 or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
             )
         ):
-            return assemble_tn_by_chapter(
-                selected_usfm_books,
-                selected_tn_books,
-                selected_tq_books,
-                selected_tw_books,
-                selected_bc_books,
+            content.append(
+                assemble_tn_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                )
             )
         elif (
             not selected_usfm_books
@@ -109,12 +114,14 @@ def assemble_content_by_book_then_lang(
                 or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
             )
         ):
-            return assemble_tq_by_chapter(
-                selected_usfm_books,
-                selected_tn_books,
-                selected_tq_books,
-                selected_tw_books,
-                selected_bc_books,
+            content.append(
+                assemble_tq_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                )
             )
         elif (
             not selected_usfm_books
@@ -126,12 +133,14 @@ def assemble_content_by_book_then_lang(
                 or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
             )
         ):
-            return assemble_tw_by_chapter(
-                selected_usfm_books,
-                selected_tn_books,
-                selected_tq_books,
-                selected_tw_books,
-                selected_bc_books,
+            content.append(
+                assemble_tw_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                )
             )
         elif selected_usfm_books and (
             assembly_layout_kind
@@ -139,14 +148,16 @@ def assemble_content_by_book_then_lang(
             or assembly_layout_kind
             == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT
         ):
-            return assemble_usfm_by_chapter_2c_sl_sr(
-                selected_usfm_books,
-                selected_tn_books,
-                selected_tq_books,
-                selected_tw_books,
-                selected_bc_books,
+            content.append(
+                assemble_usfm_by_chapter_2c_sl_sr(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                )
             )
-    return ""
+    return "".join(content)
 
 
 def assemble_usfm_by_chapter(
@@ -158,6 +169,7 @@ def assemble_usfm_by_chapter(
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     hr: str = "<hr/>",
+    book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> str:
     """
     Construct the HTML wherein at least one USFM resource exists, one column
@@ -182,53 +194,70 @@ def assemble_usfm_by_chapter(
     tn_books = sorted(tn_books, key=tn_sort_key)
     tq_books = sorted(tq_books, key=tq_sort_key)
     bc_books = sorted(bc_books, key=bc_sort_key)
-    # Add book intros for each tn_book
-    for tn_book in tn_books:
-        content.append(tn_language_direction_html(tn_book))
-        book_intro_ = tn_book_intro(tn_book)
-        book_intro_adj = adjust_book_intro_headings(book_intro_)
-        content.append(book_intro_adj)
-        content.append(close_direction_html)
-    for bc_book in bc_books:
-        content.append(bc_book_intro(bc_book))
-    # Use the usfm_book that has the most chapters as a
-    # chapter_num pump to realize the most amount of content displayed
-    # to the user.
-    # TODO Is this necessary anymore?
-    usfm_with_most_chapters = max(
-        usfm_books,
-        key=lambda usfm_book: usfm_book.chapters.keys(),
-    )
-    content.append(book_title(usfm_with_most_chapters.book_code))
-    for chapter_num, chapter in usfm_with_most_chapters.chapters.items():
-        for usfm_book in usfm_books:
-            if chapter_num in usfm_book.chapters:
-                content.append(usfm_language_direction_html(usfm_book))
-                content.append(usfm_book.chapters[chapter_num].content)
-                content.append(close_direction_html)
-                if not has_footnotes(usfm_book.chapters[chapter_num].content):
-                    content.append(hr)
-        for tn_book2 in tn_books:
-            content.append(tn_language_direction_html(tn_book2))
-            content.append(chapter_intro(tn_book2, chapter_num))
-            content.append(close_direction_html)
-        for bc_book in bc_books:
-            content.append(chapter_commentary(bc_book, chapter_num))
-        # Add the interleaved tn notes
-        tn_verses = None
-        for tn_book3 in tn_books:
-            tn_verses = tn_chapter_verses(tn_book3, chapter_num)
-            # if tn_verses:
-            content.append(tn_language_direction_html(tn_book3))
-            content.append(tn_verses)
-            content.append(close_direction_html)
-        tq_verses = None
-        for tq_book in tq_books:
-            tq_verses = tq_chapter_verses(tq_book, chapter_num)
-            content.append(tq_language_direction_html(tq_book))
-            content.append(tq_verses)
-            content.append(close_direction_html)
-        content.append(end_of_chapter_html)
+    book_codes = {usfm_book.book_code for usfm_book in usfm_books}
+    for book_code in book_codes:
+        # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
+        # for tn_book in [
+        #     tn_book for tn_book in tn_books if tn_book.book_code == book_code
+        # ]:
+        #     content.append(tn_language_direction_html(tn_book))
+        #     book_intro_ = tn_book_intro(tn_book)
+        #     book_intro_adj = adjust_book_intro_headings(book_intro_)
+        #     content.append(book_intro_adj)
+        #     content.append(close_direction_html)
+        for bc_book in [
+            bc_book for bc_book in bc_books if bc_book.book_code == book_code
+        ]:
+            content.append(bc_book_intro(bc_book))
+        num_chapters = book_chapters[book_code]
+        # Add the book title, e.g., 1 Peter
+        content.append(book_title(book_code))
+        for chapter_num in range(1, num_chapters + 1):
+            for usfm_book in [
+                usfm_book
+                for usfm_book in usfm_books
+                if usfm_book.book_code == book_code
+            ]:
+                if chapter_num in usfm_book.chapters:
+                    content.append(usfm_language_direction_html(usfm_book))
+                    content.append(usfm_book.chapters[chapter_num].content)
+                    content.append(close_direction_html)
+                    if not has_footnotes(usfm_book.chapters[chapter_num].content):
+                        content.append(hr)
+            for tn_book in [
+                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+            ]:
+                if chapter_num in tn_book.chapters:
+                    content.append(tn_language_direction_html(tn_book))
+                    content.append(chapter_intro(tn_book, chapter_num))
+                    content.append(close_direction_html)
+            for bc_book in [
+                bc_book for bc_book in bc_books if bc_book.book_code == book_code
+            ]:
+                if chapter_num in bc_book.chapters:
+                    content.append(chapter_commentary(bc_book, chapter_num))
+            # Add the interleaved tn notes
+            tn_verses = None
+            for tn_book in [
+                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+            ]:
+                if chapter_num in tn_book.chapters:
+                    tn_verses = tn_chapter_verses(tn_book, chapter_num)
+                    if tn_verses:
+                        content.append(tn_language_direction_html(tn_book))
+                        content.append(tn_verses)
+                        content.append(close_direction_html)
+            tq_verses = None
+            for tq_book in [
+                tq_book for tq_book in tq_books if tq_book.book_code == book_code
+            ]:
+                if chapter_num in tq_book.chapters:
+                    tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                    if tq_verses:
+                        content.append(tq_language_direction_html(tq_book))
+                        content.append(tq_verses)
+                        content.append(close_direction_html)
+            content.append(end_of_chapter_html)
     return "".join(content)
 
 
@@ -240,6 +269,7 @@ def assemble_tn_by_chapter(
     bc_books: Sequence[BCBook],
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
+    book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> str:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
@@ -259,44 +289,57 @@ def assemble_tn_by_chapter(
     tn_books = sorted(tn_books, key=sort_key)
     tq_books = sorted(tq_books, key=tq_sort_key)
     bc_books = sorted(bc_books, key=bc_sort_key)
-    # Add book intros for each tn_book
-    for tn_book in tn_books:
-        content.append(tn_language_direction_html(tn_book))
-        book_intro_ = tn_book_intro(tn_book)
-        book_intro_adj = adjust_book_intro_headings(book_intro_)
-        content.append(book_intro_adj)
-        content.append(close_direction_html)
-    for bc_book in bc_books:
-        content.append(bc_book_intro(bc_book))
-    # Use the tn_book that has the most chapters as a
-    # chapter_num pump to realize the most amount of content displayed
-    # to user.
-    tn_with_most_chapters = max(
-        tn_books,
-        key=lambda tn_book: tn_book.chapters.keys(),
-    )
-    for chapter_num in tn_with_most_chapters.chapters.keys():
-        content.append("Chapter {}".format(chapter_num))
-        # Add chapter intro for each language
-        for tn_book in tn_books:
-            content.append(tn_language_direction_html(tn_book))
-            content.append(chapter_intro(tn_book, chapter_num))
-            content.append(close_direction_html)
-        for bc_book in bc_books:
-            content.append(chapter_commentary(bc_book, chapter_num))
-        # Add the interleaved tn notes
-        for tn_book in tn_books:
-            tn_verses = tn_chapter_verses(tn_book, chapter_num)
-            content.append(tn_language_direction_html(tn_book))
-            content.append(tn_verses)
-            content.append(close_direction_html)
-        # Add the interleaved tq questions
-        for tq_book in tq_books:
-            tq_verses = tq_chapter_verses(tq_book, chapter_num)
-            content.append(tq_language_direction_html(tq_book))
-            content.append(tq_verses)
-            content.append(close_direction_html)
-        content.append(end_of_chapter_html)
+    book_codes = {tn_book.book_code for tn_book in tn_books}
+    for book_code in book_codes:
+        # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
+        # Add book intros for each tn_book
+        # for tn_book in [
+        #     tn_book for tn_book in tn_books if tn_book.book_code == book_code
+        # ]:
+        #     content.append(tn_language_direction_html(tn_book))
+        #     book_intro_ = tn_book_intro(tn_book)
+        #     book_intro_adj = adjust_book_intro_headings(book_intro_)
+        #     content.append(book_intro_adj)
+        #     content.append(close_direction_html)
+        for bc_book in [
+            bc_book for bc_book in bc_books if bc_book.book_code == book_code
+        ]:
+            content.append(bc_book_intro(bc_book))
+        num_chapters = book_chapters[book_code]
+        for chapter_num in range(1, num_chapters + 1):
+            content.append("Chapter {}".format(chapter_num))
+            # Add chapter intro
+            for tn_book in [
+                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+            ]:
+                if chapter_num in tn_book.chapters:
+                    content.append(tn_language_direction_html(tn_book))
+                    content.append(chapter_intro(tn_book, chapter_num))
+                    content.append(close_direction_html)
+            for bc_book in [
+                bc_book for bc_book in bc_books if bc_book.book_code == book_code
+            ]:
+                if chapter_num in bc_book.chapters:
+                    content.append(chapter_commentary(bc_book, chapter_num))
+            # Add tn notes
+            for tn_book in [
+                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+            ]:
+                if chapter_num in tn_book.chapters:
+                    tn_verses = tn_chapter_verses(tn_book, chapter_num)
+                    content.append(tn_language_direction_html(tn_book))
+                    content.append(tn_verses)
+                    content.append(close_direction_html)
+            # Add tq questions
+            for tq_book in [
+                tq_book for tq_book in tq_books if tq_book.book_code == book_code
+            ]:
+                if chapter_num in tq_book.chapters:
+                    tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                    content.append(tq_language_direction_html(tq_book))
+                    content.append(tq_verses)
+                    content.append(close_direction_html)
+            content.append(end_of_chapter_html)
     return "".join(content)
 
 
@@ -308,6 +351,7 @@ def assemble_tq_by_chapter(
     bc_books: Sequence[BCBook],
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
+    book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> str:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
@@ -323,26 +367,36 @@ def assemble_tq_by_chapter(
 
     tq_books = sorted(tq_books, key=sort_key)
     bc_books = sorted(bc_books, key=bc_sort_key)
-    # Use the tq_book that has the most chapters as a
-    # chapter_num pump to realize the most amount of content displayed to user.
-    tq_with_most_chapters = max(
-        tq_books,
-        key=lambda tq_book: tq_book.chapters.keys(),
-    )
-    for chapter_num in tq_with_most_chapters.chapters.keys():
-        content.append("Chapter {}".format(chapter_num))
-        for bc_book in bc_books:
-            content.append(chapter_commentary(bc_book, chapter_num))
-        # Add the interleaved tq questions
-        for tq_book in tq_books:
-            tq_verses = tq_chapter_verses(tq_book, chapter_num)
-            content.append(tq_language_direction_html(tq_book))
-            content.append(tq_verses)
-            content.append(close_direction_html)
-        content.append(end_of_chapter_html)
+    book_codes = {tq_book.book_code for tq_book in tq_books}
+    for book_code in book_codes:
+        num_chapters = book_chapters[book_code]
+        for chapter_num in range(1, num_chapters + 1):
+            content.append("Chapter {}".format(chapter_num))
+            for bc_book in [
+                bc_book for bc_book in bc_books if bc_book.book_code == book_code
+            ]:
+                if chapter_num in bc_book.chapters:
+                    content.append(chapter_commentary(bc_book, chapter_num))
+            for tq_book in [
+                tq_book for tq_book in tq_books if tq_book.book_code == book_code
+            ]:
+                if chapter_num in tq_book.chapters:
+                    tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                    if tq_verses:
+                        content.append(tq_language_direction_html(tq_book))
+                        content.append(tq_verses)
+                        content.append(close_direction_html)
+            content.append(end_of_chapter_html)
     return "".join(content)
 
 
+# This function could be a little confusing for newcomers. TW lives at
+# the language level not the book level, but this function gets invoked
+# at the book level due to how the algorithm works. See
+# assemble_content_by_book_then_lang above for the conditional that
+# invokes it to see the details. At the book level it is almost a noop
+# for TW since that is handled elsewhere in
+# document_generator.assemble_content.
 def assemble_tw_by_chapter(
     usfm_books: Sequence[USFMBook],
     tn_books: Sequence[TNBook],
@@ -378,6 +432,7 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     html_column_end: str = settings.HTML_COLUMN_END,
     html_row_end: str = settings.HTML_ROW_END,
     close_direction_html: str = "</div>",
+    book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> str:
     """
     Construct the HTML for the two column scripture left scripture
@@ -500,86 +555,92 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     zipped_usfm_books = ensure_primary_usfm_books_for_different_languages_are_adjacent(
         usfm_books
     )
+    # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
     # Add book intros for each tn_book
-    for tn_book in tn_books:
-        if tn_book.book_intro:
-            content.append(tn_language_direction_html(tn_book))
-            book_intro_ = tn_book.book_intro
-            content.append(adjust_book_intro_headings(book_intro_))
-            content.append(close_direction_html)
+    # for tn_book in tn_books:
+    #     if tn_book.book_intro:
+    #         content.append(tn_language_direction_html(tn_book))
+    #         book_intro_ = tn_book.book_intro
+    #         content.append(adjust_book_intro_headings(book_intro_))
+    #         content.append(close_direction_html)
     for bc_book in bc_books:
         content.append(bc_book_intro(bc_book))
-    # Use the usfm_book that has the most chapters as a
-    # chapter_num pump.
-    usfm_with_most_chapters = max(
-        usfm_books,
-        key=lambda usfm_book: usfm_book.chapters.keys(),
-    )
-    if usfm_with_most_chapters:
-        content.append(book_title(usfm_with_most_chapters.book_code))
-    for chapter_num, chapter in usfm_with_most_chapters.chapters.items():
-        for tn_book2 in tn_books:
-            content.append(tn_language_direction_html(tn_book2))
-            content.append(chapter_intro(tn_book2, chapter_num))
-            content.append(close_direction_html)
-        for bc_book in bc_books:
-            content.append(chapter_commentary(bc_book, chapter_num))
-        # Get lang_code of first USFM so that we can use it later
-        # to make sure USFMs of the same language are on the same
-        # side of the two column layout.
-        lang0_code = zipped_usfm_books[0].lang_code
-        # Add the interleaved USFM verses
-        for idx, usfm_book in enumerate(zipped_usfm_books):
-            # The conditions for beginning a row are a simple
-            # result of the fact that we can have between 2 and 4
-            # non-None USFM content units in the collection one of which
-            # could be a None (due to an earlier use of
-            # itertools.zip_longest in the call to
-            # ensure_primary_usfm_books_for_different_languages_are_adjacent)
-            # in the case when there are 3 non-None items, but 4
-            # total counting the None.
-            if is_even(idx) or idx == 3:
-                content.append(html_row_begin)
-            if usfm_book and chapter_num in usfm_book.chapters:
-                # lang0's USFM content units should always be on the
-                # left and lang1's should always be on the right.
-                if lang0_code == usfm_book.lang_code:
-                    content.append(html_column_left_begin)
-                else:
-                    content.append(html_column_right_begin)
-                content.append(usfm_language_direction_html(usfm_book))
-                content.append(usfm_book.chapters[chapter_num].content)
-                content.append(close_direction_html)
-            content.append(html_column_end)
-            if not is_even(idx):  # Non-even indexes signal the end of the current row.
-                content.append(html_row_end)
-        # Add the interleaved tn notes, making sure to put lang0
-        # notes on the left and lang1 notes on the right.
-        tn_verses = None
-        for idx, tn_book3 in enumerate(tn_books):
-            tn_verses = tn_chapter_verses(tn_book3, chapter_num)
-            if tn_verses:
-                if is_even(idx):
+    # Get unique book codes in usfm_books
+    book_codes = {usfm_book.book_code for usfm_book in usfm_books}
+    for book_code in book_codes:
+        num_chapters = book_chapters[book_code]
+        for chapter_num in range(1, num_chapters + 1):
+            content.append(book_title(book_code))
+            for tn_book in [
+                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+            ]:
+                if chapter_num in tn_book.chapters:
+                    content.append(tn_language_direction_html(tn_book))
+                    content.append(chapter_intro(tn_book, chapter_num))
+                    content.append(close_direction_html)
+            for bc_book in [
+                bc_book for bc_book in bc_books if bc_book.book_code == book_code
+            ]:
+                if chapter_num in bc_book.chapters:
+                    content.append(chapter_commentary(bc_book, chapter_num))
+            # Get lang_code of first USFM so that we can use it later
+            # to make sure USFMs of the same language are on the same
+            # side of the two column layout.
+            lang0_code = zipped_usfm_books[0].lang_code
+            # Add the interleaved USFM verses
+            for idx, usfm_book in enumerate(zipped_usfm_books):
+                # The conditions for beginning a row are a simple
+                # result of the fact that we can have between 2 and 4
+                # non-None USFM content units in the collection one of which
+                # could be a None (due to an earlier use of
+                # itertools.zip_longest in the call to
+                # ensure_primary_usfm_books_for_different_languages_are_adjacent)
+                # in the case when there are 3 non-None items, but 4
+                # total counting the None.
+                if is_even(idx) or idx == 3:
                     content.append(html_row_begin)
-                content.append(html_column_begin)
-                content.append(tn_language_direction_html(tn_book3))
-                content.append(tn_verses)
-                content.append(close_direction_html)
+                if usfm_book and chapter_num in usfm_book.chapters:
+                    # lang0's USFM content units should always be on the
+                    # left and lang1's should always be on the right.
+                    if lang0_code == usfm_book.lang_code:
+                        content.append(html_column_left_begin)
+                    else:
+                        content.append(html_column_right_begin)
+                    content.append(usfm_language_direction_html(usfm_book))
+                    content.append(usfm_book.chapters[chapter_num].content)
+                    content.append(close_direction_html)
                 content.append(html_column_end)
-        content.append(html_row_end)
-        # Add the interleaved tq questions, making sure to put lang0
-        # questions on the left and lang1 questions on the right.
-        tq_verses = None
-        for idx, tq_book in enumerate(tq_books):
-            tq_verses = tq_chapter_verses(tq_book, chapter_num)
-            if tq_verses:
-                if is_even(idx):
-                    content.append(html_row_begin)
-                content.append(html_column_begin)
-                content.append(tq_language_direction_html(tq_book))
-                content.append(tq_verses)
-                content.append(close_direction_html)
-                content.append(html_column_end)
-        content.append(html_row_end)
-        content.append(html_row_end)
+                if not is_even(
+                    idx
+                ):  # Non-even indexes signal the end of the current row.
+                    content.append(html_row_end)
+            # Add the interleaved tn notes, making sure to put lang0
+            # notes on the left and lang1 notes on the right.
+            tn_verses = None
+            for idx, tn_book in enumerate(tn_books):
+                tn_verses = tn_chapter_verses(tn_book, chapter_num)
+                if tn_verses:
+                    if is_even(idx):
+                        content.append(html_row_begin)
+                    content.append(html_column_begin)
+                    content.append(tn_language_direction_html(tn_book))
+                    content.append(tn_verses)
+                    content.append(close_direction_html)
+                    content.append(html_column_end)
+            content.append(html_row_end)
+            # Add the interleaved tq questions, making sure to put lang0
+            # questions on the left and lang1 questions on the right.
+            tq_verses = None
+            for idx, tq_book in enumerate(tq_books):
+                tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                if tq_verses:
+                    if is_even(idx):
+                        content.append(html_row_begin)
+                    content.append(html_column_begin)
+                    content.append(tq_language_direction_html(tq_book))
+                    content.append(tq_verses)
+                    content.append(close_direction_html)
+                    content.append(html_column_end)
+            content.append(html_row_end)
+            content.append(html_row_end)
     return "".join(content)

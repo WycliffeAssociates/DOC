@@ -13,7 +13,6 @@ import {
 } from '$lib/stores/LanguagesStore'
 import { otBookStore, ntBookStore, bookCountStore } from '$lib/stores/BooksStore'
 import {
-  // TODO should we include resourceTypesStore and reset it also?
   lang0ResourceTypesStore,
   lang1ResourceTypesStore,
   resourceTypesCountStore

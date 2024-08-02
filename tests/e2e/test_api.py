@@ -55,7 +55,7 @@ def test_en_ulb_col_en_tn_col_language_book_order_with_no_email_1c_docx() -> Non
         check_result(response, suffix="docx")
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tn_col_language_book_order_with_no_email_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -86,7 +86,7 @@ def test_en_ulb_col_en_tn_col_language_book_order_with_no_email_1c_c() -> None:
 
 
 # tq has been retired for en
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -122,7 +122,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_language_book_order_1c() -> Non
 
 
 # tq has been retired for en
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -213,56 +213,6 @@ def test_en_ulb_tn_jud_language_book_order_1c_c() -> None:
             },
         )
         check_finished_document_with_verses_success(response, suffix="pdf")
-
-
-def test_ar_ulb_jud_language_book_order_1c() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
-                "layout_for_print": False,
-                "generate_pdf": True,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "ar",
-                        "resource_type": "ulb",
-                        "book_code": "jud",
-                    },
-                ],
-            },
-        )
-        with pytest.raises(Exception):
-            check_finished_document_with_verses_success(response, suffix="pdf")
-
-
-def test_ar_ulb_jud_language_book_order_1c_c() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-                "layout_for_print": True,
-                "generate_pdf": True,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "ar",
-                        "resource_type": "ulb",
-                        "book_code": "jud",
-                    },
-                ],
-            },
-        )
-        with pytest.raises(Exception):
-            check_finished_document_with_verses_success(response, suffix="pdf")
 
 
 def test_pt_br_ulb_gen_pt_br_tn_gen_language_book_order_1c() -> None:
@@ -451,7 +401,6 @@ def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c() -
 
 
 # More than two languages are no longer allowed as we enforce that in the DocumentRequest class via pydnatic validation.
-@pytest.mark.skip
 def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -502,7 +451,7 @@ def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c_c()
 
 
 # tq has been retired for en
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -579,7 +528,7 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col
 
 
 # tq has been retired for en
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -611,7 +560,7 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -920,7 +869,7 @@ def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language
 
 
 # tq has been retired for en
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -997,7 +946,7 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_ti
 
 
 # tq has been retired for en
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1079,7 +1028,7 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_ti
 
 
 # cuv is not provided by data api
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1145,7 +1094,7 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_ti
 
 
 # cuv is not provided by data api
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1530,3 +1479,77 @@ def test_or_tn_mat_lbo_1c_chapter() -> None:
             },
         )
         check_finished_document_with_body_success(response, suffix="pdf")
+
+
+# This language is no longer returned by the data API in the list of available languages.
+@pytest.mark.skip
+def test_nyk_x_nyanehumbe_reg_1pe_lbo_1c_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": False,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "nyk-x-nyanhumbe",
+                        "resource_type": "reg",
+                        "book_code": "1pe",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response, suffix="pdf")
+
+
+def test_bjz_reg_eph_lbo_1c_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": False,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "bjz",
+                        "resource_type": "reg",
+                        "book_code": "eph",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response, suffix="pdf")
+
+
+def test_bys_reg_1jn_lbo_1c_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": False,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "bys",
+                        "resource_type": "reg",
+                        "book_code": "1jn",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response, suffix="pdf")

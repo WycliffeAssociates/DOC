@@ -421,7 +421,9 @@
                         justify-between rounded-lg bg-white p-4 text-xl
                         text-[#66768B]"
         >
-          {getResourceTypeName(resourceTypeCodeAndName)}
+          {getResourceTypeName(resourceTypeCodeAndName)} ({getResourceTypeLangCode(
+            resourceTypeCodeAndName
+          )})
           <button on:click={() => uncheckResourceType(resourceTypeCodeAndName)}>
             <svg
               width="24"
@@ -443,7 +445,9 @@
                         justify-between rounded-lg bg-white p-4 text-xl
                         text-[#66768B]"
         >
-          {getResourceTypeName(resourceTypeCodeAndName)}
+          {getResourceTypeName(resourceTypeCodeAndName)} ({getResourceTypeLangCode(
+            resourceTypeCodeAndName
+          )})
         </div>
       {/if}
     {/each}

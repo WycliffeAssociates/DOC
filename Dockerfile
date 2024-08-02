@@ -88,11 +88,3 @@ ENV PYTHONPATH=/app/backend:/app/tests
 # type packages and check types in strict mode.
 RUN mypy --strict --install-types --non-interactive backend/document/**/*.py
 RUN mypy --strict --install-types --non-interactive tests/**/*.py
-
-# No longer using mypyc as the resulting executable code is now
-# actually slower than non-transpiled python.
-# Inside the Python virtual env: check types, install any missing mypy stub
-# types packages, and transpile most modules into C using mypyc which
-# in turn build them with the resident C compiler, usually clang or
-# gcc.
-# RUN cd backend && mypyc --strict --install-types --non-interactive document/domain/assembly_strategies/assembly_strategies.py document/domain/parsing.py document/domain/resource_lookup.py # document/domain/document_generator.py

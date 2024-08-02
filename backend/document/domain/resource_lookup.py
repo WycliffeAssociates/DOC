@@ -83,7 +83,7 @@ def download_data(
     graphql_query = """
 query MyQuery {
   git_repo(
-    where: {content: {wa_content_meta: {status: {_eq: "Primary"}}}}
+    where: {content: {wa_content_metadata: {status: {_eq: "Primary"}}}}
   ) {
     repo_url
     content {

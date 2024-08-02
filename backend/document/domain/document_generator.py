@@ -1183,9 +1183,11 @@ def generate_docx_document(
         )
         # TODO At this point, like in generate_document, we should check the
         # underlying HTML content to see if it contains verses and display a
-        # message in the document to the end user if it does not. Would just
-        # have to figure out how to get at the underlying HTML contained in the
+        # message in the document to the end user if it does not (so that they
+        # get some indication of why the scripture is missing). Would just have
+        # to figure out how to get at the underlying HTML contained in the
         # composer instance.
+
         # Construct sensical phrases to display for title1 and title2 on first
         # page of Word document.
         title1, title2 = get_languages_title_page_strings(found_resource_lookup_dtos)
@@ -1249,11 +1251,13 @@ def get_languages_title_page_strings(
             lang0_book_names.append(book_name)
         if lang0_dto.resource_type_name not in lang0_resource_type_names:
             lang0_resource_type_names.append(lang0_dto.resource_type_name)
-    lang0_title = "{}: {} for {}".format(
-        language0_resource_lookup_dtos[0].lang_name,
-        ", ".join(sorted(lang0_resource_type_names)),
-        ", ".join(sorted(lang0_book_names)),
-    )
+    lang0_title = ""
+    if language0_resource_lookup_dtos:
+        lang0_title = "{}: {} for {}".format(
+            language0_resource_lookup_dtos[0].lang_name,
+            ", ".join(sorted(lang0_resource_type_names)),
+            ", ".join(sorted(lang0_book_names)),
+        )
     lang1_title = ""
     if len(lang_codes) > 1:
         language1_resource_lookup_dtos = [
@@ -1269,11 +1273,12 @@ def get_languages_title_page_strings(
                 lang1_book_names.append(book_name)
             if lang1_dto.resource_type_name not in lang1_resource_type_names:
                 lang1_resource_type_names.append(lang1_dto.resource_type_name)
-        lang1_title = "{}: {} for {}".format(
-            language1_resource_lookup_dtos[0].lang_name,
-            ", ".join(sorted(lang1_resource_type_names)),
-            ", ".join(sorted(lang1_book_names)),
-        )
+        if language1_resource_lookup_dtos:
+            lang1_title = "{}: {} for {}".format(
+                language1_resource_lookup_dtos[0].lang_name,
+                ", ".join(sorted(lang1_resource_type_names)),
+                ", ".join(sorted(lang1_book_names)),
+            )
     return lang0_title, lang1_title
 
 

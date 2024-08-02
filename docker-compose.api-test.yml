@@ -20,7 +20,7 @@ services:
       [
         "-vv",
         "-m",
-        "not all and not randomized",
+        "not all and not randomized and not english_randomized",
         "-n",
         "auto",
         "/app/tests/unit",

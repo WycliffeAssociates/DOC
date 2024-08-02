@@ -215,6 +215,8 @@ def test_en_ulb_tn_jud_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_gen_pt_br_tn_gen_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -244,6 +246,8 @@ def test_pt_br_ulb_gen_pt_br_tn_gen_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_tn_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -273,6 +277,8 @@ def test_pt_br_ulb_tn_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_tn_en_ulb_tn_luk_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -312,6 +318,8 @@ def test_pt_br_ulb_tn_en_ulb_tn_luk_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_tn_en_ulb_tn_luk_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -351,6 +359,8 @@ def test_pt_br_ulb_tn_en_ulb_tn_luk_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -401,6 +411,8 @@ def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c() -
 
 
 # More than two languages are no longer allowed as we enforce that in the DocumentRequest class via pydnatic validation.
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1355,6 +1367,8 @@ def test_zh_cuv_jol_zh_tn_jol_zh_tq_jol_zh_tw_jol_language_book_order_1c_c() -> 
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_luk_pt_br_tn_luk_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1385,6 +1399,8 @@ def test_pt_br_ulb_luk_pt_br_tn_luk_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+# pt-br ulb is no longer provided by the data API
+@pytest.mark.skip
 def test_pt_br_ulb_luk_pt_br_tn_luk_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1531,7 +1547,7 @@ def test_bjz_reg_eph_lbo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-def test_bys_reg_1jn_lbo_1c_chapter() -> None:
+def test_bys_reg_col_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1547,7 +1563,7 @@ def test_bys_reg_1jn_lbo_1c_chapter() -> None:
                     {
                         "lang_code": "bys",
                         "resource_type": "reg",
-                        "book_code": "1jn",
+                        "book_code": "col",
                     },
                 ],
             },

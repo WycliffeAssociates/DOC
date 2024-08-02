@@ -920,7 +920,7 @@ def check_content_for_issues(
     verses_html = re.findall(
         r'<div .*?class="verse".*?>(.*?)</div>', content, re.DOTALL
     )
-    logger.debug("verses_html: %s", verses_html)
+    # logger.debug("verses_html: %s", verses_html)
     if not verses_html:
         logger.info("No verses found in HTML")
     verses_combined = "".join(verses_html)

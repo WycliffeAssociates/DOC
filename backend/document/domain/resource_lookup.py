@@ -498,9 +498,7 @@ def book_codes_for_lang(
                                 subdirs = [
                                     file
                                     for file in scandir(resource_filepath)
-                                    if file.is_dir()
-                                    and file.name not in ["front", "00"]
-                                    and not file.name.startswith(".")
+                                    if file.is_dir() and file.name in book_names
                                 ]
                                 logger.debug("subdirs (as book codes): %s", subdirs)
                                 for subdir in subdirs:

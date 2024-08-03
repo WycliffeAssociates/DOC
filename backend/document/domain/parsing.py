@@ -119,6 +119,7 @@ def convert_usfm_chapter_to_html(
         f"{content_file} "
         f"{resource_filename_sans_suffix}.html"
     )
+    logger.debug("command: %s", command)
     subprocess.call(command, shell=True)
 
 

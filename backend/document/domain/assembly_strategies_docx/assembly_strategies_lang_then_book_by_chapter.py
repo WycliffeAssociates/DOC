@@ -51,12 +51,6 @@ def assemble_content_by_lang_then_book(
     chunk_size, to interleaving strategy to do the actual
     interleaving.
     """
-    ldebug = logger.debug
-    ldebug("usfm_books: %s", usfm_books)
-    ldebug("tn_books: %s", tn_books)
-    ldebug("tq_books: %s", tq_books)
-    ldebug("tw_books: %s", tw_books)
-    ldebug("bc_books: %s", bc_books)
     book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
     composers: list[Composer] = []
     most_lang_codes = max(

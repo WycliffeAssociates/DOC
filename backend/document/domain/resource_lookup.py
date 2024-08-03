@@ -493,7 +493,7 @@ def book_codes_for_lang(
                                 )
                         # If no USFM assets found, look for others
                         if not book_codes_and_names2:
-                            # Search for book directories amongst non-USFM repo assets
+                            # Search for book directories amongst a subset of non-USFM repo assets
                             if repo_components[-1] in ["tn", "tq"]:
                                 subdirs = [
                                     file

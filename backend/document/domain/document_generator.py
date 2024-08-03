@@ -901,11 +901,6 @@ def copy_file_to_docker_output_dir(
 
 def check_content_for_issues(
     content: str,
-    # lang_code: str,
-    # book_code: str,
-    # resource_type: str,
-    # github_api_token: str = settings.GITHUB_API_TOKEN,
-    # create_github_issue: bool = False,  # Not using this feature yet
 ) -> str:
     """
     Check for defects and notify support via logs of potential source
@@ -920,7 +915,6 @@ def check_content_for_issues(
     verses_html = re.findall(
         r'<div .*?class="verse".*?>(.*?)</div>', content, re.DOTALL
     )
-    # logger.debug("verses_html: %s", verses_html)
     if not verses_html:
         logger.info("No verses found in HTML")
     verses_combined = "".join(verses_html)
@@ -933,22 +927,6 @@ def check_content_for_issues(
             "Due to potential issues with the source content, here is the HTML content for you to inspect: %s",
             content,
         )
-        # if create_github_issue:
-        #     # Automatically record an issue using github API
-        #     document_request_info = (lang_code, book_code, resource_type)
-        #     create_github_issue_command = (
-        #         "curl -L -X POST -H"
-        #         "Accept: application/vnd.github+json"
-        #         "-H Authorization: Bearer {}"
-        #         "-H X-GitHub-Api-Version: {}"
-        #         "https://api.github.com/repos/WycliffeAssociates/DOC/issues"
-        #         '-d {{"title":"Found USFM source content bug","body":"USFM for one of {} has an issue that makes it unparsable."}}'
-        #     ).format(
-        #         github_api_token,
-        #         "2022-11-28",
-        #         document_request_info,
-        #     )
-        #     subprocess.call(create_github_issue_command, shell=True)
         return updated_content
     return content
 
@@ -1184,9 +1162,7 @@ def generate_docx_document(
         # TODO At this point, like in generate_document, we should check the
         # underlying HTML content to see if it contains verses and display a
         # message in the document to the end user if it does not (so that they
-        # get some indication of why the scripture is missing). Would just have
-        # to figure out how to get at the underlying HTML contained in the
-        # composer instance.
+        # get some indication of why the scripture is missing).
 
         # Construct sensical phrases to display for title1 and title2 on first
         # page of Word document.

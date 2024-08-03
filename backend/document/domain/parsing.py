@@ -113,14 +113,19 @@ def convert_usfm_chapter_to_html(
     """
     content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
     logger.debug("About to convert USFM to HTML")
-    command = (
-        f"/root/.dotnet/dotnet "
-        f"/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
-        f"{content_file} "
-        f"{resource_filename_sans_suffix}.html"
-    )
-    logger.debug("command: %s", command)
-    subprocess.call(command, shell=True)
+    # Github actions CI fails to find executable and messes with
+    # command string, let's check and see with a conditional first.
+    if exists("/root/.dotnet/dotnet") and exists(
+        "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"
+    ):
+        command = (
+            "/root/.dotnet/dotnet "
+            "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
+            f"{content_file} "
+            f"{resource_filename_sans_suffix}.html"
+        )
+        logger.debug("command: %s", command)
+        subprocess.call(command, shell=True)
 
 
 def usfm_asset_file(

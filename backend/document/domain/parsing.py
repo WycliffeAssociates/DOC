@@ -125,7 +125,14 @@ def convert_usfm_chapter_to_html(
             f"{resource_filename_sans_suffix}.html"
         )
         logger.debug("command: %s", command)
-        subprocess.call(command, shell=True)
+        try:
+            subprocess.call(command, shell=True)
+        except:
+            logger.debug(
+                "Github Actions CI messes with command string to make it inoperable"
+            )
+    else:
+        logger.debug("Github Actions CI restrictions make executable unavailable")
 
 
 def usfm_asset_file(

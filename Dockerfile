@@ -1,5 +1,8 @@
 FROM python:3.12-slim-bookworm
 
+# Create a non-root user and group
+RUN groupadd -r appgroup && useradd -m -r -g appgroup appuser
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
@@ -33,33 +36,40 @@ RUN cd /tmp \
 # Refresh system font cache.
 RUN fc-cache -f -v
 
-# Get and install calibre for use of its ebook-convert binary for HTML
-# to ePub conversion.
-RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/calibre-bin isolated=y
+
+# Create a directory for Calibre
+RUN mkdir -p /home/appuser/calibre-bin
+
+# Get and install calibre for use of its ebook-convert binary for HTML to ePub conversion.
+RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/home/appuser/calibre-bin isolated=y
 
 WORKDIR /app
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
-    && chmod +x ./dotnet-install.sh \
-    && ./dotnet-install.sh --channel 8.0
+    && chmod +x ./dotnet-install.sh
+
+# Create a directory for .NET SDK
+RUN mkdir -p /home/appuser/.dotnet
+
+# Install .NET SDK to the created directory
+RUN ./dotnet-install.sh --channel 8.0 --install-dir /home/appuser/.dotnet
 
 COPY dotnet ./
 
-RUN export DOTNET_ROOT=/root/.dotnet \
-    && export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools \
-    && export DOTNET_CLI_TELEMETRY_OPTOUT=1
+# Set environment variables for .NET
+ENV DOTNET_ROOT=/home/appuser/.dotnet
+ENV PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 # Install dependencies and build the .NET project
-RUN cd USFMParserDriver && /root/.dotnet/dotnet restore
+RUN cd USFMParserDriver && /home/appuser/.dotnet/dotnet restore
 
-
-# Make the output directory where resource asset files are cloned or
-# downloaded and unzipped.
-RUN mkdir -p working/temp
+# Make the output directory where resource asset files are cloned or downloaded and unzipped.
+RUN mkdir -p /app/working/temp
 # Make the output directory where generated HTML and PDFs are placed.
-RUN mkdir -p working/output
-# Make the output directory where generated documents (PDF, ePub, Docx) are copied too.
-RUN mkdir -p document_output
+RUN mkdir -p /app/working/output
+# Make the output directory where generated documents (PDF, ePub, Docx) are copied to.
+RUN mkdir -p /app/document_output
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .
@@ -84,7 +94,18 @@ COPY template_compact.docx .
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests
 
-# Inside the Python virtual env: install any missing mypy
-# type packages and check types in strict mode.
+# Inside the Python virtual env: install any missing mypy type packages and check types in strict mode.
 RUN mypy --strict --install-types --non-interactive backend/document/**/*.py
 RUN mypy --strict --install-types --non-interactive tests/**/*.py
+
+# Change ownership of the /app and /calibre-bin directories to the non-root user
+RUN chown -R appuser:appgroup /app /home/appuser/calibre-bin /home/appuser/.dotnet
+
+# Switch to the non-root user
+USER appuser
+
+# Expose necessary ports (if any)
+EXPOSE 8000
+
+# Command to run the application
+CMD ["python", "backend/main.py"]

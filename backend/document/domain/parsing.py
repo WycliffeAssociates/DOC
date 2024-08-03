@@ -115,16 +115,16 @@ def convert_usfm_chapter_to_html(
     logger.debug("About to convert USFM to HTML")
     # Github actions CI fails to find executable and messes with
     # command string, let's check and see with a conditional first.
-    if exists("/root/.dotnet/dotnet") and exists(
+    if exists("/home/appuser/.dotnet/dotnet") and exists(
         "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"
     ):
         command = (
-            "/root/.dotnet/dotnet "
+            "/home/appuser/.dotnet/dotnet "
             "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
             f"{content_file} "
             f"{resource_filename_sans_suffix}.html"
         )
-        logger.debug("command: %s", command)
+        logger.debug("dotnet command: %s", command)
         try:
             subprocess.call(command, shell=True)
         except:

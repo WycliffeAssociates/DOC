@@ -695,10 +695,8 @@ def convert_html_to_epub(
 ) -> None:
     """Generate ePub from HTML and copy it to output directory."""
     assert exists(html_filepath)
-    ebook_convert_command = (
-        "/calibre-bin/calibre/ebook-convert {} {} --no-default-epub-cover".format(
-            html_filepath, epub_filepath
-        )
+    ebook_convert_command = "/home/appuser/calibre-bin/calibre/ebook-convert {} {} --no-default-epub-cover".format(
+        html_filepath, epub_filepath
     )
     logger.debug("Generate ePub command: %s", ebook_convert_command)
     t0 = time.time()

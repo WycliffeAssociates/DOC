@@ -113,26 +113,22 @@ def convert_usfm_chapter_to_html(
     """
     content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
     logger.debug("About to convert USFM to HTML")
-    # Github actions CI fails to find executable and messes with
-    # command string, let's check and see with a conditional first.
-    if exists("/home/appuser/.dotnet/dotnet") and exists(
-        "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"
-    ):
-        command = (
-            "/home/appuser/.dotnet/dotnet "
-            "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
-            f"{content_file} "
-            f"{resource_filename_sans_suffix}.html"
+    # command = "/home/appuser/.dotnet/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll {} {}.html".format(
+    #     content_file, resource_filename_sans_suffix
+    # )
+    # TODO Use release version of build. This involves changing the
+    # path and also changing the restore invocation in Dockerfile
+    command = "dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll {} {}.html".format(
+        content_file, resource_filename_sans_suffix
+    )
+    logger.debug("dotnet command: %s", command)
+    try:
+        subprocess.call(command, shell=True)
+    except Exception as e:
+        logger.debug(
+            f"Github Actions CI messes with command string to make it inoperable: {e}"
         )
-        logger.debug("dotnet command: %s", command)
-        try:
-            subprocess.call(command, shell=True)
-        except:
-            logger.debug(
-                "Github Actions CI messes with command string to make it inoperable"
-            )
-    else:
-        logger.debug("Github Actions CI restrictions make executable unavailable")
+        raise
 
 
 def usfm_asset_file(

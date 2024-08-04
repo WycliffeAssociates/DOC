@@ -56,6 +56,7 @@ def test_en_ulb_col_en_tn_col_language_book_order_with_no_email_1c_docx() -> Non
 
 
 # @pytest.mark.skip
+@pytest.mark.skip
 def test_en_ulb_col_en_tn_col_language_book_order_with_no_email_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

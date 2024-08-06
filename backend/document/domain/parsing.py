@@ -118,7 +118,7 @@ def convert_usfm_chapter_to_html(
     # )
     # TODO Use release version of build. This involves changing the
     # path and also changing the restore invocation in Dockerfile
-    command = "dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll {} {}.html".format(
+    command = "/home/appuser/.dotnet/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll {} {}.html".format(
         content_file, resource_filename_sans_suffix
     )
     logger.debug("dotnet command: %s", command)

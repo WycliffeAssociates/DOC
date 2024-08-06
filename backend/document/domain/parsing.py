@@ -113,23 +113,21 @@ def convert_usfm_chapter_to_html(
     """
     content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
     logger.debug("About to convert USFM to HTML")
-    # command = "/home/appuser/.dotnet/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll {} {}.html".format(
-    #     content_file, resource_filename_sans_suffix
-    # )
     # TODO Use release version of build. This involves changing the
     # path and also changing the restore invocation in Dockerfile
-    command = "/home/appuser/.dotnet/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll {} {}.html".format(
+    if not exists("/home/appuser/.dotnet/dotnet"):
+        logger.info("dotnet cli not found!")
+    if not exists("/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"):
+        logger.info("dotnet parser executable not found!")
+    if not exists(content_file):
+        logger.debug(
+            "dotnet parser expects %s to exist, but it does not!", content_file
+        )
+    command = "dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll /app/{} /app/{}.html".format(
         content_file, resource_filename_sans_suffix
     )
     logger.debug("dotnet command: %s", command)
-    try:
-        # subprocess.call(command, shell=True)
-        subprocess.call(command, shell=False)
-    except Exception as e:
-        logger.debug(
-            f"Github Actions CI messes with command string to make it inoperable: {e}"
-        )
-        raise
+    subprocess.call(command, shell=True)
 
 
 def usfm_asset_file(

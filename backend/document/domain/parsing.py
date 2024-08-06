@@ -123,7 +123,8 @@ def convert_usfm_chapter_to_html(
     )
     logger.debug("dotnet command: %s", command)
     try:
-        subprocess.call(command, shell=True)
+        # subprocess.call(command, shell=True)
+        subprocess.call(command, shell=False)
     except Exception as e:
         logger.debug(
             f"Github Actions CI messes with command string to make it inoperable: {e}"

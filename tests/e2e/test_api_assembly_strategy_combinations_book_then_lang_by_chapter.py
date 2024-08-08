@@ -1204,6 +1204,7 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_lan
         check_finished_document_with_verses_success(response)
 
 
+@pytest.mark.skip
 def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

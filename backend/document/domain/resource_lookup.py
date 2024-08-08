@@ -62,24 +62,104 @@ def fetch_source_data(
     return data
 
 
+# def download_data(
+#     jsonfile_path: str,
+#     data_api_url: HttpUrl = settings.DATA_API_URL,
+# ) -> Any:
+#     """
+#     >>> from document.domain import resource_lookup
+#     >>> ();result = resource_lookup.download_data("working/temp/resources.json");() # doctest: +ELLIPSIS
+#     (...)
+#     >>> result[0]
+#     """
+#     # A debug query example of how to query one language
+#     # query MyQuery {
+#     #   git_repo(
+#     #     where: {content: {language: {ietf_code: {_eq: "id"}}, wa_content_metadata: {status: {_eq: "Primary"}}}}
+#     #   ) {
+#     #     repo_url
+#     #   }
+#     # }
+#     graphql_query = """
+# query MyQuery {
+#   git_repo(
+#     where: {content: {wa_content_metadata: {status: {_eq: "Primary"}}}}
+#   ) {
+#     repo_url
+#     content {
+#       resource_type
+#       language {
+#         english_name
+#         ietf_code
+#         national_name
+#         direction
+#       }
+#     }
+#   }
+# }
+#     """
+#     query_json = {"query": graphql_query}
+#     try:
+#         response = requests.post(str(data_api_url), json=query_json)
+#         if response.status_code == 200:
+#             data = response.json()
+#             data_payload = data["data"]
+#             # Only refresh the cache if the payload has the expected
+#             # internal structure indicating that the data API is functioning
+#             # correctly. We don't want to accidentally overwrite the
+#             # cached results with a basically empty set of results. We have seen
+#             # this in practice when the data API is having problems, it returns a
+#             # value, but lacks expected internal structure. We sniff that out here
+#             # by checking if "git_repo" is in the payload, a hueristic
+#             # which has proved to be reliable.
+#             if "git_repo" in data_payload:
+#                 logger.debug("Writing json data to: %s", jsonfile_path)
+#                 with open(jsonfile_path, "w") as fp:
+#                     fp.write(str(json.dumps(data_payload)))
+#                 return data_payload
+#             # For this case we want to use our last successfully
+#             # fetched result from data API rather than what was returned from the
+#             # live data API call just now since it does not have the
+#             # proper internal structure.
+#             else:
+#                 logger.debug(
+#                     "About to fetch cached data API data from %s", jsonfile_path
+#                 )
+#                 content = read_file(jsonfile_path)
+#                 data = json.loads(content)
+#                 return data
+#         else:
+#             logger.debug(
+#                 "Failed to get data from data API, graphql API might be down..."
+#             )
+#             # Recover from apparent issue with data API by using older cached data
+#             logger.debug(
+#                 "About to fetch cached data API results from %s", jsonfile_path
+#             )
+#             content = read_file(jsonfile_path)
+#             data = json.loads(content)
+#             return data
+#     except Exception:
+#         logger.exception("Caught exception: ")
+#         logger.debug("Failed to get data from data API, API might be down...")
+#         # Recover from apparent issue with data API by using older cached data
+#         logger.debug("About to fetch cached data API results from %s", jsonfile_path)
+#         content = read_file(jsonfile_path)
+#         data = json.loads(content)
+#         return data
+
+
 def download_data(
     jsonfile_path: str,
     data_api_url: HttpUrl = settings.DATA_API_URL,
 ) -> Any:
     """
+    Downloads data from a GraphQL API and saves it to a JSON file.
+
     >>> from document.domain import resource_lookup
-    >>> ();result = resource_lookup.download_data("working/temp/resources.json");() # doctest: +ELLIPSIS
-    (...)
+    >>> result = resource_lookup.download_data("working/temp/resources.json")
     >>> result[0]
     """
-    # A debug query example of how to query one language
-    # query MyQuery {
-    #   git_repo(
-    #     where: {content: {language: {ietf_code: {_eq: "id"}}, wa_content_metadata: {status: {_eq: "Primary"}}}}
-    #   ) {
-    #     repo_url
-    #   }
-    # }
     graphql_query = """
 query MyQuery {
   git_repo(
@@ -98,22 +178,41 @@ query MyQuery {
   }
 }
     """
-    payload = {"query": graphql_query}
+    query_json = {"query": graphql_query}
+
+    def _read_file(file_path: str) -> str:
+        with open(file_path, "r") as file:
+            return file.read()
+
+    def _write_json_to_file(file_path: str, data: Any) -> None:
+        with open(file_path, "w") as file:
+            json.dump(data, file, indent=4)
+
+    def fetch_cached_data() -> Any:
+        logger.debug("About to fetch cached data API results from %s", jsonfile_path)
+        content = _read_file(jsonfile_path)
+        return json.loads(content)
+
     try:
-        response = requests.post(str(data_api_url), json=payload)
+        response = requests.post(str(data_api_url), json=query_json)
         if response.status_code == 200:
-            data = response.json()
-            logger.debug("Writing json data to: %s", jsonfile_path)
-            with open(jsonfile_path, "w") as fp:
-                fp.write(str(json.dumps(data["data"])))
-            return data["data"]
+            data_payload = response.json().get("data", {})
+            if "git_repo" in data_payload:
+                logger.debug("Writing json data to: %s", jsonfile_path)
+                _write_json_to_file(jsonfile_path, data_payload)
+                return data_payload
+            else:
+                logger.debug("Invalid payload structure, using cached data.")
+                return fetch_cached_data()
         else:
             logger.debug(
                 "Failed to get data from data API, graphql API might be down..."
             )
-            response.raise_for_status()
-    except Exception as e:
-        return {"error": str(e)}
+            return fetch_cached_data()
+    except requests.RequestException as e:
+        logger.exception("Request failed: %s", e)
+        logger.debug("Failed to get data from data API, API might be down...")
+        return fetch_cached_data()
 
 
 def fetch_gateway_languages(
@@ -221,6 +320,8 @@ def lang_codes_and_names(
         gateway_languages_ = gateway_languages
     data = fetch_source_data()
     values = []
+    if "git_repo" not in data:
+        raise Exception("Data API is down!")
     try:
         repos_info = data["git_repo"]
         for repo_info in repos_info:
@@ -241,7 +342,7 @@ def lang_codes_and_names(
                 )
 
     except:
-        logger.exception("Failed due to the following exception")
+        logger.exception("Failed due to the following exception.")
     unique_values = []
     seen_values = set()
     for value in values:

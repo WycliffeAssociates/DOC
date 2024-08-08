@@ -90,6 +90,10 @@ COPY ./tests ./tests
 COPY .env .
 COPY template.docx .
 COPY template_compact.docx .
+# Next two lines are useful when the data (graphql) API are down so
+# that we can still test
+COPY resources.json working/temp/resources.json
+RUN touch working/temp/resources.json
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests

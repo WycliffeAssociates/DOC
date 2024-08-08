@@ -142,6 +142,9 @@ def file_needs_update(
     if not os.path.exists(file_path):
         logger.debug("Cache miss for %s", file_path)
         return True
+    if os.path.exists(file_path) and os.path.getsize(file_path) == 0:
+        logger.debug("File exists, but is empty!")
+        return True
     file_mod_time: datetime = datetime.fromtimestamp(os.stat(file_path).st_mtime)
     now: datetime = datetime.today()
     max_delay: timedelta = timedelta(minutes=60 * asset_caching_period)

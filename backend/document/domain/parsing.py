@@ -123,11 +123,27 @@ def convert_usfm_chapter_to_html(
         logger.debug(
             "dotnet parser expects %s to exist, but it does not!", content_file
         )
-    command = "dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll /app/{} /app/{}.html".format(
-        content_file, resource_filename_sans_suffix
+    command = (
+        "$DOTNET_ROOT/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
+        f"/app/{content_file} "
+        f"/app/{resource_filename_sans_suffix}.html"
     )
     logger.debug("dotnet command: %s", command)
-    subprocess.call(command, shell=True)
+    # subprocess.call(command, shell=True)
+    # check=True will throw an exception if files/executable are not found
+    doc_env = {
+        "DOTNET_ROOT": "/home/appuser/.dotnet",
+        "PATH": "$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools",
+        "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    }
+    # result = subprocess.run(
+    #     command, env=doc_env, check=True, text=True, capture_output=True, shell=True
+    # )
+
+    subprocess.call(command, env=doc_env, shell=True)
+    # if result:
+    #     logger.debug("Command output: %s", result.stdout)
+    #     logger.debug("Command error: %s", result.stderr)
 
 
 def usfm_asset_file(

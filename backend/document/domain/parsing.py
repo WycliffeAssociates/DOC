@@ -6,7 +6,7 @@ import re
 import subprocess
 import time
 from glob import glob
-from os import scandir
+from os import scandir, getenv, getcwd
 from os.path import exists, join, split
 from pathlib import Path
 from re import compile, sub
@@ -124,23 +124,25 @@ def convert_usfm_chapter_to_html(
             "dotnet parser expects %s to exist, but it does not!", content_file
         )
     command = (
-        "$DOTNET_ROOT/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
+        f"{getenv('DOTNET_ROOT')}/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
         f"/app/{content_file} "
         f"/app/{resource_filename_sans_suffix}.html"
     )
     logger.debug("dotnet command: %s", command)
     # subprocess.call(command, shell=True)
     # check=True will throw an exception if files/executable are not found
-    doc_env = {
-        "DOTNET_ROOT": "/home/appuser/.dotnet",
-        "PATH": "$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools",
-        "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
-    }
+    # doc_env = {
+    #     "DOTNET_ROOT": "/home/appuser/.dotnet",
+    #     "PATH": "$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools",
+    #     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    # }
     # result = subprocess.run(
     #     command, env=doc_env, check=True, text=True, capture_output=True, shell=True
     # )
-
-    subprocess.call(command, env=doc_env, shell=True)
+    subprocess.call(f"{getenv('DOTNET_ROOT')}/dotnet --version", shell=True)
+    logger.debug("DOTNET_ROOT: %s", getenv("DOTNET_ROOT"))
+    logger.debug("current working directory: %s", getcwd())
+    subprocess.call(command, shell=True)  # env=doc_env,
     # if result:
     #     logger.debug("Command output: %s", result.stdout)
     #     logger.debug("Command error: %s", result.stderr)

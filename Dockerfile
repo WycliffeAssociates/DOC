@@ -52,17 +52,17 @@ RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
 RUN mkdir -p /home/appuser/.dotnet
 
 # Install .NET SDK to the created directory
-RUN ./dotnet-install.sh --channel 8.0 --install-dir /home/appuser/.dotnet
+RUN ./dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet
 
 COPY dotnet ./
 
 # Set environment variables for .NET
-ENV DOTNET_ROOT=/home/appuser/.dotnet
+ENV DOTNET_ROOT=/usr/share/dotnet
 ENV PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 # Install dependencies and build the .NET project
-RUN cd USFMParserDriver && /home/appuser/.dotnet/dotnet restore
+RUN cd USFMParserDriver && ${DOTNET_ROOT}/dotnet restore
 
 # Make the output directory where resource asset files are cloned or downloaded and unzipped.
 RUN mkdir -p /app/working/temp

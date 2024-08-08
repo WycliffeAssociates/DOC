@@ -8,7 +8,6 @@ jobs:
     name: Build API image
     runs-on: ubuntu-20.04
     env:
-      DOTNET_INSTALL_DIR: "/home/appuser/.dotnet"
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - uses: actions/checkout@v3
@@ -49,7 +48,6 @@ jobs:
     runs-on: ubuntu-20.04
     needs: Build-API-Image
     env:
-      DOTNET_INSTALL_DIR: "/home/appuser/.dotnet"
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - uses: actions/checkout@v3

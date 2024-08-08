@@ -115,7 +115,7 @@ def convert_usfm_chapter_to_html(
     logger.debug("About to convert USFM to HTML")
     # TODO Use release version of build. This involves changing the
     # path and also changing the restore invocation in Dockerfile
-    if not exists("/home/appuser/.dotnet/dotnet"):
+    if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
         logger.info("dotnet cli not found!")
     if not exists("/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"):
         logger.info("dotnet parser executable not found!")
@@ -139,9 +139,7 @@ def convert_usfm_chapter_to_html(
     # result = subprocess.run(
     #     command, env=doc_env, check=True, text=True, capture_output=True, shell=True
     # )
-    subprocess.call(f"{getenv('DOTNET_ROOT')}/dotnet --version", shell=True)
     logger.debug("DOTNET_ROOT: %s", getenv("DOTNET_ROOT"))
-    logger.debug("current working directory: %s", getcwd())
     subprocess.call(command, shell=True)  # env=doc_env,
     # if result:
     #     logger.debug("Command output: %s", result.stdout)

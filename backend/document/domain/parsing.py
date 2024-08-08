@@ -117,18 +117,21 @@ def convert_usfm_chapter_to_html(
     # path and also changing the restore invocation in Dockerfile
     if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
         logger.info("dotnet cli not found!")
+        raise Exception("dotnet cli not found")
     if not exists("/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"):
         logger.info("dotnet parser executable not found!")
+        raise Exception("dotnet parser executable not found!")
     if not exists(content_file):
         logger.debug(
             "dotnet parser expects %s to exist, but it does not!", content_file
         )
-    command = (
-        f"{getenv('DOTNET_ROOT')}/dotnet /app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll "
-        f"/app/{content_file} "
-        f"/app/{resource_filename_sans_suffix}.html"
-    )
-    logger.debug("dotnet command: %s", command)
+    command = [
+        f"{getenv('DOTNET_ROOT')}/dotnet",
+        "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll",
+        f"/app/{content_file}",
+        f"/app/{resource_filename_sans_suffix}.html",
+    ]
+    logger.debug("dotnet command: %s", " ".join(command))
     # subprocess.call(command, shell=True)
     # check=True will throw an exception if files/executable are not found
     # doc_env = {
@@ -136,11 +139,14 @@ def convert_usfm_chapter_to_html(
     #     "PATH": "$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools",
     #     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
     # }
-    # result = subprocess.run(
-    #     command, env=doc_env, check=True, text=True, capture_output=True, shell=True
-    # )
-    logger.debug("DOTNET_ROOT: %s", getenv("DOTNET_ROOT"))
-    subprocess.call(command, shell=True)  # env=doc_env,
+    # logger.debug("DOTNET_ROOT: %s", getenv("DOTNET_ROOT"))
+    result = subprocess.run(
+        command,  # env=doc_env,
+        check=True,
+        text=True,
+        # capture_output=True,  # , shell=True
+    )
+    # subprocess.call(command)  # , shell=True  # env=doc_env,
     # if result:
     #     logger.debug("Command output: %s", result.stdout)
     #     logger.debug("Command error: %s", result.stderr)

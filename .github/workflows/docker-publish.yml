@@ -14,12 +14,12 @@ jobs:
       - uses: FranzDiebold/github-env-vars-action@v2
       - uses: docker/setup-qemu-action@v2      
       - uses: docker/setup-buildx-action@v2
-      - name: Setup .NET for Github actions
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "8.0.204"
-      - name: Install .NET project dependencies
-        run: cd dotnet/USFMParserDriver && dotnet restore --packages /app
+      # - name: Setup .NET for Github actions
+      #   uses: actions/setup-dotnet@v3
+      #   with:
+      #     dotnet-version: "8.0.204"
+      # - name: Install .NET project dependencies
+      #   run: groupadd -r appgroup && useradd -m -r -g appgroup appuser && chown -R appuser:appgroup /usr/share/dotnet && cd /app/dotnet/USFMParserDriver && dotnet restore --packages /app
       - name: Build API image with buildx
         uses: docker/build-push-action@v3
         with:

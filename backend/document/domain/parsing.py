@@ -6,7 +6,7 @@ import re
 import subprocess
 import time
 from glob import glob
-from os import scandir, getenv, getcwd
+from os import scandir, getenv, getcwd, walk
 from os.path import exists, join, split
 from pathlib import Path
 from re import compile, sub
@@ -103,6 +103,23 @@ def write_usfm_content_to_file(content: str, filepath_sans_suffix: str) -> str:
     return filepath
 
 
+def print_directory_contents(directory: str) -> None:
+    """
+    Useful for debugging layout on Github Action virtual machine
+    """
+    for root, dirs, files in walk(directory):
+        # Print the current directory path
+        logger.debug("Directory: %s", root)
+
+        # Print all files in the current directory
+        for file in files:
+            logger.debug("  File: %s", file)
+
+        # Print all subdirectories in the current directory
+        for dir in dirs:
+            logger.debug("  Subdirectory: %s", dir)
+
+
 def convert_usfm_chapter_to_html(
     content: str,
     resource_filename_sans_suffix: str,
@@ -120,14 +137,7 @@ def convert_usfm_chapter_to_html(
         raise Exception("dotnet cli not found")
     if not exists("/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"):
         logger.info("dotnet parser executable not found!")
-        logger.debug("/bin/ls -lR /app/")
-        ls_command = ["/bin/ls -lR", "/app/"]
-        result = subprocess.run(
-            ls_command,
-            check=True,
-            text=True,
-            # capture_output=True,
-        )
+        print_directory_contents("/app")
         raise Exception("dotnet parser executable not found!")
     if not exists(content_file):
         logger.debug(

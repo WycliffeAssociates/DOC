@@ -120,8 +120,8 @@ def convert_usfm_chapter_to_html(
         raise Exception("dotnet cli not found")
     if not exists("/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"):
         logger.info("dotnet parser executable not found!")
-        logger.debug("ls -l /app/USFMParserDriver")
-        ls_command = ["ls -lR", "/app/"]
+        logger.debug("/bin/ls -lR /app/")
+        ls_command = ["/bin/ls -lR", "/app/"]
         result = subprocess.run(
             ls_command,
             check=True,

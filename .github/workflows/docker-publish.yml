@@ -7,19 +7,12 @@ jobs:
   Build-API-Image:
     name: Build API image
     runs-on: ubuntu-20.04
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - uses: actions/checkout@v3
       - uses: FranzDiebold/github-env-vars-action@v2
       - uses: docker/setup-qemu-action@v2      
       - uses: docker/setup-buildx-action@v2
-      # - name: Setup .NET for Github actions
-      #   uses: actions/setup-dotnet@v3
-      #   with:
-      #     dotnet-version: "8.0.204"
-      # - name: Install .NET project dependencies
-      #   run: groupadd -r appgroup && useradd -m -r -g appgroup appuser && chown -R appuser:appgroup /usr/share/dotnet && cd /app/dotnet/USFMParserDriver && dotnet restore --packages /app
+
       - name: Build API image with buildx
         uses: docker/build-push-action@v3
         with:
@@ -46,8 +39,6 @@ jobs:
     name: Test API image
     runs-on: ubuntu-20.04
     needs: Build-API-Image
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - uses: actions/checkout@v3
       - uses: FranzDiebold/github-env-vars-action@v2

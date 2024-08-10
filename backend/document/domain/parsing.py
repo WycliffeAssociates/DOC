@@ -130,12 +130,11 @@ def convert_usfm_chapter_to_html(
     """
     content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
     logger.debug("About to convert USFM to HTML")
-    # TODO Use release version of build. This involves changing the
-    # path and also changing the restore invocation in Dockerfile
+    dll_path = "/app/USFMParserDriver/bin/Release/net8.0/USFMParserDriver.dll"
     if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
         logger.info("dotnet cli not found!")
         raise Exception("dotnet cli not found")
-    if not exists("/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll"):
+    if not exists(dll_path):
         logger.info("dotnet parser executable not found!")
         print_directory_contents("/app/USFMParserDriver")
         raise Exception("dotnet parser executable not found!")
@@ -145,29 +144,16 @@ def convert_usfm_chapter_to_html(
         )
     command = [
         f"{getenv('DOTNET_ROOT')}/dotnet",
-        "/app/USFMParserDriver/bin/Debug/net8.0/USFMParserDriver.dll",
+        dll_path,
         f"/app/{content_file}",
         f"/app/{resource_filename_sans_suffix}.html",
     ]
     logger.debug("dotnet command: %s", " ".join(command))
-    # subprocess.call(command, shell=True)
-    # check=True will throw an exception if files/executable are not found
-    # doc_env = {
-    #     "DOTNET_ROOT": "/home/appuser/.dotnet",
-    #     "PATH": "$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools",
-    #     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
-    # }
-    # logger.debug("DOTNET_ROOT: %s", getenv("DOTNET_ROOT"))
     result = subprocess.run(
-        command,  # env=doc_env,
+        command,
         check=True,
         text=True,
-        # capture_output=True,  # , shell=True
     )
-    # subprocess.call(command)  # , shell=True  # env=doc_env,
-    # if result:
-    #     logger.debug("Command output: %s", result.stdout)
-    #     logger.debug("Command error: %s", result.stderr)
 
 
 def usfm_asset_file(

@@ -64,7 +64,7 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 # Install dependencies and build the .NET project
 RUN cd USFMParserDriver && \
     ${DOTNET_ROOT}/dotnet restore && \
-    ${DOTNET_ROOT}/dotnet build --configuration Debug
+    ${DOTNET_ROOT}/dotnet build --configuration Release
 
 # Make the output directory where resource asset files are cloned or downloaded and unzipped.
 RUN mkdir -p /app/working/temp

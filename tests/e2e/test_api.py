@@ -123,7 +123,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_language_book_order_1c() -> Non
 
 
 # tq has been retired for en
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_language_book_order_1c_c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1041,7 +1041,7 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_ti
 
 
 # cuv is not provided by data api
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

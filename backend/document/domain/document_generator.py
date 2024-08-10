@@ -677,9 +677,17 @@ def convert_html_to_pdf(
     assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
     t0 = time.time()
-    weasyprint_command = "weasyprint {} {}".format(html_filepath, pdf_filepath)
-    logger.debug("Generate PDF command: %s", weasyprint_command)
-    subprocess.call(weasyprint_command, shell=True)
+    weasyprint_command = [
+        "weasyprint",
+        html_filepath,
+        pdf_filepath,
+    ]
+    logger.debug("Generate PDF command: %s", " ".join(weasyprint_command))
+    result = subprocess.run(
+        weasyprint_command,
+        check=True,
+        text=True,
+    )
     t1 = time.time()
     logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
 
@@ -695,12 +703,15 @@ def convert_html_to_epub(
 ) -> None:
     """Generate ePub from HTML and copy it to output directory."""
     assert exists(html_filepath)
-    ebook_convert_command = "/home/appuser/calibre-bin/calibre/ebook-convert {} {} --no-default-epub-cover".format(
-        html_filepath, epub_filepath
-    )
-    logger.debug("Generate ePub command: %s", ebook_convert_command)
+    ebook_convert_command = [
+        "/home/appuser/calibre-bin/calibre/ebook-convert",
+        html_filepath,
+        epub_filepath,
+        "--no-default-epub-cover",
+    ]
+    logger.debug("Generate ePub command: %s", " ".join(ebook_convert_command))
     t0 = time.time()
-    subprocess.call(ebook_convert_command, shell=True)
+    subprocess.run(ebook_convert_command, check=True, text=True)
     t1 = time.time()
     logger.debug("Time for converting HTML to ePub: %s", t1 - t0)
 

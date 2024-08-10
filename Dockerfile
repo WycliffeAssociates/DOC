@@ -1,6 +1,9 @@
 FROM python:3.12-slim-bookworm
 
-RUN apt-get update && apt-get install -y \
+# Create a non-root user and group
+RUN groupadd -r appgroup && useradd -m -r -g appgroup appuser
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
     git \
@@ -33,19 +36,42 @@ RUN cd /tmp \
 # Refresh system font cache.
 RUN fc-cache -f -v
 
-# Get and install calibre for use of its ebook-convert binary for HTML
-# to ePub conversion.
-RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/calibre-bin isolated=y
+
+# Create a directory for Calibre
+RUN mkdir -p /home/appuser/calibre-bin
+
+# Get and install calibre for use of its ebook-convert binary for HTML to ePub conversion.
+RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/home/appuser/calibre-bin isolated=y
 
 WORKDIR /app
 
-# Make the output directory where resource asset files are cloned or
-# downloaded and unzipped.
-RUN mkdir -p working/temp
+RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
+    && chmod +x ./dotnet-install.sh
+
+# Create a directory for .NET SDK
+RUN mkdir -p /home/appuser/.dotnet
+
+# Install .NET SDK to the created directory
+RUN ./dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet
+
+COPY dotnet ./
+
+# Set environment variables for .NET
+ENV DOTNET_ROOT=/usr/share/dotnet
+ENV PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+# Install dependencies and build the .NET project
+RUN cd USFMParserDriver && \
+    ${DOTNET_ROOT}/dotnet restore && \
+    ${DOTNET_ROOT}/dotnet build --configuration Release
+
+# Make the output directory where resource asset files are cloned or downloaded and unzipped.
+RUN mkdir -p /app/working/temp
 # Make the output directory where generated HTML and PDFs are placed.
-RUN mkdir -p working/output
-# Make the output directory where generated documents (PDF, ePub, Docx) are copied too.
-RUN mkdir -p document_output
+RUN mkdir -p /app/working/output
+# Make the output directory where generated documents (PDF, ePub, Docx) are copied to.
+RUN mkdir -p /app/document_output
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .
@@ -66,19 +92,26 @@ COPY ./tests ./tests
 COPY .env .
 COPY template.docx .
 COPY template_compact.docx .
+# Next two lines are useful when the data (graphql) API are down so
+# that we can still test
+COPY resources.json working/temp/resources.json
+RUN touch working/temp/resources.json
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests
 
-# Inside the Python virtual env: install any missing mypy
-# type packages and check types in strict mode.
+# Inside the Python virtual env: install any missing mypy type packages and check types in strict mode.
 RUN mypy --strict --install-types --non-interactive backend/document/**/*.py
 RUN mypy --strict --install-types --non-interactive tests/**/*.py
 
-# No longer using mypyc as the resulting executable code is now
-# actually slower than non-transpiled python.
-# Inside the Python virtual env: check types, install any missing mypy stub
-# types packages, and transpile most modules into C using mypyc which
-# in turn build them with the resident C compiler, usually clang or
-# gcc.
-# RUN cd backend && mypyc --strict --install-types --non-interactive document/domain/assembly_strategies/assembly_strategies.py document/domain/parsing.py document/domain/resource_lookup.py # document/domain/document_generator.py
+# Change ownership of app specific directories to the non-root user
+RUN chown -R appuser:appgroup /app /home/appuser/calibre-bin /usr/share/dotnet
+
+# Switch to the non-root user
+USER appuser
+
+# Expose necessary ports (if any)
+EXPOSE 8000
+
+# Command to run the application
+CMD ["python", "backend/main.py"]

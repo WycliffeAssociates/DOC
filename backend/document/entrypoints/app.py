@@ -1,20 +1,16 @@
 """This module provides the FastAPI API definition."""
 
-import os
-import pathlib
 
 from typing import Any, Iterable, Sequence
-
 
 import celery.states
 from celery.result import AsyncResult
 from document.config import settings
 from document.domain import document_generator, exceptions, model, resource_lookup
-from fastapi import FastAPI, HTTPException, Query, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
-from pydantic import AnyHttpUrl
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -48,6 +44,19 @@ def invalid_document_request_exception_handler(
     )
 
 
+@app.exception_handler(exceptions.ResourceAssetFileNotFoundError)
+def resource_asset_file_not_found_exception_handler(
+    request: Request, exc: exceptions.ResourceAssetFileNotFoundError
+) -> JSONResponse:
+    logger.error(f"{request}: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            "message": f"{exc.message}",
+        },
+    )
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
@@ -61,10 +70,7 @@ async def validation_exception_handler(
 
 
 @app.post("/documents")
-async def generate_document(
-    document_request: model.DocumentRequest,
-    success_message: str = settings.SUCCESS_MESSAGE,
-) -> JSONResponse:
+async def generate_document(document_request: model.DocumentRequest) -> JSONResponse:
     """
     Get the document request and hand it off to the document_generator
     module for processing.
@@ -93,7 +99,6 @@ async def generate_document(
 @app.post("/documents_docx")
 async def generate_docx_document(
     document_request: model.DocumentRequest,
-    success_message: str = settings.SUCCESS_MESSAGE,
 ) -> JSONResponse:
     """
     Get the document request and hand it off to the document_generator
@@ -137,8 +142,8 @@ async def lang_codes_and_names() -> Sequence[tuple[str, str, bool]]:
     """
     Return list of all available language code, name tuples.
     """
-    # return await resource_lookup.lang_codes_and_names() # When using data API
-    return resource_lookup.lang_codes_and_names()
+    return resource_lookup.lang_codes_and_names()  # When using data API
+    # return resource_lookup.lang_codes_and_names()
 
 
 @app.get("/shared_book_codes/{lang0_code}/{lang1_code}")
@@ -149,17 +154,15 @@ async def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
     return resource_lookup.shared_book_codes(lang0_code, lang1_code)
 
 
-@app.get("/resource_types/{lang_code}/{book_codes}")
-async def shared_resource_types(
+@app.get("/resource_types/{lang_code}")
+async def resource_types(
     lang_code: str,
-    book_codes: str,
 ) -> Iterable[tuple[str, str]]:
     """
     Return the list of available resource types tuples for lang_code
     with book_codes.
     """
-    book_codes_list = book_codes.split(",")
-    return resource_lookup.shared_resource_types(lang_code, book_codes_list)
+    return resource_lookup.resource_types(lang_code)
 
 
 @app.get("/book_codes_for_lang/{lang_code}")

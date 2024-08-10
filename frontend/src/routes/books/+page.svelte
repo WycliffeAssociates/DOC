@@ -198,8 +198,10 @@
   // If user has previously chosen (during this session, i.e., prior
   // to browser reload) any OT books and no NT books then default to
   // showing the OT, otherwise the default stands of showing the NT
+  $: console.log(`$otBookStore.length: ${$otBookStore.length}`)
+  $: console.log(`$ntBookStore.length: ${$ntBookStore.length}`)
   $: {
-    if ($otBookStore.length > 0 && $ntBookStore.length === 0) {
+    if (($otBookStore.length > 0 && $ntBookStore.length === 0) || (otBookCodes && ntBookCodes && ntBookCodes.length === 0 && otBookCodes.length > 0)) {
       showOldTestament = true
     }
   }

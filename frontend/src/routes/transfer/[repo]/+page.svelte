@@ -75,13 +75,11 @@
   const components = data.repo?.split('_') || []
   let langCode: string
   let bookCode: string
-  let nada: string
   let resource: string
   if (components.length === 4) {
     // e.g., repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fbahasatech.indotengah%2Fbne_gal_text_reg&book_name=Galatians
     langCode = components[0]
     bookCode = components[1]
-    nada = components[2]
     resource = components[3]
     console.log(
       `Transferred values from BIEL, langCode: ${langCode}, bookCode: ${bookCode}, resource: ${resource}`

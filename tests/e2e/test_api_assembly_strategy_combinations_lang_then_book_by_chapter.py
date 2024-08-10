@@ -15,7 +15,7 @@ from tests.shared.utils import (
 from document.domain import model
 
 
-def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_tit_en_tn_tit_language_book_order_1c_by_chapter() -> None:
     "English ulb-wa and tn-wa for book of Timothy."
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -32,12 +32,12 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_by_chapter() -> None:
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "tit",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "tit",
                     },
                 ],
@@ -46,7 +46,7 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_ulb_tit_en_tn_tit_language_book_order_1c_c_by_chapter() -> None:
     "English ulb-wa and tn-wa for book of Timothy."
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -63,12 +63,12 @@ def test_en_ulb_wa_tit_en_tn_wa_tit_language_book_order_1c_c_by_chapter() -> Non
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "tit",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "tit",
                     },
                 ],
@@ -217,7 +217,7 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_c
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -233,12 +233,12 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
@@ -267,7 +267,7 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -283,12 +283,12 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
@@ -317,7 +317,9 @@ def test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -333,82 +335,17 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tn-wa",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tq-wa",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
                         "resource_type": "ulb",
                         "book_code": "col",
                     },
                     {
-                        "lang_code": "sw",
+                        "lang_code": "en",
                         "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
-                        "lang_code": "sw",
+                        "lang_code": "en",
                         "resource_type": "tq",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "ulb",
-                        "book_code": "tit",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tn",
-                        "book_code": "tit",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tq",
-                        "book_code": "tit",
-                    },
-                ],
-            },
-        )
-        check_finished_document_with_verses_success(response)
-
-
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-                "layout_for_print": True,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
-                "generate_pdf": False,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "en",
-                        "resource_type": "ulb-wa",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tn-wa",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tq-wa",
                         "book_code": "col",
                     },
                     {
@@ -447,7 +384,76 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_sw_ulb_col_sw_tn_col_sw_tq_col_
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tq",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "tn",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "tq",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "ulb",
+                        "book_code": "tit",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "tn",
+                        "book_code": "tit",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "tq",
+                        "book_code": "tit",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -463,12 +469,12 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
@@ -497,7 +503,9 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -513,12 +521,12 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
@@ -547,7 +555,9 @@ def test_en_ulb_wa_col_en_tq_wa_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_la
         check_finished_document_with_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
+# tq has been retired for en
+# @pytest.mark.skip
+def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -563,17 +573,17 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -612,7 +622,9 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
+# tq has been retired for en
+# @pytest.mark.skip
+def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -628,17 +640,17 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -677,7 +689,7 @@ def test_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_sw_tn_col_sw_tq_col_sw_tw_col_sw
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -693,12 +705,12 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -727,7 +739,7 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -743,12 +755,12 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -777,7 +789,9 @@ def test_en_tn_wa_col_en_tw_wa_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -793,12 +807,12 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -817,7 +831,9 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -833,12 +849,12 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -857,7 +873,7 @@ def test_en_tq_wa_col_en_tw_wa_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_tw_col_sw_tw_col_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -873,7 +889,7 @@ def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c_by_chapter() ->
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -887,7 +903,9 @@ def test_en_tw_wa_col_sw_tw_col_sw_tw_tit_language_book_order_1c_by_chapter() ->
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -903,12 +921,12 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
@@ -927,7 +945,9 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -943,12 +963,12 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
@@ -967,7 +987,9 @@ def test_en_tn_wa_col_en_tq_wa_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_langu
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_tq_col_sw_tq_col_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -983,7 +1005,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_by_chapter() ->
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
@@ -997,7 +1019,9 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_by_chapter() ->
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_tq_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1013,7 +1037,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c_by_chapter() 
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
@@ -1027,7 +1051,7 @@ def test_en_tq_wa_col_sw_tq_col_sw_tq_tit_language_book_order_1c_c_by_chapter() 
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_tn_col_sw_tn_col_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1043,7 +1067,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_by_chapter() ->
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
@@ -1062,7 +1086,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_by_chapter() ->
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1078,7 +1102,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c_by_chapter() 
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
@@ -1097,7 +1121,7 @@ def test_en_tn_wa_col_sw_tn_col_sw_tn_tit_language_book_order_1c_c_by_chapter() 
         check_finished_document_without_verses_success(response)
 
 
-def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1113,42 +1137,7 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_by_chapter()
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
                         "resource_type": "ulb",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "ulb",
-                        "book_code": "tit",
-                    },
-                ],
-            },
-        )
-        check_finished_document_with_verses_success(response)
-
-
-def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c_by_chapter() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-                "layout_for_print": True,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
-                "generate_pdf": False,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "en",
-                        "resource_type": "ulb-wa",
                         "book_code": "col",
                     },
                     {
@@ -1167,8 +1156,42 @@ def test_en_ulb_wa_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c_by_chapter
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+def test_en_ulb_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c_by_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "ulb",
+                        "book_code": "tit",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+# data api does not provide udb for gu
 @pytest.mark.skip
 def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1215,8 +1238,7 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api doesn't provide udb for gu
 @pytest.mark.skip
 def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1683,8 +1705,7 @@ def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# tl language does not provide udb
 @pytest.mark.skip
 def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1716,8 +1737,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# tl language does not provide udb
 @pytest.mark.skip
 def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1749,8 +1769,7 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# gu language does not provide udb
 @pytest.mark.skip
 def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1792,8 +1811,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chap
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# gu language does not provide udb
 @pytest.mark.skip
 def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1835,8 +1853,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c_by_ch
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api does not provide udb for gu
 @pytest.mark.skip
 def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1873,8 +1890,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_by_chapter() -> N
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api does not provide udb for gu
 @pytest.mark.skip
 def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1911,8 +1927,7 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_c_by_chapter() ->
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api doesn't provide udb for tl
 @pytest.mark.skip
 def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1949,8 +1964,7 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> N
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api doesn't provide udb for tl
 @pytest.mark.skip
 def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -1987,10 +2001,8 @@ def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() ->
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
-@pytest.mark.skip
-def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
+# @pytest.mark.skip
+def test_tl_tq_gen_tl_ulb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2011,7 +2023,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
                     },
                     {
                         "lang_code": "tl",
-                        "resource_type": "udb",
+                        "resource_type": "ulb",
                         "book_code": "gen",
                     },
                 ],
@@ -2020,8 +2032,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# tl language does not provide udb
 @pytest.mark.skip
 def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -2053,8 +2064,7 @@ def test_tl_tq_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api doesn't provide udb for tl
 @pytest.mark.skip
 def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -2086,8 +2096,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api doesn't provide udb for tl
 @pytest.mark.skip
 def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -2119,8 +2128,7 @@ def test_tl_tw_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api doesn't provide udb for tl
 @pytest.mark.skip
 def test_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -2147,8 +2155,7 @@ def test_tl_udb_gen_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
+# data api doesn't provide udb for tl
 @pytest.mark.skip
 def test_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -2177,57 +2184,8 @@ def test_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
 
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
-@pytest.mark.skip
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_by_chapter() -> None:
-    """Demonstrate listing unfound resources, in this case fr-udb-rev"""
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
-                "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
-                "generate_pdf": False,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "ulb",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "tn",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "tq",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "tw",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "udb",
-                        "book_code": "rev",
-                    },
-                ],
-            },
-        )
-        check_finished_document_with_verses_success(response)
-
-
-# Content team don't want udb used so now that it is configured out of
-# the usfm resource types, this test fails.
-@pytest.mark.skip
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c_by_chapter() -> None:
+# @pytest.mark.skip
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> None:
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -2237,55 +2195,6 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": True,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
-                "generate_pdf": False,
-                "generate_epub": False,
-                "generate_docx": False,
-                "resource_requests": [
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "ulb",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "tn",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "tq",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "tw",
-                        "book_code": "rev",
-                    },
-                    {
-                        "lang_code": "fr",
-                        "resource_type": "udb",
-                        "book_code": "rev",
-                    },
-                ],
-            },
-        )
-        check_finished_document_with_verses_success(response)
-
-
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> None:
-    """
-    Demonstrate two USFM resources, French, and use of a special
-    USFM resource: f10.
-    """
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
-                "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": False,
                 "generate_epub": False,
@@ -2322,7 +2231,7 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> None:
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2333,8 +2242,8 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
-                "layout_for_print": True,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": False,
                 "generate_epub": False,
@@ -2537,7 +2446,9 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c_by_chapter() -
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2553,22 +2464,22 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -2597,7 +2508,9 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_c_by_chapter() -> None:
+# en tq is not provided by data api
+# @pytest.mark.skip
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_c_by_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2613,22 +2526,22 @@ def test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_es_419_ulb_col_es_
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tn-wa",
+                        "resource_type": "tn",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tq-wa",
+                        "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "tw-wa",
+                        "resource_type": "tw",
                         "book_code": "col",
                     },
                     {
@@ -2863,7 +2776,7 @@ def test_id_ayt_tit_id_tn_tit_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_wa_mat_en_bc_wa_mat_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_mat_en_bc_mat_language_book_order_1c_by_chapter() -> None:
     """Test bug wherein ulb with commentary bombs whereas ulb with tn and commentary is fine."""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -2880,12 +2793,12 @@ def test_en_ulb_wa_mat_en_bc_wa_mat_language_book_order_1c_by_chapter() -> None:
                 "resource_requests": [
                     {
                         "lang_code": "en",
-                        "resource_type": "ulb-wa",
+                        "resource_type": "ulb",
                         "book_code": "mat",
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "bc-wa",
+                        "resource_type": "bc",
                         "book_code": "mat",
                     },
                 ],

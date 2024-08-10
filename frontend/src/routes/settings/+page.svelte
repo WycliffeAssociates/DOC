@@ -13,11 +13,14 @@
     limitTwStore,
     documentRequestKeyStore,
     settingsUpdated,
-    twResourceRequestedStore,
-    usfmResourceRequestedStore
+    twResourceRequestedStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
-  import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
+  import {
+    resourceTypesStore,
+    resourceTypesCountStore,
+    usfmAvailableStore
+  } from '$lib/stores/ResourceTypesStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { bookCountStore } from '$lib/stores/BooksStore'
   import GenerateDocument from './GenerateDocument.svelte'
@@ -34,33 +37,13 @@
   // requested so that we can use this fact in the UI to trigger the
   // presence or absence of the toggle to limit TW words.
   let twRegexp = new RegExp('.*tw.*')
-  let usfmRegexp = new RegExp('ayt|cuv|f10|nav|reg|udb|ugnt|uhb|ulb')
   $: {
     if ($resourceTypesStore) {
       $twResourceRequestedStore = $resourceTypesStore.some((item) => twRegexp.test(item))
-      $usfmResourceRequestedStore = $resourceTypesStore.some((item) => usfmRegexp.test(item))
     }
   }
   $: {
-    // If you use the commented out conditional, the user is always
-    // given the option of limiting translation words to those
-    // occuring in scripture (USFM) for the selected book(s) even
-    // if they have not requested scripture (USFM). Doing this is
-    // very inefficient to since, if limit is chosen, the USFM must be
-    // acquired, parsed, and analyzed during this last step and
-    // because it is done separately from the normal flow it leads to
-    // code duplication due to subtle differences in requesting USFM this
-    // late in the process, i.e., on the last step, which cannot be reused.
-    //
-    // The other option, and the one used here, is to only provide the
-    // option of limiting translation words if scripture (USFM) was
-    // actually requested by the user. This can make sense because
-    // translation words are a language scoped resource and not a
-    // book scoped resource so, presumably, if the user has requested
-    // translations words without scripture they very likely could
-    // want to just see all the translation words for that language.
-    // if ($twResourceRequestedStore) {
-    if ($twResourceRequestedStore && $usfmResourceRequestedStore) {
+    if ($twResourceRequestedStore && $usfmAvailableStore) {
       $limitTwStore = true
     } else {
       $limitTwStore = false
@@ -248,15 +231,15 @@
             >Enabling this option will remove extra whitespace</span
           >
         </div>
-        {#if $twResourceRequestedStore && $usfmResourceRequestedStore}
+        {#if $twResourceRequestedStore && $usfmAvailableStore}
           <div class="mb-2 mt-6 flex">
             <Switch bind:checked={$limitTwStore} id="limit-tw-store" />
             <span class="ml-2 text-xl text-[#33445C]">Limit TW words</span>
           </div>
           <div>
             <span class="text-lg text-[#33445C]"
-              >Enabling this option will filter TW words down to only those that occur in the books
-              chosen</span
+              >Enabling this option will filter TW words down to only those that occur in the
+              scripture for the books chosen</span
             >
           </div>
         {/if}
@@ -266,13 +249,12 @@
       <div class="ml-4">
         {#if !$documentReadyStore}
           <div>
-            <!-- FIXME Don't use checkbox class, use checkbox-style. Also checkbox-dark-bordered is not defined -->
             <input
               id="emailCheckbox"
               type="checkbox"
               on:click={() => (showEmail = !showEmail)}
               value={showEmail}
-              class="checkbox checkbox-dark-bordered"
+              class="checkbox-target checkbox-style"
             />
             <label for="emailCheckbox" class="pl-1 text-xl text-[#33445C]"
               >Email me a copy of my document.</label
@@ -324,3 +306,15 @@
   </div>
   <!-- end if -->
 </div>
+
+<style global lang="postcss">
+  li.target:has(input[type='checkbox']:checked) {
+    background: #e6eefb;
+  }
+  input.checkbox-target[type='checkbox']:checked + span {
+    color: #015ad9;
+  }
+  .checkbox-style {
+    @apply h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600;
+  }
+</style>

@@ -10,9 +10,7 @@ classifiers = [
 # dependences, but this stanza is for other projects relying on DOC as
 # a package to take advantage of it as a library.
 dependencies = [
-  "Markdown",
   "aiofiles",
-  "beautifulsoup4",
   "celery",
   "celery-types",
   "docxtpl",
@@ -22,23 +20,15 @@ dependencies = [
   "html2docx",
   "gunicorn",
   "jinja2",
-  "jsonpath-rw",
-  "jsonpath-rw-ext",
-  "lxml",
-  "more-itertools",
   "orjson",
   "pydantic",
   "email-validator",
-  "psutil",
   "python-dotenv",
   "pyyaml",
   "redis",
   "requests",
-  "setuptools",
   "termcolor",
   "toolz",
-  "trio",
-  "usfm_tools @ https://github.com/linearcombination/USFM-Tools/archive/refs/tags/0.0.9.zip",
   "uvicorn",
   "weasyprint",
 
@@ -68,7 +58,7 @@ testpaths = ["tests"]
 addopts = [
     "--tb=long",
     "--showlocals",
-    "-x",
+    # "-x",
 #   "--pdb",
 #   "--maxfail=4",
 #   "--last-failed",
@@ -85,7 +75,11 @@ markers = [
     "datafiles", # : Load datafiles fixture
     "slow", # : Marks tests as slow (deselect with '-m "not slow"')
     "randomized", # : Tests that are randomly built combinatorically at runtime using fixtures and not suitable for ci/cd production runs
+    "english_randomized", # Tests that are randomly selected
+    # combinatorically for English at runtime using fixtures and not suitable for
+    # ci/cd production runs
     "docx", # : Marks the majority of tests that test generation of docx output so that they can be run in isolation during development.
+    "all", # : Marks a single test which exercises potentially all languages.
     ]
 # Speed up pytest collection times
 norecursedirs = [

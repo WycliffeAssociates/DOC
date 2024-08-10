@@ -2,36 +2,32 @@
 This module provides an API for parsing content.
 """
 
+import re
+import subprocess
 import time
 from glob import glob
-from os import scandir
+from os import scandir, getenv, getcwd, walk
 from os.path import exists, join, split
 from pathlib import Path
 from re import compile, sub
-from typing import Callable, Mapping, Optional, Sequence, cast
+from typing import Mapping, Optional, Sequence
 
-import markdown
+import mistune
 import orjson
 import yaml
-from bs4 import BeautifulSoup
-from bs4.element import Tag, NavigableString
+
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
-    adjust_book_intro_headings,
-    adjust_chapter_heading,
-    adjust_chapter_intro_headings,
     adjust_commentary_headings,
 )
-from document.domain.bible_books import BOOK_NAMES, book_number
+
+from document.domain.exceptions import MissingChapterMarkerError
+from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import (
     BCBook,
     BCChapter,
-    BookContent,
     ChapterNum,
-    ChunkSizeEnum,
-    HtmlContent,
     LangDirEnum,
-    MarkdownContent,
     ResourceLookupDto,
     ResourceRequest,
     TNBook,
@@ -44,133 +40,20 @@ from document.domain.model import (
     USFMChapter,
     VerseRef,
 )
-from document.markdown_extensions import (
-    link_print_transformer_preprocessor,
-    link_transformer_preprocessor,
-    remove_section_preprocessor,
-)
+from document.markdown_transforms import markdown_transformer
 from document.utils.file_utils import read_file
-from document.utils.html_parsing_utils import tag_elements_between
+
 from document.utils.tw_utils import (
     localized_translation_word,
     translation_word_filepaths,
-    translation_words_dict,
     tw_resource_dir,
+    translation_words_dict,
 )
-from usfm_tools import transform
+
 
 logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
-
-
-def ensure_paragraph_before_verses(
-    usfm_file: str,
-    verse_content: str,
-    usfm_verse_one_file_regex: str = "^01\..*",
-    chapter_marker_not_on_own_line_regex: str = r"^\\c [0-9]+ .*|\n",
-    chapter_marker_not_on_own_line_with_match_groups: str = r"(^\\c [0-9]+) (.*|\n)",
-    chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
-) -> str:
-    """
-    If verse_content has a USFM chapter marker, \c, that is not on its
-    own line (violation of the USFM spec) then repair this and
-    additionally add a USFM paragraph marker, \p, so that when the USFM is
-    rendered to HTML the verse spans will be enclosed in a block level
-    HTML element which in turn will ensure that Docx rendering is free of
-    a bug wherein the verse spans are interpreted as a continuation of the
-    chapter headline (as evidenced by verse content being rendered with
-    the same font color and boldness as the chapter headline).
-
-    Return the possibly updated verse_content.
-    """
-    if (
-        compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
-    ):  # Verse 1 of chapter
-        if (
-            compile(chapter_marker_not_on_own_line_regex).match(verse_content)
-            is not None
-        ):  # Chapter marker not on own line
-            # Make chapter marker occupy its own line and add a USFM paragraph
-            # marker right after it. Why? Because languages which render correctly
-            # in Docx have a \p USFM marker after the chapter marker and languages
-            # which did not render properly (see docstring above for particulars) in
-            # Docx did not have one. Presumably the 3rd party lib we use to parse
-            # HTML to Docx doesn't like spans that are not contained in a block
-            # level element.
-            verse_content = sub(
-                chapter_marker_not_on_own_line_with_match_groups,
-                chapter_marker_not_on_own_line_repair_regex,
-                verse_content,
-            )
-    return verse_content
-
-
-def attempt_to_make_usfm_parseable(
-    resource_dir: str,
-    resource_lookup_dto: ResourceLookupDto,
-    bible_book_names: Mapping[str, str] = BOOK_NAMES,
-) -> str:
-    """
-    Attempt to assemble and construct parseable USFM content for USFM
-    resource delivered as multiple chapter directories containing verse
-    content files.
-    """
-    logger.info(
-        "About to create USFM content for non-conformant USFM to attempt to make it parseable."
-    )
-    usfm_content = []
-    logger.info("Adding a USFM \id marker which the parser requires.")
-    usfm_content.append(
-        "\id {} Unnamed translation\n".format(resource_lookup_dto.book_code.upper())
-    )
-    logger.info("Adding a USFM \ide marker which the parser requires.")
-    usfm_content.append("\ide UTF-8\n")
-    logger.info("Adding a USFM \h marker which the parser requires.")
-    usfm_content.append(
-        "\h {}\n".format(bible_book_names[resource_lookup_dto.book_code])
-    )
-    subdirs = [
-        file
-        for file in scandir(resource_dir)
-        if file.is_dir()
-        and file.name != ".git"
-        and file.name != "front"
-        and file.name != "00"
-    ]
-    for chapter_dir in sorted(subdirs, key=lambda dir_entry: dir_entry.name):
-        chapter_usfm_content = []
-        chapter_num = chapter_dir.name
-        chapter_verse_files = sorted(
-            [
-                file.path
-                for file in scandir(chapter_dir)
-                if file.is_file() and file.name != "title.txt"
-            ]
-        )
-        for usfm_file in chapter_verse_files:
-            with open(usfm_file, "r") as fin:
-                verse_content = fin.read()
-                verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
-                chapter_usfm_content.append(verse_content)
-                chapter_usfm_content.append("\n")
-        usfm_content.extend(chapter_usfm_content)
-
-    # Write the concatenated markdown content to a
-    # non-clobberable filename.
-    filename = join(
-        resource_dir,
-        "{}_{}_{}_{}.usfm".format(
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
-            time.time_ns(),
-        ),
-    )
-    logger.debug("About to write filename: %s", filename)
-    with open(filename, "w") as fout:
-        fout.write("".join(usfm_content))
-    return filename
 
 
 def find_usfm_files(
@@ -179,11 +62,6 @@ def find_usfm_files(
     usfm_ending_in_txt_glob_fmt_str: str = "{}**/*.txt",
     usfm_ending_in_txt_in_subdirectory_glob_fmt_str: str = "{}**/**/*.txt",
 ) -> list[str]:
-    # We don't need a manifest file to find resource assets on disk. Instead
-    # we use globbing and then filter down the list found to only include
-    # those files that match the book code being requested. Some resources
-    # do not provide a manifest. The downside to this is that we don't
-    # consult the "finished" section of the manifest file.
     usfm_files = glob(usfm_glob_fmt_str.format(resource_dir))
     if not usfm_files:
         # USFM files sometimes have txt suffix instead of usfm
@@ -218,24 +96,64 @@ def filter_usfm_files(
     return []
 
 
-def convert_usfm_to_html(
-    content_file: Optional[str], output_dir: str, resource_filename: str
+def write_usfm_content_to_file(content: str, filepath_sans_suffix: str) -> str:
+    filepath = f"{filepath_sans_suffix}.usfm"
+    with open(filepath, "w") as fp:
+        fp.write(content)
+    return filepath
+
+
+def print_directory_contents(directory: str) -> None:
+    """
+    Useful for debugging layout on Github Action virtual machine
+    """
+    for root, dirs, files in walk(directory):
+        # Print the current directory path
+        logger.debug("Directory: %s", root)
+
+        # Print all files in the current directory
+        for file in files:
+            logger.debug("  File: %s", file)
+
+        # Print all subdirectories in the current directory
+        for dir in dirs:
+            logger.debug("  Subdirectory: %s", dir)
+
+
+def convert_usfm_chapter_to_html(
+    content: str,
+    resource_filename_sans_suffix: str,
 ) -> None:
     """
-    Invoke the usfm_tools parser to parse the USFM file, if it exists,
-    into HTML and store on disk.
-
-    N.B. USFM-Tools books.py can raise MalformedUsfmError when the
-    following code is called. The document_generator module will catch
-    that error but continue with other resource requests in the same
-    document request.
+    Invoke the dotnet USFM parser to parse the USFM file, if it exists,
+    and render it into HTML and store on disk.
     """
-    if content_file:
-        transform.buildSingleHtmlFromFile(
-            Path(content_file),
-            output_dir,
-            resource_filename,
+    content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
+    logger.debug("About to convert USFM to HTML")
+    dll_path = "/app/USFMParserDriver/bin/Release/net8.0/USFMParserDriver.dll"
+    if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
+        logger.info("dotnet cli not found!")
+        raise Exception("dotnet cli not found")
+    if not exists(dll_path):
+        logger.info("dotnet parser executable not found!")
+        print_directory_contents("/app/USFMParserDriver")
+        raise Exception("dotnet parser executable not found!")
+    if not exists(content_file):
+        logger.debug(
+            "dotnet parser expects %s to exist, but it does not!", content_file
         )
+    command = [
+        f"{getenv('DOTNET_ROOT')}/dotnet",
+        dll_path,
+        f"/app/{content_file}",
+        f"/app/{resource_filename_sans_suffix}.html",
+    ]
+    logger.debug("dotnet command: %s", " ".join(command))
+    result = subprocess.run(
+        command,
+        check=True,
+        text=True,
+    )
 
 
 def usfm_asset_file(
@@ -256,12 +174,9 @@ def usfm_asset_file(
             usfm_files, resource_lookup_dto.book_code
         )
     if filtered_usfm_files:
-        # Some languages, like ndh-x-chindali, provide their USFM files in
-        # a git repo rather than as standalone USFM files. A USFM git repo can
-        # have each USFM chapter in a separate directory and each verse in a
-        # separate file in that directory. However, the parser expects one USFM
-        # file per book, therefore we need to concatenate the book's USFM files
-        # into one USFM file.
+        # A USFM git repo can have each USFM chapter in a separate directory and
+        # each verse in a separate file in that directory. We concatenate the
+        # book's USFM files into one USFM file.
         if len(filtered_usfm_files) > 1:
             return attempt_to_make_usfm_parseable(resource_dir, resource_lookup_dto)
         else:
@@ -269,22 +184,18 @@ def usfm_asset_file(
     return None
 
 
-def usfm_asset_html(
-    content_file: Optional[str],
+def usfm_chapter_html(
+    content: str,
     resource_lookup_dto: ResourceLookupDto,
+    chapter_num: int,
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
 ) -> Optional[str]:
     """
     Parse USFM asset content into HTML and return HTML as string.
     """
-    resource_filename_ = resource_filename(
-        resource_lookup_dto.lang_code,
-        resource_lookup_dto.resource_type,
-        resource_lookup_dto.book_code,
-    )
-
+    resource_filename_sans_suffix = f"{output_dir}/{resource_lookup_dto.lang_code}_{resource_lookup_dto.resource_type}_{resource_lookup_dto.book_code}_{chapter_num}"
     t0 = time.time()
-    convert_usfm_to_html(content_file, output_dir, resource_filename_)
+    convert_usfm_chapter_to_html(content, resource_filename_sans_suffix)
     t1 = time.time()
     logger.debug(
         "Time to convert USFM to HTML (parsing to AST + convert AST to HTML) for %s-%s-%s: %s",
@@ -293,54 +204,59 @@ def usfm_asset_html(
         resource_lookup_dto.book_code,
         t1 - t0,
     )
-    html_file = join(output_dir, f"{resource_filename_}.html")
-
-    if exists(html_file):
-        html_content = read_file(html_file)
+    html_content_filepath = f"{resource_filename_sans_suffix}.html"
+    if exists(html_content_filepath):
+        html_content = read_file(html_content_filepath)
         return html_content
     return None
 
 
-def usfm_chapter_verses(
-    chapter_verse_span_tags: list[Tag],
-    chapter_content_parser: BeautifulSoup,
-    resource_lookup_dto: ResourceLookupDto,
-    chapter_num: int,
-    pattern: str,
-    format_str: str,
-) -> dict[str, str]:
-    # Dictionary to hold verse number, verse value pairs.
-    chapter_verses = {}
-    for verse_span_tag in chapter_verse_span_tags:
-        verse_ref_, upper_bound_value = verse_ref(verse_span_tag)
-        verse_content_str_ = verse_content_str(
-            verse_span_tag,
-            chapter_content_parser,
-            book_number(resource_lookup_dto.book_code),
-            chapter_num,
-            upper_bound_value,
-        )
-        # We now alter the span ID in verse_content_str_ by prepending it
-        # with the lang_code for the language we are currently parsing to ensure
-        # unique verse references within language scope in a multi-language
-        # document.
-        updated_verse_content_str = sub(
-            pattern,
-            format_str.format(resource_lookup_dto.lang_code),
-            verse_content_str_,
-        )
-        chapter_verses[verse_ref_] = updated_verse_content_str
-    return chapter_verses
-
-
-def remove_links(parser: BeautifulSoup) -> None:
+def remove_links(html: str) -> str:
     """
     Turn HTML links into spans
     """
-    a_tags = parser.find_all("a")
-    # Now we modify the footnote links to be inactive, i.e., suitable for printing.
-    for a_tag in a_tags:
-        a_tag.name = "span"
+    html = html.replace("<a ", "<span ").replace("</a>", "</span>")
+    return html
+
+
+def split_usfm_by_chapters(usfm_text: str) -> tuple[str, list[str]]:
+    """
+    Split the USFM text into chapters based on the \c marker
+    """
+    chapter_regex = r"\\c\s+\d+"
+    chapters = re.split(chapter_regex, usfm_text)
+    chapter_markers = re.findall(chapter_regex, usfm_text)
+    frontmatter = chapters.pop(0).strip()
+    chapters = [
+        marker + chapter.lstrip()
+        for marker, chapter in zip(chapter_markers, chapters)
+        if chapter.lstrip()
+    ]
+    return frontmatter, chapters
+
+
+def ensure_chapter_label(chapter_usfm_text: str) -> str:
+    """
+    Modify USFM source to insert a chapter label, \cl, if it does not have one.
+    """
+    if not re.search(r"\\cl\s+", chapter_usfm_text):
+        if match := re.search(r"\\c\s+(\d+)", chapter_usfm_text):
+            chapter_num = match.group(1)
+            updated_chapter_usfm_text = re.sub(
+                r"(\\c\s+\d+)", rf"\1\\cl Chapter {chapter_num}", chapter_usfm_text
+            )
+            return updated_chapter_usfm_text
+    return chapter_usfm_text
+
+
+def get_chapter_num(chapter_usfm_text: str) -> int:
+    """Get the chapter number from the USFM chapter source text."""
+    if match := re.search(r"\\c\s+(\d+)", chapter_usfm_text):
+        chapter_num = match.group(1)
+        return int(chapter_num)
+    raise MissingChapterMarkerError(
+        message=f"Missing chapter number for chapter text: {chapter_usfm_text}"
+    )
 
 
 def usfm_book_content(
@@ -348,11 +264,6 @@ def usfm_book_content(
     resource_dir: str,
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
-    h2: str = H2,
-    bs_parser_type: str = "lxml",
-    css_attribute_type: str = "class",
-    pattern: str = settings.VERSE_ANCHOR_ID_FMT_STR,
-    format_str: str = settings.VERSE_ANCHOR_ID_SUBSTITUTION_FMT_STR,
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
@@ -360,192 +271,30 @@ def usfm_book_content(
     chapters, verses, footnotes, for use during interleaving with other
     resource assets.
     """
-    lang_dir = lang_direction(resource_dir)
-    logger.debug("Language direction: %s", lang_dir)
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
-    logger.debug("content_file: %s", content_file)
-    html_content = usfm_asset_html(content_file, resource_lookup_dto)
-    chapters: dict[ChapterNum, USFMChapter] = {}
-    if html_content:
-        parser = BeautifulSoup(html_content, bs_parser_type)
-        chapter_break_tags = parser.find_all(h2, attrs={css_attribute_type: "c-num"})
-        if not chapter_break_tags:
-            logger.debug(
-                "lang_code: %s, lang_name: %s, book_code: %s has no chapters because it is missing chapter markers",
-                resource_lookup_dto.lang_code,
-                resource_lookup_dto.lang_name,
-                resource_lookup_dto.book_code,
-            )
-        for chapter_break in chapter_break_tags:
-            chapter_num = int(chapter_break.get_text().split()[1])
-            chapter_content = tag_elements_between(
-                parser.find(
-                    h2,
-                    text=compile(".* {}".format(chapter_num)),
-                ),
-                parser.find(
-                    h2,
-                    text=compile(".* {}".format(chapter_num + 1)),
-                ),
-            )
-            chapter_content = [str(tag) for tag in list(chapter_content)]
-            chapter_content_parser = BeautifulSoup(
-                "".join(chapter_content),
-                bs_parser_type,
-            )
-            chapter_verse_span_tags = chapter_content_parser.find_all(
-                "span", attrs={css_attribute_type: "v-num"}
-            )
-
-            if layout_for_print:
-                remove_links(chapter_content_parser)
-
-            chapter_footnote_tag = chapter_content_parser.find(
-                "div", attrs={css_attribute_type: "footnotes"}
-            )
-
-            # Dictionary to hold verse number, verse value pairs.
-            chapter_verses_ = usfm_chapter_verses(
-                chapter_verse_span_tags,
-                chapter_content_parser,
-                resource_lookup_dto,
-                chapter_num,
-                pattern,
-                format_str,
-            )
-            chapters[chapter_num] = USFMChapter(
-                content=adjust_chapter_heading(chapter_content),
-                verses=chapter_verses_,
-                footnotes=HtmlContent(str(chapter_footnote_tag))
-                if chapter_footnote_tag
-                else HtmlContent(""),
+    usfm_chapters: dict[ChapterNum, USFMChapter] = {}
+    if content_file:
+        frontmatter, chapters_ = split_usfm_by_chapters(read_file(content_file))
+        updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
+        for chapter in updated_chapters:
+            chapter_num = get_chapter_num(chapter)
+            html_content = usfm_chapter_html(chapter, resource_lookup_dto, chapter_num)
+            usfm_chapters[chapter_num] = USFMChapter(
+                content=html_content if html_content else "",
             )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
         resource_type_name=resource_lookup_dto.resource_type_name,
-        chapters=chapters if chapters else {},
-        lang_direction=lang_dir,
+        chapters=usfm_chapters if usfm_chapters else {},
+        lang_direction=resource_lookup_dto.lang_direction,
     )
 
 
 def load_manifest(file_path: str) -> str:
     with open(file_path, "r") as file:
         return file.read()
-
-
-def lang_direction(
-    resource_dir: str,
-    manifest_glob_fmt_str: str = "{}/**/manifest.{}",
-    manifest_glob_alt_fmt_str: str = "{}/manifest.{}",
-) -> LangDirEnum:
-    """
-    Look up the language direction in the manifest file if one is
-    available for this resource.
-    """
-    # Try to find manifest yaml at typical directory
-    manifest_candidates = glob(manifest_glob_fmt_str.format(resource_dir, "yaml"))
-    if not manifest_candidates:
-        # Now try to find manifest yaml at parent directory of typical directory
-        manifest_candidates = glob(
-            manifest_glob_alt_fmt_str.format(resource_dir, "yaml")
-        )
-        if not manifest_candidates:
-            # Some languages provide their manifest in json format.
-            # Try to find manifest json at typical directory
-            manifest_candidates = glob(
-                manifest_glob_fmt_str.format(resource_dir, "json")
-            )
-            if not manifest_candidates:
-                # Try to find manifest json at parent directory of typical directory
-                manifest_candidates = glob(
-                    manifest_glob_alt_fmt_str.format(resource_dir, "json")
-                )
-
-    if manifest_candidates:
-        candidate = manifest_candidates[0]
-        contents = {}
-        lang_dir = ""
-        suffix = str(Path(candidate).suffix)
-        if suffix == "yaml":
-            contents = yaml.safe_load(load_manifest(candidate))
-            lang_dir = contents["dublin_core"]["language"]["direction"]
-        elif suffix == "json":
-            contents = orjson.loads(load_manifest(candidate))
-            lang_dir = contents["target_language"]["direction"]
-
-        if lang_dir == LangDirEnum.RTL.value:
-            return LangDirEnum.RTL
-
-    # There was no manifest or the direction in the manifest is LTR
-    return LangDirEnum.LTR
-
-
-def verse_ref(verse_span_tag: Tag) -> tuple[str, int]:
-    """Return the verse_ref value."""
-    # Rather than a single verse num, the item in
-    # verse_num may be a verse range, e.g., 1-2.
-    # See test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_*
-    # tests for tests that trigger this situation.
-    # Get the verse ref from the verse HTML tag's id value.
-    verse_ref = str(verse_span_tag).split("-v-")[1].split('"')[0]
-    # Check for hyphen in the range whose presence would indicate that
-    # verse ref is a verse range rather than a single verse.
-    verse_ref_components = verse_ref.split("-")
-    if len(verse_ref_components) > 1:  # This is a verse ref for a verse range
-        upper_bound_value = int(verse_ref_components[1]) + 1
-        # Get rid of leading zeroes on first verse number
-        # in range.
-        verse_num_int = int(verse_ref_components[0])
-        # Get rid of leading zeroes on second verse number
-        # in range.
-        verse_num2_int = int(verse_ref_components[1])
-        # Recreate the verse range, now without leading
-        # zeroes.
-        verse_ref = "{}-{}".format(str(verse_num_int), str(verse_num2_int))
-    else:  # This is a verse ref for a single verse
-        upper_bound_value = int(verse_ref) + 1
-        # Get rid of leading zeroes.
-        verse_ref = str(int(verse_ref))
-    return verse_ref, upper_bound_value
-
-
-def verse_content_str(
-    lower_tag: Tag,
-    chapter_content_parser: BeautifulSoup,
-    book_number: str,
-    chapter_num: int,
-    upper_bound_value: int,
-    num_zeros: int = 3,
-    css_attribute_type: str = "class",
-) -> str:
-    """Return the content, i.e., text, of the verse(s)."""
-    upper_id = "{}-ch-{}-v-{}".format(
-        str(book_number).zfill(num_zeros),
-        str(chapter_num).zfill(num_zeros),
-        str(upper_bound_value).zfill(num_zeros),
-    )
-    upper_tag = chapter_content_parser.find(
-        "span",
-        attrs={css_attribute_type: "v-num", "id": upper_id},
-    )
-
-    # Ensure that chapter footnotes are not accidentally included with
-    # verses from end of chapter.
-    if upper_tag is None:
-        # We'll set the upper_tag to footnotes node (or None if it does not
-        # exist) so that we don't include footnotes in the last verse's content.
-        # Footnotes are rendered in HTML by USFM-TOOLS after the chapter's verse
-        # content so we don't want them included additionally/accidentally here
-        # also.
-        footnotes_for_chapter = chapter_content_parser.find("div", class_="footnotes")
-        upper_tag = footnotes_for_chapter
-
-    chapter_components = str(chapter_content_parser).split(str(lower_tag))
-    section_components = chapter_components[1].split(str(upper_tag))
-    verse_content_str = "{}{}".format(lower_tag, section_components[0])
-    return verse_content_str
 
 
 def glob_chapter_dirs(
@@ -568,57 +317,73 @@ def glob_chapter_dirs(
 
 
 def tn_chapter_verses(
-    resource_dir: str, book_code: str, md: markdown.Markdown
+    resource_dir: str,
+    lang_code: str,
+    book_code: str,
+    resource_requests: Sequence[ResourceRequest],
 ) -> dict[int, TNChapter]:
     chapter_dirs = sorted(glob_chapter_dirs(resource_dir, book_code))
     chapter_verses = {}
     for chapter_dir in chapter_dirs:
         chapter_num = int(Path(chapter_dir).name)
-        intro_html = tn_intro_html(chapter_dir, md)
-        intro_html = intro_html if intro_html else ""
-        verses_html = tn_verses_html(chapter_dir, book_code, md)
+        chapter_intro = tn_chapter_intro(chapter_dir)
+        chapter_intro_html = ""
+        if chapter_intro:
+            tw_resource_dir_ = tw_resource_dir(lang_code)
+            translation_words_dict_ = translation_words_dict(tw_resource_dir_)
+            chapter_intro = markdown_transformer.transform_tw_links(
+                chapter_intro,
+                lang_code,
+                resource_requests,
+                translation_words_dict_,
+            )
+            chapter_intro = markdown_transformer.transform_ta_and_tn_links(
+                chapter_intro,
+                lang_code,
+                resource_requests,
+            )
+            chapter_intro_html = mistune.markdown(chapter_intro)
+        verses_html = tn_verses_html(
+            chapter_dir, lang_code, book_code, resource_requests
+        )
         chapter_verses[chapter_num] = TNChapter(
-            intro_html=intro_html, verses=verses_html
+            intro_html=chapter_intro_html, verses=verses_html
         )
     return chapter_verses
 
 
-def tn_intro_html(
+def tn_chapter_intro(
     chapter_dir: str,
-    md: markdown.Markdown,
     glob_md_fmt_str: str = "{}/*intro.md",
     glob_txt_fmt_str: str = "{}/*intro.txt",
 ) -> Optional[str]:
     intro_paths = sorted(glob(glob_md_fmt_str.format(chapter_dir)))
     if not intro_paths:
         intro_paths = sorted(glob(glob_txt_fmt_str.format(chapter_dir)))
-    return md.convert(read_file(intro_paths[0])) if intro_paths else None
+    return read_file(intro_paths[0]) if intro_paths else None
 
 
 def adjust_html_tags(html_content: str) -> str:
     return html_content.replace(H1, H5)
 
 
-def adjust_book_intro(
-    resource_dir: str, book_code: str, md: markdown.Markdown, include: bool
-) -> str:
+def book_intro_markdown(resource_dir: str, book_code: str) -> str:
     book_intro_paths = sorted(glob(f"{resource_dir}/*{book_code}/front/intro.md"))
     if not book_intro_paths:
         book_intro_paths = sorted(glob(f"{resource_dir}/*{book_code}/front/intro.txt"))
-    book_intro_html = (
-        read_file(book_intro_paths[0]) if book_intro_paths and include else ""
-    )
-    return md.convert(book_intro_html)
+    book_intro_markdown_ = read_file(book_intro_paths[0]) if book_intro_paths else ""
+    return book_intro_markdown_
 
 
 def tn_verses_html(
     chapter_dir: str,
+    lang_code: str,
     book_code: str,
-    md: markdown.Markdown,
+    resource_requests: Sequence[ResourceRequest],
     book_names: Mapping[str, str] = BOOK_NAMES,
     verse_fmt_str: str = "<h4>{} {}:{}</h4>\n{}",
     glob_md_fmt_str: str = "{}/*[0-9]*.md",
-    glob_txt_fmt_str: str = "{}/*[0-9]*.md",
+    glob_txt_fmt_str: str = "{}/*[0-9]*.txt",
 ) -> dict[VerseRef, str]:
     verse_paths = sorted(glob(glob_md_fmt_str.format(chapter_dir)))
     if not verse_paths:
@@ -627,7 +392,12 @@ def tn_verses_html(
     for filepath in verse_paths:
         verse_ref = Path(filepath).stem
         verse_md_content = read_file(filepath)
-        verse_html_content = md.convert(verse_md_content)
+        verse_md_content = markdown_transformer.transform_ta_and_tn_links(
+            verse_md_content,
+            lang_code,
+            resource_requests,
+        )
+        verse_html_content = mistune.markdown(verse_md_content)
         adjusted_verse_html_content = adjust_html_tags(verse_html_content)
         verses_html[verse_ref] = verse_fmt_str.format(
             book_names[book_code],
@@ -645,32 +415,39 @@ def tn_book_content(
     layout_for_print: bool,
     include_tn_book_intros: bool = False,
 ) -> TNBook:
-    lang_dir = lang_direction(resource_dir)
-    md = markdown_instance(
+    chapter_verses = tn_chapter_verses(
+        resource_dir,
         resource_lookup_dto.lang_code,
-        resource_lookup_dto.resource_type,
+        resource_lookup_dto.book_code,
         resource_requests,
-        layout_for_print,
     )
-    chapter_verses = tn_chapter_verses(resource_dir, resource_lookup_dto.book_code, md)
-    adjusted_book_intro = adjust_book_intro(
-        resource_dir, resource_lookup_dto.book_code, md, include_tn_book_intros
-    )
+    book_intro = ""
+    if include_tn_book_intros:
+        book_intro = book_intro_markdown(resource_dir, resource_lookup_dto.book_code)
+        if book_intro:
+            book_intro = markdown_transformer.remove_sections(book_intro)
+            book_intro = markdown_transformer.transform_ta_and_tn_links(
+                book_intro,
+                resource_lookup_dto.lang_code,
+                resource_requests,
+            )
+            book_intro = mistune.markdown(book_intro)
     return TNBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
         resource_type_name=resource_lookup_dto.resource_type_name,
-        book_intro=adjusted_book_intro,
+        book_intro=book_intro,
         chapters=chapter_verses,
-        lang_direction=lang_dir,
+        lang_direction=resource_lookup_dto.lang_direction,
     )
 
 
 def tq_chapter_verses(
     resource_dir: str,
+    lang_code: str,
     book_code: str,
-    md: markdown.Markdown,
+    resource_requests: Sequence[ResourceRequest],
     book_names: Mapping[str, str] = BOOK_NAMES,
     verse_paths_glob_fmt_str: str = "{}/*[0-9]*.md",
     h1: str = H1,
@@ -686,7 +463,12 @@ def tq_chapter_verses(
         for filepath in verse_paths:
             verse_ref = Path(filepath).stem
             verse_md_content = read_file(filepath)
-            verse_html_content = md.convert(verse_md_content)
+            verse_md_content = markdown_transformer.transform_ta_and_tn_links(
+                verse_md_content,
+                lang_code,
+                resource_requests,
+            )
+            verse_html_content = mistune.markdown(verse_md_content)
             adjusted_verse_html_content = sub(h1, h5, verse_html_content)
             verses_html[verse_ref] = verse_label_fmt_str.format(
                 book_names[book_code],
@@ -704,21 +486,19 @@ def tq_book_content(
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
 ) -> TQBook:
-    lang_dir = lang_direction(resource_dir)
-    md = markdown_instance(
+    chapter_verses = tq_chapter_verses(
+        resource_dir,
         resource_lookup_dto.lang_code,
-        resource_lookup_dto.resource_type,
+        resource_lookup_dto.book_code,
         resource_requests,
-        layout_for_print,
     )
-    chapter_verses = tq_chapter_verses(resource_dir, resource_lookup_dto.book_code, md)
     return TQBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
         resource_type_name=resource_lookup_dto.resource_type_name,
         chapters=chapter_verses,
-        lang_direction=lang_dir,
+        lang_direction=resource_lookup_dto.lang_direction,
     )
 
 
@@ -728,7 +508,8 @@ def tw_sort_key(name_content_pair: TWNameContentPair) -> str:
 
 def tw_name_content_pairs(
     resource_dir: str,
-    md: markdown.Markdown,
+    lang_code: str,
+    resource_requests: Sequence[ResourceRequest],
     h1: str = H1,
     h2: str = H2,
     h3: str = H3,
@@ -737,17 +518,22 @@ def tw_name_content_pairs(
     translation_word_filepaths_: list[str] = translation_word_filepaths(resource_dir)
     name_content_pairs: list[TWNameContentPair] = []
     for translation_word_filepath in translation_word_filepaths_:
-        translation_word_content = MarkdownContent(read_file(translation_word_filepath))
+        translation_word_content = read_file(translation_word_filepath)
         localized_translation_word_ = localized_translation_word(
             translation_word_content
         )
-        html_word_content = md.convert(translation_word_content)
+        translation_word_content = markdown_transformer.remove_sections(
+            translation_word_content
+        )
+        translation_word_content = markdown_transformer.transform_ta_and_tn_links(
+            translation_word_content, lang_code, resource_requests
+        )
+        html_word_content = mistune.markdown(translation_word_content)
         html_word_content = sub(h2, h4, html_word_content)
         html_word_content = sub(h1, h3, html_word_content)
         name_content_pairs.append(
             TWNameContentPair(localized_translation_word_, html_word_content)
         )
-
     return sorted(name_content_pairs, key=tw_sort_key)
 
 
@@ -757,48 +543,63 @@ def tw_book_content(
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
 ) -> TWBook:
-    lang_dir = lang_direction(resource_dir)
-    md = markdown_instance(
-        resource_lookup_dto.lang_code,
-        resource_lookup_dto.resource_type,
-        resource_requests,
-        layout_for_print,
-        resource_dir,
+    name_content_pairs = tw_name_content_pairs(
+        resource_dir, resource_lookup_dto.lang_code, resource_requests
     )
-    name_content_pairs = tw_name_content_pairs(resource_dir, md)
     return TWBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
         resource_type_name=resource_lookup_dto.resource_type_name,
         name_content_pairs=name_content_pairs,
-        lang_direction=lang_dir,
+        lang_direction=resource_lookup_dto.lang_direction,
     )
 
 
-def bc_book_intro_html_content(
+def bc_book_intro_content(
     resource_dir: str,
     book_code: str,
-    md: markdown.Markdown,
     book_intro_glob_path_fmt_str: str = "{}/*{}/intro.md",
 ) -> str:
     book_intro_paths = glob(
         book_intro_glob_path_fmt_str.format(resource_dir, book_code)
     )
-    book_intro_md_content = read_file(book_intro_paths[0]) if book_intro_paths else ""
-    book_intro_html_content = md.convert(book_intro_md_content)
-    adjusted_book_intro_html_content = adjust_commentary_headings(
-        book_intro_html_content
+    return read_file(book_intro_paths[0]) if book_intro_paths else ""
+
+
+def modify_commentary_label(
+    chapter_commentary_html_content: str, chapter_num: int
+) -> str:
+    # Modify chapter heading if it's the first chapter
+    if chapter_num == 1:
+        chapter_commentary_html_content = re.sub(
+            r"<h1>(.*?)<\/h1>",
+            r"<h1>\1 Commentary</h1>",
+            chapter_commentary_html_content,
+        )
+    return chapter_commentary_html_content
+
+
+def replace_relative_with_absolute_links(
+    chapter_commentary_html_content: str,
+    url_fmt_str: str = settings.BC_ARTICLE_URL_FMT_STR,
+) -> str:
+    chapter_commentary_html_content = re.sub(
+        r'<a\s+href="\/(.*?)">',
+        lambda match: '<a href="'
+        + url_fmt_str.format(match.group(1))
+        + '" target="_blank">',
+        chapter_commentary_html_content,
     )
-    return adjusted_book_intro_html_content
+    return chapter_commentary_html_content
 
 
 def bc_chapters(
     resource_dir: str,
+    lang_code: str,
     book_code: str,
-    md: markdown.Markdown,
+    resource_requests: Sequence[ResourceRequest],
     chapter_dirs_glob_fmt_str: str = "{}/*{}/*[0-9]*",
-    parser_type: str = "html.parser",
     url_fmt_str: str = settings.BC_ARTICLE_URL_FMT_STR,
 ) -> dict[int, BCChapter]:
     chapter_dirs = sorted(
@@ -808,24 +609,23 @@ def bc_chapters(
     for chapter_dir in chapter_dirs:
         chapter_num = int(Path(chapter_dir).stem)
         chapter_commentary_md_content = read_file(chapter_dir)
-        chapter_commentary_html_content = md.convert(chapter_commentary_md_content)
-        parser = BeautifulSoup(chapter_commentary_html_content, parser_type)
-        if chapter_num == 1:
-            # Change the chapter heading to indicate that it is
-            # commentary.
-            h1 = parser.find("h1")
-            if h1:
-                h1.append(" Commentary")
-        # Replace relative links to bible commentary articles with
-        # absolute links to the same resource online.
-        for link in parser.find_all("a"):
-            old_link_ref = link.get("href")
-            new_link_ref = url_fmt_str.format(old_link_ref[3:])
-            new_link = parser.new_tag("a", href=new_link_ref, target="_blank")
-            new_link.string = link.string
-            link.parent.a.replace_with(new_link)
+        chapter_commentary_md_content = markdown_transformer.remove_sections(
+            chapter_commentary_md_content
+        )
+        chapter_commentary_md_content = markdown_transformer.transform_ta_and_tn_links(
+            chapter_commentary_md_content, lang_code, resource_requests
+        )
+        chapter_commentary_html_content = mistune.markdown(
+            chapter_commentary_md_content
+        )
+        chapter_commentary_html_content = modify_commentary_label(
+            chapter_commentary_html_content, chapter_num
+        )
+        chapter_commentary_html_content = replace_relative_with_absolute_links(
+            chapter_commentary_html_content
+        )
         chapters[chapter_num] = BCChapter(
-            commentary=adjust_commentary_headings(str(parser))
+            commentary=adjust_commentary_headings(chapter_commentary_html_content)
         )
     return chapters
 
@@ -836,118 +636,205 @@ def bc_book_content(
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
 ) -> BCBook:
-    # Create the Markdown instance once and have it use our markdown
-    # extensions.
-    md = markdown_instance(
-        resource_lookup_dto.lang_code,
-        resource_lookup_dto.resource_type,
-        resource_requests,
-        layout_for_print,
+    book_intro = bc_book_intro_content(resource_dir, resource_lookup_dto.book_code)
+    book_intro = markdown_transformer.remove_sections(book_intro)
+    book_intro = markdown_transformer.transform_ta_and_tn_links(
+        book_intro, resource_lookup_dto.lang_code, resource_requests
+    )
+    book_intro_html_content = mistune.markdown(book_intro)
+    adjusted_book_intro_html_content = adjust_commentary_headings(
+        book_intro_html_content
     )
     return BCBook(
-        book_intro=bc_book_intro_html_content(
-            resource_dir, resource_lookup_dto.book_code, md
-        ),
+        book_intro=adjusted_book_intro_html_content,
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
         resource_type_name=resource_lookup_dto.resource_type_name,
-        chapters=bc_chapters(resource_dir, resource_lookup_dto.book_code, md),
+        chapters=bc_chapters(
+            resource_dir,
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.book_code,
+            resource_requests,
+        ),
     )
 
 
-# Define a mapping from resource types to corresponding functions
-RESOURCE_TYPE_FUNCTIONS: dict[str, Callable[..., BookContent]] = {
-    **{typ: usfm_book_content for typ in settings.ALL_USFM_RESOURCE_TYPES},
-    **{typ: tn_book_content for typ in settings.ALL_TN_RESOURCE_TYPES},
-    **{typ: tq_book_content for typ in settings.ALL_TQ_RESOURCE_TYPES},
-    **{typ: tw_book_content for typ in settings.ALL_TW_RESOURCE_TYPES},
-    **{typ: bc_book_content for typ in settings.BC_RESOURCE_TYPES},
-}
-
-
-def book_content(
-    resource_lookup_dto: ResourceLookupDto,
-    resource_dir: str,
+def books(
+    resource_lookup_dtos: Sequence[ResourceLookupDto],
+    resource_dirs: Sequence[str],
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
-) -> Optional[BookContent]:
-    """Build and return the BookContent instance."""
-    for resource_type_, content_func in RESOURCE_TYPE_FUNCTIONS.items():
-        if resource_lookup_dto.resource_type in resource_type_:
-            return content_func(
-                resource_lookup_dto,
-                resource_dir,
-                resource_requests,
-                layout_for_print,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    tn_resource_type: str = settings.TN_RESOURCE_TYPE,
+    en_tn_condensed_resource_type: str = settings.EN_TN_CONDENSED_RESOURCE_TYPE,
+    tq_resource_type: str = settings.TQ_RESOURCE_TYPE,
+    tw_resource_type: str = settings.TW_RESOURCE_TYPE,
+    bc_resource_type: str = settings.BC_RESOURCE_TYPE,
+) -> tuple[
+    Sequence[USFMBook],
+    Sequence[TNBook],
+    Sequence[TQBook],
+    Sequence[TWBook],
+    Sequence[BCBook],
+]:
+    usfm_books = []
+    tn_books = []
+    tq_books = []
+    tw_books = []
+    bc_books = []
+    for resource_lookup_dto, resource_dir in zip(resource_lookup_dtos, resource_dirs):
+        if resource_lookup_dto.resource_type in usfm_resource_types:
+            usfm_book = usfm_book_content(
+                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
             )
-    return None
+            usfm_books.append(usfm_book)
+        elif (
+            resource_lookup_dto.resource_type == tn_resource_type
+            # Handle English Condensed TN
+            or resource_lookup_dto.resource_type == en_tn_condensed_resource_type
+        ):
+            tn_book = tn_book_content(
+                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+            )
+            tn_books.append(tn_book)
+        elif resource_lookup_dto.resource_type == tq_resource_type:
+            tq_book = tq_book_content(
+                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+            )
+            tq_books.append(tq_book)
+        elif resource_lookup_dto.resource_type == tw_resource_type:
+            tw_book = tw_book_content(
+                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+            )
+            tw_books.append(tw_book)
+        elif resource_lookup_dto.resource_type == bc_resource_type:
+            bc_book = bc_book_content(
+                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+            )
+            bc_books.append(bc_book)
+    return usfm_books, tn_books, tq_books, tw_books, bc_books
 
 
-def markdown_instance(
-    lang_code: str,
-    resource_type: str,
-    resource_requests: Sequence[ResourceRequest],
-    layout_for_print: bool,
-    tw_resource_dir_: Optional[str] = None,
-    sections_to_remove: list[str] = settings.MARKDOWN_SECTIONS_TO_REMOVE,
-) -> markdown.Markdown:
+def ensure_paragraph_before_verses(
+    usfm_file: str,
+    verse_content: str,
+    usfm_verse_one_file_regex: str = "^01\..*",
+    chapter_marker_not_on_own_line_regex: str = r"^\\c [0-9]+ .*|\n",
+    chapter_marker_not_on_own_line_with_match_groups: str = r"(^\\c [0-9]+) (.*|\n)",
+    chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
+) -> str:
     """
-    Initialize and return a markdown.Markdown instance that can be
-    used to convert Markdown content to HTML content. This mainly
-    exists to implement the Law of Demeter and to clean up the
-    code of TResource subclasses by DRYing things up.
+    If verse_content has a USFM chapter marker, \c, that is not on its
+    own line (violation of the USFM spec) then repair this and
+    additionally add a USFM paragraph marker, \p, so that when the USFM is
+    rendered to HTML the verse spans will be enclosed in a block level
+    HTML element which in turn will ensure that Docx rendering is free of
+    a bug wherein the verse spans are interpreted as a continuation of the
+    chapter headline (as evidenced by verse content being rendered with
+    the same font color and boldness as the chapter headline).
+    Return the possibly updated verse_content.
     """
-    if not tw_resource_dir_:
-        tw_resource_dir_ = tw_resource_dir(lang_code)
-    translation_words_dict_ = translation_words_dict(tw_resource_dir_)
-    if not layout_for_print:  # User doesn't want to compact layout
-        return markdown.Markdown(
-            extensions=[
-                remove_section_preprocessor.RemoveSectionExtension(
-                    sections_to_remove=[
-                        sections_to_remove,
-                        "Markdown sections to remove",
-                    ]
-                ),
-                link_transformer_preprocessor.LinkTransformerExtension(
-                    lang_code=[lang_code, "Language code for resource"],
-                    resource_requests=[
-                        resource_requests,
-                        "The list of resource requests contained in the document request.",
-                    ],
-                    translation_words_dict=[
-                        translation_words_dict_,
-                        "Dictionary mapping translation word asset file name sans suffix to translation word asset file path.",
-                    ],
-                ),
+    if (
+        compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
+    ):  # Verse 1 of chapter
+        if (
+            compile(chapter_marker_not_on_own_line_regex).match(verse_content)
+            is not None
+        ):  # Chapter marker not on own line.
+            # Make chapter marker occupy its own line and add a USFM paragraph
+            # marker right after it. Why? Because languages which render correctly
+            # in Docx have a \p USFM marker after the chapter marker and languages
+            # which did not render properly (see docstring above for particulars) in
+            # Docx did not have one. Presumably the 3rd party lib we use to parse
+            # HTML to Docx doesn't like spans that are not contained in a block
+            # level element.
+            verse_content = sub(
+                chapter_marker_not_on_own_line_with_match_groups,
+                chapter_marker_not_on_own_line_repair_regex,
+                verse_content,
+            )
+    return verse_content
+
+
+def attempt_to_make_usfm_parseable(
+    resource_dir: str,
+    resource_lookup_dto: ResourceLookupDto,
+    bible_book_names: Mapping[str, str] = BOOK_NAMES,
+) -> str:
+    """
+    Attempt to assemble and construct parseable USFM content for USFM
+    resource delivered as multiple chapter directories containing verse
+    content files.
+    """
+    logger.info(
+        "About to assemble USFM content into a single USFM file to make it parseable."
+    )
+    usfm_content = []
+    # logger.info("Adding a USFM \\id marker which the parser requires.")
+    # usfm_content.append(
+    #     "\id {} Unnamed translation\n".format(resource_lookup_dto.book_code.upper())
+    # )
+    # logger.info("Adding a USFM \\ide marker which the parser requires.")
+    usfm_content.append("\ide UTF-8\n")
+    # logger.info("Adding a USFM \\h marker which the parser requires.")
+    usfm_content.append(
+        "\h {}\n".format(bible_book_names[resource_lookup_dto.book_code])
+    )
+    subdirs = [
+        file
+        for file in scandir(resource_dir)
+        if file.is_dir()
+        and file.name not in ["front", "00"]
+        and not file.name.startswith(".")
+    ]
+    for chapter_dir in sorted(subdirs, key=lambda dir_entry: dir_entry.name):
+        chapter_usfm_content = []
+        chapter_verse_files = sorted(
+            [
+                file.path
+                for file in scandir(chapter_dir)
+                if file.is_file()
+                and file.name != "title.txt"
+                and not file.name.startswith(".")
             ]
         )
-    # User set layout_for_print to True, so don't bother to link
-    # things since we are printing.
-    return markdown.Markdown(
-        extensions=[
-            remove_section_preprocessor.RemoveSectionExtension(
-                sections_to_remove=[sections_to_remove, "Markdown sections to remove"]
-            ),
-            link_print_transformer_preprocessor.LinkPrintTransformerExtension(
-                lang_code=[lang_code, "Language code for resource"],
-                resource_requests=[
-                    resource_requests,
-                    "The list of resource requests contained in the document request.",
-                ],
-                translation_words_dict=[
-                    translation_words_dict_,
-                    "Dictionary mapping translation word asset file name sans suffix to translation word asset file path.",
-                ],
-            ),
-        ]
+        if chapter_verse_files:
+            try:
+                chapter_marker = int(str(chapter_dir.name))
+            except ValueError:
+                logger.debug(
+                    "%s is not a valid chapter number, assigning -999 as chapter marker",
+                    str(chapter_dir.name),
+                )
+                chapter_marker = (
+                    -999
+                )  # The chapter number in source text was not a parseable integer, so we use this as a sentinal and parseable integer
+            logger.debug(
+                "Adding a USFM chapter marker for chapter: %s",
+                chapter_marker,
+            )
+            chapter_usfm_content.append(f"\n\c {int(chapter_marker)}\n")
+        for usfm_file in chapter_verse_files:
+            with open(usfm_file, "r") as fin:
+                logger.debug("usfm_file: %s", usfm_file)
+                verse_content = fin.read()
+                verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
+                chapter_usfm_content.append(verse_content)
+                chapter_usfm_content.append("\n")
+        usfm_content.extend(chapter_usfm_content)
+    # Write the concatenated USFM content to a
+    # non-clobberable filename.
+    filename = join(
+        resource_dir,
+        "{}_{}_{}_{}.usfm".format(
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+            time.time_ns(),
+        ),
     )
-
-
-def resource_filename(lang_code: str, resource_type: str, book_code: str) -> str:
-    """
-    Return the formatted resource_filename given lang_code,
-    resource_type, and book_code.
-    """
-    return "{}_{}_{}".format(lang_code, resource_type, book_code)
+    logger.debug("About to write filename: %s", filename)
+    with open(filename, "w") as fout:
+        fout.write("".join(usfm_content))
+    return filename

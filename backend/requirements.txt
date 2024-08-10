@@ -6,38 +6,21 @@
 #
 aiofiles==23.2.1
     # via -r ./backend/requirements.in
-aiohttp==3.9.4rc0
-    # via gql
-aiosignal==1.3.1
-    # via aiohttp
 amqp==5.2.0
     # via kombu
 annotated-types==0.6.0
     # via pydantic
 anyio==4.3.0
     # via
-    #   gql
     #   httpx
     #   starlette
     #   watchfiles
-attrs==23.2.0
-    # via
-    #   aiohttp
-    #   outcome
-    #   trio
 babel==2.14.0
     # via docxcompose
-backoff==2.2.1
-    # via gql
 beautifulsoup4==4.12.3
-    # via
-    #   -r ./backend/requirements.in
-    #   htmldocx
-    #   usfm-tools
+    # via htmldocx
 billiard==4.2.0
     # via celery
-botocore==1.34.64
-    # via gql
 brotli==1.1.0
     # via fonttools
 celery==5.3.6
@@ -68,20 +51,10 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-coverage==6.5.0
-    # via coveralls
-coveralls==3.3.1
-    # via usfm-tools
 cssselect2==0.7.0
     # via weasyprint
-cython==3.0.9
-    # via -r ./backend/requirements.in
-decorator==5.1.1
-    # via jsonpath-rw
 dnspython==2.6.1
     # via email-validator
-docopt==0.6.2
-    # via coveralls
 docxcompose==1.4.0
     # via docxtpl
 docxtpl==0.16.8
@@ -96,16 +69,6 @@ flower==2.0.1
     # via -r ./backend/requirements.in
 fonttools[woff]==4.50.0
     # via weasyprint
-frozenlist==1.4.1
-    # via
-    #   aiohttp
-    #   aiosignal
-future==1.0.0
-    # via usfm-tools
-gql[all]==3.5.0
-    # via -r ./backend/requirements.in
-graphql-core==3.2.3
-    # via gql
 gunicorn==21.2.0
     # via -r ./backend/requirements.in
 h11==0.14.0
@@ -123,9 +86,7 @@ httpcore==1.0.4
 httptools==0.6.1
     # via uvicorn
 httpx==0.27.0
-    # via
-    #   fastapi
-    #   gql
+    # via fastapi
 humanize==4.9.0
     # via flower
 idna==3.6
@@ -134,8 +95,6 @@ idna==3.6
     #   email-validator
     #   httpx
     #   requests
-    #   trio
-    #   yarl
 itsdangerous==2.1.2
     # via fastapi
 jinja2==3.1.3
@@ -143,52 +102,29 @@ jinja2==3.1.3
     #   -r ./backend/requirements.in
     #   docxtpl
     #   fastapi
-jmespath==1.0.1
-    # via botocore
-jsonpath-rw==1.4.0
-    # via
-    #   -r ./backend/requirements.in
-    #   jsonpath-rw-ext
-jsonpath-rw-ext==1.2.2
-    # via -r ./backend/requirements.in
 kombu==5.3.5
     # via celery
 lxml==5.1.0
     # via
-    #   -r ./backend/requirements.in
     #   docxcompose
     #   docxtpl
     #   python-docx
-markdown==3.6
-    # via -r ./backend/requirements.in
 markupsafe==2.1.5
     # via jinja2
-more-itertools==10.2.0
+mistune==3.0.2
     # via -r ./backend/requirements.in
-multidict==6.0.5
-    # via
-    #   aiohttp
-    #   yarl
 orjson==3.9.15
     # via
     #   -r ./backend/requirements.in
     #   fastapi
-outcome==1.3.0.post0
-    # via trio
 packaging==24.0
     # via gunicorn
-pbr==6.0.0
-    # via jsonpath-rw-ext
 pillow==10.2.0
     # via weasyprint
-ply==3.11
-    # via jsonpath-rw
 prometheus-client==0.20.0
     # via flower
 prompt-toolkit==3.0.43
     # via click-repl
-psutil==5.9.8
-    # via -r ./backend/requirements.in
 pycparser==2.21
     # via cffi
 pydantic==2.6.4
@@ -205,14 +141,10 @@ pydantic-settings==2.2.1
     # via fastapi
 pydyf==0.9.0
     # via weasyprint
-pyparsing==3.1.2
-    # via usfm-tools
 pyphen==0.14.0
     # via weasyprint
 python-dateutil==2.9.0.post0
-    # via
-    #   botocore
-    #   celery
+    # via celery
 python-docx==1.1.0
     # via
     #   docxcompose
@@ -236,27 +168,17 @@ pyyaml==6.0.1
 redis==5.0.3
     # via -r ./backend/requirements.in
 requests==2.31.0
-    # via
-    #   -r ./backend/requirements.in
-    #   coveralls
-    #   gql
-    #   requests-toolbelt
-requests-toolbelt==1.0.0
-    # via gql
+    # via -r ./backend/requirements.in
 six==1.16.0
     # via
     #   docxcompose
     #   docxtpl
     #   html5lib
-    #   jsonpath-rw
     #   python-dateutil
 sniffio==1.3.1
     # via
     #   anyio
     #   httpx
-    #   trio
-sortedcontainers==2.4.0
-    # via trio
 soupsieve==2.5
     # via beautifulsoup4
 starlette==0.36.3
@@ -268,18 +190,12 @@ tinycss2==1.2.1
     #   cssselect2
     #   html2docx
     #   weasyprint
-toolz==0.12.1
-    # via -r ./backend/requirements.in
 tornado==6.4
     # via flower
-trio==0.24.0
-    # via -r ./backend/requirements.in
 types-beautifulsoup4==4.12.0.20240229
     # via -r ./backend/requirements.in
 types-html5lib==1.1.11.20240228
     # via types-beautifulsoup4
-types-markdown==3.5.0.20240311
-    # via -r ./backend/requirements.in
 types-orjson==3.6.2
     # via -r ./backend/requirements.in
 types-pyyaml==6.0.12.20240311
@@ -291,8 +207,6 @@ types-setuptools==69.1.0.20240310
 types-termcolor==1.1.6.2
     # via -r ./backend/requirements.in
 types-toml==0.10.8.20240310
-    # via -r ./backend/requirements.in
-types-ujson==5.9.0.0
     # via -r ./backend/requirements.in
 typing-extensions==4.10.0
     # via
@@ -307,11 +221,8 @@ ujson==5.9.0
     # via fastapi
 urllib3==2.2.1
     # via
-    #   botocore
     #   requests
     #   types-requests
-usfm-tools @ https://github.com/linearcombination/USFM-Tools/archive/refs/tags/0.1.3.zip
-    # via -r ./backend/requirements.in
 uvicorn[standard]==0.28.0
     # via
     #   -r ./backend/requirements.in
@@ -335,13 +246,7 @@ webencodings==0.5.1
     #   html5lib
     #   tinycss2
 websockets==11.0.3
-    # via
-    #   gql
-    #   uvicorn
-yarl==1.9.4
-    # via
-    #   aiohttp
-    #   gql
+    # via uvicorn
 zopfli==0.2.3
     # via fonttools
 

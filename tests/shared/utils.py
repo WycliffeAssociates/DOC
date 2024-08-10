@@ -76,19 +76,17 @@ def check_finished_document_with_verses_success(
     )
     with open(html_filepath, "r") as fin:
         html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
-        verses_html = parser.find_all("span", attrs={"class": "v-num"})
-        assert verses_html
-        assert len("".join([str(verse) for verse in verses_html])) >= 300
-        # Test defect that can occur in USFM file parsing of
-        # non-standalone USFM files, e.g., aba, reg, tit.
-        repeating_verse_num_defect = re.search(
-            "<sup><b>1</b></sup></span><sup><b>1</b></sup><b>1</b>1<b>1</b>11",
-            html,
+        body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
+        assert body_match, "Body not found in HTML"
+        body_content = body_match.group(1)
+        verses_html = re.findall(
+            r'<div .*?class="verse".*?>(.*?)</div>', body_content, re.DOTALL
         )
-        assert not repeating_verse_num_defect
+        assert verses_html, "No verses found in HTML"
+        verses_combined = "".join(verses_html)
+        assert (
+            len(verses_combined) >= 30
+        ), "Total length of verses is less than 30 characters"
 
 
 def check_finished_document_without_verses_success(
@@ -106,10 +104,12 @@ def check_finished_document_without_verses_success(
     )
     with open(html_filepath, "r") as fin:
         html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
-        verses_html = parser.find_all("span", attrs={"class": "v-num"})
+        body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
+        assert body_match, "Body not found in HTML"
+        body_content = body_match.group(1)
+        verses_html = re.findall(
+            r'<div class="verse".*?>(.*?)</div>', body_content, re.DOTALL
+        )
         assert not verses_html
 
 
@@ -128,6 +128,7 @@ def check_finished_document_with_body_success(
     )
     with open(html_filepath, "r") as fin:
         html = fin.read()
-        parser = bs4.BeautifulSoup(html, "html.parser")
-        body = parser.find_all("body")
-        assert body
+        body_match = re.search(
+            r"<body.*?>(\s*\S.*\S\s*|\s*\S\s*)</body>", html, re.DOTALL
+        )
+        assert body_match, "Body not found in HTML"

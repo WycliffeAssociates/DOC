@@ -1,7 +1,10 @@
-cython # For pydantic: https://pydantic-docs.helpmanual.io/install/
-Markdown
+# TODO do we still need cython here? I think pyproject.toml build
+# dependencies brings it in for pydantic so it probably isn't needed
+# here. You have to test pydantic install to see though as it will
+# only use Rust backend if cython is detected
+# cython # For pydantic: https://pydantic-docs.helpmanual.io/install/
+# TODO do we still need aiofiles?
 aiofiles
-beautifulsoup4
 celery
 celery-types
 docxtpl
@@ -9,33 +12,23 @@ fastapi[all]
 flower
 htmldocx
 html2docx
-gql[all]
 gunicorn
 jinja2
-jsonpath-rw
-jsonpath-rw-ext
-lxml
-more-itertools
+mistune
 orjson
 pydantic
 email-validator
-psutil
 python-dotenv
 pyyaml
 redis
 requests
 setuptools
 termcolor
-toolz
-trio
-usfm_tools @ https://github.com/linearcombination/USFM-Tools/archive/refs/tags/0.1.3.zip
 uvicorn
 weasyprint
 
 types-PyYAML
-types-Markdown
 types-beautifulsoup4
-types-ujson
 types-orjson
 types-requests
 types-termcolor

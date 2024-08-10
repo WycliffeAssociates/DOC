@@ -2,37 +2,70 @@
 Utility functions used by assembly_strategies.
 """
 
-from itertools import chain, groupby, zip_longest
-from re import escape, search, sub
-from typing import Iterable, Mapping, Optional, Sequence
+from re import sub
 
 from document.config import settings
-from document.domain.bible_books import BOOK_NAMES, BOOK_NUMBERS
-from document.domain.model import (
-    BCBook,
-    BookContent,
-    HtmlContent,
-    TNBook,
-    TQBook,
-    TWBook,
-    TWNameContentPair,
-    TWUse,
-    USFMBook,
-)
-from document.utils.tw_utils import uniq
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docx.enum.text import WD_BREAK  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
 from docx.oxml.shared import OxmlElement  # type: ignore
-from docx.oxml.text.run import CT_R  # type: ignore
 from docx.text.paragraph import Paragraph  # type: ignore
-from docx.text.run import Run  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
 
 logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5, H6 = "h1", "h2", "h3", "h4", "h5", "h6"
+
+
+OXML_LANGUAGE_LIST: list[str] = [
+    "ar-SA",
+    "bg-BG",
+    "zh-CN",
+    "zh-TW",
+    "hr-HR",
+    "cs-CZ",
+    "da-DK",
+    "nl-NL",
+    "en-US",
+    "et-EE",
+    "fi-FI",
+    "fr-FR",
+    "de-DE",
+    "el-GR",
+    "he-IL",
+    "hi-IN",
+    "hu-HU",
+    "id-ID",
+    "it-IT",
+    "ja-JP",
+    "kk-KZ",
+    "ko-KR",
+    "lv-LV",
+    "lt-LT",
+    "ms-MY",
+    "nb-NO",
+    "pl-PL",
+    "pt-BR",
+    "pt-PT",
+    "ro-RO",
+    "ru-RU",
+    "sr-latn-RS",
+    "sk-SK",
+    "sl-SI",
+    "es-ES",
+    "sv-SE",
+    "th-TH",
+    "tr-TR",
+    "uk-UA",
+    "vi-VN",
+]
+OXML_LANGUAGE_LIST_LOWERCASE: list[str] = [
+    language.lower() for language in OXML_LANGUAGE_LIST
+]
+OXML_LANGUAGE_LIST_LOWERCASE_SPLIT: list[str] = [
+    language for language in OXML_LANGUAGE_LIST_LOWERCASE if "-" in language
+]
 
 
 def adjust_book_intro_headings(
@@ -42,14 +75,14 @@ def adjust_book_intro_headings(
     h3: str = H3,
     h4: str = H4,
     h6: str = H6,
-) -> HtmlContent:
+) -> str:
     """Change levels on headings."""
     # Move the H2 out of the way, we'll deal with it last.
     book_intro = sub(h2, h6, book_intro)
     book_intro = sub(h1, h2, book_intro)
     book_intro = sub(h3, h4, book_intro)
     # Now adjust the temporary H6s.
-    return HtmlContent(sub(h6, h3, book_intro))
+    return sub(h6, h3, book_intro)
 
 
 def add_hr(paragraph: Paragraph) -> None:
@@ -100,10 +133,8 @@ def create_docx_subdoc(
     lang_code: str,
     is_rtl: bool = False,
     add_hr_p: bool = True,
-    oxml_language_list_lowercase: list[str] = settings.OXML_LANGUAGE_LIST_LOWERCASE,
-    oxml_language_list_lowercase_split: list[
-        str
-    ] = settings.OXML_LANGUAGE_LIST_LOWERCASE_SPLIT,
+    oxml_language_list_lowercase: list[str] = OXML_LANGUAGE_LIST_LOWERCASE,
+    oxml_language_list_lowercase_split: list[str] = OXML_LANGUAGE_LIST_LOWERCASE_SPLIT,
 ) -> Document:
     """
     Create and return a Document instance from the content parameter.
@@ -176,7 +207,7 @@ def add_one_column_section(doc: Document) -> None:
     """
     Add new section having 1 column to contain next content in Docx instance.
     """
-    # Get ready for one column again (this matters the 2-Nth times in the loop).
+    # Get ready for one column again (this matters the 2nd to Nth times in the loop).
     new_section = doc.add_section(WD_SECTION.CONTINUOUS)
     new_section.start_type
 

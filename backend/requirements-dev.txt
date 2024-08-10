@@ -10,11 +10,6 @@ amqp==5.2.0
     #   kombu
 astroid==3.1.0
     # via pylint
-attrs==23.2.0
-    # via
-    #   -c ./backend/requirements.txt
-    #   flake8-eradicate
-    #   flake8-mypy
 billiard==4.2.0
     # via
     #   -c ./backend/requirements.txt
@@ -57,27 +52,13 @@ dlint==0.14.1
     # via -r ./backend/requirements-dev.in
 docstring-to-markdown==0.15
     # via python-lsp-server
-eradicate==2.3.0
-    # via flake8-eradicate
 execnet==2.0.2
     # via pytest-xdist
 flake8==3.9.2
     # via
     #   -r ./backend/requirements-dev.in
     #   dlint
-    #   flake8-annotations-coverage
-    #   flake8-eradicate
-    #   flake8-mypy
-    #   flake8-type-annotations
-flake8-annotations-coverage==0.0.6
-    # via -r ./backend/requirements-dev.in
-flake8-eradicate==1.4.0
-    # via -r ./backend/requirements-dev.in
 flake8-fixme==1.1.1
-    # via -r ./backend/requirements-dev.in
-flake8-mypy==17.8.0
-    # via -r ./backend/requirements-dev.in
-flake8-type-annotations==0.1.0
     # via -r ./backend/requirements-dev.in
 gitdb==4.0.11
     # via gitpython
@@ -110,7 +91,6 @@ mdurl==0.1.2
 mypy==1.9.0
     # via
     #   -r ./backend/requirements-dev.in
-    #   flake8-mypy
     #   pylsp-mypy
 mypy-extensions==1.0.0
     # via
@@ -140,9 +120,7 @@ prompt-toolkit==3.0.43
     #   -c ./backend/requirements.txt
     #   click-repl
 psutil==5.9.8
-    # via
-    #   -c ./backend/requirements.txt
-    #   -r ./backend/requirements-dev.in
+    # via -r ./backend/requirements-dev.in
 pycodestyle==2.7.0
     # via flake8
 pyflakes==2.3.1

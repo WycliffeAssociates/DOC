@@ -300,8 +300,8 @@ def load_manifest(file_path: str) -> str:
 def glob_chapter_dirs(
     resource_dir: str,
     book_code: str,
-    glob_in_subdirs_fmt_str: str = "{}/**/*{}/*[0-0]*",
-    glob_fmt_str: str = "{}/*{}/*[0-0]*",
+    glob_in_subdirs_fmt_str: str = "{}/**/*{}/*[0-9]*",
+    glob_fmt_str: str = "{}/*{}/*[0-9]*",
 ) -> list[str]:
     chapter_dirs = glob(glob_in_subdirs_fmt_str.format(resource_dir, book_code))
     # Some languages are organized differently on disk

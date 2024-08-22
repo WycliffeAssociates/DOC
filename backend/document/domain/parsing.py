@@ -377,6 +377,8 @@ def tn_verses_html(
     verse_fmt_str: str = "<h4>{} {}:{}</h4>\n{}",
     glob_md_fmt_str: str = "{}/*[0-9]*.md",
     glob_txt_fmt_str: str = "{}/*[0-9]*.txt",
+    h1: str = H1,
+    h5: str = H5,
 ) -> dict[VerseRef, str]:
     verse_paths = sorted(glob(glob_md_fmt_str.format(chapter_dir)))
     if not verse_paths:
@@ -391,7 +393,7 @@ def tn_verses_html(
             resource_requests,
         )
         verse_html_content = mistune.markdown(verse_md_content)
-        adjusted_verse_html_content = adjust_html_tags(verse_html_content)
+        adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
         verses_html[verse_ref] = verse_fmt_str.format(
             book_names[book_code],
             int(Path(chapter_dir).stem),
@@ -462,7 +464,7 @@ def tq_chapter_verses(
                 resource_requests,
             )
             verse_html_content = mistune.markdown(verse_md_content)
-            adjusted_verse_html_content = sub(h1, h5, verse_html_content)
+            adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
             verses_html[verse_ref] = verse_label_fmt_str.format(
                 book_names[book_code],
                 chapter_num,
@@ -522,8 +524,8 @@ def tw_name_content_pairs(
             translation_word_content, lang_code, resource_requests
         )
         html_word_content = mistune.markdown(translation_word_content)
-        html_word_content = sub(h2, h4, html_word_content)
-        html_word_content = sub(h1, h3, html_word_content)
+        html_word_content = re.sub(h2, h4, html_word_content)
+        html_word_content = re.sub(h1, h3, html_word_content)
         name_content_pairs.append(
             TWNameContentPair(localized_translation_word_, html_word_content)
         )

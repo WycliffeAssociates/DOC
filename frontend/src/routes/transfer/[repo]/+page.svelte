@@ -161,11 +161,11 @@
   } else if (components.length === 2) {
     // e.g., repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb
     langCode = components[0]
-    if (components[1] === 'ulb' && langCode === 'en') {
-      resource = 'ulb-wa'
-    } else {
-      resource = components[1]
-    }
+    // if (components[1] === 'ulb' && langCode === 'en') {
+    //   resource = 'ulb-wa'
+    // } else {
+    resource = components[1]
+    // }
     console.log(
       `Transferred values from BIEL, langCode: ${langCode}, all books, resource: ${resource}`
     )

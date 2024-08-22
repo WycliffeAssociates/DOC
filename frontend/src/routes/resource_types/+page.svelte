@@ -34,10 +34,10 @@
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-
     // Associate the langCode to each resource type code and name pair
     return resourceTypesAndNames.map((element) => [langCode, element[0], element[1]])
   }
+
 
   let otResourceCodes_: Array<[string, string]> = $otBookStore.map((item) => [
     getCode(item),

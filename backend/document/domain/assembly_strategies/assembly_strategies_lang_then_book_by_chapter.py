@@ -4,7 +4,6 @@ from document.domain.bible_books import BOOK_NAMES
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     bc_book_intro,
-    bc_language_direction_html,
     book_title,
     chapter_commentary,
     chapter_heading,

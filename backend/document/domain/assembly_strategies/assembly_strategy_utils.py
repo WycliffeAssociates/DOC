@@ -6,7 +6,7 @@ from re import search, sub
 from typing import Mapping, Optional, Sequence
 
 from document.config import settings
-from document.domain.bible_books import BOOK_NAMES, BOOK_NUMBERS, book_number
+from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import (
     BCBook,
     LangDirEnum,

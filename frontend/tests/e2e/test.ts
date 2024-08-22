@@ -9,7 +9,10 @@ test('test ui part 1', async ({ page }) => {
     await page.getByText('Galatians').click()
     await page.getByText('Luke').click()
     await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByText('Unlocked Literal Bible').first().click()
+    await page
+        .getByText(/.*Unlocked Literal Bible.*/)
+        .first()
+        .click()
     await page.getByText('Unlocked Literal Bible').nth(1).click()
     await page.getByText('Translation Notes').first().click()
     await page.getByText('Translation Notes').nth(1).click()
@@ -25,7 +28,7 @@ test('test ui part 1', async ({ page }) => {
     await expect(page.locator('body')).toContainText('Translation Notes')
     await expect(page.locator('body')).toContainText('Translation Questions')
     await expect(page.locator('body')).toContainText('Translation Words')
-    await expect(page.locator('body')).toContainText('Unlocked Literal Bible')
+    await expect(page.locator('body')).toContainText(/.*Unlocked Literal Bible.*/)
 })
 
 test('test ui part 2', async ({ page }) => {
@@ -35,8 +38,14 @@ test('test ui part 2', async ({ page }) => {
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByText('Galatians').click()
     await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByText('Unlocked Literal Bible').first().click()
-    await page.getByText('Unlocked Literal Bible').nth(1).click()
+    await page
+        .getByText(/.*Unlocked Literal Bible.*/)
+        .first()
+        .click()
+    await page
+        .getByText(/.*Unlocked Literal Bible.*/)
+        .nth(1)
+        .click()
     await page.getByText('Translation Notes').nth(1).click()
     await page.getByText('Translation Notes').nth(2).click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -75,7 +84,7 @@ test('test books retained in basket on back button to languages and then forward
 
 test('test transfer from biel', async ({ page }) => {
     await page.goto(
-        'https://doc.bibleineverylanguage.org/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fchunga_moses%2Fleb-x-bisa_col_text_reg&book_name=Colossians'
+        'http://localhost:8001/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fchunga_moses%2Fleb-x-bisa_col_text_reg&book_name=Colossians'
     )
     await expect(page.getByText('Bisa')).toBeVisible()
     await expect(page.getByText('Colossians')).toBeVisible()
@@ -83,7 +92,7 @@ test('test transfer from biel', async ({ page }) => {
 
 test('test transfer from biel 2', async ({ page }) => {
     await page.goto(
-        'https://doc.bibleineverylanguage.org/transfer/repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb'
+        'http://localhost:8001/transfer/repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb'
     )
     await expect(page.getByText('English')).toBeVisible()
     await expect(page.getByText('Genesis')).toBeVisible()

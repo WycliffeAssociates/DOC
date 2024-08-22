@@ -6,15 +6,13 @@ import re
 import subprocess
 import time
 from glob import glob
-from os import scandir, getenv, getcwd, walk
+from os import scandir, getenv, walk
 from os.path import exists, join, split
 from pathlib import Path
-from re import compile, sub
+
 from typing import Mapping, Optional, Sequence
 
 import mistune
-import orjson
-import yaml
 
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
@@ -27,7 +25,6 @@ from document.domain.model import (
     BCBook,
     BCChapter,
     ChapterNum,
-    LangDirEnum,
     ResourceLookupDto,
     ResourceRequest,
     TNBook,
@@ -149,7 +146,7 @@ def convert_usfm_chapter_to_html(
         f"/app/{resource_filename_sans_suffix}.html",
     ]
     logger.debug("dotnet command: %s", " ".join(command))
-    result = subprocess.run(
+    subprocess.run(
         command,
         check=True,
         text=True,
@@ -361,10 +358,6 @@ def tn_chapter_intro(
     if not intro_paths:
         intro_paths = sorted(glob(glob_txt_fmt_str.format(chapter_dir)))
     return read_file(intro_paths[0]) if intro_paths else None
-
-
-def adjust_html_tags(html_content: str) -> str:
-    return html_content.replace(H1, H5)
 
 
 def book_intro_markdown(resource_dir: str, book_code: str) -> str:
@@ -736,10 +729,10 @@ def ensure_paragraph_before_verses(
     Return the possibly updated verse_content.
     """
     if (
-        compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
+        re.compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
     ):  # Verse 1 of chapter
         if (
-            compile(chapter_marker_not_on_own_line_regex).match(verse_content)
+            re.compile(chapter_marker_not_on_own_line_regex).match(verse_content)
             is not None
         ):  # Chapter marker not on own line.
             # Make chapter marker occupy its own line and add a USFM paragraph
@@ -749,7 +742,7 @@ def ensure_paragraph_before_verses(
             # Docx did not have one. Presumably the 3rd party lib we use to parse
             # HTML to Docx doesn't like spans that are not contained in a block
             # level element.
-            verse_content = sub(
+            verse_content = re.sub(
                 chapter_marker_not_on_own_line_with_match_groups,
                 chapter_marker_not_on_own_line_repair_regex,
                 verse_content,

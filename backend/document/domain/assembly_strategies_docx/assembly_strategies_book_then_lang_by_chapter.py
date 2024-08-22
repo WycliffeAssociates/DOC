@@ -3,7 +3,6 @@ from typing import Mapping, Sequence
 from document.domain.bible_books import BOOK_NAMES, BOOK_CHAPTERS
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
-    adjust_book_intro_headings,
     bc_book_intro,
     chapter_commentary,
     chapter_intro,

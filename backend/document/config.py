@@ -257,60 +257,6 @@ class Settings(BaseSettings):
     # Used in assembly_strategy_utils module when zero-filling various strings
     NUM_ZEROS: int = 3
 
-    ######### Legacy stuff in place for now:
-    # The location where the JSON data file that we use to lookup
-    # location of resources is located.
-    TRANSLATIONS_JSON_LOCATION: HttpUrl
-    ENGLISH_RESOURCE_TYPE_MAP: Mapping[str, str] = {
-        "ulb-wa": "Unlocked Literal Bible (ULB)",
-        # "udb-wa": "Unlocked Dynamic Bible (UDB)",
-        "tn-wa": "ULB Translation Notes",
-        "tn-condensed": "ULB Condensed Translation Notes",
-        "tq-wa": "ULB Translation Questions",
-        "tw-wa": "ULB Translation Words",
-        "bc-wa": "Bible Commentary",
-    }
-    ID_RESOURCE_TYPE_MAP: Mapping[str, str] = {
-        "ayt": "Bahasa Indonesian Bible (ayt)",
-        "tn": "Translation Helps (tn)",
-        "tq": "Translation Questions (tq)",
-        "tw": "Translation Words (tw)",
-    }
-    LANG_CODE_FILTER_LIST: Sequence[str] = [
-        # "aez",  # Has no chapter markers
-        # "acq",
-        # "gaj-x-ymnk",
-        # "fa",
-        # "hr",
-        # "hu",
-        # # "id",  # Was on this list because of licensing issues: it cannot be shown on BIEL
-        # "kbt",
-        # "kip",
-        # "lus",
-        # "mor",
-        # "mve",
-        # "pmy",  # Currently doesn't provide USFM, but might soon
-        # "sr-Latn",
-        # "tig",
-        # "tem",
-    ]
-    EN_USFM_RESOURCE_TYPES: Sequence[str] = ["ulb-wa"]
-    ALL_USFM_RESOURCE_TYPES: Sequence[str] = [
-        *USFM_RESOURCE_TYPES,
-        *EN_USFM_RESOURCE_TYPES,
-    ]
-    TN_RESOURCE_TYPES: Sequence[str] = ["tn"]
-    EN_TN_RESOURCE_TYPES: Sequence[str] = ["tn-wa"]
-    ALL_TN_RESOURCE_TYPES: Sequence[str] = [*EN_TN_RESOURCE_TYPES, *TN_RESOURCE_TYPES]
-    TQ_RESOURCE_TYPES: Sequence[str] = ["tq"]
-    EN_TQ_RESOURCE_TYPES: Sequence[str] = ["tq-wa"]
-    ALL_TQ_RESOURCE_TYPES: Sequence[str] = [*EN_TQ_RESOURCE_TYPES, *TQ_RESOURCE_TYPES]
-    TW_RESOURCE_TYPES: Sequence[str] = ["tw"]
-    EN_TW_RESOURCE_TYPES: Sequence[str] = ["tw-wa"]
-    ALL_TW_RESOURCE_TYPES: Sequence[str] = [*EN_TW_RESOURCE_TYPES, *TW_RESOURCE_TYPES]
-    BC_RESOURCE_TYPES: Sequence[str] = ["bc-wa"]
-    ######### End of legacy stuff
-
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
 

@@ -51,9 +51,9 @@
     sharedResourceTypesUrl = <string>PUBLIC_SHARED_RESOURCE_TYPES_URL
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
-    // resource_lookup.shared_resource_types.
+    // resource_lookup.resource_types.
     let book_codes = bookCodeAndNames.map(bookCodeAndName => bookCodeAndName[0]).join(",")
-    const url_ = `${apiRootUrl}/transfer${sharedResourceTypesUrl}${langCode}/${book_codes}`
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
     const url = new URL(url_)
     const response = await fetch(url)
     const resourceTypesAndNames: Array<[string, string]> = await response.json()
@@ -121,16 +121,16 @@
             // console.log(`$ntBookStore: ${$ntBookStore}`)
             $bookCountStore = 1
           }
-          let otResourceCodes_: Array<[string, string]> = $otBookStore.map((item) => [
+          let otBookCodes_: Array<[string, string]> = $otBookStore.map((item) => [
             getCode(item),
             getName(item)
           ])
-          let ntResourceCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
+          let ntBookCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
             getCode(item),
             getName(item)
           ])
           if ($langCodesStore[0]) {
-            getResourceTypesAndNames($langCodesStore[0], [...otResourceCodes_, ...ntResourceCodes_])
+            getResourceTypesAndNames($langCodesStore[0], [...otBookCodes_, ...ntBookCodes_])
               .then((resourceTypesAndNames) => {
                 // Filter down to the resource type provided by the user
                 filteredResourceTypesAndNames = resourceTypesAndNames.filter(
@@ -161,15 +161,7 @@
   } else if (components.length === 2) {
     // e.g., repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb
     langCode = components[0]
-    // TODO Note that when the transfer-from-BIEL functionality is rewritten to
-    // use the data API and not translations.json the following
-    // conditional will need to remove the 'en' special case branch as
-    // English resource types with -wa endings are not used in the data API
-    if (components[1] === 'ulb' && langCode === 'en') {
-      resource = 'ulb-wa'
-    } else {
-      resource = components[1]
-    }
+    resource = components[1]
     console.log(
       `Transferred values from BIEL, langCode: ${langCode}, all books, resource: ${resource}`
     )

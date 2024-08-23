@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from functools import cache
 from os import scandir
-from os.path import exists, isdir, join, sep
+from os.path import basename, exists, isdir, join, sep
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 from urllib.parse import urlparse
@@ -19,7 +19,12 @@ from document.config import settings
 from document.domain import exceptions, parsing
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import ResourceLookupDto
-from document.utils.file_utils import dir_needs_update, file_needs_update, read_file
+from document.utils.file_utils import (
+    dir_needs_update,
+    download_file,
+    file_needs_update,
+    read_file,
+)
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -61,6 +66,27 @@ def fetch_source_data(
             data = json.loads(content)
     return data
 
+
+######### Legacy stuff in place for now:
+
+
+def fetch_translations_json_source_data(working_dir: str, json_file_url: str) -> Any:
+    """
+    Obtain the source data, by downloading it from json_file_url, and
+    then reifying it into its JSON object form.
+    """
+    json_file = Path(join(working_dir, basename(json_file_url)))
+    # if source_file_needs_update(json_file):
+    if file_needs_update(json_file):
+        logger.debug("Downloading %s...", json_file_url)
+        download_file(json_file_url, str(json_file.resolve()))
+    try:
+        return json.loads(read_file(str(json_file.resolve())))
+    except Exception:
+        logger.exception("Caught exception: ")
+
+
+######### End of legacy stuff
 
 # def download_data(
 #     jsonfile_path: str,
@@ -412,6 +438,100 @@ def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
             unique_values.append(value)
             seen_values.add(value[0])
     return sorted(unique_values, key=lambda value: value[1])
+
+
+###### Begin legacy code that we need to rewrite:
+
+# TODO rewrite to use data API instead. This is the only place where translations.json is used.
+def transfer_resource_types(
+    lang_code: str,
+    book_codes: Sequence[str],
+    working_dir: str = settings.RESOURCE_ASSETS_DIR,
+    english_resource_type_map: Mapping[str, str] = settings.ENGLISH_RESOURCE_TYPE_MAP,
+    id_resource_type_map: Mapping[str, str] = settings.ID_RESOURCE_TYPE_MAP,
+    translations_json_location: HttpUrl = settings.TRANSLATIONS_JSON_LOCATION,
+    lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
+) -> list[tuple[str, str]]:
+    """
+    Given a language code and a list of book_codes, return the
+    collection of resource types available.
+
+    >>> from document.domain import resource_lookup
+    >>> list(resource_lookup.shared_resource_types("en", ["2co"]))
+    [('ulb-wa', 'Unlocked Literal Bible (ULB)'), ('tn-wa', 'ULB Translation Notes'), ('tn-condensed', 'ULB Condensed Translation Notes'), ('tq-wa', 'ULB Translation Questions'), ('tw-wa', 'ULB Translation Words'), ('bc-wa', 'Bible Commentary')]
+    >>> list(resource_lookup.shared_resource_types("zh", ["2co"]))
+    [('cuv', '新标点和合本 (cuv)'), ('tn', 'Translation Notes (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)')]
+    >>> list(resource_lookup.shared_resource_types("pt-br", ["gen"]))
+    [('tn', 'Translation Notes (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)'), ('ulb', 'Brazilian Portuguese Unlocked Literal Bible (ulb)')]
+    >>> list(resource_lookup.shared_resource_types("fr", ["gen"]))
+    [('f10', 'French Louis Segond 1910 Bible (f10)'), ('tn', 'Translation Notes (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)'), ('ulb', 'French ULB (ulb)')]
+    >>> list(resource_lookup.shared_resource_types("es-419", ["gen"]))
+    [('tn', 'Translation Notes (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)'), ('ulb', 'Español Latino Americano ULB (ulb)')]
+    >>> list(resource_lookup.shared_resource_types("id", ["mat"]))
+    [('ayt', 'Bahasa Indonesian Bible (ayt)'), ('tn', 'Translation Helps (tn)'), ('tq', 'Translation Questions (tq)'), ('tw', 'Translation Words (tw)')]
+    """
+    if lang_code == "en":
+        return [(key, value) for key, value in english_resource_type_map.items()]
+    if lang_code == "id":
+        return [(key, value) for key, value in id_resource_type_map.items()]
+    values = []
+    data = fetch_translations_json_source_data(
+        working_dir, str(translations_json_location)
+    )
+    for item in [lang for lang in data if lang["code"] == lang_code]:
+        for resource_type in item["contents"]:
+            book_codes_for_resource_type = [
+                book_code
+                for book_code in resource_type["subcontents"]
+                if book_code["code"] in book_codes
+            ]
+            # Determine if suitable link(s) exist for "contents"-scoped resource
+            # types. We use this in the conditional below to assert that TN, TQ, and
+            # TW resource types have a downloadable or cloneable asset and thus
+            # should be included as available resource types along with book specific
+            # assets like those for USFM, BC.
+            links_for_resource_type = [
+                link
+                for link in resource_type["links"]
+                if link["format"] == "zip"
+                or link["format"] == "Download"
+                and link["url"]
+            ]
+            if supported_resource_type(resource_type["code"]) and (
+                book_codes_for_resource_type or links_for_resource_type
+            ):
+                values.append(
+                    (
+                        resource_type["code"],
+                        "{} ({})".format(resource_type["name"], resource_type["code"]),
+                    )
+                )
+    return sorted(values, key=lambda value: value[0])
+
+
+def supported_resource_type(
+    resource_type: str,
+    all_usfm_resource_types: Sequence[str] = settings.ALL_USFM_RESOURCE_TYPES,
+    all_tn_resource_types: Sequence[str] = settings.ALL_TN_RESOURCE_TYPES,
+    all_tq_resource_types: Sequence[str] = settings.ALL_TQ_RESOURCE_TYPES,
+    all_tw_resource_types: Sequence[str] = settings.ALL_TW_RESOURCE_TYPES,
+    bc_resource_types: Sequence[str] = settings.BC_RESOURCE_TYPES,
+) -> bool:
+    """
+    Check if resource_type complies with the resource types we currently support.
+    """
+    if resource_type in [
+        *all_usfm_resource_types,
+        *all_tn_resource_types,
+        *all_tq_resource_types,
+        *all_tw_resource_types,
+        *bc_resource_types,
+    ]:
+        return True
+    return False
+
+
+###### End legacy code
 
 
 def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, str]]:

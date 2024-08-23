@@ -53,7 +53,7 @@
     // Form the URL to ultimately invoke
     // resource_lookup.shared_resource_types.
     let book_codes = bookCodeAndNames.map(bookCodeAndName => bookCodeAndName[0]).join(",")
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`
+    const url_ = `${apiRootUrl}/transfer${sharedResourceTypesUrl}${langCode}/${book_codes}`
     const url = new URL(url_)
     const response = await fetch(url)
     const resourceTypesAndNames: Array<[string, string]> = await response.json()
@@ -161,11 +161,15 @@
   } else if (components.length === 2) {
     // e.g., repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb
     langCode = components[0]
-    // if (components[1] === 'ulb' && langCode === 'en') {
-    //   resource = 'ulb-wa'
-    // } else {
-    resource = components[1]
-    // }
+    // TODO Note that when the transfer-from-BIEL functionality is rewritten to
+    // use the data API and not translations.json the following
+    // conditional will need to remove the 'en' special case branch as
+    // English resource types with -wa endings are not used in the data API
+    if (components[1] === 'ulb' && langCode === 'en') {
+      resource = 'ulb-wa'
+    } else {
+      resource = components[1]
+    }
     console.log(
       `Transferred values from BIEL, langCode: ${langCode}, all books, resource: ${resource}`
     )
@@ -204,42 +208,41 @@
             // console.log(`$ntBookStore: ${$ntBookStore}`)
           }
           $bookCountStore = otBooks.length + ntBooks.length
-          let otResourceCodes_: Array<[string, string]> = $otBookStore.map((item) => [
+          let otBookCodes_: Array<[string, string]> = $otBookStore.map((item) => [
             getCode(item),
             getName(item)
           ])
-          let ntResourceCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
+          let ntBookCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
             getCode(item),
             getName(item)
           ])
           if ($langCodesStore[0]) {
-            getResourceTypesAndNames($langCodesStore[0], [
-              ...otResourceCodes_,
-              ...ntResourceCodes_
-            ]).then((resourceTypesAndNames) => {
-              // Filter down to the resource type provided by the user
-              filteredResourceTypesAndNames = resourceTypesAndNames.filter(
-                (element: [string, string, string]) => {
-                  return element[0] === langCode && element[1] === resource
-                }
-              )
-              console.log(`filteredResourceTypesAndNames: ${filteredResourceTypesAndNames}`)
-              if (filteredResourceTypesAndNames.length > 0) {
-                $resourceTypesStore.push(
-                  `${filteredResourceTypesAndNames[0][0]}, ${filteredResourceTypesAndNames[0][1]}, ${filteredResourceTypesAndNames[0][2]}`
+            getResourceTypesAndNames($langCodesStore[0], [...otBookCodes_, ...ntBookCodes_]).then(
+              (resourceTypesAndNames) => {
+                // Filter down to the resource type provided by the user
+                filteredResourceTypesAndNames = resourceTypesAndNames.filter(
+                  (element: [string, string, string]) => {
+                    return element[0] === langCode && element[1] === resource
+                  }
                 )
-                console.log(`$resourceTypesStore: ${$resourceTypesStore}`)
-                $resourceTypesCountStore = 1
-              } else {
-                console.log('filteredResourceTypesAndNames was empty')
+                console.log(`filteredResourceTypesAndNames: ${filteredResourceTypesAndNames}`)
+                if (filteredResourceTypesAndNames.length > 0) {
+                  $resourceTypesStore.push(
+                    `${filteredResourceTypesAndNames[0][0]}, ${filteredResourceTypesAndNames[0][1]}, ${filteredResourceTypesAndNames[0][2]}`
+                  )
+                  console.log(`$resourceTypesStore: ${$resourceTypesStore}`)
+                  $resourceTypesCountStore = 1
+                } else {
+                  console.log('filteredResourceTypesAndNames was empty')
+                }
+                routeToPage('/settings')
+                // NOTE This case is for the whole bible, e.g., en_ulb. But
+                // we could conceivably redirect the user to the books route
+                // to choose their books since we don't typically want to produce an
+                // entire bible due to poor performance on a document that huge.
+                // routeToPage('/books')
               }
-              routeToPage('/settings')
-              // NOTE This case is for the whole bible, e.g., en_ulb. But
-              // we could conceivably redirect the user to the books route
-              // to choose their books since we don't typically want to produce an
-              // entire bible due to poor performance on a document that huge.
-              // routeToPage('/books')
-            })
+            )
           }
         }
       })

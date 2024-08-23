@@ -38,15 +38,6 @@
     return resourceTypesAndNames.map((element) => [langCode, element[0], element[1]])
   }
 
-
-  let otResourceCodes_: Array<[string, string]> = $otBookStore.map((item) => [
-    getCode(item),
-    getName(item)
-  ])
-  let ntResourceCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
-    getCode(item),
-    getName(item)
-  ])
   // Resolve promise for data
   let lang0ResourceTypesAndNames: Array<string>
   if ($langCodesStore[0]) {

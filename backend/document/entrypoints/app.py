@@ -165,6 +165,20 @@ async def resource_types(
     return resource_lookup.resource_types(lang_code)
 
 
+@app.get("/transfer/resource_types/{lang_code}/{book_codes}")
+async def transfer_resource_types(
+    lang_code: str,
+    book_codes: str,
+) -> Iterable[tuple[str, str]]:
+    """
+    Return the list of available resource types tuples for lang_code
+    with book_codes. This is called by the UI when handling a URL
+    transfer from BIEL.
+    """
+    book_codes_list = book_codes.split(",")
+    return resource_lookup.transfer_resource_types(lang_code, book_codes_list)
+
+
 @app.get("/book_codes_for_lang/{lang_code}")
 async def book_codes_for_lang(lang_code: str) -> Sequence[tuple[str, str]]:
     """Return list of all available resource codes."""

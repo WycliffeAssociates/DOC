@@ -16,10 +16,11 @@ services:
         condition: service_started
 
     entrypoint: pytest
-    command:
-      [
+    command: [
         "-vv",
         "-m",
+        # "all",
+        # "randomized",
         "not all and not randomized and not english_randomized",
         "-n",
         "auto",

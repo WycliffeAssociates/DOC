@@ -163,17 +163,6 @@ def tq_language_direction_html(
         return ltr_direction_html
 
 
-def bc_language_direction_html(
-    bc_book: Optional[BCBook],
-    rtl_direction_html: str = settings.RTL_DIRECTION_HTML,
-    ltr_direction_html: str = settings.LTR_DIRECTION_HTML,
-) -> str:
-    if bc_book and bc_book.lang_direction == LangDirEnum.RTL:
-        return rtl_direction_html
-    else:
-        return ltr_direction_html
-
-
 def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,

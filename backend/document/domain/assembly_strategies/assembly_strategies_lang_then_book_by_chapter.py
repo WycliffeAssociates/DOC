@@ -261,9 +261,7 @@ def assemble_tw_by_book(
 ) -> str:
     content = []
     if bc_book:
-        content.append(str(bc_book.lang_direction))
         for chapter_num in bc_book.chapters:
             content.append(chapter_commentary(bc_book, chapter_num))
             content.append(end_of_chapter_html)
-        content.append(close_direction_html)
     return "".join(content)

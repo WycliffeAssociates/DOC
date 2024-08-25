@@ -307,6 +307,21 @@ def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
             language_info = content["language"]
             if language_info["ietf_code"] == lang_code:
                 if content["resource_type"] in RESOURCE_TYPE_CODES_AND_NAMES:
+                    # TODO if content["resource_type"] is 'bc' then we should
+                    # clone the bc repo and see if at least one of the
+                    # books chosen by the user in the prior
+                    # step is included in the bc repo. For example, the user
+                    # may have chosen an Old Testament book and there is no
+                    # English bible commentary for OT books so in that case
+                    # we should not show the user 'bc' as a choosable
+                    # resource type.
+                    # if content["resource_type"] == "bc":
+                    #     url = repo_info["repo_url"]
+                    #     last_segment = get_last_segment(url, lang_code)
+                    #     resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                    #     clone_git_repo(repo_url, resource_filepath)
+                    #     # TODO Check repo on disk to see if at least one of the books
+                    #     # chosen by the user is there
                     resource_types.append(
                         (
                             content["resource_type"],

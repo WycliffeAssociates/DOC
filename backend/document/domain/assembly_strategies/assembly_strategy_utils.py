@@ -68,7 +68,7 @@ def adjust_commentary_headings(
 def chapter_intro(
     tn_book: Optional[TNBook],
     chapter_num: int,
-    hr: str = "<hr/_",
+    hr: str = "<hr/>",
 ) -> str:
     """Get the chapter intro."""
     content = []

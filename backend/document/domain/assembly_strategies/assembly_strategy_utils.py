@@ -41,7 +41,6 @@ def adjust_book_intro_headings(
     book_intro = sub(h2, h6, book_intro)
     book_intro = sub(h1, h2, book_intro)
     book_intro = sub(h3, h4, book_intro)
-    book_intro = sub(h2, h3, book_intro)
     # Now adjust the temporary H6s.
     return sub(h6, h3, book_intro)
 
@@ -49,7 +48,6 @@ def adjust_book_intro_headings(
 def adjust_commentary_headings(
     chapter_commentary: str,
     h1: str = H1,
-    h2: str = H2,
     h3: str = H3,
     h4: str = H4,
     h5: str = H5,
@@ -60,7 +58,6 @@ def adjust_commentary_headings(
     chapter_commentary = sub(h4, h6, chapter_commentary)
     chapter_commentary = sub(h3, h4, chapter_commentary)
     chapter_commentary = sub(h1, h3, chapter_commentary)
-    chapter_commentary = sub(h2, h4, chapter_commentary)
     # Now adjust the temporary H6s.
     return sub(h6, h5, chapter_commentary)
 

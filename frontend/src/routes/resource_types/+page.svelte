@@ -24,7 +24,7 @@
     sharedResourceTypesUrl = <string>PUBLIC_SHARED_RESOURCE_TYPES_URL
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
-    // resource_lookup.shared_resource_types.
+    // resource_lookup.resource_types.
     const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
     const url = new URL(url_)
     console.log(`About to send request ${url} to backend`)

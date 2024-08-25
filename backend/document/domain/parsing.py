@@ -616,12 +616,22 @@ def bc_chapters(
         chapter_commentary_html_content = modify_commentary_label(
             chapter_commentary_html_content, chapter_num
         )
+        # fmt: off
+        chapter_commentary_html_content = markdown_transformer.remove_pagination_symbols(
+                chapter_commentary_html_content
+            )
+        # fmt: on
         chapter_commentary_html_content = replace_relative_with_absolute_links(
             chapter_commentary_html_content
         )
-        chapters[chapter_num] = BCChapter(
-            commentary=adjust_commentary_headings(chapter_commentary_html_content)
+        chapter_commentary_html_content = adjust_commentary_headings(
+            chapter_commentary_html_content
         )
+        # TODO For now we are deactivating the links to articles from commentary. It
+        # would be nice to provide those markdown articles as rendered html so that the
+        # user can follow those links.
+        chapter_commentary_html_content = remove_links(chapter_commentary_html_content)
+        chapters[chapter_num] = BCChapter(commentary=chapter_commentary_html_content)
     return chapters
 
 
@@ -637,11 +647,13 @@ def bc_book_content(
         book_intro, resource_lookup_dto.lang_code, resource_requests
     )
     book_intro_html_content = mistune.markdown(book_intro)
-    adjusted_book_intro_html_content = adjust_commentary_headings(
+    book_intro_html_content = adjust_commentary_headings(book_intro_html_content)
+    book_intro_html_content = markdown_transformer.remove_pagination_symbols(
         book_intro_html_content
     )
+    book_intro_html_content = remove_links(book_intro_html_content)
     return BCBook(
-        book_intro=adjusted_book_intro_html_content,
+        book_intro=book_intro_html_content,
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,

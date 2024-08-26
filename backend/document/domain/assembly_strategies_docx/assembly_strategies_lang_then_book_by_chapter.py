@@ -154,7 +154,7 @@ def assemble_content_by_lang_then_book(
             usfm_book is None
             and tn_book is None
             and tq_book is None
-            and tw_book is not None
+            and (tw_book is not None or bc_book is not None)
         ):
             composers.append(
                 assemble_tw_by_book(

@@ -1570,3 +1570,54 @@ def test_bys_reg_col_lbo_1c_chapter() -> None:
             },
         )
         check_finished_document_with_verses_success(response, suffix="pdf")
+
+
+@pytest.mark.docx
+def test_en_bc_col_language_book_order_with_no_email_1c_docx() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents_docx",
+            json={
+                # "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": True,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "bc",
+                        "book_code": "col",
+                    },
+                ],
+            },
+        )
+        check_result(response, suffix="docx")
+
+
+def test_en_bc_col_language_book_order_with_no_email_1c() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                # "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "bc",
+                        "book_code": "col",
+                    },
+                ],
+            },
+        )
+        check_finished_document_without_verses_success(response, suffix="pdf")

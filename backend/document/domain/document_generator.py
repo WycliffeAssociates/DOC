@@ -8,7 +8,7 @@ import shutil
 import smtplib
 import subprocess
 import time
-from collections import defaultdict
+
 from datetime import datetime
 from email.encoders import encode_base64
 from email.mime.base import MIMEBase
@@ -21,7 +21,7 @@ from typing import Any, Mapping, Optional, Sequence, cast
 import jinja2
 from celery import current_task
 from document.config import settings
-from document.domain import exceptions, parsing, resource_lookup, worker
+from document.domain import parsing, resource_lookup, worker
 from document.domain.bible_books import BOOK_NAMES
 
 from document.domain.assembly_strategies.assembly_strategies_book_then_lang_by_chapter import (
@@ -51,7 +51,6 @@ from document.domain.model import (
     TQBook,
     TWBook,
     TWNameContentPair,
-    TWUse,
     USFMBook,
 )
 from document.utils.file_utils import file_needs_update, write_file
@@ -573,8 +572,9 @@ def assemble_docx_content(
         t1 = time.time()
         logger.debug("Time for adding TW content to document: %s", t1 - t0)
     # Now add any TW subdocs to the composer
-    for tw_subdoc_ in tw_subdocs:
-        composer.append(tw_subdoc_)
+    if composer:
+        for tw_subdoc_ in tw_subdocs:
+            composer.append(tw_subdoc_)
     return composer
 
 
@@ -683,7 +683,7 @@ def convert_html_to_pdf(
         pdf_filepath,
     ]
     logger.debug("Generate PDF command: %s", " ".join(weasyprint_command))
-    result = subprocess.run(
+    subprocess.run(
         weasyprint_command,
         check=True,
         text=True,
@@ -912,7 +912,7 @@ def check_content_for_issues(
     content: str,
 ) -> str:
     """
-    Check for defects and notify support via logs of potential source
+    Check for defects and notify support via logs of possible source
     content issues. Also modify the content to include a message for
     the end user to inform them that there is a problem with the
     underlying source USFM and that the translators need to fix it.
@@ -926,7 +926,6 @@ def check_content_for_issues(
     )
     if not verses_html:
         logger.info("No verses found in HTML")
-    verses_combined = "".join(verses_html)
     if not verses_html:
         logger.info(
             "About to modify content to include message notifying user of problem with USFM source text format..."

@@ -6,15 +6,13 @@ import re
 import subprocess
 import time
 from glob import glob
-from os import scandir, getenv, getcwd, walk
+from os import scandir, getenv, walk
 from os.path import exists, join, split
 from pathlib import Path
-from re import compile, sub
+
 from typing import Mapping, Optional, Sequence
 
 import mistune
-import orjson
-import yaml
 
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
@@ -27,7 +25,6 @@ from document.domain.model import (
     BCBook,
     BCChapter,
     ChapterNum,
-    LangDirEnum,
     ResourceLookupDto,
     ResourceRequest,
     TNBook,
@@ -149,7 +146,7 @@ def convert_usfm_chapter_to_html(
         f"/app/{resource_filename_sans_suffix}.html",
     ]
     logger.debug("dotnet command: %s", " ".join(command))
-    result = subprocess.run(
+    subprocess.run(
         command,
         check=True,
         text=True,
@@ -363,10 +360,6 @@ def tn_chapter_intro(
     return read_file(intro_paths[0]) if intro_paths else None
 
 
-def adjust_html_tags(html_content: str) -> str:
-    return html_content.replace(H1, H5)
-
-
 def book_intro_markdown(resource_dir: str, book_code: str) -> str:
     book_intro_paths = sorted(glob(f"{resource_dir}/*{book_code}/front/intro.md"))
     if not book_intro_paths:
@@ -384,6 +377,8 @@ def tn_verses_html(
     verse_fmt_str: str = "<h4>{} {}:{}</h4>\n{}",
     glob_md_fmt_str: str = "{}/*[0-9]*.md",
     glob_txt_fmt_str: str = "{}/*[0-9]*.txt",
+    h1: str = H1,
+    h5: str = H5,
 ) -> dict[VerseRef, str]:
     verse_paths = sorted(glob(glob_md_fmt_str.format(chapter_dir)))
     if not verse_paths:
@@ -398,7 +393,7 @@ def tn_verses_html(
             resource_requests,
         )
         verse_html_content = mistune.markdown(verse_md_content)
-        adjusted_verse_html_content = adjust_html_tags(verse_html_content)
+        adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
         verses_html[verse_ref] = verse_fmt_str.format(
             book_names[book_code],
             int(Path(chapter_dir).stem),
@@ -469,7 +464,7 @@ def tq_chapter_verses(
                 resource_requests,
             )
             verse_html_content = mistune.markdown(verse_md_content)
-            adjusted_verse_html_content = sub(h1, h5, verse_html_content)
+            adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
             verses_html[verse_ref] = verse_label_fmt_str.format(
                 book_names[book_code],
                 chapter_num,
@@ -529,8 +524,8 @@ def tw_name_content_pairs(
             translation_word_content, lang_code, resource_requests
         )
         html_word_content = mistune.markdown(translation_word_content)
-        html_word_content = sub(h2, h4, html_word_content)
-        html_word_content = sub(h1, h3, html_word_content)
+        html_word_content = re.sub(h2, h4, html_word_content)
+        html_word_content = re.sub(h1, h3, html_word_content)
         name_content_pairs.append(
             TWNameContentPair(localized_translation_word_, html_word_content)
         )
@@ -621,12 +616,22 @@ def bc_chapters(
         chapter_commentary_html_content = modify_commentary_label(
             chapter_commentary_html_content, chapter_num
         )
+        # fmt: off
+        chapter_commentary_html_content = markdown_transformer.remove_pagination_symbols(
+                chapter_commentary_html_content
+            )
+        # fmt: on
         chapter_commentary_html_content = replace_relative_with_absolute_links(
             chapter_commentary_html_content
         )
-        chapters[chapter_num] = BCChapter(
-            commentary=adjust_commentary_headings(chapter_commentary_html_content)
+        chapter_commentary_html_content = adjust_commentary_headings(
+            chapter_commentary_html_content
         )
+        # TODO For now we are deactivating the links to articles from commentary. It
+        # would be nice to provide those markdown articles as rendered html so that the
+        # user can follow those links.
+        chapter_commentary_html_content = remove_links(chapter_commentary_html_content)
+        chapters[chapter_num] = BCChapter(commentary=chapter_commentary_html_content)
     return chapters
 
 
@@ -642,11 +647,13 @@ def bc_book_content(
         book_intro, resource_lookup_dto.lang_code, resource_requests
     )
     book_intro_html_content = mistune.markdown(book_intro)
-    adjusted_book_intro_html_content = adjust_commentary_headings(
+    book_intro_html_content = adjust_commentary_headings(book_intro_html_content)
+    book_intro_html_content = markdown_transformer.remove_pagination_symbols(
         book_intro_html_content
     )
+    book_intro_html_content = remove_links(book_intro_html_content)
     return BCBook(
-        book_intro=adjusted_book_intro_html_content,
+        book_intro=book_intro_html_content,
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
@@ -736,10 +743,10 @@ def ensure_paragraph_before_verses(
     Return the possibly updated verse_content.
     """
     if (
-        compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
+        re.compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
     ):  # Verse 1 of chapter
         if (
-            compile(chapter_marker_not_on_own_line_regex).match(verse_content)
+            re.compile(chapter_marker_not_on_own_line_regex).match(verse_content)
             is not None
         ):  # Chapter marker not on own line.
             # Make chapter marker occupy its own line and add a USFM paragraph
@@ -749,7 +756,7 @@ def ensure_paragraph_before_verses(
             # Docx did not have one. Presumably the 3rd party lib we use to parse
             # HTML to Docx doesn't like spans that are not contained in a block
             # level element.
-            verse_content = sub(
+            verse_content = re.sub(
                 chapter_marker_not_on_own_line_with_match_groups,
                 chapter_marker_not_on_own_line_repair_regex,
                 verse_content,

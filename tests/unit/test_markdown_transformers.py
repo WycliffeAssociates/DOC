@@ -126,3 +126,30 @@ def test_translation_note_link_gu(datafiles: list[str]) -> None:
         source, "en", resource_requests
     )
     assert expected == source
+
+
+def test_remove_pagination_symbols_from_commentary() -> None:
+    source = """<p>There are many vivid metaphors used to describe Judah's sin. Their sin is described as a sickness that spreads. (See: and sin)</p>
+<h4>Rhetorical Questions</h4>
+<p>Yahweh uses several rhetorical questions in this chapter. The purpose of these questions is to convince the people of Judah of their sin.</p>
+<h2>Links:</h2>
+<ul>
+<li><strong><a href="./01.md">Isaiah 1:1 Notes</a></strong></li>
+<li><strong><a href="../front/intro.md">Isaiah intro</a></strong></li>
+</ul>
+<p><strong>| &gt;&gt;</strong></p>
+<hr/><div style='column-count: 2;'><h4>Isaiah 1:1</h4>
+"""
+    expected = """<p>There are many vivid metaphors used to describe Judah's sin. Their sin is described as a sickness that spreads. (See: and sin)</p>
+<h4>Rhetorical Questions</h4>
+<p>Yahweh uses several rhetorical questions in this chapter. The purpose of these questions is to convince the people of Judah of their sin.</p>
+<h2>Links:</h2>
+<ul>
+<li><strong><a href="./01.md">Isaiah 1:1 Notes</a></strong></li>
+<li><strong><a href="../front/intro.md">Isaiah intro</a></strong></li>
+</ul>
+
+<hr/><div style='column-count: 2;'><h4>Isaiah 1:1</h4>
+"""
+    source = markdown_transformer.remove_pagination_symbols(source)
+    assert expected == source

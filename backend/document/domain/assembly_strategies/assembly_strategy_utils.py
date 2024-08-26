@@ -6,7 +6,7 @@ from re import search, sub
 from typing import Mapping, Optional, Sequence
 
 from document.config import settings
-from document.domain.bible_books import BOOK_NAMES, BOOK_NUMBERS, book_number
+from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import (
     BCBook,
     LangDirEnum,
@@ -41,7 +41,6 @@ def adjust_book_intro_headings(
     book_intro = sub(h2, h6, book_intro)
     book_intro = sub(h1, h2, book_intro)
     book_intro = sub(h3, h4, book_intro)
-    book_intro = sub(h2, h3, book_intro)
     # Now adjust the temporary H6s.
     return sub(h6, h3, book_intro)
 
@@ -49,7 +48,6 @@ def adjust_book_intro_headings(
 def adjust_commentary_headings(
     chapter_commentary: str,
     h1: str = H1,
-    h2: str = H2,
     h3: str = H3,
     h4: str = H4,
     h5: str = H5,
@@ -60,7 +58,6 @@ def adjust_commentary_headings(
     chapter_commentary = sub(h4, h6, chapter_commentary)
     chapter_commentary = sub(h3, h4, chapter_commentary)
     chapter_commentary = sub(h1, h3, chapter_commentary)
-    chapter_commentary = sub(h2, h4, chapter_commentary)
     # Now adjust the temporary H6s.
     return sub(h6, h5, chapter_commentary)
 
@@ -68,7 +65,7 @@ def adjust_commentary_headings(
 def chapter_intro(
     tn_book: Optional[TNBook],
     chapter_num: int,
-    hr: str = "<hr/_",
+    hr: str = "<hr/>",
 ) -> str:
     """Get the chapter intro."""
     content = []
@@ -158,17 +155,6 @@ def tq_language_direction_html(
     ltr_direction_html: str = settings.LTR_DIRECTION_HTML,
 ) -> str:
     if tq_book and tq_book.lang_direction == LangDirEnum.RTL:
-        return rtl_direction_html
-    else:
-        return ltr_direction_html
-
-
-def bc_language_direction_html(
-    bc_book: Optional[BCBook],
-    rtl_direction_html: str = settings.RTL_DIRECTION_HTML,
-    ltr_direction_html: str = settings.LTR_DIRECTION_HTML,
-) -> str:
-    if bc_book and bc_book.lang_direction == LangDirEnum.RTL:
         return rtl_direction_html
     else:
         return ltr_direction_html

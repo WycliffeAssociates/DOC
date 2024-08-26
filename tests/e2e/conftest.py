@@ -19,6 +19,7 @@ lang_codes_and_names = resource_lookup.lang_codes_and_names()
 ALL_LANGUAGE_CODES: Sequence[str] = [
     lang_code_and_name[0] for lang_code_and_name in lang_codes_and_names
 ]
+# logger.debug("len(ALL_LANGUAGE_CODES): %s", len(ALL_LANGUAGE_CODES)) # result: 763
 
 
 @pytest.fixture()
@@ -29,8 +30,8 @@ def english_lang_code() -> str:
 # There are so many language codes, so we limit the number we test in a test run
 # to the next interval yet untested until finally this will be adjusted to have
 # tested them all.
-@pytest.fixture(params=ALL_LANGUAGE_CODES[601:800])
 # Type of request parameter is actually _pytest.fixtures.FixtureRequest
+@pytest.fixture(params=ALL_LANGUAGE_CODES[700:763])
 def non_english_lang_code(request: Any) -> Any:
     """Get all non-English language codes, but one per request."""
     return request.param

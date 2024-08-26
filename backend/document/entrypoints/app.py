@@ -154,6 +154,11 @@ async def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
     return resource_lookup.shared_book_codes(lang0_code, lang1_code)
 
 
+# TODO For the case of 'bc' resource type we need to have access to the
+# book_codes that were chosen in the prior step by the user so that we
+# can check whether the 'bc' repo provides content for any of the books
+# requested, otherwise we wouldn't want to show it as a resource type
+# choice to the user.
 @app.get("/resource_types/{lang_code}")
 async def resource_types(
     lang_code: str,

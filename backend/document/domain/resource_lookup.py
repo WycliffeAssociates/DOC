@@ -19,7 +19,11 @@ from document.config import settings
 from document.domain import exceptions, parsing
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import ResourceLookupDto
-from document.utils.file_utils import dir_needs_update, file_needs_update, read_file
+from document.utils.file_utils import (
+    dir_needs_update,
+    file_needs_update,
+    read_file,
+)
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -60,93 +64,6 @@ def fetch_source_data(
             # logger.debug("json data: %s", content)
             data = json.loads(content)
     return data
-
-
-# def download_data(
-#     jsonfile_path: str,
-#     data_api_url: HttpUrl = settings.DATA_API_URL,
-# ) -> Any:
-#     """
-#     >>> from document.domain import resource_lookup
-#     >>> ();result = resource_lookup.download_data("working/temp/resources.json");() # doctest: +ELLIPSIS
-#     (...)
-#     >>> result[0]
-#     """
-#     # A debug query example of how to query one language
-#     # query MyQuery {
-#     #   git_repo(
-#     #     where: {content: {language: {ietf_code: {_eq: "id"}}, wa_content_metadata: {status: {_eq: "Primary"}}}}
-#     #   ) {
-#     #     repo_url
-#     #   }
-#     # }
-#     graphql_query = """
-# query MyQuery {
-#   git_repo(
-#     where: {content: {wa_content_metadata: {status: {_eq: "Primary"}}}}
-#   ) {
-#     repo_url
-#     content {
-#       resource_type
-#       language {
-#         english_name
-#         ietf_code
-#         national_name
-#         direction
-#       }
-#     }
-#   }
-# }
-#     """
-#     query_json = {"query": graphql_query}
-#     try:
-#         response = requests.post(str(data_api_url), json=query_json)
-#         if response.status_code == 200:
-#             data = response.json()
-#             data_payload = data["data"]
-#             # Only refresh the cache if the payload has the expected
-#             # internal structure indicating that the data API is functioning
-#             # correctly. We don't want to accidentally overwrite the
-#             # cached results with a basically empty set of results. We have seen
-#             # this in practice when the data API is having problems, it returns a
-#             # value, but lacks expected internal structure. We sniff that out here
-#             # by checking if "git_repo" is in the payload, a hueristic
-#             # which has proved to be reliable.
-#             if "git_repo" in data_payload:
-#                 logger.debug("Writing json data to: %s", jsonfile_path)
-#                 with open(jsonfile_path, "w") as fp:
-#                     fp.write(str(json.dumps(data_payload)))
-#                 return data_payload
-#             # For this case we want to use our last successfully
-#             # fetched result from data API rather than what was returned from the
-#             # live data API call just now since it does not have the
-#             # proper internal structure.
-#             else:
-#                 logger.debug(
-#                     "About to fetch cached data API data from %s", jsonfile_path
-#                 )
-#                 content = read_file(jsonfile_path)
-#                 data = json.loads(content)
-#                 return data
-#         else:
-#             logger.debug(
-#                 "Failed to get data from data API, graphql API might be down..."
-#             )
-#             # Recover from apparent issue with data API by using older cached data
-#             logger.debug(
-#                 "About to fetch cached data API results from %s", jsonfile_path
-#             )
-#             content = read_file(jsonfile_path)
-#             data = json.loads(content)
-#             return data
-#     except Exception:
-#         logger.exception("Caught exception: ")
-#         logger.debug("Failed to get data from data API, API might be down...")
-#         # Recover from apparent issue with data API by using older cached data
-#         logger.debug("About to fetch cached data API results from %s", jsonfile_path)
-#         content = read_file(jsonfile_path)
-#         data = json.loads(content)
-#         return data
 
 
 def download_data(
@@ -390,6 +307,21 @@ def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
             language_info = content["language"]
             if language_info["ietf_code"] == lang_code:
                 if content["resource_type"] in RESOURCE_TYPE_CODES_AND_NAMES:
+                    # TODO if content["resource_type"] is 'bc' then we should
+                    # clone the bc repo and see if at least one of the
+                    # books chosen by the user in the prior
+                    # step is included in the bc repo. For example, the user
+                    # may have chosen an Old Testament book and there is no
+                    # English bible commentary for OT books so in that case
+                    # we should not show the user 'bc' as a choosable
+                    # resource type.
+                    # if content["resource_type"] == "bc":
+                    #     url = repo_info["repo_url"]
+                    #     last_segment = get_last_segment(url, lang_code)
+                    #     resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                    #     clone_git_repo(repo_url, resource_filepath)
+                    #     # TODO Check repo on disk to see if at least one of the books
+                    #     # chosen by the user is there
                     resource_types.append(
                         (
                             content["resource_type"],

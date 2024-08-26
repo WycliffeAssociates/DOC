@@ -3,14 +3,12 @@ from typing import Mapping, Sequence
 from document.domain.bible_books import BOOK_NAMES, BOOK_CHAPTERS
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
-    adjust_book_intro_headings,
     bc_book_intro,
     book_title,
     chapter_commentary,
     chapter_intro,
     ensure_primary_usfm_books_for_different_languages_are_adjacent,
     has_footnotes,
-    tn_book_intro,
     tn_chapter_verses,
     tn_language_direction_html,
     tq_chapter_verses,

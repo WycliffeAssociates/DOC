@@ -24,7 +24,7 @@
     sharedResourceTypesUrl = <string>PUBLIC_SHARED_RESOURCE_TYPES_URL
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
-    // resource_lookup.shared_resource_types.
+    // resource_lookup.resource_types.
     const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
     const url = new URL(url_)
     console.log(`About to send request ${url} to backend`)
@@ -34,19 +34,10 @@
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-
     // Associate the langCode to each resource type code and name pair
     return resourceTypesAndNames.map((element) => [langCode, element[0], element[1]])
   }
 
-  let otResourceCodes_: Array<[string, string]> = $otBookStore.map((item) => [
-    getCode(item),
-    getName(item)
-  ])
-  let ntResourceCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
-    getCode(item),
-    getName(item)
-  ])
   // Resolve promise for data
   let lang0ResourceTypesAndNames: Array<string>
   if ($langCodesStore[0]) {

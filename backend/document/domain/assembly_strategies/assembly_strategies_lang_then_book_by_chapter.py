@@ -4,7 +4,6 @@ from document.domain.bible_books import BOOK_NAMES
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     bc_book_intro,
-    bc_language_direction_html,
     book_title,
     chapter_commentary,
     chapter_heading,
@@ -143,7 +142,7 @@ def assemble_content_by_lang_then_book(
                 usfm_book is None
                 and tn_book is None
                 and tq_book is None
-                and tw_book is not None
+                and (tw_book is not None or bc_book is not None)
             ):
                 content.append(
                     assemble_tw_by_book(
@@ -262,9 +261,7 @@ def assemble_tw_by_book(
 ) -> str:
     content = []
     if bc_book:
-        content.append(str(bc_book.lang_direction))
         for chapter_num in bc_book.chapters:
             content.append(chapter_commentary(bc_book, chapter_num))
             content.append(end_of_chapter_html)
-        content.append(close_direction_html)
     return "".join(content)

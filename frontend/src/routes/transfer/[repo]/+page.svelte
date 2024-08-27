@@ -53,7 +53,7 @@
     // Form the URL to ultimately invoke
     // resource_lookup.resource_types.
     let book_codes = bookCodeAndNames.map(bookCodeAndName => bookCodeAndName[0]).join(",")
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`
     const url = new URL(url_)
     const response = await fetch(url)
     const resourceTypesAndNames: Array<[string, string]> = await response.json()

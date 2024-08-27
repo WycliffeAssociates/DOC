@@ -5,6 +5,7 @@ assets.
 """
 
 import json
+import re
 import shutil
 import subprocess
 from functools import cache
@@ -19,11 +20,7 @@ from document.config import settings
 from document.domain import exceptions, parsing
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import ResourceLookupDto
-from document.utils.file_utils import (
-    dir_needs_update,
-    file_needs_update,
-    read_file,
-)
+from document.utils.file_utils import dir_needs_update, file_needs_update, read_file
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -290,7 +287,14 @@ RESOURCE_TYPE_CODES_AND_NAMES = {
 }
 
 
-def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
+def resource_types(
+    lang_code: str,
+    book_names: Sequence[str],
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
+    resource_type_codes_and_names: dict[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
     >>> ();result = resource_lookup.resource_types("pt-br");() # doctest: +ELLIPSIS
@@ -302,12 +306,14 @@ def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
     resource_types = []
     try:
         repos_info = data["git_repo"]
-        for repo_info in repos_info:
+        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+        for repo_info in augmented_repos_info:
             content = repo_info["content"]
             language_info = content["language"]
             if language_info["ietf_code"] == lang_code:
-                if content["resource_type"] in RESOURCE_TYPE_CODES_AND_NAMES:
-                    # TODO if content["resource_type"] is 'bc' then we should
+                resource_type = content["resource_type"]
+                if resource_type in resource_type_codes_and_names:
+                    # if content["resource_type"] is 'bc' then we should
                     # clone the bc repo and see if at least one of the
                     # books chosen by the user in the prior
                     # step is included in the bc repo. For example, the user
@@ -315,28 +321,46 @@ def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
                     # English bible commentary for OT books so in that case
                     # we should not show the user 'bc' as a choosable
                     # resource type.
-                    # if content["resource_type"] == "bc":
-                    #     url = repo_info["repo_url"]
-                    #     last_segment = get_last_segment(url, lang_code)
-                    #     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    #     clone_git_repo(repo_url, resource_filepath)
-                    #     # TODO Check repo on disk to see if at least one of the books
-                    #     # chosen by the user is there
-                    resource_types.append(
-                        (
-                            content["resource_type"],
-                            RESOURCE_TYPE_CODES_AND_NAMES[content["resource_type"]],
+                    # logger.debug(
+                    #     "content['resource_type']: %s", content["resource_type"]
+                    # )
+                    url = repo_info["repo_url"]
+                    last_segment = get_last_segment(url, lang_code)
+                    resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                    clone_git_repo(url, resource_filepath)
+                    logger.debug("resource_filepath: %s", resource_filepath)
+                    # Check repo on disk to see if at least one of the books
+                    # chosen by the user is there
+                    book_assets = []
+                    if resource_type in ["tq", "tn"]:
+                        book_assets = [
+                            file.name
+                            for file in scandir(resource_filepath)
+                            if file.is_dir() and file.name.lower() in book_names
+                        ]
+                    elif resource_type == "bc":
+                        book_assets = [
+                            file.name
+                            for file in scandir(resource_filepath)
+                            if file.is_dir()
+                            and re.search(bc_book_asset_pattern, file.name)
+                            and file.name.split("-")[1].lower() in book_names
+                        ]
+                    elif resource_type in usfm_resource_types:
+                        book_assets = parsing.find_usfm_files(resource_filepath)
+                        logger.debug("bc book assets in repo: %s", book_assets)
+                    if book_assets:
+                        logger.debug(
+                            "About to add resource type: %s", content["resource_type"]
                         )
-                    )
+                        resource_types.append(
+                            (
+                                content["resource_type"],
+                                resource_type_codes_and_names[content["resource_type"]],
+                            )
+                        )
     except:
         pass
-    if lang_code == "en":
-        # Add tn-condensed since graphql data api doesn't support it, but DOC must
-        resource_types.append(
-            ("tn-condensed", RESOURCE_TYPE_CODES_AND_NAMES["tn-condensed"])
-        )
-    elif lang_code == "id":
-        resource_types.append(("ayt", RESOURCE_TYPE_CODES_AND_NAMES["ayt"]))
     unique_values = []
     seen_values = set()
     for value in resource_types:
@@ -541,7 +565,6 @@ def book_codes_for_lang(
                                             book_names[subdir.name.lower()],
                                         )
                                     )
-
                         # logger.debug("book_codes_and_names2: %s", book_codes_and_names2)
     except:
         pass

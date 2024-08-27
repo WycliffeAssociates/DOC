@@ -159,15 +159,17 @@ async def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
 # can check whether the 'bc' repo provides content for any of the books
 # requested, otherwise we wouldn't want to show it as a resource type
 # choice to the user.
-@app.get("/resource_types/{lang_code}")
-async def resource_types(
+@app.get("/resource_types/{lang_code}/{book_codes}")
+async def shared_resource_types(
     lang_code: str,
+    book_codes: str,
 ) -> Iterable[tuple[str, str]]:
     """
     Return the list of available resource types tuples for lang_code
     with book_codes.
     """
-    return resource_lookup.resource_types(lang_code)
+    book_codes_list = book_codes.split(",")
+    return resource_lookup.resource_types(lang_code, book_codes_list)
 
 
 @app.get("/book_codes_for_lang/{lang_code}")

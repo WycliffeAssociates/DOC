@@ -289,11 +289,12 @@ RESOURCE_TYPE_CODES_AND_NAMES = {
 
 def resource_types(
     lang_code: str,
-    book_names: Sequence[str],
+    book_codes_str: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
     bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
     resource_type_codes_and_names: dict[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    book_names: dict[str, str] = BOOK_NAMES,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
@@ -302,6 +303,10 @@ def resource_types(
     >>> result
     [('blv', 'Portuguese Bíblia Livre'), ('tw', 'Translation Words'), ('tn', 'Translation Notes'), ('ulb', 'Unlocked Literal Bible'), ('tq', 'Translation Questions')]
     """
+    book_codes = book_codes_str.split(",")
+    if book_codes and book_codes[0] == "all":
+        # Add all OT and NT books
+        book_codes = list(book_names.keys())
     data = fetch_source_data()
     resource_types = []
     try:
@@ -332,11 +337,11 @@ def resource_types(
                     # Check repo on disk to see if at least one of the books
                     # chosen by the user is there
                     book_assets = []
-                    if resource_type in ["tq", "tn"]:
+                    if resource_type in ["tq", "tn", "tn-condensed"]:
                         book_assets = [
                             file.name
                             for file in scandir(resource_filepath)
-                            if file.is_dir() and file.name.lower() in book_names
+                            if file.is_dir() and file.name.lower() in book_codes
                         ]
                     elif resource_type == "bc":
                         book_assets = [
@@ -344,19 +349,22 @@ def resource_types(
                             for file in scandir(resource_filepath)
                             if file.is_dir()
                             and re.search(bc_book_asset_pattern, file.name)
-                            and file.name.split("-")[1].lower() in book_names
+                            and file.name.split("-")[1].lower() in book_codes
                         ]
                     elif resource_type in usfm_resource_types:
                         book_assets = parsing.find_usfm_files(resource_filepath)
-                        logger.debug("bc book assets in repo: %s", book_assets)
-                    if book_assets:
-                        logger.debug(
-                            "About to add resource type: %s", content["resource_type"]
-                        )
+                    # Checking if at least one of the books chosen by the user in the prior
+                    # user step is included in the repo. For example, the user may have
+                    # chosen an Old Testament book and there is no English bible commentary
+                    # for OT books so in that case we should not show the user 'bc' as a
+                    # choosable resource type. Also, TW resource is language specific and
+                    # not book specific so it can be added here if the user chose it.
+                    if book_assets or resource_type == "tw":
+                        logger.debug("About to add resource type: %s", resource_type)
                         resource_types.append(
                             (
-                                content["resource_type"],
-                                resource_type_codes_and_names[content["resource_type"]],
+                                resource_type,
+                                resource_type_codes_and_names[resource_type],
                             )
                         )
     except:

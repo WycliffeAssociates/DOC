@@ -209,7 +209,7 @@
             getName(item)
           ])
           if ($langCodesStore[0]) {
-            getResourceTypesAndNames($langCodesStore[0], [...otBookCodes_, ...ntBookCodes_]).then(
+            getResourceTypesAndNames($langCodesStore[0], [["all","all"]]).then(
               (resourceTypesAndNames) => {
                 // Filter down to the resource type provided by the user
                 filteredResourceTypesAndNames = resourceTypesAndNames.filter(

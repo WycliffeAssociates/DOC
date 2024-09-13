@@ -59,7 +59,7 @@ def test_random_non_english_document_request(
             )
         book_code_and_name = random.choice(book_codes_and_names)
         resource_types_and_names = resource_lookup.resource_types(
-            random_non_english_lang_code, [book_code_and_name[0]]
+            random_non_english_lang_code, book_code_and_name[0]
         )
         resource_requests: list[model.ResourceRequest] = []
         for resource_type_and_name in resource_types_and_names:
@@ -157,7 +157,7 @@ def test_all_non_english_document_request(non_english_lang_code: str) -> None:
             )
         for book_code_and_name in book_codes_and_names:
             resource_types_and_names = resource_lookup.resource_types(
-                non_english_lang_code, [book_code_and_name[0]]
+                non_english_lang_code, book_code_and_name[0]
             )
             resource_requests: list[model.ResourceRequest] = []
             for resource_type_and_name in resource_types_and_names:

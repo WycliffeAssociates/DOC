@@ -364,7 +364,7 @@ def random_english_and_non_english_document_request(
         )
     book_code_and_name = random.choice(book_codes_and_names)
     resource_types_and_names = resource_lookup.resource_types(
-        english_lang_code, [book_code_and_name[0]]
+        english_lang_code, book_code_and_name[0]
     )
     resource_requests: list[model.ResourceRequest] = []
     for resource_type_and_name in resource_types_and_names:
@@ -383,10 +383,11 @@ def random_english_and_non_english_document_request(
         raise exceptions.NoBooksError(
             message=f"{random_non_english_lang_code} has no available books."
         )
-    # book_code_and_name2 = random.choice(book_codes_and_names2)
     resource_types_and_names2 = resource_lookup.resource_types(
         random_non_english_lang_code,
-        [book_code_and_name[0] for book_code_and_name in book_codes_and_names2],
+        ",".join(
+            [book_code_and_name[0] for book_code_and_name in book_codes_and_names2]
+        ),
     )
     for resource_type_and_name2 in resource_types_and_names2:
         if (
@@ -440,7 +441,7 @@ def random_two_non_english_languages_document_request(
         )
     book_code_and_name = random.choice(book_codes_and_names)
     resource_types_and_names = resource_lookup.resource_types(
-        random_non_english_lang_code, [book_code_and_name[0]]
+        random_non_english_lang_code, book_code_and_name[0]
     )
     resource_requests: list[model.ResourceRequest] = []
     for resource_type_and_name in resource_types_and_names:
@@ -462,7 +463,9 @@ def random_two_non_english_languages_document_request(
     # book_code_and_name2 = random.choice(book_codes_and_names2)
     resource_types_and_names2 = resource_lookup.resource_types(
         random_non_english_lang_code2,
-        [book_code_and_name[0] for book_code_and_name in book_codes_and_names2],
+        ",".join(
+            [book_code_and_name[0] for book_code_and_name in book_codes_and_names2]
+        ),
     )
     for resource_type_and_name2 in resource_types_and_names2:
         if (

@@ -8,7 +8,7 @@ import json
 import re
 import shutil
 import subprocess
-from functools import cache
+from functools import lru_cache
 from os import scandir
 from os.path import exists, isdir, join, sep
 from pathlib import Path
@@ -31,7 +31,7 @@ SOURCE_DATA_JSON_FILENAME = "resources.json"
 SOURCE_GATEWAY_LANGUAGES_FILENAME = "gateway_languages.json"
 
 
-@cache
+@lru_cache(maxsize=2)
 def fetch_source_data(
     json_file_name: str = SOURCE_DATA_JSON_FILENAME,
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
@@ -287,6 +287,7 @@ RESOURCE_TYPE_CODES_AND_NAMES = {
 }
 
 
+@lru_cache(maxsize=100)
 def resource_types(
     lang_code: str,
     book_codes_str: str,
@@ -507,6 +508,7 @@ def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
     return repos_info
 
 
+@lru_cache(maxsize=100)
 def book_codes_for_lang(
     lang_code: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
@@ -592,6 +594,7 @@ def book_codes_for_lang(
     return book_codes_sorted
 
 
+@lru_cache(maxsize=100)
 def resource_lookup_dto(
     lang_code: str,
     resource_type: str,

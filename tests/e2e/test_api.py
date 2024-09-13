@@ -216,6 +216,35 @@ def test_en_ulb_tn_jud_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+def test_en_ulb_tn_condensed_jud_language_book_order_1c() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "jud",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn-condensed",
+                        "book_code": "jud",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response, suffix="pdf")
+
+
 # pt-br ulb is no longer provided by the data API
 @pytest.mark.skip
 def test_pt_br_ulb_gen_pt_br_tn_gen_language_book_order_1c() -> None:

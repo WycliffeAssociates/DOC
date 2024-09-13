@@ -146,7 +146,9 @@ async def lang_codes_and_names() -> Sequence[tuple[str, str, bool]]:
 
 
 @app.get("/shared_book_codes/{lang0_code}/{lang1_code}")
-async def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[Any]:
+async def shared_book_codes(
+    lang0_code: str, lang1_code: str
+) -> Sequence[tuple[str, str]]:
     """
     Return list of available resource codes common to both lang0_code and lang1_code.
     """

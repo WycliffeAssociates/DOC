@@ -119,13 +119,13 @@ def print_directory_contents(directory: str) -> None:
 
 def convert_usfm_chapter_to_html(
     content: str,
-    resource_filename_sans_suffix: str,
+    resource_filepath_sans_suffix: str,
 ) -> None:
     """
     Invoke the dotnet USFM parser to parse the USFM file, if it exists,
     and render it into HTML and store on disk.
     """
-    content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
+    content_file = write_usfm_content_to_file(content, resource_filepath_sans_suffix)
     logger.debug("About to convert USFM to HTML")
     dll_path = "/app/USFMParserDriver/bin/Release/net8.0/USFMParserDriver.dll"
     if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
@@ -143,7 +143,7 @@ def convert_usfm_chapter_to_html(
         f"{getenv('DOTNET_ROOT')}/dotnet",
         dll_path,
         f"/app/{content_file}",
-        f"/app/{resource_filename_sans_suffix}.html",
+        f"/app/{resource_filepath_sans_suffix}.html",
     ]
     logger.debug("dotnet command: %s", " ".join(command))
     subprocess.run(
@@ -201,7 +201,7 @@ def usfm_chapter_html(
         resource_lookup_dto.book_code,
         t1 - t0,
     )
-    html_content_filepath = f"{resource_filename_sans_suffix}.html"
+    html_content_filepath = f"{resource_filepath_sans_suffix}.html"
     if exists(html_content_filepath):
         html_content = read_file(html_content_filepath)
         return html_content

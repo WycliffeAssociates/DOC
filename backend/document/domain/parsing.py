@@ -119,13 +119,13 @@ def print_directory_contents(directory: str) -> None:
 
 def convert_usfm_chapter_to_html(
     content: str,
-    resource_filename_sans_suffix: str,
+    resource_filepath_sans_suffix: str,
 ) -> None:
     """
     Invoke the dotnet USFM parser to parse the USFM file, if it exists,
     and render it into HTML and store on disk.
     """
-    content_file = write_usfm_content_to_file(content, resource_filename_sans_suffix)
+    content_file = write_usfm_content_to_file(content, resource_filepath_sans_suffix)
     logger.debug("About to convert USFM to HTML")
     dll_path = "/app/USFMParserDriver/bin/Release/net8.0/USFMParserDriver.dll"
     if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
@@ -133,7 +133,7 @@ def convert_usfm_chapter_to_html(
         raise Exception("dotnet cli not found")
     if not exists(dll_path):
         logger.info("dotnet parser executable not found!")
-        print_directory_contents("/app/USFMParserDriver")
+        # print_directory_contents("/app/USFMParserDriver")
         raise Exception("dotnet parser executable not found!")
     if not exists(content_file):
         logger.debug(
@@ -143,7 +143,7 @@ def convert_usfm_chapter_to_html(
         f"{getenv('DOTNET_ROOT')}/dotnet",
         dll_path,
         f"/app/{content_file}",
-        f"/app/{resource_filename_sans_suffix}.html",
+        f"/app/{resource_filepath_sans_suffix}.html",
     ]
     logger.debug("dotnet command: %s", " ".join(command))
     subprocess.run(
@@ -185,23 +185,23 @@ def usfm_chapter_html(
     content: str,
     resource_lookup_dto: ResourceLookupDto,
     chapter_num: int,
-    output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
+    working_dir: str = settings.WORKING_DIR,
 ) -> Optional[str]:
     """
     Parse USFM asset content into HTML and return HTML as string.
     """
-    resource_filename_sans_suffix = f"{output_dir}/{resource_lookup_dto.lang_code}_{resource_lookup_dto.resource_type}_{resource_lookup_dto.book_code}_{chapter_num}"
+    resource_filepath_sans_suffix = f"{working_dir}/{resource_lookup_dto.lang_code}_{resource_lookup_dto.resource_type}_{resource_lookup_dto.book_code}_{chapter_num}"
     t0 = time.time()
-    convert_usfm_chapter_to_html(content, resource_filename_sans_suffix)
+    convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
     t1 = time.time()
     logger.debug(
-        "Time to convert USFM to HTML (parsing to AST + convert AST to HTML) for %s-%s-%s: %s",
+        "Time to convert USFM to HTML for %s-%s-%s: %s",
         resource_lookup_dto.lang_code,
         resource_lookup_dto.resource_type,
         resource_lookup_dto.book_code,
         t1 - t0,
     )
-    html_content_filepath = f"{resource_filename_sans_suffix}.html"
+    html_content_filepath = f"{resource_filepath_sans_suffix}.html"
     if exists(html_content_filepath):
         html_content = read_file(html_content_filepath)
         return html_content
@@ -275,9 +275,11 @@ def usfm_book_content(
         updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
         for chapter in updated_chapters:
             chapter_num = get_chapter_num(chapter)
-            html_content = usfm_chapter_html(chapter, resource_lookup_dto, chapter_num)
+            chapter_html_content = usfm_chapter_html(
+                chapter, resource_lookup_dto, chapter_num
+            )
             usfm_chapters[chapter_num] = USFMChapter(
-                content=html_content if html_content else "",
+                content=chapter_html_content if chapter_html_content else "",
             )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
@@ -340,6 +342,9 @@ def tn_chapter_verses(
                 resource_requests,
             )
             chapter_intro_html = mistune.markdown(chapter_intro)
+            chapter_intro_html = markdown_transformer.remove_pagination_symbols(
+                chapter_intro_html
+            )
         verses_html = tn_verses_html(
             chapter_dir, lang_code, book_code, resource_requests
         )
@@ -618,8 +623,8 @@ def bc_chapters(
         )
         # fmt: off
         chapter_commentary_html_content = markdown_transformer.remove_pagination_symbols(
-                chapter_commentary_html_content
-            )
+            chapter_commentary_html_content
+        )
         # fmt: on
         chapter_commentary_html_content = replace_relative_with_absolute_links(
             chapter_commentary_html_content
@@ -628,7 +633,7 @@ def bc_chapters(
             chapter_commentary_html_content
         )
         # TODO For now we are deactivating the links to articles from commentary. It
-        # would be nice to provide those markdown articles as rendered html so that the
+        # would be nice to provide those markdown articles as rendered HTML so that the
         # user can follow those links.
         chapter_commentary_html_content = remove_links(chapter_commentary_html_content)
         chapters[chapter_num] = BCChapter(commentary=chapter_commentary_html_content)
@@ -824,7 +829,7 @@ def attempt_to_make_usfm_parseable(
             chapter_usfm_content.append(f"\n\c {int(chapter_marker)}\n")
         for usfm_file in chapter_verse_files:
             with open(usfm_file, "r") as fin:
-                logger.debug("usfm_file: %s", usfm_file)
+                # logger.debug("usfm_file: %s", usfm_file)
                 verse_content = fin.read()
                 verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
                 chapter_usfm_content.append(verse_content)

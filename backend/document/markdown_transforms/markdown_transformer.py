@@ -196,7 +196,9 @@ def transform_tw_rc_link(
 
 
 def remove_pagination_symbols(source: str) -> str:
-    return source.replace("<p><strong>| &gt;&gt;</strong></p>", "")
+    source = source.replace("<strong>| &gt;&gt;</strong>", "")
+    source = source.replace("<p>__&lt;&lt; | __</p>", "")
+    return source.replace("<strong>&lt;&lt; | &gt;&gt;</strong>", "")
 
 
 def transform_tw_markdown_links(

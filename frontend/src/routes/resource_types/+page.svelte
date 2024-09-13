@@ -20,12 +20,14 @@
 
   async function getResourceTypesAndNames(
     langCode: string,
+    bookCodeAndNames: Array<[string, string]>,
     apiRootUrl = <string>env.PUBLIC_BACKEND_API_URL,
     sharedResourceTypesUrl = <string>PUBLIC_SHARED_RESOURCE_TYPES_URL
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
     // resource_lookup.resource_types.
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}`
+    let book_codes = bookCodeAndNames.map((bookCodeAndName) => bookCodeAndName[0]).join(',')
+    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`
     const url = new URL(url_)
     console.log(`About to send request ${url} to backend`)
     const response = await fetch(url)
@@ -40,8 +42,17 @@
 
   // Resolve promise for data
   let lang0ResourceTypesAndNames: Array<string>
+  let otBookCodes_: Array<[string, string]> = $otBookStore.map((item) => [
+    getCode(item),
+    getName(item)
+  ])
+  let ntBookCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
+    getCode(item),
+    getName(item)
+  ])
+  // Resolve promise for data
   if ($langCodesStore[0]) {
-    getResourceTypesAndNames($langCodesStore[0])
+    getResourceTypesAndNames($langCodesStore[0], [...otBookCodes_, ...ntBookCodes_])
       .then((resourceTypesAndNames) => {
         lang0ResourceTypesAndNames = resourceTypesAndNames.map(
           (tuple) => `${tuple[0]}, ${tuple[1]}, ${tuple[2]}`
@@ -53,7 +64,7 @@
   // Resolve promise for data for language
   let lang1ResourceTypesAndNames: Array<string>
   if ($langCodesStore[1]) {
-    getResourceTypesAndNames($langCodesStore[1])
+    getResourceTypesAndNames($langCodesStore[1], [...otBookCodes_, ...ntBookCodes_])
       .then((resourceTypesAndNames) => {
         lang1ResourceTypesAndNames = resourceTypesAndNames.map(
           (tuple) => `${tuple[0]}, ${tuple[1]}, ${tuple[2]}`
@@ -122,7 +133,11 @@
       $usfmAvailableStore =
         lang0ResourceTypesAndNames.some((item) => usfmRegexp.test(item)) ||
         lang1ResourceTypesAndNames.some((item) => usfmRegexp.test(item))
-    } else if (lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length > 0 && !lang1ResourceTypesAndNames) {
+    } else if (
+      lang0ResourceTypesAndNames &&
+      lang0ResourceTypesAndNames.length > 0 &&
+      !lang1ResourceTypesAndNames
+    ) {
       $usfmAvailableStore = lang0ResourceTypesAndNames.some((item) => usfmRegexp.test(item))
     }
   }
@@ -178,10 +193,11 @@
         </div>
       </button>
     </div>
-    {#if ($langCountStore > 0 && lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length == 0) || ($langCountStore > 1 && (!lang1ResourceTypesAndNames || (lang1ResourceTypesAndNames && lang1ResourceTypesAndNames.length == 0)))}
-      <ProgressIndicator />
-    {/if}
-    {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
+    {#if ($langCountStore > 0 && (!lang0ResourceTypesAndNames || (lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length == 0))) || ($langCountStore > 1 && (!lang1ResourceTypesAndNames || (lang1ResourceTypesAndNames && lang1ResourceTypesAndNames.length == 0)))}
+      <ProgressIndicator
+        labelString="Analyzing resources available for books chosen, please be patient..."
+      />
+    {:else if windowWidth < TAILWIND_SM_MIN_WIDTH}
       {#if $langCountStore > 0}
         <div>
           <h3 class="text-2xl text-[#33445C]">{$langNamesStore[0]}</h3>

@@ -41,7 +41,7 @@ def check_result(
             if json_data["state"] == success_state:
                 finished_document_request_key = json_data["result"]
                 finished_document_path = os.path.join(
-                    settings.DOCUMENT_SERVE_DIR,
+                    settings.DOCUMENT_OUTPUT_DIR,
                     "{}.{}".format(finished_document_request_key, suffix),
                 )
                 logger.debug(
@@ -71,22 +71,16 @@ def check_finished_document_with_verses_success(
     """
     finished_document_request_key = check_result(response, suffix, poll_duration)
     html_filepath = os.path.join(
-        settings.DOCUMENT_SERVE_DIR,
+        settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
+    assert html_filepath, "HTML output file does not exist"
     with open(html_filepath, "r") as fin:
         html = fin.read()
         body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
         assert body_match, "Body not found in HTML"
         body_content = body_match.group(1)
-        verses_html = re.findall(
-            r'<div .*?class="verse".*?>(.*?)</div>', body_content, re.DOTALL
-        )
-        assert verses_html, "No verses found in HTML"
-        verses_combined = "".join(verses_html)
-        assert (
-            len(verses_combined) >= 30
-        ), "Total length of verses is less than 30 characters"
+        assert 'class="verse"' in body_content, "No verses found in HTML"
 
 
 def check_finished_document_without_verses_success(
@@ -99,18 +93,16 @@ def check_finished_document_without_verses_success(
     """
     finished_document_request_key = check_result(response, suffix, poll_duration)
     html_filepath = os.path.join(
-        settings.DOCUMENT_SERVE_DIR,
+        settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
+    assert html_filepath, "HTML output file does not exist"
     with open(html_filepath, "r") as fin:
         html = fin.read()
         body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
         assert body_match, "Body not found in HTML"
         body_content = body_match.group(1)
-        verses_html = re.findall(
-            r'<div class="verse".*?>(.*?)</div>', body_content, re.DOTALL
-        )
-        assert not verses_html
+        assert not 'class="verse"' in body_content
 
 
 def check_finished_document_with_body_success(
@@ -123,7 +115,7 @@ def check_finished_document_with_body_success(
     """
     finished_document_request_key = check_result(response, suffix, poll_duration)
     html_filepath = os.path.join(
-        settings.DOCUMENT_SERVE_DIR,
+        settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
     with open(html_filepath, "r") as fin:

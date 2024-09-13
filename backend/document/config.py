@@ -1,8 +1,7 @@
 """This module provides configuration values used by the application."""
 import logging
-from collections.abc import Mapping, Sequence
 from logging import config as lc
-from typing import final
+from typing import Sequence, final
 
 import yaml
 from pydantic import EmailStr, HttpUrl
@@ -64,6 +63,7 @@ class Settings(BaseSettings):
         "ulb",
         "usfm",
     ]
+    SHOW_TN_BOOK_INTRO: bool = False
     TN_RESOURCE_TYPE: str = "tn"
     EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
     TQ_RESOURCE_TYPE: str = "tq"
@@ -205,13 +205,13 @@ class Settings(BaseSettings):
     LOGGING_CONFIG_FILE_PATH: str = "backend/logging_config.yaml"
 
     # Location where resource assets will be cloned.
-    RESOURCE_ASSETS_DIR: str = "working/temp"
+    RESOURCE_ASSETS_DIR: str = "assets_download"
+
+    # Location where intermediate generated document parts are saved.
+    WORKING_DIR: str = "working_temp"
 
     # Location where generated PDFs are written.
-    DOCUMENT_OUTPUT_DIR: str = "working/output"
-
-    # Location where generated documents are copied to after being written.
-    DOCUMENT_SERVE_DIR: str = "document_output"
+    DOCUMENT_OUTPUT_DIR: str = "document_output"
 
     BACKEND_CORS_ORIGINS: list[str]
 

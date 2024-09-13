@@ -10,12 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     # For additional fonts needed, specifically Chinese
     texlive-fonts-recommended \
-    # For usfm_tools and mypyc
+    # For cython
     gcc \
-    # For ebook-convert
+    # For ebook-convert HTML to ePub
     xz-utils \
-    xdg-utils \
-    libegl1 \
     libopengl0 \
     libegl1 \
     libopengl0 \
@@ -24,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxkbcommon0 \
     libglx0 \
     libnss3 \
+    libdeflate0 \
     # For weasyprint
     pango1.0-tools \
     # For fc-cache
@@ -37,11 +36,15 @@ RUN cd /tmp \
 RUN fc-cache -f -v
 
 
-# Create a directory for Calibre
-RUN mkdir -p /home/appuser/calibre-bin
-
 # Get and install calibre for use of its ebook-convert binary for HTML to ePub conversion.
 RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/home/appuser/calibre-bin isolated=y
+
+
+# Add calibre to PATH
+ENV PATH="/home/appuser/calibre-bin/calibre:${PATH}"
+
+# Test the installation
+RUN ebook-convert --version
 
 WORKDIR /app
 
@@ -66,12 +69,13 @@ RUN cd USFMParserDriver && \
     ${DOTNET_ROOT}/dotnet restore && \
     ${DOTNET_ROOT}/dotnet build --configuration Release
 
-# Make the output directory where resource asset files are cloned or downloaded and unzipped.
-RUN mkdir -p /app/working/temp
+# Make the output directory where resource asset files are cloned.
+RUN mkdir -p /app/assets_download
+# Make the directory where intermediate document parts are saved.
+RUN mkdir -p /app/working_temp
 # Make the output directory where generated HTML and PDFs are placed.
-RUN mkdir -p /app/working/output
-# Make the output directory where generated documents (PDF, ePub, Docx) are copied to.
 RUN mkdir -p /app/document_output
+
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .
@@ -94,8 +98,8 @@ COPY template.docx .
 COPY template_compact.docx .
 # Next two lines are useful when the data (graphql) API are down so
 # that we can still test
-COPY resources.json working/temp/resources.json
-RUN touch working/temp/resources.json
+COPY resources.json assets_download/resources.json
+RUN touch assets_download/resources.json
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests

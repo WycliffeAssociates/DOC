@@ -248,8 +248,8 @@ local-prepare-for-tests-without-cleaning: mypy
 
 .PHONY: local-clean-working-output-dir
 local-clean-working-output-dir:
-	find working/output/ -type f -name "*.html" -exec rm -- {} +
-	find working/output/ -type f -name "*.pdf" -exec rm -- {} +
+	find assets_download/ -type f -name "*.html" -exec rm -- {} +
+	find assets_download/ -type f -name "*.pdf" -exec rm -- {} +
 
 .PHONY: local-install-app
 local-install-app:

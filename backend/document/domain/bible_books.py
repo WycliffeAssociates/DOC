@@ -5,7 +5,7 @@ book information.
 
 from typing import Mapping
 
-BOOK_NAMES: Mapping[str, str] = {
+BOOK_NAMES: dict[str, str] = {
     "gen": "Genesis",
     "exo": "Exodus",
     "lev": "Leviticus",

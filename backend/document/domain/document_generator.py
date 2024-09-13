@@ -4,7 +4,6 @@ and eventually a final document produced.
 """
 
 import re
-import shutil
 import smtplib
 import subprocess
 import time
@@ -82,11 +81,6 @@ TEMPLATE_PATHS_MAP: Mapping[str, str] = {
 def contains_tw(resource_request: ResourceRequest, tw_regex: str = "tw.*") -> bool:
     """Return True if the resource_request describes a TW resource."""
     value = bool(re.compile(tw_regex).match(resource_request.resource_type))
-    logger.debug(
-        "resource_request: %s tests %s for TW resource type",
-        resource_request,
-        value,
-    )
     return value
 
 
@@ -657,15 +651,15 @@ def send_email_with_attachment(
 
 
 # HTML to PDF converters:
-# princexml ($$$$) (fastest) or same through docraptor ($$) but slow,
+# princexml ($$$$) (fastest); also available through docraptor api ($$) but slow,
 # wkhtmltopdf via pdfkit (can't handle column-count directive so can't use due to
-# multi-column layouts we want; also no longer maintained),
+# multi-column layouts requirement),
 # weasyprint (does a nice job, we use this),
 # pagedjs-cli (does a really nice job, but is really slow - uses puppeteer underneath),
 # electron-pdf (similar speed to wkhtmltopdf) which uses chrome underneath the hood,
 # gotenburg which uses chrome under the hood and provides a nice api in Docker (untested),
 # raw chrome headless (works well and is about the same speed as weasyprint),
-# ebook-convert (currently blows up because docker runs chrome as root)
+# ebook-convert (faster than weasyprint, but does arbitrary page breaks in formatting and can't do headers and footers)
 def convert_html_to_pdf(
     html_filepath: str,
     pdf_filepath: str,
@@ -677,14 +671,20 @@ def convert_html_to_pdf(
     assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
     t0 = time.time()
-    weasyprint_command = [
+    # command = [
+    #     "ebook-convert",
+    #     html_filepath,
+    #     pdf_filepath,
+    #     "--disable-font-rescaling",
+    # ]
+    command = [
         "weasyprint",
         html_filepath,
         pdf_filepath,
     ]
-    logger.debug("Generate PDF command: %s", " ".join(weasyprint_command))
+    logger.debug("Generate PDF command: %s", " ".join(command))
     subprocess.run(
-        weasyprint_command,
+        command,
         check=True,
         text=True,
     )
@@ -703,15 +703,15 @@ def convert_html_to_epub(
 ) -> None:
     """Generate ePub from HTML and copy it to output directory."""
     assert exists(html_filepath)
-    ebook_convert_command = [
-        "/home/appuser/calibre-bin/calibre/ebook-convert",
+    command = [
+        "ebook-convert",
         html_filepath,
         epub_filepath,
         "--no-default-epub-cover",
     ]
-    logger.debug("Generate ePub command: %s", " ".join(ebook_convert_command))
+    logger.debug("Generate ePub command: %s", " ".join(command))
     t0 = time.time()
-    subprocess.run(ebook_convert_command, check=True, text=True)
+    subprocess.run(command, check=True, text=True)
     t1 = time.time()
     logger.debug("Time for converting HTML to ePub: %s", t1 - t0)
 
@@ -893,19 +893,6 @@ def write_html_content_to_file(
         output_filename,
         content,
     )
-    copy_file_to_docker_output_dir(output_filename)
-
-
-def copy_file_to_docker_output_dir(
-    filepath: str,
-    document_output_dir: str = settings.DOCUMENT_SERVE_DIR,
-) -> None:
-    """
-    Copy file to docker_container_document_output_dir.
-    """
-    assert exists(filepath)
-    shutil.copy(filepath, document_output_dir)
-    logger.debug("About to cp file: %s to directory: %s", filepath, document_output_dir)
 
 
 def check_content_for_issues(
@@ -921,12 +908,8 @@ def check_content_for_issues(
     logger.info(
         "Checking USFM content for issues before creating requested document..."
     )
-    verses_html = re.findall(
-        r'<div .*?class="verse".*?>(.*?)</div>', content, re.DOTALL
-    )
-    if not verses_html:
+    if 'class="verse"' not in content:
         logger.info("No verses found in HTML")
-    if not verses_html:
         logger.info(
             "About to modify content to include message notifying user of problem with USFM source text format..."
         )
@@ -1053,7 +1036,6 @@ def generate_document(
             pdf_filepath_,
             document_request_key_,
         )
-        copy_file_to_docker_output_dir(pdf_filepath_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(filepath=pdf_filepath_, mime_type=("application", "pdf"))
@@ -1071,7 +1053,6 @@ def generate_document(
             epub_filepath_,
             document_request_key_,
         )
-        copy_file_to_docker_output_dir(epub_filepath_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(
@@ -1184,7 +1165,6 @@ def generate_docx_document(
             title1,
             title2,
         )
-        copy_file_to_docker_output_dir(docx_filepath_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(

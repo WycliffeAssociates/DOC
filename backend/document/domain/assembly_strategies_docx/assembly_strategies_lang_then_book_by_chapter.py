@@ -179,6 +179,7 @@ def assemble_usfm_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> Composer:
     """
     Construct the HTML for a 'by book' strategy wherein at least
@@ -186,14 +187,13 @@ def assemble_usfm_by_book(
     """
     doc = Document()
     composer = Composer(doc)
-    if tn_book:
-        if tn_book.book_intro:
-            subdoc = create_docx_subdoc(
-                tn_book.book_intro,
-                tn_book.lang_code,
-                tn_book and tn_book.lang_direction == LangDirEnum.RTL,
-            )
-            composer.append(subdoc)
+    if show_tn_book_intro and tn_book and tn_book.book_intro:
+        subdoc = create_docx_subdoc(
+            tn_book.book_intro,
+            tn_book.lang_code,
+            tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+        )
+        composer.append(subdoc)
     if bc_book:
         if bc_book.book_intro:
             subdoc = create_docx_subdoc(
@@ -288,6 +288,7 @@ def assemble_tn_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> Composer:
     """
     Construct the HTML for a 'by book' strategy wherein at least
@@ -296,20 +297,19 @@ def assemble_tn_by_book(
     doc = Document()
     composer = Composer(doc)
     if tn_book:
-        if tn_book.book_intro:
+        if show_tn_book_intro and tn_book.book_intro:
             subdoc = create_docx_subdoc(
                 tn_book.book_intro,
                 tn_book.lang_code,
                 tn_book and tn_book.lang_direction == LangDirEnum.RTL,
             )
             composer.append(subdoc)
-        if bc_book:
-            if bc_book.book_intro:
-                subdoc = create_docx_subdoc(
-                    bc_book.book_intro,
-                    tn_book.lang_code,
-                )
-                composer.append(subdoc)
+        if bc_book and bc_book.book_intro:
+            subdoc = create_docx_subdoc(
+                bc_book.book_intro,
+                tn_book.lang_code,
+            )
+            composer.append(subdoc)
         for chapter_num in tn_book.chapters:
             add_one_column_section(doc)
             one_column_html = []

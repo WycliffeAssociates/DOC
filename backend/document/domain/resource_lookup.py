@@ -5,25 +5,21 @@ assets.
 """
 
 import json
-import shutil
+import re
 import subprocess
-from functools import cache
+from functools import lru_cache
 from os import scandir
-from os.path import exists, isdir, join, sep
+from os.path import exists, isdir, join
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 from urllib.parse import urlparse
 
 import requests
 from document.config import settings
-from document.domain import exceptions, parsing
+from document.domain import parsing
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import ResourceLookupDto
-from document.utils.file_utils import (
-    dir_needs_update,
-    file_needs_update,
-    read_file,
-)
+from document.utils.file_utils import file_needs_update, read_file
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -34,7 +30,7 @@ SOURCE_DATA_JSON_FILENAME = "resources.json"
 SOURCE_GATEWAY_LANGUAGES_FILENAME = "gateway_languages.json"
 
 
-@cache
+@lru_cache(maxsize=2)
 def fetch_source_data(
     json_file_name: str = SOURCE_DATA_JSON_FILENAME,
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
@@ -74,7 +70,7 @@ def download_data(
     Downloads data from a GraphQL API and saves it to a JSON file.
 
     >>> from document.domain import resource_lookup
-    >>> result = resource_lookup.download_data("working/temp/resources.json")
+    >>> result = resource_lookup.download_data("assets_download/resources.json")
     >>> result[0]
     """
     graphql_query = """
@@ -138,7 +134,7 @@ def fetch_gateway_languages(
 ) -> Any:
     """
     >>> from document.domain import resource_lookup
-    >>> ();result = resource_lookup.fetch_gateway_languages("working/temp/gateway_languages.json");() # doctest: +ELLIPSIS
+    >>> ();result = resource_lookup.fetch_gateway_languages("assets_download/gateway_languages.json");() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
     """
@@ -213,8 +209,6 @@ def get_gateway_languages(
             for language in languages:
                 language_ = language["gateway_language"]
                 ietf_code = language_["ietf_code"]
-                national_name = language_["national_name"]
-                english_name = language_["english_name"]
                 if ietf_code not in gateway_languages_collection:
                     gateway_languages_collection.append(ietf_code)
     # logger.debug("gateway_languages: %s", gateway_languages_collection)
@@ -257,7 +251,6 @@ def lang_codes_and_names(
                 values.append(
                     (ietf_code, f"{national_name} ({english_name})", is_gateway)
                 )
-
     except:
         logger.exception("Failed due to the following exception.")
     unique_values = []
@@ -269,8 +262,9 @@ def lang_codes_and_names(
     return sorted(unique_values, key=lambda value: value[1])
 
 
-# TODO This should be expanded to include any additional types (if
-# there are any) that we want to be available to users.
+# This can be expanded to include any additional types (if
+# there are any) that we want to be available to users. These are all
+# that I found of relevance in the data API.
 RESOURCE_TYPE_CODES_AND_NAMES = {
     "ayt": "Bahasa Indonesian Bible",
     "bc": "Bible Commentary",
@@ -290,7 +284,16 @@ RESOURCE_TYPE_CODES_AND_NAMES = {
 }
 
 
-def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
+@lru_cache(maxsize=100)
+def resource_types(
+    lang_code: str,
+    book_codes_str: str,
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
+    resource_type_codes_and_names: dict[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    book_names: dict[str, str] = BOOK_NAMES,
+) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
     >>> ();result = resource_lookup.resource_types("pt-br");() # doctest: +ELLIPSIS
@@ -298,45 +301,61 @@ def resource_types(lang_code: str) -> Sequence[tuple[str, str]]:
     >>> result
     [('blv', 'Portuguese Bíblia Livre'), ('tw', 'Translation Words'), ('tn', 'Translation Notes'), ('ulb', 'Unlocked Literal Bible'), ('tq', 'Translation Questions')]
     """
+    book_codes = book_codes_str.split(",")
+    if book_codes and book_codes[0] == "all":
+        # Add all OT and NT books
+        book_codes = list(book_names.keys())
     data = fetch_source_data()
     resource_types = []
     try:
         repos_info = data["git_repo"]
-        for repo_info in repos_info:
+        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+        for repo_info in augmented_repos_info:
             content = repo_info["content"]
             language_info = content["language"]
             if language_info["ietf_code"] == lang_code:
-                if content["resource_type"] in RESOURCE_TYPE_CODES_AND_NAMES:
-                    # TODO if content["resource_type"] is 'bc' then we should
-                    # clone the bc repo and see if at least one of the
-                    # books chosen by the user in the prior
-                    # step is included in the bc repo. For example, the user
-                    # may have chosen an Old Testament book and there is no
-                    # English bible commentary for OT books so in that case
-                    # we should not show the user 'bc' as a choosable
-                    # resource type.
-                    # if content["resource_type"] == "bc":
-                    #     url = repo_info["repo_url"]
-                    #     last_segment = get_last_segment(url, lang_code)
-                    #     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    #     clone_git_repo(repo_url, resource_filepath)
-                    #     # TODO Check repo on disk to see if at least one of the books
-                    #     # chosen by the user is there
-                    resource_types.append(
-                        (
-                            content["resource_type"],
-                            RESOURCE_TYPE_CODES_AND_NAMES[content["resource_type"]],
+                resource_type = content["resource_type"]
+                if resource_type in resource_type_codes_and_names:
+                    url = repo_info["repo_url"]
+                    last_segment = get_last_segment(url, lang_code)
+                    resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                    clone_git_repo(url, resource_filepath)
+                    logger.debug("resource_filepath: %s", resource_filepath)
+                    # Check repo on disk to see if at least one of the books
+                    # chosen by the user is there
+                    book_assets = []
+                    if resource_type in ["tq", "tn", "tn-condensed"]:
+                        book_assets = [
+                            file.name
+                            for file in scandir(resource_filepath)
+                            if file.is_dir() and file.name.lower() in book_codes
+                        ]
+                    elif resource_type == "bc":
+                        book_assets = [
+                            file.name
+                            for file in scandir(resource_filepath)
+                            if file.is_dir()
+                            and re.search(bc_book_asset_pattern, file.name)
+                            and file.name.split("-")[1].lower() in book_codes
+                        ]
+                    elif resource_type in usfm_resource_types:
+                        book_assets = parsing.find_usfm_files(resource_filepath)
+                    # Checking if at least one of the books chosen by the user in the prior
+                    # user step is included in the repo. For example, the user may have
+                    # chosen an Old Testament book and there is no English bible commentary
+                    # for OT books so in that case we should not show the user 'bc' as a
+                    # choosable resource type. Also, TW resource is language specific and
+                    # not book specific so it can be added here if the user chose it.
+                    if book_assets or resource_type == "tw":
+                        logger.debug("About to add resource type: %s", resource_type)
+                        resource_types.append(
+                            (
+                                resource_type,
+                                resource_type_codes_and_names[resource_type],
+                            )
                         )
-                    )
     except:
         pass
-    if lang_code == "en":
-        # Add tn-condensed since graphql data api doesn't support it, but DOC must
-        resource_types.append(
-            ("tn-condensed", RESOURCE_TYPE_CODES_AND_NAMES["tn-condensed"])
-        )
-    elif lang_code == "id":
-        resource_types.append(("ayt", RESOURCE_TYPE_CODES_AND_NAMES["ayt"]))
     unique_values = []
     seen_values = set()
     for value in resource_types:
@@ -390,7 +409,7 @@ def get_last_segment(url: str, lang_code: str) -> str:
 def update_repo_components(repo_components: list[str]) -> list[str]:
     last_component = repo_components[-1]
     # Some DCS-Mirror URLs have an unusual pattern wherein a non resource type is the last component
-    # url: https://content.bibletranslationtools.org/DCS-Mirror/danjuma_alfred_h_kgo_phm_text_ulb_l1,
+    # in the URL, e.g., https://content.bibletranslationtools.org/DCS-Mirror/danjuma_alfred_h_kgo_phm_text_ulb_l1,
     # repo_components: ['danjuma', 'alfred', 'h', 'kgo', 'phm', 'text', 'ulb', 'l1']
     if (
         last_component not in settings.USFM_RESOURCE_TYPES
@@ -475,6 +494,7 @@ def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
     return repos_info
 
 
+@lru_cache(maxsize=100)
 def book_codes_for_lang(
     lang_code: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
@@ -533,7 +553,7 @@ def book_codes_for_lang(
                                     for file in scandir(resource_filepath)
                                     if file.is_dir() and file.name in book_names
                                 ]
-                                logger.debug("subdirs (as book codes): %s", subdirs)
+                                # logger.debug("subdirs (as book codes): %s", subdirs)
                                 for subdir in subdirs:
                                     book_codes_and_names2.append(
                                         (
@@ -541,7 +561,6 @@ def book_codes_for_lang(
                                             book_names[subdir.name.lower()],
                                         )
                                     )
-
                         # logger.debug("book_codes_and_names2: %s", book_codes_and_names2)
     except:
         pass
@@ -561,6 +580,7 @@ def book_codes_for_lang(
     return book_codes_sorted
 
 
+@lru_cache(maxsize=100)
 def resource_lookup_dto(
     lang_code: str,
     resource_type: str,
@@ -638,14 +658,14 @@ def resource_lookup_dto(
             resource_type,
             book_code,
         )
-    logger.debug(
-        "two_component_url_resource_lookup_dtos: %s",
-        two_component_url_resource_lookup_dtos,
-    )
-    logger.debug(
-        "more_than_two_component_url_resource_lookup_dtos: %s",
-        more_than_two_component_url_resource_lookup_dtos,
-    )
+    # logger.debug(
+    #     "two_component_url_resource_lookup_dtos: %s",
+    #     two_component_url_resource_lookup_dtos,
+    # )
+    # logger.debug(
+    #     "more_than_two_component_url_resource_lookup_dtos: %s",
+    #     more_than_two_component_url_resource_lookup_dtos,
+    # )
     if more_than_two_component_url_resource_lookup_dtos:
         resource_lookup_dto = more_than_two_component_url_resource_lookup_dtos[0]
     elif two_component_url_resource_lookup_dtos:
@@ -668,7 +688,7 @@ def acquire_resource_assets(
 ) -> str:
     """
     git clone resource asset.
-    Return the resource_dir path.
+    Return the resource's cloned filepath.
     """
     if (
         resource_lookup_dto.url is not None
@@ -677,15 +697,7 @@ def acquire_resource_assets(
             working_dir,
             get_last_segment(resource_lookup_dto.url, resource_lookup_dto.lang_code),
         )
-        # TODO There was some issue here which checking the cache and
-        # then cloning. Just cloning made it go away. Investigate later. Lower
-        # priority.
-        # Check if resource assets need updating otherwise use
-        # what we already have on disk.
-        # if file_needs_update(resource_filepath):
         clone_git_repo(resource_lookup_dto.url, resource_filepath)
-        # else:
-        #     logger.debug("Cache hit for %s", resource_filepath)
     return resource_filepath
 
 
@@ -705,38 +717,10 @@ def clone_git_repo(
         )
     else:
         command = "git clone --depth=1 '{}' '{}'".format(url, resource_filepath)
-    # TODO There were some issues with the commented out code below. It exists for the case where
-    # we'd want to reclone a repo when it is sufficiently stale, just
-    # in case it was updated by translators.
-    # if dir_needs_update(resource_filepath):
-    #     logger.debug(
-    #         "About to delete pre-existing git repo %s in order to recreate it due to cache staleness.",
-    #         resource_filepath,
-    #     )
     if isdir(resource_filepath):
-        logger.info("No need to clone repo as it already exists.")
-        # try:
-        #     shutil.rmtree(resource_filepath)
-        # except OSError:
-        #     logger.debug(
-        #         "Directory %s was not removed due to an error.",
-        #         resource_filepath,
-        #     )
-        #     logger.exception("Caught exception: ")
-
-        # logger.debug("Attempting to clone into %s ...", resource_filepath)
-        # try:
-        #     subprocess.call(command, shell=True)
-        # except subprocess.SubprocessError:
-        #     logger.debug("git command: %s", command)
-        #     logger.debug("git clone failed!")
-        #     raise HTTPException(
-        #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        #         detail="git clone failed",
-        #     )
-        # else:
-        #     logger.debug("git command: %s", command)
-        #     logger.debug("git clone succeeded.")
+        logger.info(
+            "No need to clone repo as it already exists: %s.", resource_filepath
+        )
     else:
         logger.debug("Attempting to clone into %s ...", resource_filepath)
         try:
@@ -754,7 +738,7 @@ def clone_git_repo(
 
 if __name__ == "__main__":
 
-    # To run the doctests in the this module, in the root of the project do:
+    # To run the doctests in this module, in the root of the project do:
     # python backend/document/domain/resource_lookup.py
     # or
     # python backend/document/domain/resource_lookup.py -v

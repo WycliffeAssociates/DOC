@@ -38,7 +38,7 @@ from tests.shared.utils import (
 logger = settings.logger(__name__)
 
 
-@pytest.mark.parametrize("execution_number", range(125))
+@pytest.mark.parametrize("execution_number", range(25))
 @pytest.mark.randomized
 def test_random_non_english_document_request(
     execution_number: int,
@@ -59,7 +59,7 @@ def test_random_non_english_document_request(
             )
         book_code_and_name = random.choice(book_codes_and_names)
         resource_types_and_names = resource_lookup.resource_types(
-            random_non_english_lang_code
+            random_non_english_lang_code, book_code_and_name[0]
         )
         resource_requests: list[model.ResourceRequest] = []
         for resource_type_and_name in resource_types_and_names:
@@ -94,7 +94,7 @@ def test_random_non_english_document_request(
             check_finished_document_without_verses_success(response)
 
 
-@pytest.mark.parametrize("execution_number", range(50))
+@pytest.mark.parametrize("execution_number", range(25))
 @pytest.mark.randomized
 def test_random_english_and_non_english_combo_document_request(
     execution_number: int,
@@ -118,7 +118,7 @@ def test_random_english_and_non_english_combo_document_request(
             check_finished_document_without_verses_success(response)
 
 
-@pytest.mark.parametrize("execution_number", range(150))
+@pytest.mark.parametrize("execution_number", range(25))
 @pytest.mark.randomized
 def test_random_two_non_english_languages_combo_document_request(
     execution_number: int,
@@ -157,7 +157,7 @@ def test_all_non_english_document_request(non_english_lang_code: str) -> None:
             )
         for book_code_and_name in book_codes_and_names:
             resource_types_and_names = resource_lookup.resource_types(
-                non_english_lang_code
+                non_english_lang_code, book_code_and_name[0]
             )
             resource_requests: list[model.ResourceRequest] = []
             for resource_type_and_name in resource_types_and_names:

@@ -3,6 +3,7 @@ from typing import Mapping, Sequence
 from document.domain.bible_books import BOOK_NAMES, BOOK_CHAPTERS
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
+    adjust_book_intro_headings,
     bc_book_intro,
     chapter_commentary,
     chapter_intro,
@@ -128,6 +129,7 @@ def assemble_usfm_by_chapter(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> Composer:
     """
     Construct the Docx wherein at least one USFM resource exists, one column
@@ -153,18 +155,17 @@ def assemble_usfm_by_chapter(
     doc = Document()
     composer = Composer(doc)
 
-    # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
-    # # Add book intros for each tn_book_content_unit
-    # for tn_book in tn_books:
-    #     if tn_book.book_intro:
-    #         book_intro_ = tn_book.book_intro
-    #         book_intro_adj = adjust_book_intro_headings(book_intro_)
-    #         subdoc = create_docx_subdoc(
-    #             book_intro_adj,
-    #             tn_book.lang_code,
-    #             tn_book and tn_book.lang_direction == LangDirEnum.RTL,
-    #         )
-    #         composer.append(subdoc)
+    if show_tn_book_intro:
+        for tn_book in tn_books:
+            if tn_book.book_intro:
+                book_intro_ = tn_book.book_intro
+                book_intro_adj = adjust_book_intro_headings(book_intro_)
+                subdoc = create_docx_subdoc(
+                    book_intro_adj,
+                    tn_book.lang_code,
+                    tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                )
+                composer.append(subdoc)
     for bc_book in bc_books:
         # Add the commentary book intro
         subdoc = create_docx_subdoc(bc_book.book_intro, bc_book.lang_code)
@@ -251,6 +252,7 @@ def assemble_tn_by_chapter(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> Composer:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
@@ -272,17 +274,17 @@ def assemble_tn_by_chapter(
     doc = Document()
     composer = Composer(doc)
     add_one_column_section(doc)
-    # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
-    # for tn_book in tn_books:
-    #     if tn_book.book_intro:
-    #         book_intro_ = tn_book.book_intro
-    #         book_intro_adj = adjust_book_intro_headings(book_intro_)
-    #         subdoc = create_docx_subdoc(
-    #             book_intro_adj,
-    #             tn_book.lang_code,
-    #             tn_book and tn_book.lang_direction == LangDirEnum.RTL,
-    #         )
-    #         composer.append(subdoc)
+    if show_tn_book_intro:
+        for tn_book in tn_books:
+            if tn_book.book_intro:
+                book_intro_ = tn_book.book_intro
+                book_intro_adj = adjust_book_intro_headings(book_intro_)
+                subdoc = create_docx_subdoc(
+                    book_intro_adj,
+                    tn_book.lang_code,
+                    tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                )
+                composer.append(subdoc)
     for bc_book in bc_books:
         subdoc = create_docx_subdoc(
             bc_book_intro(bc_book),

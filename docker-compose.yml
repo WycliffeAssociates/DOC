@@ -26,6 +26,7 @@ services:
     command: gunicorn --name document:entrypoints:app --worker-class uvicorn.workers.UvicornWorker --pythonpath /app/backend --conf /app/backend/gunicorn.conf.py document.entrypoints.app:app
     volumes:
       - shared:/app/document_output
+      - shared_assets:/app/assets_download
     depends_on:
       redis:
         condition: service_healthy
@@ -49,6 +50,7 @@ services:
       SEND_EMAIL: ${SEND_EMAIL}
     volumes:
       - shared:/app/document_output
+      - shared_assets:/app/assets_download
     depends_on:
       api:
         condition: service_healthy
@@ -60,7 +62,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
-
     restart: unless-stopped
   celery-dashboard:
     image: mher/flower
@@ -84,7 +85,7 @@ services:
       - shared:/srv/content
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
+      test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -110,6 +111,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
 volumes:
   shared:
+  shared_assets:

@@ -64,6 +64,7 @@ class Settings(BaseSettings):
         "ulb",
         "usfm",
     ]
+    SHOW_TN_BOOK_INTRO: bool = False
     TN_RESOURCE_TYPE: str = "tn"
     EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
     TQ_RESOURCE_TYPE: str = "tq"

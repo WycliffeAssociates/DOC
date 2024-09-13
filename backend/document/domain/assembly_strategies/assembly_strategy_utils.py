@@ -104,9 +104,10 @@ def bc_book_intro(
 def tn_book_intro(
     tn_book: Optional[TNBook],
     hr: str = "<hr/>",
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> str:
     content = ""
-    if tn_book and tn_book.book_intro:
+    if show_tn_book_intro and tn_book and tn_book.book_intro:
         content = f"{tn_book.book_intro}{hr}"
     return content
 

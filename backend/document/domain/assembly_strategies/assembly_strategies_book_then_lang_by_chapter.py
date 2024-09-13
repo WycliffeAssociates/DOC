@@ -3,12 +3,14 @@ from typing import Mapping, Sequence
 from document.domain.bible_books import BOOK_NAMES, BOOK_CHAPTERS
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
+    adjust_book_intro_headings,
     bc_book_intro,
     book_title,
     chapter_commentary,
     chapter_intro,
     ensure_primary_usfm_books_for_different_languages_are_adjacent,
     has_footnotes,
+    tn_book_intro,
     tn_chapter_verses,
     tn_language_direction_html,
     tq_chapter_verses,
@@ -168,6 +170,7 @@ def assemble_usfm_by_chapter(
     close_direction_html: str = "</div>",
     hr: str = "<hr/>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> str:
     """
     Construct the HTML wherein at least one USFM resource exists, one column
@@ -194,15 +197,15 @@ def assemble_usfm_by_chapter(
     bc_books = sorted(bc_books, key=bc_sort_key)
     book_codes = {usfm_book.book_code for usfm_book in usfm_books}
     for book_code in book_codes:
-        # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
-        # for tn_book in [
-        #     tn_book for tn_book in tn_books if tn_book.book_code == book_code
-        # ]:
-        #     content.append(tn_language_direction_html(tn_book))
-        #     book_intro_ = tn_book_intro(tn_book)
-        #     book_intro_adj = adjust_book_intro_headings(book_intro_)
-        #     content.append(book_intro_adj)
-        #     content.append(close_direction_html)
+        if show_tn_book_intro:
+            for tn_book in [
+                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+            ]:
+                content.append(tn_language_direction_html(tn_book))
+                book_intro_ = tn_book_intro(tn_book)
+                book_intro_adj = adjust_book_intro_headings(book_intro_)
+                content.append(book_intro_adj)
+                content.append(close_direction_html)
         for bc_book in [
             bc_book for bc_book in bc_books if bc_book.book_code == book_code
         ]:
@@ -268,6 +271,7 @@ def assemble_tn_by_chapter(
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> str:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
@@ -289,16 +293,16 @@ def assemble_tn_by_chapter(
     bc_books = sorted(bc_books, key=bc_sort_key)
     book_codes = {tn_book.book_code for tn_book in tn_books}
     for book_code in book_codes:
-        # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
-        # Add book intros for each tn_book
-        # for tn_book in [
-        #     tn_book for tn_book in tn_books if tn_book.book_code == book_code
-        # ]:
-        #     content.append(tn_language_direction_html(tn_book))
-        #     book_intro_ = tn_book_intro(tn_book)
-        #     book_intro_adj = adjust_book_intro_headings(book_intro_)
-        #     content.append(book_intro_adj)
-        #     content.append(close_direction_html)
+        if show_tn_book_intro:
+            # Add book intros for each tn_book
+            for tn_book in [
+                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+            ]:
+                content.append(tn_language_direction_html(tn_book))
+                book_intro_ = tn_book_intro(tn_book)
+                book_intro_adj = adjust_book_intro_headings(book_intro_)
+                content.append(book_intro_adj)
+                content.append(close_direction_html)
         for bc_book in [
             bc_book for bc_book in bc_books if bc_book.book_code == book_code
         ]:

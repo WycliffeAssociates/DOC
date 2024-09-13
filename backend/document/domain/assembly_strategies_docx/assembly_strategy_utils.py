@@ -2,8 +2,6 @@
 Utility functions used by assembly_strategies.
 """
 
-from re import sub
-
 from document.config import settings
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
@@ -66,23 +64,6 @@ OXML_LANGUAGE_LIST_LOWERCASE: list[str] = [
 OXML_LANGUAGE_LIST_LOWERCASE_SPLIT: list[str] = [
     language for language in OXML_LANGUAGE_LIST_LOWERCASE if "-" in language
 ]
-
-
-def adjust_book_intro_headings(
-    book_intro: str,
-    h1: str = H1,
-    h2: str = H2,
-    h3: str = H3,
-    h4: str = H4,
-    h6: str = H6,
-) -> str:
-    """Change levels on headings."""
-    # Move the H2 out of the way, we'll deal with it last.
-    book_intro = sub(h2, h6, book_intro)
-    book_intro = sub(h1, h2, book_intro)
-    book_intro = sub(h3, h4, book_intro)
-    # Now adjust the temporary H6s.
-    return sub(h6, h3, book_intro)
 
 
 def add_hr(paragraph: Paragraph) -> None:

@@ -74,6 +74,7 @@ def check_finished_document_with_verses_success(
         settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
+    assert html_filepath, "HTML output file does not exist"
     with open(html_filepath, "r") as fin:
         html = fin.read()
         body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
@@ -95,6 +96,7 @@ def check_finished_document_without_verses_success(
         settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
+    assert html_filepath, "HTML output file does not exist"
     with open(html_filepath, "r") as fin:
         html = fin.read()
         body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)

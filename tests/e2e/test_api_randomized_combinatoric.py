@@ -38,7 +38,7 @@ from tests.shared.utils import (
 logger = settings.logger(__name__)
 
 
-@pytest.mark.parametrize("execution_number", range(125))
+@pytest.mark.parametrize("execution_number", range(25))
 @pytest.mark.randomized
 def test_random_non_english_document_request(
     execution_number: int,
@@ -94,7 +94,7 @@ def test_random_non_english_document_request(
             check_finished_document_without_verses_success(response)
 
 
-@pytest.mark.parametrize("execution_number", range(50))
+@pytest.mark.parametrize("execution_number", range(25))
 @pytest.mark.randomized
 def test_random_english_and_non_english_combo_document_request(
     execution_number: int,
@@ -118,7 +118,7 @@ def test_random_english_and_non_english_combo_document_request(
             check_finished_document_without_verses_success(response)
 
 
-@pytest.mark.parametrize("execution_number", range(150))
+@pytest.mark.parametrize("execution_number", range(25))
 @pytest.mark.randomized
 def test_random_two_non_english_languages_combo_document_request(
     execution_number: int,

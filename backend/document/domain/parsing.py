@@ -340,6 +340,9 @@ def tn_chapter_verses(
                 resource_requests,
             )
             chapter_intro_html = mistune.markdown(chapter_intro)
+            chapter_intro_html = markdown_transformer.remove_pagination_symbols(
+                chapter_intro_html
+            )
         verses_html = tn_verses_html(
             chapter_dir, lang_code, book_code, resource_requests
         )

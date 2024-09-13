@@ -148,7 +148,7 @@ def test_remove_pagination_symbols_from_commentary() -> None:
 <li><strong><a href="./01.md">Isaiah 1:1 Notes</a></strong></li>
 <li><strong><a href="../front/intro.md">Isaiah intro</a></strong></li>
 </ul>
-
+<p></p>
 <hr/><div style='column-count: 2;'><h4>Isaiah 1:1</h4>
 """
     source = markdown_transformer.remove_pagination_symbols(source)

@@ -133,7 +133,7 @@ def convert_usfm_chapter_to_html(
         raise Exception("dotnet cli not found")
     if not exists(dll_path):
         logger.info("dotnet parser executable not found!")
-        print_directory_contents("/app/USFMParserDriver")
+        # print_directory_contents("/app/USFMParserDriver")
         raise Exception("dotnet parser executable not found!")
     if not exists(content_file):
         logger.debug(
@@ -195,7 +195,7 @@ def usfm_chapter_html(
     convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
     t1 = time.time()
     logger.debug(
-        "Time to convert USFM to HTML (parsing to AST + convert AST to HTML) for %s-%s-%s: %s",
+        "Time to convert USFM to HTML for %s-%s-%s: %s",
         resource_lookup_dto.lang_code,
         resource_lookup_dto.resource_type,
         resource_lookup_dto.book_code,
@@ -827,7 +827,7 @@ def attempt_to_make_usfm_parseable(
             chapter_usfm_content.append(f"\n\c {int(chapter_marker)}\n")
         for usfm_file in chapter_verse_files:
             with open(usfm_file, "r") as fin:
-                logger.debug("usfm_file: %s", usfm_file)
+                # logger.debug("usfm_file: %s", usfm_file)
                 verse_content = fin.read()
                 verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
                 chapter_usfm_content.append(verse_content)

@@ -567,7 +567,7 @@ def book_codes_for_lang(
                                     for file in scandir(resource_filepath)
                                     if file.is_dir() and file.name in book_names
                                 ]
-                                logger.debug("subdirs (as book codes): %s", subdirs)
+                                # logger.debug("subdirs (as book codes): %s", subdirs)
                                 for subdir in subdirs:
                                     book_codes_and_names2.append(
                                         (
@@ -672,14 +672,14 @@ def resource_lookup_dto(
             resource_type,
             book_code,
         )
-    logger.debug(
-        "two_component_url_resource_lookup_dtos: %s",
-        two_component_url_resource_lookup_dtos,
-    )
-    logger.debug(
-        "more_than_two_component_url_resource_lookup_dtos: %s",
-        more_than_two_component_url_resource_lookup_dtos,
-    )
+    # logger.debug(
+    #     "two_component_url_resource_lookup_dtos: %s",
+    #     two_component_url_resource_lookup_dtos,
+    # )
+    # logger.debug(
+    #     "more_than_two_component_url_resource_lookup_dtos: %s",
+    #     more_than_two_component_url_resource_lookup_dtos,
+    # )
     if more_than_two_component_url_resource_lookup_dtos:
         resource_lookup_dto = more_than_two_component_url_resource_lookup_dtos[0]
     elif two_component_url_resource_lookup_dtos:

@@ -82,11 +82,6 @@ TEMPLATE_PATHS_MAP: Mapping[str, str] = {
 def contains_tw(resource_request: ResourceRequest, tw_regex: str = "tw.*") -> bool:
     """Return True if the resource_request describes a TW resource."""
     value = bool(re.compile(tw_regex).match(resource_request.resource_type))
-    logger.debug(
-        "resource_request: %s tests %s for TW resource type",
-        resource_request,
-        value,
-    )
     return value
 
 

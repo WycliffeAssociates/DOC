@@ -275,9 +275,11 @@ def usfm_book_content(
         updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
         for chapter in updated_chapters:
             chapter_num = get_chapter_num(chapter)
-            html_content = usfm_chapter_html(chapter, resource_lookup_dto, chapter_num)
+            chapter_html_content = usfm_chapter_html(
+                chapter, resource_lookup_dto, chapter_num
+            )
             usfm_chapters[chapter_num] = USFMChapter(
-                content=html_content if html_content else "",
+                content=chapter_html_content if chapter_html_content else "",
             )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
@@ -621,8 +623,8 @@ def bc_chapters(
         )
         # fmt: off
         chapter_commentary_html_content = markdown_transformer.remove_pagination_symbols(
-                chapter_commentary_html_content
-            )
+            chapter_commentary_html_content
+        )
         # fmt: on
         chapter_commentary_html_content = replace_relative_with_absolute_links(
             chapter_commentary_html_content

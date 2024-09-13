@@ -1,7 +1,7 @@
 """This module provides the FastAPI API definition."""
 
 
-from typing import Any, Iterable, Sequence
+from typing import Sequence
 
 import celery.states
 from celery.result import AsyncResult

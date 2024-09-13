@@ -1,8 +1,7 @@
 """This module provides configuration values used by the application."""
 import logging
-from collections.abc import Mapping, Sequence
 from logging import config as lc
-from typing import final
+from typing import Sequence, final
 
 import yaml
 from pydantic import EmailStr, HttpUrl

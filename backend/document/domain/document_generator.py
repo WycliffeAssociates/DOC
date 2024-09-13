@@ -4,7 +4,6 @@ and eventually a final document produced.
 """
 
 import re
-import shutil
 import smtplib
 import subprocess
 import time

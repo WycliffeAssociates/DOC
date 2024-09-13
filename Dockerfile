@@ -10,12 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     # For additional fonts needed, specifically Chinese
     texlive-fonts-recommended \
-    # For usfm_tools and mypyc
+    # For cython
     gcc \
-    # For ebook-convert
+    # For ebook-convert HTML to ePub
     xz-utils \
-    xdg-utils \
-    libegl1 \
     libopengl0 \
     libegl1 \
     libopengl0 \
@@ -24,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxkbcommon0 \
     libglx0 \
     libnss3 \
+    libdeflate0 \
     # For weasyprint
     pango1.0-tools \
     # For fc-cache
@@ -37,11 +36,15 @@ RUN cd /tmp \
 RUN fc-cache -f -v
 
 
-# Create a directory for Calibre
-RUN mkdir -p /home/appuser/calibre-bin
-
 # Get and install calibre for use of its ebook-convert binary for HTML to ePub conversion.
 RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/home/appuser/calibre-bin isolated=y
+
+
+# Add calibre to PATH
+ENV PATH="/home/appuser/calibre-bin/calibre:${PATH}"
+
+# Test the installation
+RUN ebook-convert --version
 
 WORKDIR /app
 

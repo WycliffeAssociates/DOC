@@ -651,15 +651,15 @@ def send_email_with_attachment(
 
 
 # HTML to PDF converters:
-# princexml ($$$$) (fastest) or same through docraptor ($$) but slow,
+# princexml ($$$$) (fastest); also available through docraptor api ($$) but slow,
 # wkhtmltopdf via pdfkit (can't handle column-count directive so can't use due to
-# multi-column layouts we want; also no longer maintained),
+# multi-column layouts requirement),
 # weasyprint (does a nice job, we use this),
 # pagedjs-cli (does a really nice job, but is really slow - uses puppeteer underneath),
 # electron-pdf (similar speed to wkhtmltopdf) which uses chrome underneath the hood,
 # gotenburg which uses chrome under the hood and provides a nice api in Docker (untested),
 # raw chrome headless (works well and is about the same speed as weasyprint),
-# ebook-convert (currently blows up because docker runs chrome as root)
+# ebook-convert (faster than weasyprint, but does arbitrary page breaks in formatting and can't do headers and footers)
 def convert_html_to_pdf(
     html_filepath: str,
     pdf_filepath: str,

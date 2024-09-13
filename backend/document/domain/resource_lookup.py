@@ -262,8 +262,9 @@ def lang_codes_and_names(
     return sorted(unique_values, key=lambda value: value[1])
 
 
-# TODO This should be expanded to include any additional types (if
-# there are any) that we want to be available to users.
+# This can be expanded to include any additional types (if
+# there are any) that we want to be available to users. These are all
+# that I found of relevance in the data API.
 RESOURCE_TYPE_CODES_AND_NAMES = {
     "ayt": "Bahasa Indonesian Bible",
     "bc": "Bible Commentary",
@@ -408,7 +409,7 @@ def get_last_segment(url: str, lang_code: str) -> str:
 def update_repo_components(repo_components: list[str]) -> list[str]:
     last_component = repo_components[-1]
     # Some DCS-Mirror URLs have an unusual pattern wherein a non resource type is the last component
-    # url: https://content.bibletranslationtools.org/DCS-Mirror/danjuma_alfred_h_kgo_phm_text_ulb_l1,
+    # in the URL, e.g., https://content.bibletranslationtools.org/DCS-Mirror/danjuma_alfred_h_kgo_phm_text_ulb_l1,
     # repo_components: ['danjuma', 'alfred', 'h', 'kgo', 'phm', 'text', 'ulb', 'l1']
     if (
         last_component not in settings.USFM_RESOURCE_TYPES
@@ -687,7 +688,7 @@ def acquire_resource_assets(
 ) -> str:
     """
     git clone resource asset.
-    Return the resource_dir path.
+    Return the resource's cloned filepath.
     """
     if (
         resource_lookup_dto.url is not None
@@ -737,7 +738,7 @@ def clone_git_repo(
 
 if __name__ == "__main__":
 
-    # To run the doctests in the this module, in the root of the project do:
+    # To run the doctests in this module, in the root of the project do:
     # python backend/document/domain/resource_lookup.py
     # or
     # python backend/document/domain/resource_lookup.py -v

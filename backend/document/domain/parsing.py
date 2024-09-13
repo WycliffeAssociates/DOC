@@ -631,7 +631,7 @@ def bc_chapters(
             chapter_commentary_html_content
         )
         # TODO For now we are deactivating the links to articles from commentary. It
-        # would be nice to provide those markdown articles as rendered html so that the
+        # would be nice to provide those markdown articles as rendered HTML so that the
         # user can follow those links.
         chapter_commentary_html_content = remove_links(chapter_commentary_html_content)
         chapters[chapter_num] = BCChapter(commentary=chapter_commentary_html_content)

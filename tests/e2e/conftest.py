@@ -29,7 +29,7 @@ def english_lang_code() -> str:
 
 # There are so many language codes, so we limit the number we test in a test run
 # to the next interval yet untested until finally this will be adjusted to have
-# tested them all.
+# tested them all: 764, i.e., 0 to 763.
 # Type of request parameter is actually _pytest.fixtures.FixtureRequest
 @pytest.fixture(params=ALL_LANGUAGE_CODES[700:763])
 def non_english_lang_code(request: Any) -> Any:

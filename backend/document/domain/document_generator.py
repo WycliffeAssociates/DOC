@@ -914,12 +914,8 @@ def check_content_for_issues(
     logger.info(
         "Checking USFM content for issues before creating requested document..."
     )
-    verses_html = re.findall(
-        r'<div .*?class="verse".*?>(.*?)</div>', content, re.DOTALL
-    )
-    if not verses_html:
+    if 'class="verse"' not in content:
         logger.info("No verses found in HTML")
-    if not verses_html:
         logger.info(
             "About to modify content to include message notifying user of problem with USFM source text format..."
         )

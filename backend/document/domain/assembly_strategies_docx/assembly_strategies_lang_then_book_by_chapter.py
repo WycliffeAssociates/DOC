@@ -51,33 +51,31 @@ def assemble_content_by_lang_then_book(
     chunk_size, to interleaving strategy to do the actual
     interleaving.
     """
-    book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
     composers: list[Composer] = []
-    most_lang_codes = max(
-        [
-            [usfm_book.lang_code for usfm_book in usfm_books],
-            [tn_book.lang_code for tn_book in tn_books],
-            [tq_book.lang_code for tq_book in tq_books],
-            [tw_book.lang_code for tw_book in tw_books],
-            [bc_book.lang_code for bc_book in bc_books],
-        ],
-        key=lambda x: len(x),
+    book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
+    all_lang_codes = (
+        {usfm_book.lang_code for usfm_book in usfm_books}
+        .union(tn_book.lang_code for tn_book in tn_books)
+        .union(tq_book.lang_code for tq_book in tq_books)
+        .union(tw_book.lang_code for tw_book in tw_books)
+        .union(bc_book.lang_code for bc_book in bc_books)
     )
-    most_book_codes = max(
-        [
-            [usfm_book.book_code for usfm_book in usfm_books],
-            [tn_book.book_code for tn_book in tn_books],
-            [tq_book.book_code for tq_book in tq_books],
-            [tw_book.book_code for tw_book in tw_books],
-            [bc_book.book_code for bc_book in bc_books],
-        ],
-        key=lambda x: len(x),
+    most_lang_codes = list(all_lang_codes)
+    # Collect and deduplicate book codes
+    all_book_codes = (
+        {usfm_book.book_code for usfm_book in usfm_books}
+        .union(tn_book.book_code for tn_book in tn_books)
+        .union(tq_book.book_code for tq_book in tq_books)
+        .union(tw_book.book_code for tw_book in tw_books)
+        .union(bc_book.book_code for bc_book in bc_books)
+    )
+    most_book_codes = list(all_book_codes)
+    # Cache book_id_map lookup
+    book_codes_sorted = sorted(
+        most_book_codes, key=lambda book_code: book_id_map[book_code]
     )
     for lang_code in most_lang_codes:
-        for book_code in sorted(
-            most_book_codes,
-            key=lambda book_code: book_id_map[book_code],
-        ):
+        for book_code in book_codes_sorted:
             selected_usfm_books = [
                 usfm_book
                 for usfm_book in usfm_books
@@ -117,55 +115,55 @@ def assemble_content_by_lang_then_book(
                 if bc_book.lang_code == lang_code and bc_book.book_code == book_code
             ]
             bc_book = selected_bc_books[0] if selected_bc_books else None
-        if usfm_book is not None:
-            composers.append(
-                assemble_usfm_by_book(
-                    usfm_book,
-                    tn_book,
-                    tq_book,
-                    tw_book,
-                    usfm_book2,
-                    bc_book,
+            if usfm_book is not None:
+                composers.append(
+                    assemble_usfm_by_book(
+                        usfm_book,
+                        tn_book,
+                        tq_book,
+                        tw_book,
+                        usfm_book2,
+                        bc_book,
+                    )
                 )
-            )
-        elif usfm_book is None and tn_book is not None:
-            composers.append(
-                assemble_tn_by_book(
-                    usfm_book,
-                    tn_book,
-                    tq_book,
-                    tw_book,
-                    usfm_book2,
-                    bc_book,
+            elif usfm_book is None and tn_book is not None:
+                composers.append(
+                    assemble_tn_by_book(
+                        usfm_book,
+                        tn_book,
+                        tq_book,
+                        tw_book,
+                        usfm_book2,
+                        bc_book,
+                    )
                 )
-            )
-        elif usfm_book is None and tn_book is None and tq_book is not None:
-            composers.append(
-                assemble_tq_by_book(
-                    usfm_book,
-                    tn_book,
-                    tq_book,
-                    tw_book,
-                    usfm_book2,
-                    bc_book,
+            elif usfm_book is None and tn_book is None and tq_book is not None:
+                composers.append(
+                    assemble_tq_by_book(
+                        usfm_book,
+                        tn_book,
+                        tq_book,
+                        tw_book,
+                        usfm_book2,
+                        bc_book,
+                    )
                 )
-            )
-        elif (
-            usfm_book is None
-            and tn_book is None
-            and tq_book is None
-            and (tw_book is not None or bc_book is not None)
-        ):
-            composers.append(
-                assemble_tw_by_book(
-                    usfm_book,
-                    tn_book,
-                    tq_book,
-                    tw_book,
-                    usfm_book2,
-                    bc_book,
+            elif (
+                usfm_book is None
+                and tn_book is None
+                and tq_book is None
+                and (tw_book is not None or bc_book is not None)
+            ):
+                composers.append(
+                    assemble_tw_by_book(
+                        usfm_book,
+                        tn_book,
+                        tq_book,
+                        tw_book,
+                        usfm_book2,
+                        bc_book,
+                    )
                 )
-            )
     first_composer = composers[0]
     for composer in composers[1:]:
         first_composer.append(composer.doc)

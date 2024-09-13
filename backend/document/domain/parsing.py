@@ -185,14 +185,14 @@ def usfm_chapter_html(
     content: str,
     resource_lookup_dto: ResourceLookupDto,
     chapter_num: int,
-    output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
+    working_dir: str = settings.WORKING_DIR,
 ) -> Optional[str]:
     """
     Parse USFM asset content into HTML and return HTML as string.
     """
-    resource_filename_sans_suffix = f"{output_dir}/{resource_lookup_dto.lang_code}_{resource_lookup_dto.resource_type}_{resource_lookup_dto.book_code}_{chapter_num}"
+    resource_filepath_sans_suffix = f"{working_dir}/{resource_lookup_dto.lang_code}_{resource_lookup_dto.resource_type}_{resource_lookup_dto.book_code}_{chapter_num}"
     t0 = time.time()
-    convert_usfm_chapter_to_html(content, resource_filename_sans_suffix)
+    convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
     t1 = time.time()
     logger.debug(
         "Time to convert USFM to HTML (parsing to AST + convert AST to HTML) for %s-%s-%s: %s",

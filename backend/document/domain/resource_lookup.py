@@ -71,7 +71,7 @@ def download_data(
     Downloads data from a GraphQL API and saves it to a JSON file.
 
     >>> from document.domain import resource_lookup
-    >>> result = resource_lookup.download_data("working/temp/resources.json")
+    >>> result = resource_lookup.download_data("assets_download/resources.json")
     >>> result[0]
     """
     graphql_query = """
@@ -135,7 +135,7 @@ def fetch_gateway_languages(
 ) -> Any:
     """
     >>> from document.domain import resource_lookup
-    >>> ();result = resource_lookup.fetch_gateway_languages("working/temp/gateway_languages.json");() # doctest: +ELLIPSIS
+    >>> ();result = resource_lookup.fetch_gateway_languages("assets_download/gateway_languages.json");() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
     """

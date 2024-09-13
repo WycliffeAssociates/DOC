@@ -899,19 +899,6 @@ def write_html_content_to_file(
         output_filename,
         content,
     )
-    copy_file_to_docker_output_dir(output_filename)
-
-
-def copy_file_to_docker_output_dir(
-    filepath: str,
-    document_output_dir: str = settings.DOCUMENT_SERVE_DIR,
-) -> None:
-    """
-    Copy file to docker_container_document_output_dir.
-    """
-    assert exists(filepath)
-    shutil.copy(filepath, document_output_dir)
-    logger.debug("About to cp file: %s to directory: %s", filepath, document_output_dir)
 
 
 def check_content_for_issues(
@@ -1059,7 +1046,6 @@ def generate_document(
             pdf_filepath_,
             document_request_key_,
         )
-        copy_file_to_docker_output_dir(pdf_filepath_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(filepath=pdf_filepath_, mime_type=("application", "pdf"))
@@ -1077,7 +1063,6 @@ def generate_document(
             epub_filepath_,
             document_request_key_,
         )
-        copy_file_to_docker_output_dir(epub_filepath_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(
@@ -1190,7 +1175,6 @@ def generate_docx_document(
             title1,
             title2,
         )
-        copy_file_to_docker_output_dir(docx_filepath_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(

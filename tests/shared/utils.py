@@ -41,7 +41,7 @@ def check_result(
             if json_data["state"] == success_state:
                 finished_document_request_key = json_data["result"]
                 finished_document_path = os.path.join(
-                    settings.DOCUMENT_SERVE_DIR,
+                    settings.DOCUMENT_OUTPUT_DIR,
                     "{}.{}".format(finished_document_request_key, suffix),
                 )
                 logger.debug(
@@ -71,7 +71,7 @@ def check_finished_document_with_verses_success(
     """
     finished_document_request_key = check_result(response, suffix, poll_duration)
     html_filepath = os.path.join(
-        settings.DOCUMENT_SERVE_DIR,
+        settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
     with open(html_filepath, "r") as fin:
@@ -99,7 +99,7 @@ def check_finished_document_without_verses_success(
     """
     finished_document_request_key = check_result(response, suffix, poll_duration)
     html_filepath = os.path.join(
-        settings.DOCUMENT_SERVE_DIR,
+        settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
     with open(html_filepath, "r") as fin:
@@ -123,7 +123,7 @@ def check_finished_document_with_body_success(
     """
     finished_document_request_key = check_result(response, suffix, poll_duration)
     html_filepath = os.path.join(
-        settings.DOCUMENT_SERVE_DIR,
+        settings.DOCUMENT_OUTPUT_DIR,
         "{}.html".format(finished_document_request_key),
     )
     with open(html_filepath, "r") as fin:

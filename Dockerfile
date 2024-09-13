@@ -69,12 +69,13 @@ RUN cd USFMParserDriver && \
     ${DOTNET_ROOT}/dotnet restore && \
     ${DOTNET_ROOT}/dotnet build --configuration Release
 
-# Make the output directory where resource asset files are cloned or downloaded and unzipped.
-RUN mkdir -p /app/working/temp
+# Make the output directory where resource asset files are cloned.
+RUN mkdir -p /app/assets_download
+# Make the directory where intermediate document parts are saved.
+RUN mkdir -p /app/working_temp
 # Make the output directory where generated HTML and PDFs are placed.
-RUN mkdir -p /app/working/output
-# Make the output directory where generated documents (PDF, ePub, Docx) are copied to.
 RUN mkdir -p /app/document_output
+
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .
@@ -97,8 +98,8 @@ COPY template.docx .
 COPY template_compact.docx .
 # Next two lines are useful when the data (graphql) API are down so
 # that we can still test
-COPY resources.json working/temp/resources.json
-RUN touch working/temp/resources.json
+COPY resources.json assets_download/resources.json
+RUN touch assets_download/resources.json
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests

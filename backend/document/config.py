@@ -206,13 +206,13 @@ class Settings(BaseSettings):
     LOGGING_CONFIG_FILE_PATH: str = "backend/logging_config.yaml"
 
     # Location where resource assets will be cloned.
-    RESOURCE_ASSETS_DIR: str = "working/temp"
+    RESOURCE_ASSETS_DIR: str = "assets_download"
+
+    # Location where intermediate generated document parts are saved.
+    WORKING_DIR: str = "working_temp"
 
     # Location where generated PDFs are written.
-    DOCUMENT_OUTPUT_DIR: str = "working/output"
-
-    # Location where generated documents are copied to after being written.
-    DOCUMENT_SERVE_DIR: str = "document_output"
+    DOCUMENT_OUTPUT_DIR: str = "document_output"
 
     BACKEND_CORS_ORIGINS: list[str]
 

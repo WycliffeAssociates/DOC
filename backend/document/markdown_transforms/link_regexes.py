@@ -89,7 +89,7 @@ TA_PREFIXED_MARKDOWN_LINK_RE = re.compile(
 
 # TA markdown https style see link regex
 # e.g., (Veja: [sinédoque] (https://git.door43.org/Door43/en-ta-translate-vol2/src/master/content/figs_synecdoche.md))
-# in ../../../working/temp/pt-br_tw/pt-br_tw/bible/names/naphtali.md
+# in ../../../assets_download/pt-br_tw/pt-br_tw/bible/names/naphtali.md
 # e.g., (Veja: [eufemismo] (https://git.door43.org/Door43/en-ta-translate-vol2/src/master/content/figs_euphemism.md))
 # e.g., (Veja: [metonímia] (https://git.door43.org/Door43/en-ta-translate-vol2/src/master/content/figs_metonymy.md))
 # NOTE There still exist some links that are malformed such as this
@@ -112,7 +112,7 @@ TA_MARKDOWN_HTTPS_LINK_RE = re.compile(
 # e.g.,: [Jude 01:17-19](rc://en/tn/help/jud/01/17)
 # e.g., These types of links are found in the 'Bible References'
 # section of a translation word definition file. For example,
-# ../../../working/temp/en_tw-wa/en_tw/bible/kt/kingofthejews.md.
+# ../../../assets_download/en_tw-wa/en_tw/bible/kt/kingofthejews.md.
 # NOTE See id:regex_transformation_order above
 TN_MARKDOWN_SCRIPTURE_LINK_RE = re.compile(
     r"\[(?P<scripture_ref>.+?)\]\(rc:\/\/(?P<lang_code>.+?)\/tn\/help\/(?P<book_code>(?!obs).+?)\/(?P<chapter_num>\d+?)\/(?P<verse_ref>.+?)\)"

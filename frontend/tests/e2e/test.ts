@@ -31,7 +31,7 @@ test('test ui part 1', async ({ page }) => {
   await expect(page.locator('body')).toContainText(/.*Unlocked Literal Bible.*/)
 })
 
-test.skip('test ui part 2', async ({ page }) => {
+test('test ui part 2', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('English').click()
   await page.getByText('Español Latin America (Latin').click()

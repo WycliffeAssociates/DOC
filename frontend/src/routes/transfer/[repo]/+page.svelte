@@ -209,6 +209,13 @@
             getName(item)
           ])
           if ($langCodesStore[0]) {
+            // We use "all" as a sentinal to tell the backend
+            // resource_types endpoint to use all OT and NT books. We
+            // do this so that we don't have to actually pass a comma delimited
+            // list of all OT and NT books since that makes the URL
+            // really long. Such a long URL was working but is stylistically
+            // not preferred and it /could/, for some browsers, potentially
+            // cause an issue.
             getResourceTypesAndNames($langCodesStore[0], [["all","all"]]).then(
               (resourceTypesAndNames) => {
                 // Filter down to the resource type provided by the user

@@ -39,7 +39,7 @@ test('test ui part 2', async ({ page }) => {
     await page.getByText('Galatians').click()
     await page.getByRole('button', { name: 'Next' }).click()
     await page
-        .getByText("Unlocked Literal Bible")
+        .getByText(/.*Unlocked Literal Bible.*/)
         .first()
         .click()
     await page

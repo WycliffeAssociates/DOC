@@ -1,7 +1,7 @@
 """This module provides configuration values used by the application."""
 import logging
 from logging import config as lc
-from typing import Sequence, final
+from typing import Mapping, Sequence, final
 
 import yaml
 from pydantic import EmailStr, HttpUrl
@@ -178,6 +178,19 @@ class Settings(BaseSettings):
         "zlm",
     ]
 
+    TEMPLATE_PATHS_MAP: Mapping[str, str] = {
+        "stet": "backend/templates/mustache/template.mustache",
+        "book_intro": "backend/templates/tn/book_intro_template.md",
+        "header_enclosing": "backend/templates/html/header_enclosing.html",
+        "header_enclosing_landscape": "backend/templates/html/header_enclosing_landscape.html",  # used by dft project
+        "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
+        "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
+        "footer_enclosing": "backend/templates/html/footer_enclosing.html",
+        "cover": "backend/templates/html/cover.html",
+        "email-html": "backend/templates/html/email.html",
+        "email": "backend/templates/text/email.txt",
+    }
+
     # fmt: off
     BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
     # fmt: on
@@ -212,6 +225,9 @@ class Settings(BaseSettings):
 
     # Location where generated PDFs are written.
     DOCUMENT_OUTPUT_DIR: str = "document_output"
+
+    # Location where stet source Docx document(s) are stored
+    STET_DIR: str = "stet"
 
     BACKEND_CORS_ORIGINS: list[str]
 

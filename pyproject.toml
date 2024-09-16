@@ -55,6 +55,7 @@ where = ["backend", "tests"]
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["tests"]
+log_cli = true
 addopts = [
     "--tb=long",
     "--showlocals",
@@ -63,7 +64,7 @@ addopts = [
 #   "--maxfail=4",
 #   "--last-failed",
     "--failed-first",
-    "--log-file=tests_output.log",
+    # "--log-file=tests_output.log",
     "--log-cli-level=DEBUG",
     "--strict-markers",
     ]
@@ -80,6 +81,8 @@ markers = [
     # ci/cd production runs
     "docx", # : Marks the majority of tests that test generation of docx output so that they can be run in isolation during development.
     "all", # : Marks a single test which exercises potentially all languages.
+    "focus", # : Marks a subset of tests which we want to run instead
+    # of the whole suite
     ]
 # Speed up pytest collection times
 norecursedirs = [

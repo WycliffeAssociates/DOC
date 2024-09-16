@@ -280,6 +280,7 @@ def usfm_book_content(
             )
             usfm_chapters[chapter_num] = USFMChapter(
                 content=chapter_html_content if chapter_html_content else "",
+                verses=None,
             )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,

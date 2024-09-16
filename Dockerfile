@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libdeflate0 \
     # For weasyprint
     pango1.0-tools \
+    # For stet
+    pandoc \
     # For fc-cache
     fontconfig
 
@@ -75,7 +77,10 @@ RUN mkdir -p /app/assets_download
 RUN mkdir -p /app/working_temp
 # Make the output directory where generated HTML and PDFs are placed.
 RUN mkdir -p /app/document_output
+# Make the directory where stet source documents are stored
+RUN mkdir -p /app/stet
 
+COPY backend/document/stet/data/stet_en.docx stet/
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .

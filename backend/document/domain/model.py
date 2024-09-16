@@ -35,6 +35,7 @@ class AssemblyStrategyEnum(str, Enum):
 
     LANGUAGE_BOOK_ORDER = "lbo"
     BOOK_LANGUAGE_ORDER = "blo"
+    STET_STRATEGY = "stet"
 
 
 @final
@@ -76,6 +77,7 @@ class AssemblyLayoutEnum(str, Enum):
     TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT = "2c_sl_sr"
     TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT = "2c_sl_sr_c"
     # fmt: on
+    STET_LAYOUT = "stet"
 
 
 @final
@@ -424,7 +426,7 @@ class BCBook(NamedTuple):
 
 
 @final
-class USFMChapter(NamedTuple):
+class USFMChapter(BaseModel):
     """
     A class to hold the USFM converted to HTML content for a chapter
     in total (including things like 'chunk breaks' and other verse
@@ -437,6 +439,7 @@ class USFMChapter(NamedTuple):
     """
 
     content: str
+    verses: Optional[dict[VerseRef, str]]
 
 
 @final

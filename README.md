@@ -20,3 +20,4 @@ also have different layout sub-strategies.
 In this way, the API can produce multi-language, multi-book,
 multi-resource PDFs assembled according to the resources, assembly
 strategy, and layout combinations chosen.
+

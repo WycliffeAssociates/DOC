@@ -689,34 +689,34 @@ def convert_html_to_epub(
     logger.debug("Time for converting HTML to ePub: %s", t1 - t0)
 
 
-def convert_markdown_to_docx(
-    markdown_filepath: str,
-    docx_filepath: str,
-) -> None:
-    """Generate Docx and copy it to output directory."""
-    t0 = time.time()
-    # command = [
-    #     "pandoc",
-    #     markdown_filepath,
-    #     "--from markdown",
-    #     "--to docx",
-    #     "--output",
-    #     docx_filepath,
-    # ]
-    command = [
-        "pandoc",
-        markdown_filepath,
-        "-o",
-        docx_filepath,
-    ]
-    logger.debug("Generate Docx command: %s", " ".join(command))
-    subprocess.run(
-        command,
-        check=True,
-        text=True,
-    )
-    t1 = time.time()
-    logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
+# def convert_markdown_to_docx(
+#     markdown_filepath: str,
+#     docx_filepath: str,
+# ) -> None:
+#     """Generate Docx and copy it to output directory."""
+#     t0 = time.time()
+#     # command = [
+#     #     "pandoc",
+#     #     markdown_filepath,
+#     #     "--from markdown",
+#     #     "--to docx",
+#     #     "--output",
+#     #     docx_filepath,
+#     # ]
+#     command = [
+#         "pandoc",
+#         markdown_filepath,
+#         "-o",
+#         docx_filepath,
+#     ]
+#     logger.debug("Generate Docx command: %s", " ".join(command))
+#     subprocess.run(
+#         command,
+#         check=True,
+#         text=True,
+#     )
+#     t1 = time.time()
+#     logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
 
 
 def convert_html_to_docx(
@@ -1090,9 +1090,11 @@ def generate_stet_docx_document(
     document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
     docx_filepath_ = docx_filepath(document_request_key_)
     if file_needs_update(docx_filepath_):
-        markdown_filepath = stet.generate_markdown_document(lang0_code, lang1_code)
         current_task.update_state(state="Converting to Docx")
-        convert_markdown_to_docx(markdown_filepath, docx_filepath_)
+        stet.generate_docx_document(
+            lang0_code, lang1_code, document_request_key_, docx_filepath_
+        )
+        # convert_markdown_to_docx(markdown_filepath, docx_filepath_)
         if should_send_email(email_address):
             attachments = [
                 Attachment(

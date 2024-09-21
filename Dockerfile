@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # For weasyprint
     pango1.0-tools \
     # For stet
-    pandoc \
+    # pandoc \
     # For fc-cache
     fontconfig
 

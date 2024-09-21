@@ -5,6 +5,7 @@ from typing import Mapping, Sequence
 
 import chevron
 import jinja2
+import mistune
 from celery import current_task
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
@@ -25,7 +26,6 @@ logger = settings.logger(__name__)
 
 
 def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> str:
-    logger.debug("chapter_num: %s", chapter_num)
     if chapter_num in usfm_book.chapters:
         chapter = usfm_book.chapters[chapter_num]
         if chapter.verses:
@@ -137,9 +137,9 @@ def get_word_entry_dtos(
                     verses = match.group(3)
                     comment = match.group(4)
                     # Clean up comments
-                    if comment:
-                        # Replace asterisks with Markdown-compatible asterisks
-                        comment = re.sub(r"\*", r"\\*", comment)
+                    # if comment:
+                    #     # Replace asterisks with Markdown-compatible asterisks
+                    #     comment = re.sub(r"\*", r"\\*", comment)
                     # Write row to table
                     if comment:
                         source_reference = (
@@ -184,14 +184,16 @@ def get_word_entry_dtos(
                     )
                     word_entry_dto.verse_ref_dtos.append(verse_reference_dto)
             word_entry_dtos.append(word_entry_dto)
-    # logger.debug("len(words_entries): %s", len(word_entries))
     return word_entry_dtos, list(set(book_codes_))
 
 
-def generate_markdown_document(
+def generate_docx_document(
     lang0_code: str,
     lang1_code: str,
+    document_request_key_: str,
+    docx_filepath_: str,
     working_dir: str = settings.WORKING_DIR,
+    output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     resource_type_codes_and_names: Mapping[
         str, str
@@ -201,11 +203,10 @@ def generate_markdown_document(
     Generate the scriptural terms evaluation document.
 
     >>> from document.stet import generate_markdown_document
-    >>> generate_markdown_document()
+    >>> generate_docx_document()
     """
     word_entries: list[WordEntry] = []
     word_entry_dtos, book_codes = get_word_entry_dtos(lang0_code, lang1_code)
-    logger.debug("doo dah lang0_code: %s, lang1_code: %s", lang0_code, lang1_code)
     lang0_resource_types = resource_types(lang0_code, ",".join(book_codes))
     lang0_resource_types_ = [
         lang0_resource_type_tuple[0]
@@ -245,7 +246,6 @@ def generate_markdown_document(
     elif lang0_usfm_resource_types:
         lang0_usfm_resource_type = lang0_usfm_resource_types[0]
     if lang0_usfm_resource_type:
-        logger.debug("lang0_usfm_resource_type: %s", lang0_usfm_resource_type)
         for book_code in book_codes:
             # Update the state of the worker process. This is used by the
             # UI to report status.
@@ -256,11 +256,9 @@ def generate_markdown_document(
                 lang0_usfm_resource_type,
             )
             current_task.update_state(state="Locating assets")
-            # FIXME This next function call always returns None?
             lang0_resource_lookup_dto_ = resource_lookup_dto(
                 lang0_code, lang0_usfm_resource_type, book_code
             )
-            logger.debug("lang0_resource_lookup_dto_: %s", lang0_resource_lookup_dto_)
             if lang0_resource_lookup_dto_ and lang0_resource_lookup_dto_.url:
                 current_task.update_state(state="Provisioning asset files")
                 lang0_resource_dir = provision_asset_files(lang0_resource_lookup_dto_)
@@ -274,7 +272,6 @@ def generate_markdown_document(
                         chapter_num_
                     ].verses = split_chapter_into_verses(chapter_)
                 source_usfm_books.append(source_usfm_book)
-    logger.debug("source_usfm_books: %s", source_usfm_books)
     current_task.update_state(state="Assembling content")
     if lang1_ulb_usfm_resource_types:
         lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
@@ -297,15 +294,13 @@ def generate_markdown_document(
                     ].verses = split_chapter_into_verses(chapter_)
                 target_usfm_books.append(target_usfm_book)
     for word_entry_dto in word_entry_dtos:
-        logger.info("in loop for word_entry_dtos")
         source_verse_text = []
         target_verse_text = []
         word_entry = WordEntry()
         word_entry.word = word_entry_dto.word
         word_entry.strongs_numbers = word_entry_dto.strongs_numbers
-        word_entry.definition = word_entry_dto.definition
+        word_entry.definition = mistune.markdown(word_entry_dto.definition)
         for verse_ref_dto in word_entry_dto.verse_ref_dtos:
-            logger.info("in loop for verse_ref_dtos")
             source_selected_usfm_books = [
                 usfm_book_
                 for usfm_book_ in source_usfm_books
@@ -314,7 +309,6 @@ def generate_markdown_document(
                 and usfm_book_.resource_type_name
                 == resource_type_codes_and_names[lang0_usfm_resource_type]
             ]
-            logger.debug("source_selected_usfm_books: %s", source_selected_usfm_books)
             target_selected_usfm_books = [
                 usfm_book_
                 for usfm_book_ in target_usfm_books
@@ -325,7 +319,6 @@ def generate_markdown_document(
             ]
             if source_selected_usfm_books:
                 source_selected_usfm_book = source_selected_usfm_books[0]
-                logger.info("oh yeah home dawg")
                 for verse_ref in verse_ref_dto.verse_refs:
                     source_verse_text.append(
                         lookup_verse_text(
@@ -355,26 +348,29 @@ def generate_markdown_document(
         word_entries.append(word_entry)
     # Build output doc
     # Create markdown file that you can run pandoc on
-    template = Path(template_path("stet")).read_text(encoding="utf-8")
-    # markdown_ = chevron.render(template=template, data={"words": word_entries})
-    markdown_ = chevron.render(template=template, data=word_entries)  # type: ignore
-    filepath_ = f"{working_dir}/{lang0_code}_{lang1_code}_stet.md"
-    with open(filepath_, "w", encoding="utf-8") as outfile:
-        outfile.write(markdown_)
-    return filepath_
-    # # Create HTML file and then convert it to Docx with library
-    # template_html = Path(template_path("stet_html")).read_text(encoding="utf-8")
-    # # Hydrate and render the template
+    # template = Path(template_path("stet")).read_text(encoding="utf-8")
+    # # markdown_ = chevron.render(template=template, data={"words": word_entries})
+    # markdown_ = chevron.render(template=template, data=word_entries)  # type: ignore
+    # filepath_ = f"{working_dir}/{lang0_code}_{lang1_code}_stet.md"
+    # with open(filepath_, "w", encoding="utf-8") as outfile:
+    #     outfile.write(markdown_)
+    # return filepath_
+    # Create HTML file and then convert it to Docx with library
+    template = Path(template_path("stet_html")).read_text(encoding="utf-8")
+    # Hydrate and render the template
+    # assert exists(template_html)
     # with open(template_html, "r") as filepath:
     #     template = filepath.read()
-    # env = jinja2.Environment(autoescape=True).from_string(template)
-    # full_html = env.render(data=word_entries)
+    env = jinja2.Environment(autoescape=True).from_string(template)
+    full_html = env.render(data=word_entries)
+    logger.debug("full_html: %s", full_html)
     # filepath_ = f"{working_dir}/{lang0_code}_{lang1_code}_stet.html"
-    # with open(filepath_, "w", encoding="utf-8") as outfile2:
-    #     outfile2.write(full_html)
-    # html_to_docx = HtmlToDocx()
+    filepath_ = f"{working_dir}/{document_request_key_}.html"
+    with open(filepath_, "w", encoding="utf-8") as outfile2:
+        outfile2.write(full_html)
+    html_to_docx = HtmlToDocx()
     # docx_filepath = f"{Path(filepath_).stem}.docx"
-    # html_to_docx.parse_html_file(filepath_, docx_filepath)
-    # return docx_filepath
+    html_to_docx.parse_html_file(filepath_, f"{output_dir}/{Path(docx_filepath_).stem}")
+    return docx_filepath_
     # # doc = html_to_docx.parse_html_string(html)
     # # logger.debug("doc: %s", doc)

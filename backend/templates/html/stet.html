@@ -15,27 +15,25 @@
   </head>
   <body>
     {% for word in data %}
-        <h1>
-          {{word.word}}
-          {% if word.strongs_numbers %}
-            ({{word.strongs_numbers}})
-          {% endif %}
-        </h1>
-        <p>{{word.definition}}</p>
-        <table>
-          <tbody>
-            {% for verse in word.verses %}
-            <tr>
-              <td><bold>{{ verse.source_reference }}</bold></td>
-              <td><bold>{{ verse.target_reference }}</bold></td>
-            </tr>
-            <tr>
-              <td>{{ verse.source_text }}</td>
-              <td>{{ verse.target_text }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <h1>
+      {{word.word}} {% if word.strongs_numbers %} ({{word.strongs_numbers}}) {%
+      endif %}
+    </h1>
+    <p>{{word.definition | safe}}</p>
+    <table>
+      <tbody>
+        {% for verse in word.verses %}
+        <tr>
+          <td><bold>{{ verse.source_reference }}</bold></td>
+          <td><bold>{{ verse.target_reference }}</bold></td>
+        </tr>
+        <tr>
+          <td>{{ verse.source_text }}</td>
+          <td>{{ verse.target_text }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     {% endfor %}
   </body>
 </html>

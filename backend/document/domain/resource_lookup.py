@@ -262,35 +262,15 @@ def lang_codes_and_names(
     return sorted(unique_values, key=lambda value: value[1])
 
 
-# This can be expanded to include any additional types (if
-# there are any) that we want to be available to users. These are all
-# that I found of relevance in the data API.
-RESOURCE_TYPE_CODES_AND_NAMES = {
-    "ayt": "Bahasa Indonesian Bible",
-    "bc": "Bible Commentary",
-    "blv": "Portuguese Bíblia Livre",
-    "cuv": "新标点和合本",
-    "f10": "French Louis Segond 1910 Bible",
-    "nav": "New Arabic Version (Ketab El Hayat)",
-    "reg": "Bible",
-    "tn": "Translation Notes",
-    "tn-condensed": "Condensed Translation Notes",
-    "tq": "Translation Questions",
-    "tw": "Translation Words",
-    # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used
-    "ugnt": "unfoldingWord® Greek New Testament",
-    "uhb": "unfoldingWord® Hebrew Bible",
-    "ulb": "Unlocked Literal Bible",
-}
-
-
 @lru_cache(maxsize=100)
 def resource_types(
     lang_code: str,
     book_codes_str: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
     bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
-    resource_type_codes_and_names: dict[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     book_names: dict[str, str] = BOOK_NAMES,
 ) -> Sequence[tuple[str, str]]:
@@ -406,15 +386,22 @@ def get_last_segment(url: str, lang_code: str) -> str:
     return last_segment
 
 
-def update_repo_components(repo_components: list[str]) -> list[str]:
+def update_repo_components(
+    repo_components: list[str],
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    non_usfm_resource_types: Sequence[str] = settings.NON_USFM_RESOURCE_TYPES,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+) -> list[str]:
     last_component = repo_components[-1]
     # Some DCS-Mirror URLs have an unusual pattern wherein a non resource type is the last component
     # in the URL, e.g., https://content.bibletranslationtools.org/DCS-Mirror/danjuma_alfred_h_kgo_phm_text_ulb_l1,
     # repo_components: ['danjuma', 'alfred', 'h', 'kgo', 'phm', 'text', 'ulb', 'l1']
     if (
-        last_component not in settings.USFM_RESOURCE_TYPES
-        and last_component not in settings.NON_USFM_RESOURCE_TYPES
-        and last_component not in RESOURCE_TYPE_CODES_AND_NAMES
+        last_component not in usfm_resource_types
+        and last_component not in non_usfm_resource_types
+        and last_component not in resource_type_codes_and_names
     ):
         repo_components = repo_components[0:-1]
     match len(repo_components):
@@ -587,6 +574,9 @@ def resource_lookup_dto(
     book_code: str,
     dcs_mirror_git_username: str = "DCS-Mirror",
     zmq_git_username: str = "faustin_azaza",
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> Optional[ResourceLookupDto]:
     """
     >>> from document.domain import resource_lookup
@@ -628,7 +618,7 @@ def resource_lookup_dto(
                             lang_code=lang_code,
                             lang_name=language_info["english_name"],
                             resource_type=resource_type,
-                            resource_type_name=RESOURCE_TYPE_CODES_AND_NAMES[
+                            resource_type_name=resource_type_codes_and_names[
                                 resource_type
                             ],
                             book_code=book_code,
@@ -645,7 +635,7 @@ def resource_lookup_dto(
                         lang_code=lang_code,
                         lang_name=language_info["english_name"],
                         resource_type=resource_type,
-                        resource_type_name=RESOURCE_TYPE_CODES_AND_NAMES[resource_type],
+                        resource_type_name=resource_type_codes_and_names[resource_type],
                         book_code=book_code,
                         lang_direction=language_info["direction"],
                         url=url,

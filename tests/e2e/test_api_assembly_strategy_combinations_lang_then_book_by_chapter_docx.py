@@ -1388,31 +1388,14 @@ def test_en_ulb_mat_en_bc_mat_language_book_order_1c_by_chapter_docx() -> None:
 
 @pytest.mark.focus
 @pytest.mark.docx
-def test_en_ulb_gal_es_419_ulb_gal_stet_docx() -> None:
+def test_en_es_419_stet_docx() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
-            "/documents_docx",
+            "/documents_stet_docx",
             json={
+                "lang0_code": "en",
+                "lang1_code": "es-419",
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.STET_LAYOUT,
-                "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
-                "generate_pdf": False,
-                "generate_epub": False,
-                "generate_docx": True,
-                "resource_requests": [
-                    {
-                        "lang_code": "en",
-                        "resource_type": "ulb",
-                        "book_code": "gal",
-                    },
-                    {
-                        "lang_code": "es-419",
-                        "resource_type": "ulb",
-                        "book_code": "gal",
-                    },
-                ],
             },
         )
         check_result(response, suffix="docx")

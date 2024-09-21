@@ -336,8 +336,6 @@ def fetch_usfm_book_content_units(
         parsing.usfm_book_content(
             resource_lookup_dto,
             resource_dir,
-            resource_requests,
-            False,
         )
         for resource_lookup_dto, resource_dir in zip(
             found_usfm_resource_lookup_dtos, resource_dirs
@@ -1078,10 +1076,49 @@ def generate_document(
 
 
 @worker.app.task
+def generate_stet_docx_document(
+    lang0_code: str,
+    lang1_code: str,
+    email_address: str,
+) -> Json[str]:
+    logger.debug(
+        "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s",
+        lang0_code,
+        lang1_code,
+        email_address,
+    )
+    document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
+    docx_filepath_ = docx_filepath(document_request_key_)
+    if file_needs_update(docx_filepath_):
+        markdown_filepath = stet.generate_markdown_document(lang0_code, lang1_code)
+        current_task.update_state(state="Converting to Docx")
+        convert_markdown_to_docx(markdown_filepath, docx_filepath_)
+        if should_send_email(email_address):
+            attachments = [
+                Attachment(
+                    filepath=docx_filepath_,
+                    mime_type=(
+                        "application",
+                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    ),
+                )
+            ]
+            current_task.update_state(state="Sending email")
+            send_email_with_attachment(
+                email_address,
+                attachments,
+                document_request_key_,
+            )
+    else:
+        logger.debug("Cache hit for %s", docx_filepath_)
+    return document_request_key_
+
+
+@worker.app.task
 def generate_docx_document(
     document_request_json: Json[Any],
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
-) -> Json[Any]:
+) -> Json[str]:
     """
     This is the alternative entry point for Docx document creation only.
     """
@@ -1148,48 +1185,32 @@ def generate_docx_document(
         t1 = time.time()
         logger.debug("Time to parse all resource content: %s", t1 - t0)
         current_task.update_state(state="Assembling content")
-        composer = None
-        if (
-            document_request.assembly_layout_kind == AssemblyLayoutEnum.STET_LAYOUT
-            and len(usfm_books) == 2
-            and "en" in [usfm_book.lang_code for usfm_book in usfm_books]
-        ):
-            markdown_filepath = stet.generate_docx_document(
-                document_request_key_,
-                document_request,
-                usfm_books,
-            )
-            current_task.update_state(state="Converting to Docx")
-            convert_markdown_to_docx(markdown_filepath, docx_filepath_)
-        else:
-            composer = assemble_docx_content(
-                document_request_key_,
-                document_request,
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-            )
-            # TODO At this point, like in generate_document, we should check the
-            # underlying HTML content to see if it contains verses and display a
-            # message in the document to the end user if it does not (so that they
-            # get some indication of why the scripture is missing).
-            #
-            # Construct sensical phrases to display for title1 and title2 on first
-            # page of Word document.
-            title1, title2 = get_languages_title_page_strings(
-                found_resource_lookup_dtos
-            )
-            current_task.update_state(state="Converting to Docx")
-            convert_html_to_docx(
-                html_filepath_,
-                docx_filepath_,
-                composer,
-                document_request.layout_for_print,
-                title1,
-                title2,
-            )
+        composer = assemble_docx_content(
+            document_request_key_,
+            document_request,
+            usfm_books,
+            tn_books,
+            tq_books,
+            tw_books,
+            bc_books,
+        )
+        # TODO At this point, like in generate_document, we should check the
+        # underlying HTML content to see if it contains verses and display a
+        # message in the document to the end user if it does not (so that they
+        # get some indication of why the scripture is missing).
+        #
+        # Construct sensical phrases to display for title1 and title2 on first
+        # page of Word document.
+        title1, title2 = get_languages_title_page_strings(found_resource_lookup_dtos)
+        current_task.update_state(state="Converting to Docx")
+        convert_html_to_docx(
+            html_filepath_,
+            docx_filepath_,
+            composer,
+            document_request.layout_for_print,
+            title1,
+            title2,
+        )
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(

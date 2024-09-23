@@ -83,6 +83,7 @@ markers = [
     "all", # : Marks a single test which exercises potentially all languages.
     "focus", # : Marks a subset of tests which we want to run instead
     # of the whole suite
+    "stet", # : Marks tests for the STET system
     ]
 # Speed up pytest collection times
 norecursedirs = [

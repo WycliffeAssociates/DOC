@@ -1384,33 +1384,3 @@ def test_en_ulb_mat_en_bc_mat_language_book_order_1c_by_chapter_docx() -> None:
             },
         )
         check_result(response, suffix="docx")
-
-
-@pytest.mark.focus
-@pytest.mark.docx
-def test_en_es_419_stet_docx() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents_stet_docx",
-            json={
-                "lang0_code": "en",
-                "lang1_code": "es-419",
-                "email_address": settings.TO_EMAIL_ADDRESS,
-            },
-        )
-        check_result(response, suffix="docx")
-
-
-@pytest.mark.focus
-@pytest.mark.docx
-def test_en_abu_stet_docx() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents_stet_docx",
-            json={
-                "lang0_code": "en",
-                "lang1_code": "abu",
-                "email_address": settings.TO_EMAIL_ADDRESS,
-            },
-        )
-        check_result(response, suffix="docx")

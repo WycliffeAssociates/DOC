@@ -23,6 +23,7 @@ services:
         # "all",
         # "randomized",
         # "focus",
+        # "stet",
         "not all and not randomized and not english_randomized",
         "-n",
         "auto",

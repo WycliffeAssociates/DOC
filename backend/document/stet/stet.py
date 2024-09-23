@@ -294,8 +294,8 @@ def generate_docx_document(
                     ].verses = split_chapter_into_verses(chapter_)
                 target_usfm_books.append(target_usfm_book)
     for word_entry_dto in word_entry_dtos:
-        source_verse_text = []
-        target_verse_text = []
+        source_verse_text = ""
+        target_verse_text = ""
         word_entry = WordEntry()
         word_entry.word = word_entry_dto.word
         word_entry.strongs_numbers = word_entry_dto.strongs_numbers
@@ -320,29 +320,21 @@ def generate_docx_document(
             if source_selected_usfm_books:
                 source_selected_usfm_book = source_selected_usfm_books[0]
                 for verse_ref in verse_ref_dto.verse_refs:
-                    source_verse_text.append(
-                        lookup_verse_text(
-                            source_selected_usfm_book,
-                            verse_ref_dto.chapter_num,
-                            verse_ref,
-                        )
+                    source_verse_text = lookup_verse_text(
+                        source_selected_usfm_book, verse_ref_dto.chapter_num, verse_ref
                     )
             if target_selected_usfm_books:
                 target_selected_usfm_book = target_selected_usfm_books[0]
                 for verse_ref in verse_ref_dto.verse_refs:
-                    target_verse_text.append(
-                        lookup_verse_text(
-                            target_selected_usfm_book,
-                            verse_ref_dto.chapter_num,
-                            verse_ref,
-                        )
+                    target_verse_text = lookup_verse_text(
+                        target_selected_usfm_book, verse_ref_dto.chapter_num, verse_ref
                     )
             word_entry.verses.append(
                 VerseEntry(
                     source_reference=verse_ref_dto.source_reference,
-                    source_text=" ".join(source_verse_text),
+                    source_text=source_verse_text,
                     target_reference=verse_ref_dto.target_reference,
-                    target_text=" ".join(target_verse_text),
+                    target_text=target_verse_text,
                 )
             )
         word_entries.append(word_entry)
@@ -363,7 +355,7 @@ def generate_docx_document(
     #     template = filepath.read()
     env = jinja2.Environment(autoescape=True).from_string(template)
     full_html = env.render(data=word_entries)
-    logger.debug("full_html: %s", full_html)
+    # logger.debug("full_html: %s", full_html)
     # filepath_ = f"{working_dir}/{lang0_code}_{lang1_code}_stet.html"
     filepath_ = f"{working_dir}/{document_request_key_}.html"
     with open(filepath_, "w", encoding="utf-8") as outfile2:

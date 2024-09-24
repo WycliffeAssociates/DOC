@@ -6,7 +6,7 @@ base_url = os.getenv("BASE_URL", "http://localhost:5005")  # URL of the backend 
 fileserver_url = os.getenv("FILESERVER_URL", "http://localhost:8089")
 
 # Endpoint paths
-document_request_endpoint = "/documents_stet_docx"
+document_request_endpoint = "/stet/documents_stet_docx"
 task_status_endpoint = "/task_status/"
 
 # Document request data

@@ -272,7 +272,6 @@ def generate_docx_document(
                         chapter_num_
                     ].verses = split_chapter_into_verses(chapter_)
                 source_usfm_books.append(source_usfm_book)
-    current_task.update_state(state="Assembling content")
     if lang1_ulb_usfm_resource_types:
         lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
     elif lang1_usfm_resource_types:
@@ -293,6 +292,7 @@ def generate_docx_document(
                         chapter_num_
                     ].verses = split_chapter_into_verses(chapter_)
                 target_usfm_books.append(target_usfm_book)
+    current_task.update_state(state="Assembling content")
     for word_entry_dto in word_entry_dtos:
         source_verse_text = ""
         target_verse_text = ""
@@ -348,6 +348,7 @@ def generate_docx_document(
     #     outfile.write(markdown_)
     # return filepath_
     # Create HTML file and then convert it to Docx with library
+    current_task.update_state(state="Converting to Docx")
     template = Path(template_path("stet_html")).read_text(encoding="utf-8")
     # Hydrate and render the template
     # assert exists(template_html)

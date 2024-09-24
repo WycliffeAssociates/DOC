@@ -1,0 +1,39 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <style>
+      table {
+        border: 2px solid black;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    {% for word in data %}
+    <h1>
+      {{word.word}} {% if word.strongs_numbers %} ({{word.strongs_numbers}}) {%
+      endif %}
+    </h1>
+    <p>{{word.definition | safe}}</p>
+    <table>
+      <tbody>
+        {% for verse in word.verses %}
+        <tr>
+          <td><bold>{{ verse.source_reference }}</bold></td>
+          <td><bold>{{ verse.target_reference }}</bold></td>
+        </tr>
+        <tr>
+          <td>{{ verse.source_text }}</td>
+          <td>{{ verse.target_text }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endfor %}
+  </body>
+</html>

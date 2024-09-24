@@ -125,6 +125,35 @@ async def generate_docx_document(
         return JSONResponse({"task_id": task.id})
 
 
+@app.post("/documents_stet_docx")
+async def generate_stet_docx_document(
+    stet_document_request: model.StetDocumentRequest,
+) -> JSONResponse:
+    # Top level exception handler
+    try:
+        task = document_generator.generate_stet_docx_document.apply_async(
+            args=(
+                stet_document_request.lang0_code,
+                stet_document_request.lang1_code,
+                stet_document_request.email_address,
+            )
+        )
+    except HTTPException as exc:
+        raise exc
+    except Exception as exc:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
+        logger.exception(
+            "There was an error while attempting to fulfill the document "
+            "request. Likely reason is the following exception:"
+        )
+        # Handle exceptions that aren't handled otherwise
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
+        )
+    else:
+        logger.debug("task_id: %s", task.id)
+        return JSONResponse({"task_id": task.id})
+
+
 @app.get("/task_status/{task_id}")
 async def task_status(task_id: str) -> JSONResponse:
     res: AsyncResult[dict[str, str]] = AsyncResult(task_id)

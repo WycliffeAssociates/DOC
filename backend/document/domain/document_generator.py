@@ -21,6 +21,7 @@ import jinja2
 from celery import current_task
 from document.config import settings
 from document.domain import parsing, resource_lookup, worker
+from document.stet import stet
 from document.domain.bible_books import BOOK_NAMES
 
 from document.domain.assembly_strategies.assembly_strategies_book_then_lang_by_chapter import (
@@ -30,10 +31,10 @@ from document.domain.assembly_strategies.assembly_strategies_lang_then_book_by_c
     assemble_content_by_lang_then_book,
 )
 from document.domain.assembly_strategies_docx import (
-    assembly_strategies_book_then_lang_by_chapter as asd_book_then_lang,
+    assembly_strategies_book_then_lang_by_chapter as book_then_lang,
 )
 from document.domain.assembly_strategies_docx import (
-    assembly_strategies_lang_then_book_by_chapter as asd_lang_then_book,
+    assembly_strategies_lang_then_book_by_chapter as lang_then_book,
 )
 from document.domain.assembly_strategies_docx.assembly_strategy_utils import add_hr
 from document.domain.model import (
@@ -52,7 +53,12 @@ from document.domain.model import (
     TWNameContentPair,
     USFMBook,
 )
-from document.utils.file_utils import file_needs_update, write_file
+from document.utils.file_utils import (
+    file_needs_update,
+    template,
+    template_path,
+    write_file,
+)
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
@@ -63,19 +69,6 @@ from htmldocx import HtmlToDocx  # type: ignore
 from pydantic import Json
 
 logger = settings.logger(__name__)
-
-
-TEMPLATE_PATHS_MAP: Mapping[str, str] = {
-    "book_intro": "backend/templates/tn/book_intro_template.md",
-    "header_enclosing": "backend/templates/html/header_enclosing.html",
-    "header_enclosing_landscape": "backend/templates/html/header_enclosing_landscape.html",  # used by dft project
-    "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
-    "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
-    "footer_enclosing": "backend/templates/html/footer_enclosing.html",
-    "cover": "backend/templates/html/cover.html",
-    "email-html": "backend/templates/html/email.html",
-    "email": "backend/templates/text/email.txt",
-}
 
 
 def contains_tw(resource_request: ResourceRequest, tw_regex: str = "tw.*") -> bool:
@@ -146,24 +139,6 @@ def document_request_key(
         # Use the semantic filename which declaratively describes the
         # document request components.
         return document_request_key
-
-
-def template_path(
-    key: str, template_paths_map: Mapping[str, str] = TEMPLATE_PATHS_MAP
-) -> str:
-    """
-    Return the path to the requested template give a lookup key.
-    Return a different path if the code is running inside the Docker
-    container.
-    """
-    return template_paths_map[key]
-
-
-def template(template_lookup_key: str) -> str:
-    """Return template as string."""
-    with open(template_path(template_lookup_key), "r") as filepath:
-        template = filepath.read()
-    return template
 
 
 def instantiated_email_template(document_request_key: str) -> str:
@@ -361,8 +336,6 @@ def fetch_usfm_book_content_units(
         parsing.usfm_book_content(
             resource_lookup_dto,
             resource_dir,
-            resource_requests,
-            False,
         )
         for resource_lookup_dto, resource_dir in zip(
             found_usfm_resource_lookup_dtos, resource_dirs
@@ -520,7 +493,7 @@ def assemble_docx_content(
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
     ):
-        composer = asd_lang_then_book.assemble_content_by_lang_then_book(
+        composer = lang_then_book.assemble_content_by_lang_then_book(
             usfm_books,
             tn_books,
             tq_books,
@@ -533,7 +506,7 @@ def assemble_docx_content(
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
     ):
-        composer = asd_book_then_lang.assemble_content_by_book_then_lang(
+        composer = book_then_lang.assemble_content_by_book_then_lang(
             usfm_books,
             tn_books,
             tq_books,
@@ -716,6 +689,36 @@ def convert_html_to_epub(
     logger.debug("Time for converting HTML to ePub: %s", t1 - t0)
 
 
+# def convert_markdown_to_docx(
+#     markdown_filepath: str,
+#     docx_filepath: str,
+# ) -> None:
+#     """Generate Docx and copy it to output directory."""
+#     t0 = time.time()
+#     # command = [
+#     #     "pandoc",
+#     #     markdown_filepath,
+#     #     "--from markdown",
+#     #     "--to docx",
+#     #     "--output",
+#     #     docx_filepath,
+#     # ]
+#     command = [
+#         "pandoc",
+#         markdown_filepath,
+#         "-o",
+#         docx_filepath,
+#     ]
+#     logger.debug("Generate Docx command: %s", " ".join(command))
+#     subprocess.run(
+#         command,
+#         check=True,
+#         text=True,
+#     )
+#     t1 = time.time()
+#     logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
+
+
 def convert_html_to_docx(
     html_filepath: str,
     docx_filepath: str,
@@ -831,10 +834,12 @@ def select_assembly_layout_kind(
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     language_book_order: AssemblyStrategyEnum = AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
     book_language_order: AssemblyStrategyEnum = AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+    stet_strategy: AssemblyStrategyEnum = AssemblyStrategyEnum.STET_STRATEGY,
     one_column_compact: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
     sl_sr: AssemblyLayoutEnum = AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
     sl_sr_compact: AssemblyLayoutEnum = AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,
     one_column: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN,
+    stet_layout: AssemblyLayoutEnum = AssemblyLayoutEnum.STET_LAYOUT,
 ) -> AssemblyLayoutEnum:
     """
     Make an intelligent choice of what layout to use given the
@@ -855,6 +860,8 @@ def select_assembly_layout_kind(
         and document_request.assembly_layout_kind
     ):
         return document_request.assembly_layout_kind
+    if document_request.assembly_strategy_kind == stet_strategy:
+        return stet_layout
     if (
         document_request.layout_for_print
         and document_request.assembly_strategy_kind == language_book_order
@@ -1069,10 +1076,51 @@ def generate_document(
 
 
 @worker.app.task
+def generate_stet_docx_document(
+    lang0_code: str,
+    lang1_code: str,
+    email_address: str,
+) -> Json[str]:
+    logger.debug(
+        "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s",
+        lang0_code,
+        lang1_code,
+        email_address,
+    )
+    document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
+    docx_filepath_ = docx_filepath(document_request_key_)
+    if file_needs_update(docx_filepath_):
+        current_task.update_state(state="Converting to Docx")
+        stet.generate_docx_document(
+            lang0_code, lang1_code, document_request_key_, docx_filepath_
+        )
+        # convert_markdown_to_docx(markdown_filepath, docx_filepath_)
+        if should_send_email(email_address):
+            attachments = [
+                Attachment(
+                    filepath=docx_filepath_,
+                    mime_type=(
+                        "application",
+                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    ),
+                )
+            ]
+            current_task.update_state(state="Sending email")
+            send_email_with_attachment(
+                email_address,
+                attachments,
+                document_request_key_,
+            )
+    else:
+        logger.debug("Cache hit for %s", docx_filepath_)
+    return document_request_key_
+
+
+@worker.app.task
 def generate_docx_document(
     document_request_json: Json[Any],
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
-) -> Json[Any]:
+) -> Json[str]:
     """
     This is the alternative entry point for Docx document creation only.
     """
@@ -1152,7 +1200,7 @@ def generate_docx_document(
         # underlying HTML content to see if it contains verses and display a
         # message in the document to the end user if it does not (so that they
         # get some indication of why the scripture is missing).
-
+        #
         # Construct sensical phrases to display for title1 and title2 on first
         # page of Word document.
         title1, title2 = get_languages_title_page_strings(found_resource_lookup_dtos)

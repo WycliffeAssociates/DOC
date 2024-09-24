@@ -18,9 +18,12 @@ services:
     entrypoint: pytest
     command: [
         "-vv",
+        "--log-cli-level=DEBUG",
         "-m",
         # "all",
         # "randomized",
+        # "focus",
+        # "stet",
         "not all and not randomized and not english_randomized",
         "-n",
         "auto",

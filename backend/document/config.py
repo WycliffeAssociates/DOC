@@ -1,7 +1,7 @@
 """This module provides configuration values used by the application."""
 import logging
 from logging import config as lc
-from typing import Sequence, final
+from typing import Mapping, Sequence, final
 
 import yaml
 from pydantic import EmailStr, HttpUrl
@@ -63,6 +63,27 @@ class Settings(BaseSettings):
         "ulb",
         "usfm",
     ]
+
+    # This can be expanded to include any additional types (if
+    # there are any) that we want to be available to users. These are all
+    # that I found of relevance in the data API.
+    RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
+        "ayt": "Bahasa Indonesian Bible",
+        "bc": "Bible Commentary",
+        "blv": "Portuguese Bíblia Livre",
+        "cuv": "新标点和合本",
+        "f10": "French Louis Segond 1910 Bible",
+        "nav": "New Arabic Version (Ketab El Hayat)",
+        "reg": "Bible",
+        "tn": "Translation Notes",
+        "tn-condensed": "Condensed Translation Notes",
+        "tq": "Translation Questions",
+        "tw": "Translation Words",
+        # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used
+        "ugnt": "unfoldingWord® Greek New Testament",
+        "uhb": "unfoldingWord® Hebrew Bible",
+        "ulb": "Unlocked Literal Bible",
+    }
     SHOW_TN_BOOK_INTRO: bool = False
     TN_RESOURCE_TYPE: str = "tn"
     EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
@@ -178,6 +199,20 @@ class Settings(BaseSettings):
         "zlm",
     ]
 
+    TEMPLATE_PATHS_MAP: Mapping[str, str] = {
+        "stet": "backend/templates/mustache/template.mustache",
+        "stet_html": "backend/templates/html/stet.html",
+        "book_intro": "backend/templates/tn/book_intro_template.md",
+        "header_enclosing": "backend/templates/html/header_enclosing.html",
+        "header_enclosing_landscape": "backend/templates/html/header_enclosing_landscape.html",  # used by dft project
+        "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
+        "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
+        "footer_enclosing": "backend/templates/html/footer_enclosing.html",
+        "cover": "backend/templates/html/cover.html",
+        "email-html": "backend/templates/html/email.html",
+        "email": "backend/templates/text/email.txt",
+    }
+
     # fmt: off
     BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
     # fmt: on
@@ -212,6 +247,9 @@ class Settings(BaseSettings):
 
     # Location where generated PDFs are written.
     DOCUMENT_OUTPUT_DIR: str = "document_output"
+
+    # Location where stet source Docx document(s) are stored
+    STET_DIR: str = "stet"
 
     BACKEND_CORS_ORIGINS: list[str]
 

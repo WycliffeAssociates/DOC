@@ -9,13 +9,31 @@ import urllib
 import zipfile
 import shutil
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Mapping, Optional, Union
 from urllib.request import urlopen
 
 import yaml
 from document.config import settings
 
 logger = settings.logger(__name__)
+
+
+def template_path(
+    key: str, template_paths_map: Mapping[str, str] = settings.TEMPLATE_PATHS_MAP
+) -> str:
+    """
+    Return the path to the requested template give a lookup key.
+    Return a different path if the code is running inside the Docker
+    container.
+    """
+    return template_paths_map[key]
+
+
+def template(template_lookup_key: str) -> str:
+    """Return template as string."""
+    with open(template_path(template_lookup_key), "r") as filepath:
+        template = filepath.read()
+    return template
 
 
 def delete_tree(dir: str) -> None:

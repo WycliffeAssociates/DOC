@@ -259,8 +259,6 @@ def get_chapter_num(chapter_usfm_text: str) -> int:
 def usfm_book_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
-    resource_requests: Sequence[ResourceRequest],
-    layout_for_print: bool,
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
@@ -280,6 +278,7 @@ def usfm_book_content(
             )
             usfm_chapters[chapter_num] = USFMChapter(
                 content=chapter_html_content if chapter_html_content else "",
+                verses=None,
             )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
@@ -698,7 +697,8 @@ def books(
     for resource_lookup_dto, resource_dir in zip(resource_lookup_dtos, resource_dirs):
         if resource_lookup_dto.resource_type in usfm_resource_types:
             usfm_book = usfm_book_content(
-                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+                resource_lookup_dto,
+                resource_dir,
             )
             usfm_books.append(usfm_book)
         elif (

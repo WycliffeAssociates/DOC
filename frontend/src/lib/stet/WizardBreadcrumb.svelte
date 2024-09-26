@@ -2,16 +2,13 @@
   import { goto } from '$app/navigation'
   import { page, navigating } from '$app/stores'
   import { langCodesStore } from '$lib/stet/stores/LanguagesStore'
-  // import { bookCountStore } from '$lib/stores/BooksStore'
-  // import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
   import {
-    // getResourceTypeLangCode,
     resetStores,
     sourceLangRegExp,
     targetLangRegExp,
     settingsRegExp
   } from '$lib/stet/utils'
-  import { resetValuesStore } from '$lib/stet/stores/NotificationStore'
+  // import { resetValuesStore } from '$lib/stet/stores/NotificationStore'
   import MobileBreadcrumb from '$lib/stet/MobileBreadcrumb.svelte'
   import DesktopBreadcrumb from '$lib/stet/DesktopBreadcrumb.svelte'
 

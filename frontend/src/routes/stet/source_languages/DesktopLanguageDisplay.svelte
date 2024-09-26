@@ -1,8 +1,8 @@
 <script lang="ts">
   import { PUBLIC_MAX_LANGUAGES } from '$env/static/public'
-
   import { getCode, getName } from '$lib/stet/utils'
   import {
+    lang0CodeAndNameStore,
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore,
     langCountStore,
@@ -29,8 +29,8 @@
           <div class="target2 flex items-center">
             <input
               id="lang-code-{index}"
-              type="checkbox"
-              bind:group={$gatewayCodeAndNamesStore}
+              type="radio"
+              bind:group={$lang0CodeAndNameStore}
               value={langCodeAndName}
               class="checkbox-target checkbox-style"
               disabled={$langCountStore == maxLanguages &&
@@ -52,8 +52,8 @@
           <div class="target2 flex items-center">
             <input
               id="lang-code-{index}"
-              type="checkbox"
-              bind:group={$heartCodeAndNamesStore}
+              type="radio"
+              bind:group={$lang0CodeAndNameStore}
               value={langCodeAndName}
               class="checkbox-target checkbox-style"
               disabled={$langCountStore == maxLanguages &&

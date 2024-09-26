@@ -3,14 +3,16 @@
   import { page, navigating } from '$app/stores'
   import BackButton from '$lib/BackButton.svelte'
   import NextButton from '$lib/NextButton.svelte'
-  import { langCodesStore, langCountStore } from '$lib/stet/stores/LanguagesStore'
-  // import { bookCountStore } from '$lib/stores/BooksStore'
-  // import { resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
-  import { sourceLangRegExp, targetLangRegExp, settingsRegExp } from '$lib/stet/utils'
+  import {
+    lang0CodeAndNameStore,
+    lang1CodeAndNameStore,
+    langCodesStore,
+    langCountStore
+  } from '$lib/stet/stores/LanguagesStore'
+  import { getCode, sourceLangRegExp, targetLangRegExp, settingsRegExp } from '$lib/stet/utils'
 
   export let turnSourceLangStepOn: boolean
   export let turnTargetLangStepOn: boolean
-  // export let turnResourceTypeStepOn: boolean
   export let turnSettingsStepOn: boolean
   export let submitSourceLanguage: Function
   export let submitTargetLanguage: Function
@@ -25,7 +27,7 @@
   {#if targetLangRegExp.test($page.url.pathname)}
     <BackButton url="/stet/source_languages" />
   {:else if settingsRegExp.test($page.url.pathname)}
-    <BackButton url={`/stet/target_languages/${$langCodesStore[0]}`} />
+    <BackButton url={`/stet/target_languages/${getCode($lang0CodeAndNameStore)}`} />
   {:else}
     <button
       class="flex cursor-not-allowed items-center rounded-md border
@@ -64,7 +66,7 @@
     {#if turnSourceLangStepOn}
       <span
         class="ml-2 text-xl
-                   text-[#015ad9]"><a href="/languages">Source Language</a></span
+                   text-[#015ad9]"><a href="/stet/source_languages">Source Language</a></span
       >
     {:else}
       <span class="ml-2 text-xl text-[#b3b9c2]">Source Language</span>
@@ -86,7 +88,9 @@
     {#if turnTargetLangStepOn}
       <span
         class="ml-2 text-xl
-                   text-[#015ad9]"><a href="/stet/target_language">Target Language</a></span
+                   text-[#015ad9]"
+        ><a href={`/stet/target_languages/${getCode($lang0CodeAndNameStore)}`}>Target Language</a
+        ></span
       >
     {:else}
       <span class="ml-2 text-xl text-[#b3b9c2]">Target Language</span>
@@ -112,9 +116,9 @@
     {/if}
   </div>
   <!-- next button logic -->
-  {#if sourceLangRegExp.test($page.url.pathname) && $langCountStore > 0 && $langCountStore <= MAX_LANGUAGES}
+  {#if sourceLangRegExp.test($page.url.pathname) && $lang0CodeAndNameStore && $langCountStore <= MAX_LANGUAGES}
     <NextButton func={submitSourceLanguage} />
-  {:else if targetLangRegExp.test($page.url.pathname) && $langCountStore == 2}
+  {:else if targetLangRegExp.test($page.url.pathname) && $lang0CodeAndNameStore && $lang1CodeAndNameStore}
     <NextButton func={submitTargetLanguage} />
   {:else}
     <button

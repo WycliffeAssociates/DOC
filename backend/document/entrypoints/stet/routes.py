@@ -33,13 +33,13 @@ async def source_lang_codes_and_names(
         and entry.name.startswith("stet_")
         and entry.name.endswith(".docx")
     ]
-    logger.debug("ietf_codes: %s", ietf_codes)
+    logger.debug("source ietf_codes: %s", ietf_codes)
     languages = [
         lang_code_and_name
         for lang_code_and_name in resource_lookup.lang_codes_and_names()
         if lang_code_and_name[0] in ietf_codes
     ]
-    logger.debug("languages: %s", languages)
+    logger.debug("source languages: %s", languages)
     return languages
 
 

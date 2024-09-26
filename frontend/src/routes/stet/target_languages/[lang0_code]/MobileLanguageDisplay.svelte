@@ -2,11 +2,12 @@
   import { PUBLIC_MAX_LANGUAGES } from '$env/static/public'
   import { getCode, getName } from '$lib/stet/utils'
   import {
+    lang1CodeAndNameStore,
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore,
     langCountStore,
     langCodesStore
-  } from '$lib/stores/LanguagesStore'
+  } from '$lib/stet/stores/LanguagesStore'
 
   export let showGatewayLanguages: boolean
   export let gatewayCodesAndNames: Array<string>
@@ -28,8 +29,8 @@
             <div class="target3 flex items-center">
               <input
                 id="lang-code-{index}"
-                type="checkbox"
-                bind:group={$gatewayCodeAndNamesStore}
+                type="radio"
+                bind:group={$lang1CodeAndNameStore}
                 value={langCodeAndName}
                 class="checkbox-target checkbox-style"
                 disabled={$langCountStore == maxLanguages &&
@@ -53,8 +54,8 @@
             <div class="target3 flex items-center">
               <input
                 id="lang-code-{index}"
-                type="checkbox"
-                bind:group={$heartCodeAndNamesStore}
+                type="radio"
+                bind:group={$lang1CodeAndNameStore}
                 value={langCodeAndName}
                 class="checkbox-target checkbox-style"
                 disabled={$langCountStore == maxLanguages &&

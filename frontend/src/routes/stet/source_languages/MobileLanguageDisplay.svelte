@@ -28,7 +28,7 @@
             <div class="target3 flex items-center">
               <input
                 id="lang-code-{index}"
-                type="checkbox"
+                type="radio"
                 bind:group={$gatewayCodeAndNamesStore}
                 value={langCodeAndName}
                 class="checkbox-target checkbox-style"
@@ -53,7 +53,7 @@
             <div class="target3 flex items-center">
               <input
                 id="lang-code-{index}"
-                type="checkbox"
+                type="radio"
                 bind:group={$heartCodeAndNamesStore}
                 value={langCodeAndName}
                 class="checkbox-target checkbox-style"

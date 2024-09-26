@@ -5,10 +5,9 @@ import { PUBLIC_LANGUAGE_BOOK_ORDER } from '$env/static/public'
 import {
   gatewayCodeAndNamesStore,
   heartCodeAndNamesStore,
-  lang0NameAndCodeStore,
-  lang1NameAndCodeStore,
+  lang0CodeAndNameStore,
+  lang1CodeAndNameStore,
   langCodesStore,
-  langNamesStore,
   langCountStore
 } from '$lib/stet/stores/LanguagesStore'
 // import { otBookStore, ntBookStore, bookCountStore } from '$lib/stores/BooksStore'
@@ -41,10 +40,9 @@ export function resetStores(storeGroup: StoreGroup) {
   if (storeGroup === 'source_languages' || storeGroup === 'target_languages') {
     gatewayCodeAndNamesStore.set([])
     heartCodeAndNamesStore.set([])
-    lang0NameAndCodeStore.set('')
-    lang1NameAndCodeStore.set('')
+    lang0CodeAndNameStore.set('')
+    lang1CodeAndNameStore.set('')
     langCodesStore.set([])
-    langNamesStore.set([])
     langCountStore.set(0)
   }
 

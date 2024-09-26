@@ -3,8 +3,12 @@
   import { page, navigating } from '$app/stores'
   import BackButton from '$lib/BackButton.svelte'
   import NextButton from '$lib/NextButton.svelte'
-  import { langCodesStore, langCountStore } from '$lib/stet/stores/LanguagesStore'
-  import { sourceLangRegExp, targetLangRegExp, settingsRegExp } from '$lib/stet/utils'
+  import {
+    lang0CodeAndNameStore,
+    langCodesStore,
+    langCountStore
+  } from '$lib/stet/stores/LanguagesStore'
+  import { getCode, sourceLangRegExp, targetLangRegExp, settingsRegExp } from '$lib/stet/utils'
 
   export let title: string
   export let stepLabel: string
@@ -31,7 +35,7 @@
     {#if targetLangRegExp.test($page.url.pathname)}
       <BackButton url="/stet/source_languages" />
     {:else if settingsRegExp.test($page.url.pathname)}
-      <BackButton url={`/stet/target_languages/${$langCodesStore[0]}`} />
+      <BackButton url={`/stet/target_languages/${getCode($lang0CodeAndNameStore)}`} />
     {:else}
       <button
         class="flex cursor-not-allowed items-center rounded-md border

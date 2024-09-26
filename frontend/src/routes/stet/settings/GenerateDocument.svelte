@@ -1,20 +1,20 @@
 <script lang="ts">
   import { env } from '$env/dynamic/public'
   import DownloadButton from './DownloadButton.svelte'
-  import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
-  import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
-  // import { otBookStore, ntBookStore, bookCountStore } from '$lib/stores/BooksStore'
-  // import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
+  import { documentReadyStore, errorStore } from '$lib/stet/stores/NotificationStore'
   import {
-    // layoutForPrintStore,
-    // assemblyStrategyKindStore,
+    lang0CodeAndNameStore,
+    lang1CodeAndNameStore,
+    langCodesStore,
+    langCountStore
+  } from '$lib/stet/stores/LanguagesStore'
+  import {
     // docTypeStore,
     // generatePdfStore,
     // generateEpubStore,
     // generateDocxStore,
     emailStore,
     documentRequestKeyStore,
-    // limitTwStore,
     settingsUpdated
   } from '$lib/stet/stores/SettingsStore'
   import { taskIdStore, taskStateStore } from '$lib/stet/stores/TaskStore'
@@ -45,43 +45,11 @@
     // Update some UI-related state
     generatingDocument = true
     $settingsUpdated = false
-    // let resourceRequests = []
-    // let bookCodes = [...$otBookStore, ...$ntBookStore]
-    // for (let bookCode of bookCodes) {
-    //   for (let resourceType of $resourceTypesStore) {
-    //     if (getResourceTypeLangCode(resourceType) === $langCodesStore[0]) {
-    //       // Create resource request for lang0
-    //       resourceRequests.push({
-    //         lang_code: $langCodesStore[0],
-    //         resource_type: getResourceTypeCode(resourceType),
-    //         book_code: getCode(bookCode)
-    //       })
-    //     }
-    //     if ($langCountStore > 1) {
-    //       if (getResourceTypeLangCode(resourceType) === $langCodesStore[1]) {
-    //         // Create resource request for lang1
-    //         resourceRequests.push({
-    //           lang_code: $langCodesStore[1],
-    //           resource_type: getResourceTypeCode(resourceType),
-    //           book_code: getCode(bookCode)
-    //         })
-    //       }
-    //     }
-    //   }
-    // }
     // Create the JSON structure to POST.
     let documentRequest = {
-      lang0_code: $langCodesStore[0],
-      lang1_code: $langCodesStore[1],
-      email_address: $emailStore //,
-      // assembly_strategy_kind: $assemblyStrategyKindStore,
-      // layout_for_print: $layoutForPrintStore,
-      // generate_pdf: $generatePdfStore,
-      // generate_epub: $generateEpubStore,
-      // generate_docx: $generateDocxStore,
-      // resource_requests: resourceRequests,
-      // document_request_source: 'ui',
-      // limit_words: $limitTwStore
+      lang0_code: getCode($lang0CodeAndNameStore),
+      lang1_code: getCode($lang1CodeAndNameStore),
+      email_address: $emailStore
     }
     console.log('document request: ', JSON.stringify(documentRequest, null, 2))
     $errorStore = null
@@ -215,7 +183,7 @@
       </div>
     </div>
   {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdated}
-    {#if $langCountStore == 2}
+    {#if $lang0CodeAndNameStore && $lang1CodeAndNameStore}
       <div class="pb-4">
         <button
           class="blue-gradient w-1/2 rounded-md p-4 text-center"

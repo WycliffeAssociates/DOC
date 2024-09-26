@@ -14,8 +14,9 @@
   import WizardBreadcrumb from '$lib/stet/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/stet/WizardBasket.svelte'
   import {
+    lang0CodeAndNameStore,
+    lang1CodeAndNameStore,
     langCodesStore,
-    langNamesStore,
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore,
     langCountStore
@@ -61,7 +62,6 @@
     .then((langCodeNameAndTypes_) => {
       // Save result for later use
       langCodeNameAndTypes = langCodeNameAndTypes_
-      console.log(`langCodeNameAndTypes: ${langCodeNameAndTypes}`)
       gatewayCodesAndNames = langCodeNameAndTypes_
         .filter((element: [string, string, boolean]) => {
           return element[2]
@@ -85,8 +85,6 @@
 
   $: {
     if (nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
-      $langCountStore = $gatewayCodeAndNamesStore.length + $heartCodeAndNamesStore.length
-      // Set the langCodesStore
       let codes = []
       for (let stringTuple of $gatewayCodeAndNamesStore) {
         codes.push(getCode(stringTuple))
@@ -94,74 +92,27 @@
       for (let stringTuple of $heartCodeAndNamesStore) {
         codes.push(getCode(stringTuple))
       }
-      // TODO Is this correct?
       $langCodesStore = codes
-      // Set the langNamesStore
-      let names = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      $langNamesStore = names
-      // $resourceTypesStore = $resourceTypesStore.filter(
-      //   (item) =>
-      //     $langCodesStore[0] === getResourceTypeLangCode(item) ||
-      //     $langCodesStore[1] === getResourceTypeLangCode(item)
-      // )
-      // $resourceTypesCountStore = $resourceTypesStore.length
+      $langCountStore = $langCodesStore.length
     } else if (nonEmptyGatewayLanguages && !nonEmptyHeartLanguages) {
-      $langCountStore = $gatewayCodeAndNamesStore.length
-      // Set the langCodesStore
       let codes = []
       for (let stringTuple of $gatewayCodeAndNamesStore) {
         codes.push(getCode(stringTuple))
       }
       $langCodesStore = codes
-      // Set the langNamesStore
-      let names = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      $langNamesStore = names
-      // $resourceTypesStore = $resourceTypesStore.filter(
-      //   (item) =>
-      //     $langCodesStore[0] === getResourceTypeLangCode(item) ||
-      //     $langCodesStore[1] === getResourceTypeLangCode(item)
-      // )
-      // $resourceTypesCountStore = $resourceTypesStore.length
+      $langCountStore = $langCodesStore.length
     } else if (!nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
-      // Set the langCountStore
-      $langCountStore = $heartCodeAndNamesStore.length
-      // Set the langCodesStore
       let codes = []
       for (let stringTuple of $heartCodeAndNamesStore) {
         codes.push(getCode(stringTuple))
       }
       $langCodesStore = codes
-      // Set the langNamesStore
-      let names = []
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      $langNamesStore = names
-      // $resourceTypesStore = $resourceTypesStore.filter(
-      //   (item) =>
-      //     $langCodesStore[0] === getResourceTypeLangCode(item) ||
-      //     $langCodesStore[1] === getResourceTypeLangCode(item)
-      // )
-      // $resourceTypesCountStore = $resourceTypesStore.length
+      $langCountStore = $langCodesStore.length
     } else {
       $langCountStore = 0
       $langCodesStore = []
-      $langNamesStore = []
-      // $resourceTypesStore = []
-      // $resourceTypesCountStore = 0
-      // $otBookStore = []
-      // $ntBookStore = []
-      // $bookCountStore = 0
-      // $assemblyStrategyKindStore = <string>PUBLIC_LANGUAGE_BOOK_ORDER
+      $lang0CodeAndNameStore = ''
+      $lang1CodeAndNameStore = ''
     }
   }
 

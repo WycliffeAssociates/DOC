@@ -60,30 +60,19 @@
           return element[2]
         })
         .map((tuple: [string, string, boolean]) => `${tuple[0]}, ${tuple[1]}`)
-      console.log(
-        `gatewayCodesAndNames: ${gatewayCodesAndNames}, typeof gatewayCodesAndNames: ${typeof gatewayCodesAndNames}`
-      )
       heartCodesAndNames = langCodeNameAndTypes_
         .filter((element: [string, string, boolean]) => {
           return !element[2]
         })
         .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-      console.log(
-        `heartCodesAndNames: ${heartCodesAndNames}, typeof heartCodesAndNames: ${typeof heartCodesAndNames}`
-      )
     })
-    .catch((err) => console.log(err)) // FIXME Trigger toast for error
+    .catch((err) => console.log(err))
 
   let nonEmptyGatewayLanguages: boolean
   $: nonEmptyGatewayLanguages = $gatewayCodeAndNamesStore.every((item) => item.length > 0)
 
   let nonEmptyHeartLanguages: boolean
   $: nonEmptyHeartLanguages = $heartCodeAndNamesStore.every((item) => item.length > 0)
-
-  $: console.log(`$gatewayCodeAndNamesStore: ${$gatewayCodeAndNamesStore}`)
-  $: console.log(`$heartCodeAndNamesStore: ${$heartCodeAndNamesStore}`)
-  $: console.log(`nonEmptyGatewayLanguages: ${nonEmptyGatewayLanguages}`)
-  $: console.log(`nonEmptyHeartLanguages: ${nonEmptyHeartLanguages}`)
 
   // Set $langCountStore
   $: {

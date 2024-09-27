@@ -1,21 +1,12 @@
 <script lang="ts">
-  import { PUBLIC_MAX_LANGUAGES } from '$env/static/public'
   import { getCode, getName } from '$lib/stet/utils'
-  import {
-    lang0CodeAndNameStore,
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore,
-    langCountStore,
-    langCodesStore
-  } from '$lib/stet/stores/LanguagesStore'
+  import { lang0CodeAndNameStore } from '$lib/stet/stores/LanguagesStore'
 
   export let showGatewayLanguages: boolean
   export let gatewayCodesAndNames: Array<string>
   export let heartCodesAndNames: Array<string>
   export let filteredGatewayCodeAndNames: Array<string>
   export let filteredHeartCodeAndNames: Array<string>
-  // export let maxLanguages: number = PUBLIC_MAX_LANGUAGES as unknown as number
-  export let maxLanguages: number = 1
 </script>
 
 <main class="flex-1 overflow-y-auto p-4">
@@ -33,8 +24,6 @@
               bind:group={$lang0CodeAndNameStore}
               value={langCodeAndName}
               class="checkbox-target checkbox-style"
-              disabled={$langCountStore == maxLanguages &&
-                !$langCodesStore.includes(getCode(langCodeAndName))}
             />
             <span class="pl-1 text-xl text-[#33445C]">{getName(langCodeAndName)}</span>
           </div>
@@ -56,8 +45,6 @@
               bind:group={$lang0CodeAndNameStore}
               value={langCodeAndName}
               class="checkbox-target checkbox-style"
-              disabled={$langCountStore == maxLanguages &&
-                !$langCodesStore.includes(getCode(langCodeAndName))}
             />
             <span class="pl-1 text-xl text-[#33445C]">{getName(langCodeAndName)}</span>
           </div>

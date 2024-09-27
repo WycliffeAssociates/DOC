@@ -2,8 +2,7 @@
   import type { PageData } from './$types'
   import {
     PUBLIC_STET_TARGET_LANG_CODES_NAMES_URL,
-    PUBLIC_TAILWIND_SM_MIN_WIDTH,
-    PUBLIC_MAX_LANGUAGES
+    PUBLIC_TAILWIND_SM_MIN_WIDTH
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
@@ -67,13 +66,11 @@
           return element[2]
         })
         .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-      console.log(`gatewayCodesAndNames: ${gatewayCodesAndNames}`)
       heartCodesAndNames = langCodeNameAndTypes_
         .filter((element: [string, string, boolean]) => {
           return !element[2]
         })
         .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-      console.log(`heartCodesAndNames: ${heartCodesAndNames}`)
     })
     .catch((err) => console.log(err)) // FIXME Trigger toast for error
 
@@ -83,6 +80,7 @@
   let nonEmptyHeartLanguages: boolean
   $: nonEmptyHeartLanguages = $heartCodeAndNamesStore.every((item) => item.length > 0)
 
+  // Set langCountStore
   $: {
     if (nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
       let codes = []
@@ -142,7 +140,6 @@
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
-  let maxLanguages: number = PUBLIC_MAX_LANGUAGES as unknown as number
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />

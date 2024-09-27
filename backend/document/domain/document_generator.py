@@ -15,7 +15,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from os.path import basename, exists, join
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence, cast
+from typing import Any, Optional, Sequence, cast
 
 import jinja2
 from celery import current_task
@@ -1090,7 +1090,6 @@ def generate_stet_docx_document(
     document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
     docx_filepath_ = docx_filepath(document_request_key_)
     if file_needs_update(docx_filepath_):
-        current_task.update_state(state="Converting to Docx")
         stet.generate_docx_document(
             lang0_code, lang1_code, document_request_key_, docx_filepath_
         )

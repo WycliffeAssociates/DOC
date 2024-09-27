@@ -80,7 +80,7 @@ RUN mkdir -p /app/document_output
 # Make the directory where stet source documents are stored
 RUN mkdir -p /app/stet
 
-COPY backend/document/stet/data/stet_en.docx stet/
+COPY backend/document/stet/data/stet_*.docx stet/
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .

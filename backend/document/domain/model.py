@@ -125,13 +125,6 @@ class DocumentRequestSourceEnum(str, Enum):
 
 
 @final
-class StetDocumentRequest(BaseModel):
-    lang0_code: str
-    lang1_code: str
-    email_address: str
-
-
-@final
 class DocumentRequest(BaseModel):
     """
     This class reifies a document generation request from a client of

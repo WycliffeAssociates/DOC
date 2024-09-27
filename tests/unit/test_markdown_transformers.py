@@ -1,7 +1,4 @@
 import os
-
-import mistune
-
 import pytest
 
 from document.domain import model

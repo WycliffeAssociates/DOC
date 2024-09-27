@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, final
+from pydantic import BaseModel, EmailStr
 
 
 @dataclass
@@ -42,3 +43,12 @@ class WordEntryDto:
     strongs_numbers: str = ""
     definition: str = ""
     verse_ref_dtos: list[VerseReferenceDto] = field(default_factory=list)
+
+
+@final
+class StetDocumentRequest(BaseModel):
+    # The source language
+    lang0_code: str
+    # The target language
+    lang1_code: str
+    email_address: Optional[EmailStr]

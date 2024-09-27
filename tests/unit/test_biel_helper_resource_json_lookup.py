@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from document.domain import resource_lookup
 
 

@@ -3,9 +3,7 @@ import re
 import time
 from typing import Literal, Union
 
-import bs4
 import httpx
-import requests
 from document.config import settings
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
@@ -102,7 +100,7 @@ def check_finished_document_without_verses_success(
         body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
         assert body_match, "Body not found in HTML"
         body_content = body_match.group(1)
-        assert not 'class="verse"' in body_content
+        assert 'class="verse"' not in body_content
 
 
 def check_finished_document_with_body_success(

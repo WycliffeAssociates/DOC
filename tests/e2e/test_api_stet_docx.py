@@ -10,7 +10,7 @@ from document.config import settings
 def test_en_es_419_stet_docx() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
-            "/documents_stet_docx",
+            "/stet/documents_stet_docx",
             json={
                 "lang0_code": "en",
                 "lang1_code": "es-419",
@@ -25,7 +25,7 @@ def test_en_es_419_stet_docx() -> None:
 def test_en_abu_stet_docx() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
-            "/documents_stet_docx",
+            "/stet/documents_stet_docx",
             json={
                 "lang0_code": "en",
                 "lang1_code": "abu",

@@ -2,13 +2,7 @@
 Tests for assembly strategy book-then-language
 """
 
-import os
-import pathlib
-import re
-
-import bs4
 import pytest
-import requests
 from document.config import settings
 from document.domain import model
 from document.entrypoints.app import app

@@ -1,7 +1,5 @@
 import re
 
-from document.config import settings
-
 from document.domain import document_generator, model
 
 

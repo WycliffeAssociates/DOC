@@ -1,15 +1,13 @@
-import json
 import re
 from pathlib import Path
 from typing import Mapping, Sequence
 
-import chevron
 import jinja2
 import mistune
 from celery import current_task
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import DocumentRequest, USFMBook, USFMChapter, VerseRef
+from document.domain.model import USFMBook, USFMChapter
 from document.domain.parsing import usfm_book_content
 from document.domain.resource_lookup import (
     provision_asset_files,

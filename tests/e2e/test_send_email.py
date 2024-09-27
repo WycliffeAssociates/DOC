@@ -1,8 +1,3 @@
-import logging
-import os
-
-import requests
-import yaml
 from document.config import settings
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient

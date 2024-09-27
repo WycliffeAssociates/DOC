@@ -1,6 +1,4 @@
-import os
 from document.config import settings
-
 from document.domain import model, resource_lookup
 
 

@@ -18,14 +18,11 @@ using the 'randomized' pytest marker.
 """
 
 import pytest
-import json
 import random
-import requests
 from document.config import settings
 from document.domain import exceptions
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
-from typing import Sequence
 
 from document.domain import model, resource_lookup
 from tests.shared.utils import (

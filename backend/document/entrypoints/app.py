@@ -1,15 +1,11 @@
 """This module provides the FastAPI API definition."""
 
 
-from typing import Sequence
-
-import celery.states
-from celery.result import AsyncResult
 from document.config import settings
-from document.domain import document_generator, exceptions, model, resource_lookup
+from document.domain import exceptions
 from document.entrypoints.routes import router as doc_router
 from document.entrypoints.stet.routes import router as stet_router
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse

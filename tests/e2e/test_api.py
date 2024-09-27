@@ -1,11 +1,9 @@
 """This module provides tests for the application's FastAPI API."""
 
 import os
-import pathlib
 import re
 
 import pytest
-import requests
 from document.config import settings
 from document.domain import model
 from document.entrypoints.app import app

@@ -1,9 +1,6 @@
 """This module provides fixtures for e2e tests."""
 
 import itertools
-import json
-import os
-import pathlib
 import random
 from typing import Any, Optional, Sequence
 
@@ -11,7 +8,6 @@ import pydantic
 import pytest
 from document.config import settings
 from document.domain import bible_books, exceptions, model, resource_lookup
-from document.utils import file_utils
 
 logger = settings.logger(__name__)
 

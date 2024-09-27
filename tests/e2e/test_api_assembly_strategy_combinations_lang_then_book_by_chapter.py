@@ -1,10 +1,4 @@
-import os
-import pathlib
-import re
-
-import bs4
 import pytest
-import requests
 from document.config import settings
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient

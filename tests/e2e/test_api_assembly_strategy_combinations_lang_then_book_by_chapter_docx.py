@@ -1,8 +1,4 @@
-import os
-import re
-
 import pytest
-import requests
 from document.config import settings
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient

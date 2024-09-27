@@ -277,7 +277,8 @@
         Download
       </button>
       <p class="mt-4 text-xl italic text-[#B3B9C2]">
-        We appreciate your patience as this can take several minutes for larger documents.
+        We appreciate your patience as this can take several minutes to acquire and process all the
+        books whose verses are referenced.
       </p>
     {/if}
   {/if}

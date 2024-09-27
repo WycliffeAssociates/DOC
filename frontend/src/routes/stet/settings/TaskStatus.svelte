@@ -1,6 +1,6 @@
 <script lang="ts">
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
-  import { taskStateStore } from '$lib/stores/TaskStore'
+  import { taskStateStore } from '$lib/stet/stores/TaskStore'
 </script>
 
 <div class="flex">

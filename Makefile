@@ -267,46 +267,6 @@ local-e2e-tests:  local-prepare-for-tests
 local-repeat-randomized-tests: local-prepare-for-tests
 	TO_EMAIL="foo@example.com" pytest -n auto --count 10 tests/e2e/ -k test_api_randomized_combinatoric.py
 
-.PHONY: local-smoke-test
-local-smoke-test: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr
-
-.PHONY: local-smoke-test2
-local-smoke-test2: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_layout_not_for_print
-
-.PHONY: local-smoke-test3
-local-smoke-test3: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_random_non_english_fixtures
-
-.PHONY: local-smoke-test4
-local-smoke-test4: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_send_email_with_ar_nav_jud_pdf
-
-.PHONY: local-smoke-test5
-local-smoke-test5: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_stream_ar_nav_jud_pdf
-
-.PHONY: local-smoke-test6
-local-smoke-test6: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr
-
-.PHONY: local-smoke-test7
-local-smoke-test7: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_c
-
-.PHONY: local-smoke-test8
-local-smoke-test8: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_2c_sl_sr
-
-.PHONY: local-smoke-test9
-local-smoke-test9: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_epub
-
-.PHONY: local-smoke-test10
-local-smoke-test10: local-prepare-for-tests
-	TO_EMAIL="foo@example.com" pytest tests/e2e/ -k test_en_ulb_wa_col_en_tn_wa_col_en_tq_wa_col_en_tw_wa_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr
-
 .PHONY: local-run-celery
 local-run-celery:
 	celery -A document.domain.worker.app worker --loglevel=DEBUG -E

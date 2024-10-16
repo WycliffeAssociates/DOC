@@ -33,3 +33,18 @@ def test_en_abu_stet_docx() -> None:
             },
         )
         check_result(response, suffix="docx")
+
+
+@pytest.mark.stet
+@pytest.mark.docx
+def test_en_ln_stet_docx() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/stet/documents_stet_docx",
+            json={
+                "lang0_code": "en",
+                "lang1_code": "ln",
+                "email_address": settings.TO_EMAIL_ADDRESS,
+            },
+        )
+        check_result(response, suffix="docx")

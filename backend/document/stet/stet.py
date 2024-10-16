@@ -354,11 +354,14 @@ def generate_docx_document(
     #     template = filepath.read()
     env = jinja2.Environment(autoescape=True).from_string(template)
     full_html = env.render(data=word_entries)
+    # Remove any NULL bytes and all control characters
+    cleaned_full_html = re.sub(r"[\x00-\x1F]+", "", full_html)
     # logger.debug("full_html: %s", full_html)
     # filepath_ = f"{working_dir}/{lang0_code}_{lang1_code}_stet.html"
     filepath_ = f"{working_dir}/{document_request_key_}.html"
     with open(filepath_, "w", encoding="utf-8") as outfile2:
-        outfile2.write(full_html)
+        outfile2.write(cleaned_full_html)
+
     html_to_docx = HtmlToDocx()
     # docx_filepath = f"{Path(filepath_).stem}.docx"
     html_to_docx.parse_html_file(filepath_, f"{output_dir}/{Path(docx_filepath_).stem}")

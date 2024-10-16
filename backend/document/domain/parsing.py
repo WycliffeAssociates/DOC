@@ -256,6 +256,17 @@ def get_chapter_num(chapter_usfm_text: str) -> int:
     )
 
 
+def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str:
+    """
+    Remove any NULL bytes and all control characters.
+
+    Some languages' accidentally have ASCI control characters in their
+    USFM. We strip those out as well as the possibility of ASCII NULL
+    bytes.
+    """
+    return re.sub(r"[\x00-\x1F]+", "", html_content) if html_content else ""
+
+
 def usfm_book_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
@@ -276,8 +287,13 @@ def usfm_book_content(
             chapter_html_content = usfm_chapter_html(
                 chapter, resource_lookup_dto, chapter_num
             )
+            cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
+                chapter_html_content
+            )
             usfm_chapters[chapter_num] = USFMChapter(
-                content=chapter_html_content if chapter_html_content else "",
+                content=cleaned_chapter_html_content
+                if cleaned_chapter_html_content
+                else "",
                 verses=None,
             )
     return USFMBook(

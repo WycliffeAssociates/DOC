@@ -21,6 +21,7 @@ from docx import Document  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
+from docx.shared import Pt  # type: ignore
 
 logger = settings.logger(__name__)
 
@@ -187,8 +188,10 @@ def get_word_entry_dtos(
     return word_entry_dtos, list(set(book_codes_))
 
 
-def set_docx_table_borders_for_word(docx_filepath: str) -> None:
-    # Open or create the document
+def format_docx_tables(docx_filepath: str) -> None:
+    """
+    Programmatically improve table borders and cell text padding.
+    """
     doc = Document(docx_filepath)
     # Loop through tables and set borders
     for table in doc.tables:
@@ -202,8 +205,24 @@ def set_docx_table_borders_for_word(docx_filepath: str) -> None:
             border.set(qn("w:color"), "000000")  # Border color
             tblBorders.append(border)
         tbl.tblPr.append(tblBorders)
-
-    # Save the updated document
+        # Ensure text in each cell is vertically centered and free of
+        # excessive space.
+        for row in table.rows:
+            for cell in row.cells:
+                tc = cell._element
+                tcPr = tc.get_or_add_tcPr()
+                # Set vertical alignment to center
+                vAlign = OxmlElement("w:vAlign")
+                vAlign.set(qn("w:val"), "center")
+                tcPr.append(vAlign)
+                # Optional: Adjust padding/margins if needed
+                cell_paragraph = cell.paragraphs[0]
+                # cell_paragraph.paragraph_format.left_indent = Pt(
+                #     5
+                # )  # Slight left padding
+                cell_paragraph.paragraph_format.space_after = Pt(
+                    0
+                )  # Remove extra space after
     doc.save(docx_filepath)
 
 
@@ -360,36 +379,15 @@ def generate_docx_document(
                 )
             )
         word_entries.append(word_entry)
-    # Build output doc
-    # Create markdown file that you can run pandoc on
-    # template = Path(template_path("stet")).read_text(encoding="utf-8")
-    # # markdown_ = chevron.render(template=template, data={"words": word_entries})
-    # markdown_ = chevron.render(template=template, data=word_entries)  # type: ignore
-    # filepath_ = f"{working_dir}/{lang0_code}_{lang1_code}_stet.md"
-    # with open(filepath_, "w", encoding="utf-8") as outfile:
-    #     outfile.write(markdown_)
-    # return filepath_
     # Create HTML file and then convert it to Docx with library
     current_task.update_state(state="Converting to Docx")
     template = Path(template_path("stet_html")).read_text(encoding="utf-8")
-    # Hydrate and render the template
-    # assert exists(template_html)
-    # with open(template_html, "r") as filepath:
-    #     template = filepath.read()
     env = jinja2.Environment(autoescape=True).from_string(template)
     full_html = env.render(data=word_entries)
-    # logger.debug("full_html: %s", full_html)
-    # filepath_ = f"{working_dir}/{lang0_code}_{lang1_code}_stet.html"
     filepath_ = f"{working_dir}/{document_request_key_}.html"
     with open(filepath_, "w", encoding="utf-8") as outfile2:
         outfile2.write(full_html)
     html_to_docx = HtmlToDocx()
-    # docx_filepath = f"{Path(filepath_).stem}.docx"
     html_to_docx.parse_html_file(filepath_, f"{output_dir}/{Path(docx_filepath_).stem}")
-    # At this point the tables have a border if viewed in libreoffice,
-    # but getting table borders to work in Word takes a little more work:
-    set_docx_table_borders_for_word(docx_filepath_)
-
+    format_docx_tables(docx_filepath_)
     return docx_filepath_
-    # # doc = html_to_docx.parse_html_string(html)
-    # # logger.debug("doc: %s", doc)

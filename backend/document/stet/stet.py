@@ -19,6 +19,8 @@ from document.stet.util import is_valid_int
 from document.utils.file_utils import template_path
 from docx import Document  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
+from docx.oxml import OxmlElement  # type: ignore
+from docx.oxml.ns import qn  # type: ignore
 
 logger = settings.logger(__name__)
 
@@ -183,6 +185,26 @@ def get_word_entry_dtos(
                     word_entry_dto.verse_ref_dtos.append(verse_reference_dto)
             word_entry_dtos.append(word_entry_dto)
     return word_entry_dtos, list(set(book_codes_))
+
+
+def set_docx_table_borders_for_word(docx_filepath: str) -> None:
+    # Open or create the document
+    doc = Document(docx_filepath)
+    # Loop through tables and set borders
+    for table in doc.tables:
+        tbl = table._element
+        tblBorders = OxmlElement("w:tblBorders")
+        for border_name in ["top", "left", "bottom", "right", "insideH", "insideV"]:
+            border = OxmlElement(f"w:{border_name}")
+            border.set(qn("w:val"), "single")
+            border.set(qn("w:sz"), "8")  # 1px equivalent in Word (1/8 point units)
+            border.set(qn("w:space"), "0")
+            border.set(qn("w:color"), "000000")  # Border color
+            tblBorders.append(border)
+        tbl.tblPr.append(tblBorders)
+
+    # Save the updated document
+    doc.save(docx_filepath)
 
 
 def generate_docx_document(
@@ -362,6 +384,10 @@ def generate_docx_document(
     html_to_docx = HtmlToDocx()
     # docx_filepath = f"{Path(filepath_).stem}.docx"
     html_to_docx.parse_html_file(filepath_, f"{output_dir}/{Path(docx_filepath_).stem}")
+    # At this point the tables have a border if viewed in libreoffice,
+    # but getting table borders to work in Word takes a little more work:
+    set_docx_table_borders_for_word(docx_filepath_)
+
     return docx_filepath_
     # # doc = html_to_docx.parse_html_string(html)
     # # logger.debug("doc: %s", doc)

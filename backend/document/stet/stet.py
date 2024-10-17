@@ -21,6 +21,7 @@ from docx import Document  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
+from docx.shared import Pt  # type: ignore
 
 logger = settings.logger(__name__)
 
@@ -202,7 +203,23 @@ def set_docx_table_borders_for_word(docx_filepath: str) -> None:
             border.set(qn("w:color"), "000000")  # Border color
             tblBorders.append(border)
         tbl.tblPr.append(tblBorders)
-
+        # Ensure text in each cell is vertically centered
+        for row in table.rows:
+            for cell in row.cells:
+                tc = cell._element
+                tcPr = tc.get_or_add_tcPr()
+                # Set vertical alignment to center
+                vAlign = OxmlElement("w:vAlign")
+                vAlign.set(qn("w:val"), "center")
+                tcPr.append(vAlign)
+                # Optional: Adjust padding/margins if needed
+                cell_paragraph = cell.paragraphs[0]
+                # cell_paragraph.paragraph_format.left_indent = Pt(
+                #     5
+                # )  # Slight left padding
+                cell_paragraph.paragraph_format.space_after = Pt(
+                    0
+                )  # Remove extra space after
     # Save the updated document
     doc.save(docx_filepath)
 

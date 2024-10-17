@@ -315,6 +315,8 @@ def generate_docx_document(
                 and usfm_book_.resource_type_name
                 == resource_type_codes_and_names[lang1_usfm_resource_type]
             ]
+            source_verse_text = ""
+            target_verse_text = ""
             if source_selected_usfm_books:
                 source_selected_usfm_book = source_selected_usfm_books[0]
                 for verse_ref in verse_ref_dto.verse_refs:

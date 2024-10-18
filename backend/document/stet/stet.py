@@ -362,13 +362,17 @@ def generate_docx_document(
                 source_selected_usfm_book = source_selected_usfm_books[0]
                 for verse_ref in verse_ref_dto.verse_refs:
                     source_verse_text = lookup_verse_text(
-                        source_selected_usfm_book, verse_ref_dto.chapter_num, verse_ref
+                        source_selected_usfm_book,
+                        verse_ref_dto.chapter_num,
+                        verse_ref.strip(),
                     )
             if target_selected_usfm_books:
                 target_selected_usfm_book = target_selected_usfm_books[0]
                 for verse_ref in verse_ref_dto.verse_refs:
                     target_verse_text = lookup_verse_text(
-                        target_selected_usfm_book, verse_ref_dto.chapter_num, verse_ref
+                        target_selected_usfm_book,
+                        verse_ref_dto.chapter_num,
+                        verse_ref.strip(),
                     )
             word_entry.verses.append(
                 VerseEntry(

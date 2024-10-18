@@ -449,6 +449,7 @@ class USFMBook(NamedTuple):
     lang_code: str
     lang_name: str
     book_code: str
+    national_book_name: str
     resource_type_name: str
     chapters: dict[ChapterNum, USFMChapter]
     lang_direction: LangDirEnum

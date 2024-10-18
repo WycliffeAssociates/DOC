@@ -377,16 +377,27 @@ def generate_docx_document(
                     target_verse_text = lookup_verse_text(
                         target_selected_usfm_book, verse_ref_dto.chapter_num, verse_ref
                     )
+            non_book_name_portion_of_source_reference = extract_chapter_and_beyond(
+                verse_ref_dto.source_reference
+            )
             non_book_name_portion_of_target_reference = extract_chapter_and_beyond(
                 verse_ref_dto.target_reference
             )
+            nationalized_source_reference = (
+                f"{source_selected_usfm_book.national_book_name} {non_book_name_portion_of_source_reference}"
+                if non_book_name_portion_of_source_reference
+                else verse_ref_dto.source_reference
+            )
+            nationalized_target_reference = (
+                f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
+                if non_book_name_portion_of_target_reference
+                else verse_ref_dto.target_reference
+            )
             word_entry.verses.append(
                 VerseEntry(
-                    source_reference=verse_ref_dto.source_reference,
+                    source_reference=nationalized_source_reference,
                     source_text=source_verse_text,
-                    target_reference=f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
-                    if non_book_name_portion_of_target_reference
-                    else verse_ref_dto.target_reference,
+                    target_reference=nationalized_target_reference,
                     target_text=target_verse_text,
                 )
             )

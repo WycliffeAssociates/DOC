@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Mapping, Optional, Sequence
 
 import jinja2
 import mistune
@@ -156,7 +156,6 @@ def get_word_entry_dtos(
                         verses,
                         comment,
                     )
-                    # Break apart source tool verses
                     verse_refs: list[str] = verses.split(",")
                     valid_verse_refs: list[str] = []
                     for verse_ref in verse_refs:
@@ -224,6 +223,14 @@ def format_docx_tables(docx_filepath: str) -> None:
                     0
                 )  # Remove extra space after
     doc.save(docx_filepath)
+
+
+def extract_chapter_and_beyond(text: str) -> Optional[str]:
+    # Regular expression to match "<chapter_num>:<verse_num> [comment]"
+    match = re.search(r"\d+:\d+(\s*\(\*\*?\))?$", text)
+    if match:
+        return match.group()
+    return None
 
 
 def generate_docx_document(
@@ -370,11 +377,16 @@ def generate_docx_document(
                     target_verse_text = lookup_verse_text(
                         target_selected_usfm_book, verse_ref_dto.chapter_num, verse_ref
                     )
+            non_book_name_portion_of_target_reference = extract_chapter_and_beyond(
+                verse_ref_dto.target_reference
+            )
             word_entry.verses.append(
                 VerseEntry(
                     source_reference=verse_ref_dto.source_reference,
                     source_text=source_verse_text,
-                    target_reference=verse_ref_dto.target_reference,
+                    target_reference=f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
+                    if non_book_name_portion_of_target_reference
+                    else verse_ref_dto.target_reference,
                     target_text=target_verse_text,
                 )
             )

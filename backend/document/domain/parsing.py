@@ -224,6 +224,7 @@ def split_usfm_by_chapters(usfm_text: str) -> tuple[str, list[str]]:
     chapters = re.split(chapter_regex, usfm_text)
     chapter_markers = re.findall(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
+    logger.debug("frontmatter: %s", frontmatter)
     chapters = [
         marker + chapter.lstrip()
         for marker, chapter in zip(chapter_markers, chapters)
@@ -267,9 +268,64 @@ def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str
     return re.sub(r"[\x00-\x1F]+", "", html_content) if html_content else ""
 
 
+def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
+    # Define the regex patterns to match \h, \mt, and \toc
+    patterns = {
+        "h": r"\\h\s+(.*?)(?=\s+\\|\n|$)",
+        "mt": r"\\mt\s+(.*?)(?=\s+\\|\n|$)",
+        "toc1": r"\\toc1\s+(.*?)(?=\s+\\|\n|$)",
+        "toc2": r"\\toc2\s+(.*?)(?=\s+\\|\n|$)",
+        "toc3": r"\\toc3\s+(.*?)(?=\s+\\|\n|$)",
+    }
+    extracted_data = {}
+    for key, pattern in patterns.items():
+        match = re.search(pattern, frontmatter, re.MULTILINE)
+        if match:
+            extracted_data[key] = match.group(1).strip()
+    return extracted_data
+
+
+def maybe_national_book_name(frontmatter: str) -> str:
+    """
+    Rule for obtaining national book name:
+
+    In USFM:
+
+    1. Look to see if the \h marker is present — if so, use that value.
+    2. Else look to see if the \mt1 marker is present — if so, use that value.
+    3. Else look to see if the \toc1 marker is present - if so, use that value.
+    4. Else look to see if the \toc2 marker is present - if so, use that value.
+
+    Outside USFM:
+
+    5. Else use the book name from the source language if available.
+    6. Otherwise use the English book name.
+
+    Steps 5 and 6 happen outside this function.
+    """
+    logger.debug("frontmatter: %s", frontmatter)
+    frontmatter_data = extract_usfm_frontmatter(frontmatter)
+    h = frontmatter_data["h"] if "h" in frontmatter_data else ""
+    mt = frontmatter_data["mt"] if "mt" in frontmatter_data else ""
+    toc1 = frontmatter_data["toc1"] if "toc1" in frontmatter_data else ""
+    toc2 = frontmatter_data["toc2"] if "toc2" in frontmatter_data else ""
+    toc3 = frontmatter_data["toc3"] if "toc3" in frontmatter_data else ""
+    national_book_name = ""
+    if h:
+        national_book_name = h.strip()
+    elif mt:
+        national_book_name = mt.strip()
+    elif toc1:
+        national_book_name = toc1.strip()
+    elif toc2:
+        national_book_name = toc2.strip()
+    return national_book_name
+
+
 def usfm_book_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
+    book_names: Mapping[str, str] = BOOK_NAMES,
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
@@ -281,6 +337,7 @@ def usfm_book_content(
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
     if content_file:
         frontmatter, chapters_ = split_usfm_by_chapters(read_file(content_file))
+        national_book_name = maybe_national_book_name(frontmatter)
         updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
         for chapter in updated_chapters:
             chapter_num = get_chapter_num(chapter)
@@ -300,6 +357,9 @@ def usfm_book_content(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
+        national_book_name=national_book_name
+        if national_book_name
+        else BOOK_NAMES[resource_lookup_dto.book_code],
         resource_type_name=resource_lookup_dto.resource_type_name,
         chapters=usfm_chapters if usfm_chapters else {},
         lang_direction=resource_lookup_dto.lang_direction,

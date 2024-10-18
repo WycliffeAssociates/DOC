@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 test('test ui part 1', async ({ page }) => {
-  await page.goto('http://localhost:8001/languages')
+  await page.goto('http://localhost:8001')
   await page.getByText('Tiếng Việt (Vietnamese)').click()
   await page.getByText('অসমীয়া (Assamese) as').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -9,17 +9,12 @@ test('test ui part 1', async ({ page }) => {
   await page.getByText('Galatians').click()
   await page.getByText('Luke').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page
-    .getByText(/.*Unlocked Literal Bible.*/)
-    .first()
-    .click()
+  await page.getByText(/.*Unlocked Literal Bible.*/).first().click()
   await page.getByText('Unlocked Literal Bible').nth(1).click()
   await page.getByText('Translation Notes').first().click()
   await page.getByText('Translation Notes').nth(1).click()
   await page.getByText('Translation Questions').first().click()
   await page.getByText('Translation Questions').nth(1).click()
-  // await page.getByText('Translation Words').first().click()
-  // await page.getByText('Translation Words').nth(1).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Generate File' }).click()
   await expect(page.locator('body')).toContainText('Assamese')
@@ -27,33 +22,20 @@ test('test ui part 1', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Galatians')
   await expect(page.locator('body')).toContainText('Translation Notes')
   await expect(page.locator('body')).toContainText('Translation Questions')
-  // await expect(page.locator('body')).toContainText('Translation Words')
   await expect(page.locator('body')).toContainText(/.*Unlocked Literal Bible.*/)
 })
 
 test('test ui part 2', async ({ page }) => {
-  await page.goto('http://localhost:8001/languages')
+  await page.goto('http://localhost:8001')
   await page.getByText('English').click()
   await page.getByText('Español Latin America (Latin').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Galatians').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page
-    .getByText(/.*Unlocked Literal Bible.*/)
-    .first()
-    .click()
-  await page
-    .getByText(/.*Unlocked Literal Bible.*/)
-    .nth(1)
-    .click()
-  await page
-    .getByText(/.*Translation Notes.*/)
-    .nth(1)
-    .click()
-  await page
-    .getByText(/.*Translation Notes.*/)
-    .nth(2)
-    .click()
+  await page.getByText(/.*Unlocked Literal Bible.*/).first().click()
+  await page.getByText(/.*Unlocked Literal Bible.*/).nth(1).click()
+  await page.getByText(/.*Translation Notes.*/).nth(1).click()
+  await page .getByText(/.*Translation Notes.*/).nth(2).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('PDF').click()
   await page.getByText('Interleave content by chapter').click()
@@ -63,7 +45,7 @@ test('test ui part 2', async ({ page }) => {
 test('test books retained in basket on back button to languages and then forward', async ({
   page
 }) => {
-  await page.goto('http://localhost:8001/languages')
+  await page.goto('http://localhost:8001')
   await page.getByText(/.*Amharic.*/).click()
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Languages').click()
@@ -72,20 +54,12 @@ test('test books retained in basket on back button to languages and then forward
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('2 John').click()
   await page.getByText('2 John').nth(1).click()
-  await page
-    .locator('div')
-    .filter({ hasText: /.*Adhola.*/ })
-    .first()
-    .click()
+  await page.locator('div').filter({ hasText: /.*Adhola.*/ }).first().click()
   await page.locator('.flex-shrink-0 > div:nth-child(4)').click()
   await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('2 John').nth(1).click()
-  await page
-    .locator('div')
-    .filter({ hasText: /.*Adhola.*/ })
-    .first()
-    .click()
+  await page.locator('div').filter({ hasText: /.*Adhola.*/ }).first().click()
 })
 
 test('test transfer from biel', async ({ page }) => {
@@ -107,14 +81,13 @@ test('test transfer from biel 2', async ({ page }) => {
 })
 
 test('test es-419 resource types', async ({ page }) => {
-  await page.goto('http://localhost:8001/languages')
+  await page.goto('http://localhost:8001')
   await page.getByText(/.*Español.*/).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Matthew').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByLabel('Translation Notes').check()
   await page.getByLabel('Translation Questions').check()
-  // await page.getByLabel('Translation Words').check()
   await page.locator('span').filter({ hasText: 'Español Latin America (Latin American Spanish)' })
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Generate File' }).click()
@@ -122,7 +95,6 @@ test('test es-419 resource types', async ({ page }) => {
 
 test('test stet', async ({ page }) => {
   await page.goto('http://localhost:8001/stet')
-  await page.goto('http://localhost:8001/stet/source_languages')
   await page.getByLabel('English en').check()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Cebuano').click()
@@ -132,7 +104,6 @@ test('test stet', async ({ page }) => {
 
 test('test stet 2', async ({ page }) => {
   await page.goto('http://localhost:8001/stet')
-  await page.goto('http://localhost:8001/stet/source_languages')
   await page.getByText('English').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Back' }).click()

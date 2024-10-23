@@ -71,9 +71,12 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
         verse_number = re.search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
         if verse_number:
             verse_number_ = verse_number.group(1)
-            # Remove all <sup> and <div> tags and their content from the verse text
+            # Remove all <sup> tags and their content from the verse text
             verse_text = re.sub(r"<sup.*?>.*?</sup>", "", verse_span)
-            verse_text = re.sub(r"<div.*?>.*?</div>", "", verse_text)
+            # Remove <div> tags that do not have class matching "poetry-<integer>"
+            verse_text = re.sub(
+                r"<div(?!.*class=\"poetry-(\d+)\").*?>.*?</div>", "", verse_text
+            )
             # Remove the remaining HTML tags and strip extra spaces
             verse_text = re.sub(r"<.*?>", "", verse_text).strip()
             logger.debug("verse_number: %s, verse_text: %s", verse_number_, verse_text)

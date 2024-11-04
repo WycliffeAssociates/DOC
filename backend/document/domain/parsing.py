@@ -6,21 +6,18 @@ import re
 import subprocess
 import time
 from glob import glob
-from os import scandir, getenv, walk
+from os import getenv, scandir, walk
 from os.path import exists, join, split
 from pathlib import Path
-
 from typing import Mapping, Optional, Sequence
 
 import mistune
-
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
-
-from document.domain.exceptions import MissingChapterMarkerError
 from document.domain.bible_books import BOOK_NAMES
+from document.domain.exceptions import MissingChapterMarkerError
 from document.domain.model import (
     BCBook,
     BCChapter,
@@ -39,14 +36,12 @@ from document.domain.model import (
 )
 from document.markdown_transforms import markdown_transformer
 from document.utils.file_utils import read_file
-
 from document.utils.tw_utils import (
     localized_translation_word,
     translation_word_filepaths,
-    tw_resource_dir,
     translation_words_dict,
+    tw_resource_dir,
 )
-
 
 logger = settings.logger(__name__)
 

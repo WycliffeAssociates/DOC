@@ -687,6 +687,7 @@ def resource_lookup_dto(
                     if (
                         (book_code_ in url or zmq_git_username in url)
                         and resource_type == resource_type_
+                        and resource_type_ in resource_type_codes_and_names
                         and book_code_ == book_code
                     ):
                         resource_lookup_dto = ResourceLookupDto(

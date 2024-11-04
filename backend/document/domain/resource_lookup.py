@@ -756,6 +756,7 @@ def acquire_resource_assets(
     git clone resource asset.
     Return the resource's cloned filepath.
     """
+    resource_filepath = ""
     if (
         resource_lookup_dto.url is not None
     ):  # We know that resource_url is not None because of how we got here, but mypy isn't convinced. Let's convince mypy.

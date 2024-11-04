@@ -2,8 +2,6 @@ from typing import Mapping, Optional, Sequence
 
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
-    # commentary_book_intro,
-    book_title,
     chapter_commentary,
     chapter_heading,
     chapter_intro,
@@ -178,6 +176,7 @@ def assemble_usfm_by_book(
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> Composer:
     """
     Construct the HTML for a 'by book' strategy wherein at least
@@ -204,7 +203,7 @@ def assemble_usfm_by_book(
         is_rtl = usfm_book and usfm_book.lang_direction == LangDirEnum.RTL
         # fmt: on
         subdoc = create_docx_subdoc(
-            book_title(usfm_book.book_code),
+            fmt_str.format(usfm_book.national_book_name),
             usfm_book.lang_code,
             is_rtl,
         )

@@ -170,14 +170,14 @@ def assemble_usfm_by_chapter(
         # Add the commentary book intro
         subdoc = create_docx_subdoc(bc_book.book_intro, bc_book.lang_code)
         composer.append(subdoc)
-    book_codes = {usfm_book.book_code for usfm_book in usfm_books}
-    for book_code in book_codes:
-        num_chapters = book_chapters[book_code]
-        for chapter_num in range(1, num_chapters + 1):
+    for usfm_book in usfm_books:
+        for chapter_num, chapter in usfm_book.chapters.items():
             add_one_column_section(doc)
             # Add chapter intro for each language
             for tn_book in [
-                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+                tn_book
+                for tn_book in tn_books
+                if tn_book.book_code == usfm_book.book_code
             ]:
                 if chapter_num in tn_book.chapters:
                     subdoc = create_docx_subdoc(
@@ -187,7 +187,9 @@ def assemble_usfm_by_chapter(
                     )
                     composer.append(subdoc)
             for bc_book in [
-                bc_book for bc_book in bc_books if bc_book.book_code == book_code
+                bc_book
+                for bc_book in bc_books
+                if bc_book.book_code == usfm_book.book_code
             ]:
                 if chapter_num in bc_book.chapters:
                     # Add the chapter commentary.
@@ -197,26 +199,22 @@ def assemble_usfm_by_chapter(
                     )
                     composer.append(subdoc)
             # Add the interleaved USFM chapters
-            for usfm_book in [
-                usfm_book
-                for usfm_book in usfm_books
-                if usfm_book.book_code == book_code
-            ]:
-                if chapter_num in usfm_book.chapters:
-                    add_one_column_section(doc)
-                    # fmt: off
-                    is_rtl = usfm_book and usfm_book.lang_direction == LangDirEnum.RTL
-                    # fmt: on
-                    subdoc = create_docx_subdoc(
-                        usfm_book.chapters[chapter_num].content,
-                        usfm_book.lang_code,
-                        is_rtl,
-                    )
-                    composer.append(subdoc)
+            add_one_column_section(doc)
+            # fmt: off
+            is_rtl = usfm_book and usfm_book.lang_direction == LangDirEnum.RTL
+            # fmt: on
+            subdoc = create_docx_subdoc(
+                usfm_book.chapters[chapter_num].content,
+                usfm_book.lang_code,
+                is_rtl,
+            )
+            composer.append(subdoc)
             # Add the interleaved tn notes
             tn_verses = None
             for tn_book in [
-                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+                tn_book
+                for tn_book in tn_books
+                if tn_book.book_code == usfm_book.book_code
             ]:
                 tn_verses = tn_chapter_verses(tn_book, chapter_num)
                 if tn_verses:
@@ -229,7 +227,9 @@ def assemble_usfm_by_chapter(
                     composer.append(subdoc)
             # Add the interleaved tq questions
             for tq_book in [
-                tq_book for tq_book in tq_books if tq_book.book_code == book_code
+                tq_book
+                for tq_book in tq_books
+                if tq_book.book_code == usfm_book.book_code
             ]:
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
                 # Add TQ verse content, if any
@@ -291,16 +291,15 @@ def assemble_tn_by_chapter(
             bc_book.lang_code,
         )
         composer.append(subdoc)
-    book_codes = {tn_book.book_code for tn_book in tn_books}
-    for book_code in book_codes:
-        num_chapters = book_chapters[book_code]
-        for chapter_num in range(1, num_chapters + 1):
+    for tn_book in tn_books:
+        for chapter_num, chapter in tn_book.chapters.items():
             add_one_column_section(doc)
             one_column_html = []
-            if chapter_num <= num_chapters:
-                one_column_html.append("Chapter {}".format(chapter_num))
+            one_column_html.append("Chapter {}".format(chapter_num))
             for tn_book in [
-                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+                tn_book
+                for tn_book in tn_books
+                if tn_book.book_code == tn_book.book_code
             ]:
                 if chapter_num in tn_book.chapters:
                     # Add the translation notes chapter intro.
@@ -314,7 +313,9 @@ def assemble_tn_by_chapter(
                         )
                         composer.append(subdoc)
             for bc_book in [
-                bc_book for bc_book in bc_books if bc_book.book_code == book_code
+                bc_book
+                for bc_book in bc_books
+                if bc_book.book_code == tn_book.book_code
             ]:
                 if chapter_num in bc_book.chapters:
                     # Add the chapter commentary.
@@ -325,7 +326,9 @@ def assemble_tn_by_chapter(
                     composer.append(subdoc)
             # Add the interleaved tn notes
             for tn_book in [
-                tn_book for tn_book in tn_books if tn_book.book_code == book_code
+                tn_book
+                for tn_book in tn_books
+                if tn_book.book_code == tn_book.book_code
             ]:
                 if chapter_num in tn_book.chapters:
                     tn_verses = tn_chapter_verses(tn_book, chapter_num)
@@ -339,7 +342,9 @@ def assemble_tn_by_chapter(
                         composer.append(subdoc)
             # Add the interleaved tq questions
             for tq_book in [
-                tq_book for tq_book in tq_books if tq_book.book_code == book_code
+                tq_book
+                for tq_book in tq_books
+                if tq_book.book_code == tn_book.book_code
             ]:
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
                 # Add TQ verse content, if any
@@ -378,14 +383,14 @@ def assemble_tq_by_chapter(
     bc_books = sorted(bc_books, key=bc_sort_key)
     doc = Document()
     composer = Composer(doc)
-    book_codes = {tq_book.book_code for tq_book in tq_books}
-    for book_code in book_codes:
-        num_chapters = book_chapters[book_code]
-        for chapter_num in range(1, num_chapters):
+    for tq_book in tq_books:
+        for chapter_num, chapter in tq_book.chapters.items():
             one_column_html = []
             one_column_html.append("Chapter {}".format(chapter_num))
             for bc_book in [
-                bc_book for bc_book in bc_books if bc_book.book_code == book_code
+                bc_book
+                for bc_book in bc_books
+                if bc_book.book_code == tq_book.book_code
             ]:
                 one_column_html.append(chapter_commentary(bc_book, chapter_num))
             if one_column_html:
@@ -394,7 +399,9 @@ def assemble_tq_by_chapter(
                 composer.append(subdoc)
             # Add the interleaved tq questions
             for tq_book in [
-                tq_book for tq_book in tq_books if tq_book.book_code == book_code
+                tq_book
+                for tq_book in tq_books
+                if tq_book.book_code == tq_book.book_code
             ]:
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
                 if tq_verses:

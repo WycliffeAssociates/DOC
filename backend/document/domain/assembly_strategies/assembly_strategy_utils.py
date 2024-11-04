@@ -83,12 +83,6 @@ def has_footnotes(html_content: str) -> bool:
     return bool(search(r'<div[^>]*class="footnotes"', html_content))
 
 
-def book_title(
-    book_code: str,
-    fmt_str: str = settings.BOOK_NAME_FMT_STR,
-    book_names: Mapping[str, str] = BOOK_NAMES,
-) -> str:
-    return fmt_str.format(book_names[book_code])
 
 
 def bc_book_intro(

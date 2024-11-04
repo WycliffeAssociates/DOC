@@ -327,7 +327,7 @@ def usfm_book_content(
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
     content = read_file(content_file) if content_file else ""
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
-    frontmatter, chapters_ = split_usfm_by_chapters(resource_lookup_dto, content)
+    frontmatter, chapters_ = split_usfm_by_chapters(content)
     national_book_name = maybe_national_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
     for chapter in updated_chapters:

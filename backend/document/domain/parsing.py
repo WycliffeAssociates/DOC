@@ -236,7 +236,7 @@ def ensure_chapter_label(chapter_usfm_text: str) -> str:
         if match := re.search(r"\\c\s+(\d+)", chapter_usfm_text):
             chapter_num = match.group(1)
             updated_chapter_usfm_text = re.sub(
-                r"(\\c\s+\d+)", rf"\1\\cl Chapter {chapter_num}", chapter_usfm_text
+                r"(\\c\s+\d+)", rf"\1\\cl Chapter {chapter_num}\n", chapter_usfm_text
             )
             return updated_chapter_usfm_text
     return chapter_usfm_text

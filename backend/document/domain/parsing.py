@@ -270,7 +270,6 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
         "mt": r"\\mt\s+(.*?)(?=\s+\\|\n|$)",
         "toc1": r"\\toc1\s+(.*?)(?=\s+\\|\n|$)",
         "toc2": r"\\toc2\s+(.*?)(?=\s+\\|\n|$)",
-        "toc3": r"\\toc3\s+(.*?)(?=\s+\\|\n|$)",
     }
     extracted_data = {}
     for key, pattern in patterns.items():
@@ -298,23 +297,16 @@ def maybe_national_book_name(frontmatter: str) -> str:
 
     Steps 5 and 6 happen outside this function.
     """
-    logger.debug("frontmatter: %s", frontmatter)
+    # logger.debug("frontmatter: %s", frontmatter)
     frontmatter_data = extract_usfm_frontmatter(frontmatter)
-    h = frontmatter_data["h"] if "h" in frontmatter_data else ""
-    mt = frontmatter_data["mt"] if "mt" in frontmatter_data else ""
-    toc1 = frontmatter_data["toc1"] if "toc1" in frontmatter_data else ""
-    toc2 = frontmatter_data["toc2"] if "toc2" in frontmatter_data else ""
-    toc3 = frontmatter_data["toc3"] if "toc3" in frontmatter_data else ""
-    national_book_name = ""
-    if h:
-        national_book_name = h.strip()
-    elif mt:
-        national_book_name = mt.strip()
-    elif toc1:
-        national_book_name = toc1.strip()
-    elif toc2:
-        national_book_name = toc2.strip()
-    return national_book_name
+    national_book_name = (
+        frontmatter_data.get("h")
+        or frontmatter_data.get("mt")
+        or frontmatter_data.get("toc1")
+        or frontmatter_data.get("toc2")
+        or ""
+    )
+    return national_book_name.strip()
 
 
 def usfm_book_content(

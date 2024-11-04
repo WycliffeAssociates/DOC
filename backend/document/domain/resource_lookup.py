@@ -18,7 +18,7 @@ import requests
 from document.config import settings
 from document.domain import parsing
 from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import ResourceLookupDto
+from document.domain.model import LangDirEnum, ResourceLookupDto
 from document.utils.file_utils import file_needs_update, read_file
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
@@ -42,7 +42,8 @@ def fetch_source_data(
     >>> from document.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
-    >>> result[0]
+    >>> result["git_repo"][0]
+    {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
     """
     json_file_path = join(working_dir, json_file_name)
     data = None
@@ -70,8 +71,10 @@ def download_data(
     Downloads data from a GraphQL API and saves it to a JSON file.
 
     >>> from document.domain import resource_lookup
-    >>> result = resource_lookup.download_data("assets_download/resources.json")
-    >>> result[0]
+    >>> ();result = resource_lookup.download_data("assets_download/resources.json");() # doctest: +ELLIPSIS
+    (...)
+    >>> result["git_repo"][0]
+    {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
     """
     graphql_query = """
 query MyQuery {
@@ -136,7 +139,8 @@ def fetch_gateway_languages(
     >>> from document.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_gateway_languages("assets_download/gateway_languages.json");() # doctest: +ELLIPSIS
     (...)
-    >>> result[0]
+    >>> result["language"][0]
+    {'gateway_languages': [{'gateway_language': {'ietf_code': 'es-419', 'national_name': 'Español Latin America', 'english_name': 'Latin American Spanish'}}]}
     """
     graphql_query = """
 query MyQuery {
@@ -157,9 +161,17 @@ query MyQuery {
         if response.status_code == 200:
             data = response.json()
             logger.debug("Writing json data to: %s", jsonfile_path)
+            # Filter out empty gateway_languages entries
             with open(jsonfile_path, "w") as fp:
                 fp.write(str(json.dumps(data["data"])))
-            return data["data"]
+            filtered_data = {
+                "language": [
+                    entry
+                    for entry in data["data"]["language"]
+                    if entry["gateway_languages"]
+                ]
+            }
+            return filtered_data
         else:
             logger.debug(
                 "Failed to get data from data API, graphql API might be down..."
@@ -180,9 +192,10 @@ def get_gateway_languages(
     then reifying it into its JSON object form.
 
     >>> from document.domain import resource_lookup
-    >>> ();result = resource_lookup.gateway_languages();() # doctest: +ELLIPSIS
+    >>> ();result = resource_lookup.get_gateway_languages();() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
+    'abs'
     """
     gateway_languages_collection = []
     if use_hardcoded_gateway_language_values:
@@ -276,10 +289,12 @@ def resource_types(
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
-    >>> ();result = resource_lookup.resource_types("pt-br");() # doctest: +ELLIPSIS
+    >>> lang_code = "pt-br"
+    >>> books = resource_lookup.book_codes_for_lang(lang_code)
+    >>> ();result = resource_lookup.resource_types(lang_code, "".join([book[0] for book in books]));() # doctest: +ELLIPSIS
     (...)
     >>> result
-    [('blv', 'Portuguese Bíblia Livre'), ('tw', 'Translation Words'), ('tn', 'Translation Notes'), ('ulb', 'Unlocked Literal Bible'), ('tq', 'Translation Questions')]
+    [('blv', 'Portuguese Bíblia Livre'), ('tw', 'Translation Words'), ('ulb', 'Unlocked Literal Bible')]
     """
     book_codes = book_codes_str.split(",")
     if book_codes and book_codes[0] == "all":
@@ -308,13 +323,16 @@ def resource_types(
                         book_assets = [
                             file.name
                             for file in scandir(resource_filepath)
-                            if file.is_dir() and file.name.lower() in book_codes
+                            if file.is_dir()
+                            and not file.name.startswith(".")
+                            and file.name.lower() in book_codes
                         ]
                     elif resource_type == "bc":
                         book_assets = [
                             file.name
                             for file in scandir(resource_filepath)
                             if file.is_dir()
+                            and not file.name.startswith(".")
                             and re.search(bc_book_asset_pattern, file.name)
                             and file.name.split("-")[1].lower() in book_codes
                         ]
@@ -343,6 +361,62 @@ def resource_types(
             unique_values.append(value)
             seen_values.add(value[0])
     return sorted(unique_values, key=lambda value: value[1])
+
+
+# Used by some tests
+def usfm_resource_types_and_book_tuples(
+    lang_code: str,
+    book_codes_str: str,
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> Sequence[tuple[str, str]]:
+    """
+    >>> from document.domain import resource_lookup
+    >>> lang_code = "ruc"
+    >>> ();books = resource_lookup.book_codes_for_lang(lang_code);() # doctest: +ELLIPSIS
+    (...)
+    >>> ();tuples = resource_lookup.usfm_resource_types_and_book_tuples(lang_code, ",".join([book[0] for book in books]));() # doctest: +ELLIPSIS
+    (...)
+    >>> tuples
+    [('reg', 'tit'), ('reg', '2ti'), ('reg', 'php'), ('reg', 'rom'), ('reg', 'gal'), ('reg', '1ti'), ('reg', '1th'), ('reg', 'act'), ('reg', '1co'), ('reg', '2th'), ('reg', '2co'), ('reg', 'col'), ('reg', 'eph'), ('reg', 'jhn'), ('reg', 'luk'), ('reg', 'mat'), ('reg', 'mrk')]
+    """
+    book_codes = book_codes_str.split(",")
+    data = fetch_source_data()
+    resource_type_and_book_tuples = set()
+    try:
+        repos_info = data["git_repo"]
+        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+        for repo_info in augmented_repos_info:
+            content = repo_info["content"]
+            language_info = content["language"]
+            if language_info["ietf_code"] == lang_code:
+                resource_type = content["resource_type"]
+                if resource_type in usfm_resource_types:
+                    url = repo_info["repo_url"]
+                    for book_code in book_codes:
+                        dto = ResourceLookupDto(
+                            lang_code=lang_code,
+                            lang_name="",
+                            resource_type=resource_type,
+                            resource_type_name="",
+                            url=url,
+                            lang_direction=LangDirEnum.LTR,
+                            book_code=book_code,
+                        )
+                        logger.debug("dto: %s", dto)
+                        resource_dir = provision_asset_files(dto)
+                        content_file = parsing.usfm_asset_file(
+                            dto,
+                            resource_dir,
+                        )
+                        logger.debug("content_file: %s", content_file)
+                        if content_file:
+                            resource_type_and_book_tuples.add(
+                                (resource_type, book_code)
+                            )
+    except:
+        pass
+    return sorted(resource_type_and_book_tuples, key=lambda value: value[0])
 
 
 def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, str]]:
@@ -511,7 +585,7 @@ def book_codes_for_lang(
                 repo_components = last_segment.split("_")
                 if dcs_mirror_git_username in url:
                     repo_components = update_repo_components(repo_components)
-                logger.debug("url: %s, repo_components: %s", url, repo_components)
+                # logger.debug("url: %s, repo_components: %s", url, repo_components)
                 if len(repo_components) > 2:
                     book_code = repo_components[1]
                     if book_code in book_names:
@@ -564,6 +638,7 @@ def book_codes_for_lang(
         unique_values,
         key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
     )
+    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
 
@@ -583,7 +658,7 @@ def resource_lookup_dto(
     >>> ();data = resource_lookup.resource_lookup_dto("pt-br", "ulb", "mat");() # doctest: +ELLIPSIS
     (...)
     >>> data
-    ResourceLookupDto(lang_code='pt-br', lang_name='Brazilian Portuguese', resource_type='ulb', resource_type_name='Unlocked Literal Bible', book_code='mat', url='https://content.bibletranslationtools.org/WA-Catalog/pt-br_blv')
+    ResourceLookupDto(lang_code='pt-br', lang_name='Brazilian Portuguese', resource_type='ulb', resource_type_name='Unlocked Literal Bible', book_code='mat', lang_direction='ltr', url='https://content.bibletranslationtools.org/WA-Catalog/pt-br_ulb')
     """
     data = fetch_source_data()
     resource_lookup_dto = None
@@ -601,17 +676,18 @@ def resource_lookup_dto(
                 last_segment = get_last_segment(url, lang_code)
                 repo_components = last_segment.split("_")
                 repo_components = update_repo_components(repo_components)
-                logger.debug(
-                    "url: %s, repo_components: %s, resource_type: %s",
-                    url,
-                    repo_components,
-                    resource_type_,
-                )
+                # logger.debug(
+                #     "url: %s, repo_components: %s, resource_type: %s",
+                #     url,
+                #     repo_components,
+                #     resource_type_,
+                # )
                 if len(repo_components) > 2:
                     book_code_ = repo_components[1]
                     if (
                         (book_code_ in url or zmq_git_username in url)
                         and resource_type == resource_type_
+                        and resource_type_ in resource_type_codes_and_names
                         and book_code_ == book_code
                     ):
                         resource_lookup_dto = ResourceLookupDto(
@@ -680,6 +756,7 @@ def acquire_resource_assets(
     git clone resource asset.
     Return the resource's cloned filepath.
     """
+    resource_filepath = ""
     if (
         resource_lookup_dto.url is not None
     ):  # We know that resource_url is not None because of how we got here, but mypy isn't convinced. Let's convince mypy.
@@ -708,9 +785,7 @@ def clone_git_repo(
     else:
         command = "git clone --depth=1 '{}' '{}'".format(url, resource_filepath)
     if isdir(resource_filepath):
-        logger.info(
-            "No need to clone repo as it already exists: %s.", resource_filepath
-        )
+        logger.info("No need to clone repo as it already exists: %s", resource_filepath)
     else:
         logger.debug("Attempting to clone into %s ...", resource_filepath)
         try:

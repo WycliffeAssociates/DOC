@@ -6,21 +6,18 @@ import re
 import subprocess
 import time
 from glob import glob
-from os import scandir, getenv, walk
+from os import getenv, scandir, walk
 from os.path import exists, join, split
 from pathlib import Path
-
 from typing import Mapping, Optional, Sequence
 
 import mistune
-
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
-
-from document.domain.exceptions import MissingChapterMarkerError
 from document.domain.bible_books import BOOK_NAMES
+from document.domain.exceptions import MissingChapterMarkerError
 from document.domain.model import (
     BCBook,
     BCChapter,
@@ -39,14 +36,12 @@ from document.domain.model import (
 )
 from document.markdown_transforms import markdown_transformer
 from document.utils.file_utils import read_file
-
 from document.utils.tw_utils import (
     localized_translation_word,
     translation_word_filepaths,
-    tw_resource_dir,
     translation_words_dict,
+    tw_resource_dir,
 )
-
 
 logger = settings.logger(__name__)
 
@@ -68,6 +63,10 @@ def find_usfm_files(
             usfm_files = glob(
                 usfm_ending_in_txt_in_subdirectory_glob_fmt_str.format(resource_dir)
             )
+    # Exclude "title.txt" from the results
+    usfm_files = [
+        filepath for filepath in usfm_files if not filepath.endswith("title.txt")
+    ]
     return usfm_files
 
 
@@ -241,7 +240,7 @@ def ensure_chapter_label(chapter_usfm_text: str) -> str:
         if match := re.search(r"\\c\s+(\d+)", chapter_usfm_text):
             chapter_num = match.group(1)
             updated_chapter_usfm_text = re.sub(
-                r"(\\c\s+\d+)", rf"\1\\cl Chapter {chapter_num}", chapter_usfm_text
+                r"(\\c\s+\d+)", rf"\1\\cl Chapter {chapter_num}\n", chapter_usfm_text
             )
             return updated_chapter_usfm_text
     return chapter_usfm_text
@@ -275,7 +274,6 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
         "mt": r"\\mt\s+(.*?)(?=\s+\\|\n|$)",
         "toc1": r"\\toc1\s+(.*?)(?=\s+\\|\n|$)",
         "toc2": r"\\toc2\s+(.*?)(?=\s+\\|\n|$)",
-        "toc3": r"\\toc3\s+(.*?)(?=\s+\\|\n|$)",
     }
     extracted_data = {}
     for key, pattern in patterns.items():
@@ -303,23 +301,16 @@ def maybe_national_book_name(frontmatter: str) -> str:
 
     Steps 5 and 6 happen outside this function.
     """
-    logger.debug("frontmatter: %s", frontmatter)
+    # logger.debug("frontmatter: %s", frontmatter)
     frontmatter_data = extract_usfm_frontmatter(frontmatter)
-    h = frontmatter_data["h"] if "h" in frontmatter_data else ""
-    mt = frontmatter_data["mt"] if "mt" in frontmatter_data else ""
-    toc1 = frontmatter_data["toc1"] if "toc1" in frontmatter_data else ""
-    toc2 = frontmatter_data["toc2"] if "toc2" in frontmatter_data else ""
-    toc3 = frontmatter_data["toc3"] if "toc3" in frontmatter_data else ""
-    national_book_name = ""
-    if h:
-        national_book_name = h.strip()
-    elif mt:
-        national_book_name = mt.strip()
-    elif toc1:
-        national_book_name = toc1.strip()
-    elif toc2:
-        national_book_name = toc2.strip()
-    return national_book_name
+    national_book_name = (
+        frontmatter_data.get("h")
+        or frontmatter_data.get("mt")
+        or frontmatter_data.get("toc1")
+        or frontmatter_data.get("toc2")
+        or ""
+    )
+    return national_book_name.strip()
 
 
 def usfm_book_content(
@@ -334,25 +325,25 @@ def usfm_book_content(
     resource assets.
     """
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
+    content = read_file(content_file) if content_file else ""
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
-    if content_file:
-        frontmatter, chapters_ = split_usfm_by_chapters(read_file(content_file))
-        national_book_name = maybe_national_book_name(frontmatter)
-        updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
-        for chapter in updated_chapters:
-            chapter_num = get_chapter_num(chapter)
-            chapter_html_content = usfm_chapter_html(
-                chapter, resource_lookup_dto, chapter_num
-            )
-            cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
-                chapter_html_content
-            )
-            usfm_chapters[chapter_num] = USFMChapter(
-                content=cleaned_chapter_html_content
-                if cleaned_chapter_html_content
-                else "",
-                verses=None,
-            )
+    frontmatter, chapters_ = split_usfm_by_chapters(content)
+    national_book_name = maybe_national_book_name(frontmatter)
+    updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
+    for chapter in updated_chapters:
+        chapter_num = get_chapter_num(chapter)
+        chapter_html_content = usfm_chapter_html(
+            chapter, resource_lookup_dto, chapter_num
+        )
+        cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
+            chapter_html_content
+        )
+        usfm_chapters[chapter_num] = USFMChapter(
+            content=cleaned_chapter_html_content
+            if cleaned_chapter_html_content
+            else "",
+            verses=None,
+        )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
@@ -885,6 +876,7 @@ def attempt_to_make_usfm_parseable(
                 if file.is_file()
                 and file.name != "title.txt"
                 and not file.name.startswith(".")
+                and (file.name.endswith(".usfm") or file.name.endswith(".txt"))
             ]
         )
         if chapter_verse_files:

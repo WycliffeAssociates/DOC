@@ -4,7 +4,6 @@ from document.domain.bible_books import BOOK_NAMES
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     bc_book_intro,
-    book_title,
     chapter_commentary,
     chapter_heading,
     chapter_intro,
@@ -167,13 +166,14 @@ def assemble_usfm_by_book(
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     hr: str = "<hr/>",
     close_direction_html: str = "</div>",
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> str:
     content = []
     content.append(usfm_language_direction_html(usfm_book))
     content.append(tn_book_intro(tn_book))
     content.append(bc_book_intro(bc_book))
     if usfm_book:
-        content.append(book_title(usfm_book.book_code))
+        content.append(fmt_str.format(usfm_book.national_book_name))
         for (
             chapter_num,
             chapter,

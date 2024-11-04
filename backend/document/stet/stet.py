@@ -7,7 +7,7 @@ import mistune
 from celery import current_task
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import USFMBook, USFMChapter
+from document.domain.model import ChapterNum, USFMBook, USFMChapter
 from document.domain.parsing import usfm_book_content
 from document.domain.resource_lookup import (
     provision_asset_files,
@@ -52,7 +52,6 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
     # <div class="sectionhead-5"></div>
     # </span>
-
     # <span class="verse">
     # <sup class="versemarker">20</sup>
     # I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
@@ -60,7 +59,6 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # <div class="sectionhead-5"></div>
     # </span>
     # '''
-
     verse_dict = {}
     # Find all verse spans
     verse_spans = re.findall(
@@ -79,7 +77,6 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
             )
             # Remove the remaining HTML tags and strip extra spaces
             verse_text = re.sub(r"<.*?>", "", verse_text).strip()
-            logger.debug("verse_number: %s, verse_text: %s", verse_number_, verse_text)
             # Add to the dictionary with verse number as the key and verse text as the value
             verse_dict[verse_number_] = verse_text
     return verse_dict
@@ -152,13 +149,13 @@ def get_word_entry_dtos(
                     else:
                         source_reference = f"{book_name} {chapter_num}:{verses}"
                     target_reference = f"{book_name} {chapter_num}:{verses}"
-                    logger.debug(
-                        "book_name: %s, chapter_num: %s, verse_num(s): %s, comment: %s",
-                        book_name,
-                        chapter_num,
-                        verses,
-                        comment,
-                    )
+                    # logger.debug(
+                    #     "book_name: %s, chapter_num: %s, verse_num(s): %s, comment: %s",
+                    #     book_name,
+                    #     chapter_num,
+                    #     verses,
+                    #     comment,
+                    # )
                     verse_refs: list[str] = verses.split(",")
                     valid_verse_refs: list[str] = []
                     for verse_ref in verse_refs:
@@ -290,20 +287,18 @@ def generate_docx_document(
     target_usfm_books = []
     lang0_usfm_resource_type = ""
     lang1_usfm_resource_type = ""
-    if lang0_ulb_usfm_resource_types:
+    if lang0_ulb_usfm_resource_types:  # Prefer ulb if available
         lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
     elif lang0_usfm_resource_types:
         lang0_usfm_resource_type = lang0_usfm_resource_types[0]
-    if lang0_usfm_resource_type:
+    if lang1_ulb_usfm_resource_types:  # Prefer ulb if available
+        lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
+    elif lang1_usfm_resource_types:
+        lang1_usfm_resource_type = lang1_usfm_resource_types[0]
+    if lang0_usfm_resource_type and lang1_usfm_resource_type:
+        source_usfm_book = None
+        target_usfm_book = None
         for book_code in book_codes:
-            # Update the state of the worker process. This is used by the
-            # UI to report status.
-            logger.debug(
-                "About to create dto for lang0_code: %s, book_code: %s, lang0_usfm_resource_type: %s",
-                lang0_code,
-                book_code,
-                lang0_usfm_resource_type,
-            )
             current_task.update_state(state="Locating assets")
             lang0_resource_lookup_dto_ = resource_lookup_dto(
                 lang0_code, lang0_usfm_resource_type, book_code
@@ -321,12 +316,6 @@ def generate_docx_document(
                         chapter_num_
                     ].verses = split_chapter_into_verses(chapter_)
                 source_usfm_books.append(source_usfm_book)
-    if lang1_ulb_usfm_resource_types:
-        lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
-    elif lang1_usfm_resource_types:
-        lang1_usfm_resource_type = lang1_usfm_resource_types[0]
-    if lang1_usfm_resource_type:
-        for book_code in book_codes:
             lang1_resource_lookup_dto_ = resource_lookup_dto(
                 lang1_code, lang1_usfm_resource_type, book_code
             )
@@ -368,22 +357,29 @@ def generate_docx_document(
             ]
             source_verse_text = ""
             target_verse_text = ""
+            source_selected_usfm_book = None
+            target_selected_usfm_book = None
             if source_selected_usfm_books:
                 source_selected_usfm_book = source_selected_usfm_books[0]
-                for verse_ref in verse_ref_dto.verse_refs:
+            if target_selected_usfm_books:
+                target_selected_usfm_book = target_selected_usfm_books[0]
+            for verse_ref in verse_ref_dto.verse_refs:
+                if source_selected_usfm_book:
                     source_verse_text = lookup_verse_text(
                         source_selected_usfm_book,
                         verse_ref_dto.chapter_num,
                         verse_ref.strip(),
                     )
-            if target_selected_usfm_books:
-                target_selected_usfm_book = target_selected_usfm_books[0]
-                for verse_ref in verse_ref_dto.verse_refs:
+                else:
+                    source_verse_text = ""
+                if target_selected_usfm_book:
                     target_verse_text = lookup_verse_text(
                         target_selected_usfm_book,
                         verse_ref_dto.chapter_num,
                         verse_ref.strip(),
                     )
+                else:
+                    target_verse_text = ""
             non_book_name_portion_of_source_reference = extract_chapter_and_beyond(
                 verse_ref_dto.source_reference
             )
@@ -392,12 +388,14 @@ def generate_docx_document(
             )
             nationalized_source_reference = (
                 f"{source_selected_usfm_book.national_book_name} {non_book_name_portion_of_source_reference}"
-                if non_book_name_portion_of_source_reference
+                if source_selected_usfm_book
+                and non_book_name_portion_of_source_reference
                 else verse_ref_dto.source_reference
             )
             nationalized_target_reference = (
                 f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
-                if non_book_name_portion_of_target_reference
+                if target_selected_usfm_book
+                and non_book_name_portion_of_target_reference
                 else verse_ref_dto.target_reference
             )
             word_entry.verses.append(

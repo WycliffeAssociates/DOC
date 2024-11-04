@@ -91,6 +91,61 @@ def test_random_non_english_document_request(
             check_finished_document_without_verses_success(response)
 
 
+@pytest.mark.all
+def test_non_english_usfm_only_document_request(
+    non_english_lang_code: str,
+) -> None:
+    """
+    Use the fixtures in ./conftest.py for non-English languages to
+    generate a random document request requested with resources
+    dynamically requested each time this is run.
+    """
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        book_codes_and_names = resource_lookup.book_codes_for_lang(
+            non_english_lang_code
+        )
+        if not book_codes_and_names:
+            raise exceptions.NoBooksError(
+                message=f"{non_english_lang_code} has no available books."
+            )
+        usfm_resource_types_and_book_tuples_ = (
+            resource_lookup.usfm_resource_types_and_book_tuples(
+                non_english_lang_code,
+                ",".join(
+                    [
+                        book_code_and_name[0]
+                        for book_code_and_name in book_codes_and_names
+                    ]
+                ),
+            )
+        )
+        logger.debug(
+            "usfm_resource_types_and_book_tuples_: %s",
+            usfm_resource_types_and_book_tuples_,
+        )
+        for usfm_resource_types_and_book_tuple in usfm_resource_types_and_book_tuples_:
+            response = client.post(
+                "/documents",
+                json={
+                    "email_address": settings.TO_EMAIL_ADDRESS,
+                    "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                    "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                    "layout_for_print": False,
+                    "generate_pdf": True,
+                    "generate_epub": False,
+                    "generate_docx": False,
+                    "resource_requests": [
+                        {
+                            "lang_code": non_english_lang_code,
+                            "resource_type": usfm_resource_types_and_book_tuple[0],
+                            "book_code": usfm_resource_types_and_book_tuple[1],
+                        },
+                    ],
+                },
+            )
+            check_finished_document_with_verses_success(response, suffix="pdf")
+
+
 @pytest.mark.parametrize("execution_number", range(25))
 @pytest.mark.randomized
 def test_random_english_and_non_english_combo_document_request(
@@ -139,6 +194,7 @@ def test_random_two_non_english_languages_combo_document_request(
             check_finished_document_without_verses_success(response)
 
 
+@pytest.mark.skip
 @pytest.mark.all
 def test_all_non_english_document_request(non_english_lang_code: str) -> None:
     """

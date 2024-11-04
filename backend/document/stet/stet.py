@@ -77,7 +77,6 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
             )
             # Remove the remaining HTML tags and strip extra spaces
             verse_text = re.sub(r"<.*?>", "", verse_text).strip()
-            logger.debug("verse_number: %s, verse_text: %s", verse_number_, verse_text)
             # Add to the dictionary with verse number as the key and verse text as the value
             verse_dict[verse_number_] = verse_text
     return verse_dict
@@ -150,13 +149,13 @@ def get_word_entry_dtos(
                     else:
                         source_reference = f"{book_name} {chapter_num}:{verses}"
                     target_reference = f"{book_name} {chapter_num}:{verses}"
-                    logger.debug(
-                        "book_name: %s, chapter_num: %s, verse_num(s): %s, comment: %s",
-                        book_name,
-                        chapter_num,
-                        verses,
-                        comment,
-                    )
+                    # logger.debug(
+                    #     "book_name: %s, chapter_num: %s, verse_num(s): %s, comment: %s",
+                    #     book_name,
+                    #     chapter_num,
+                    #     verses,
+                    #     comment,
+                    # )
                     verse_refs: list[str] = verses.split(",")
                     valid_verse_refs: list[str] = []
                     for verse_ref in verse_refs:

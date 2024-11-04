@@ -363,6 +363,62 @@ def resource_types(
     return sorted(unique_values, key=lambda value: value[1])
 
 
+# Used by some tests
+def usfm_resource_types_and_book_tuples(
+    lang_code: str,
+    book_codes_str: str,
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> Sequence[tuple[str, str]]:
+    """
+    >>> from document.domain import resource_lookup
+    >>> lang_code = "ruc"
+    >>> ();books = resource_lookup.book_codes_for_lang(lang_code);() # doctest: +ELLIPSIS
+    (...)
+    >>> ();tuples = resource_lookup.usfm_resource_types_and_book_tuples(lang_code, ",".join([book[0] for book in books]));() # doctest: +ELLIPSIS
+    (...)
+    >>> tuples
+    [('reg', 'tit'), ('reg', '2ti'), ('reg', 'php'), ('reg', 'rom'), ('reg', 'gal'), ('reg', '1ti'), ('reg', '1th'), ('reg', 'act'), ('reg', '1co'), ('reg', '2th'), ('reg', '2co'), ('reg', 'col'), ('reg', 'eph'), ('reg', 'jhn'), ('reg', 'luk'), ('reg', 'mat'), ('reg', 'mrk')]
+    """
+    book_codes = book_codes_str.split(",")
+    data = fetch_source_data()
+    resource_type_and_book_tuples = set()
+    try:
+        repos_info = data["git_repo"]
+        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+        for repo_info in augmented_repos_info:
+            content = repo_info["content"]
+            language_info = content["language"]
+            if language_info["ietf_code"] == lang_code:
+                resource_type = content["resource_type"]
+                if resource_type in usfm_resource_types:
+                    url = repo_info["repo_url"]
+                    for book_code in book_codes:
+                        dto = ResourceLookupDto(
+                            lang_code=lang_code,
+                            lang_name="",
+                            resource_type=resource_type,
+                            resource_type_name="",
+                            url=url,
+                            lang_direction=LangDirEnum.LTR,
+                            book_code=book_code,
+                        )
+                        logger.debug("dto: %s", dto)
+                        resource_dir = provision_asset_files(dto)
+                        content_file = parsing.usfm_asset_file(
+                            dto,
+                            resource_dir,
+                        )
+                        logger.debug("content_file: %s", content_file)
+                        if content_file:
+                            resource_type_and_book_tuples.add(
+                                (resource_type, book_code)
+                            )
+    except:
+        pass
+    return sorted(resource_type_and_book_tuples, key=lambda value: value[0])
+
+
 def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, str]]:
     """
     Given two language codes, return the intersection of resource

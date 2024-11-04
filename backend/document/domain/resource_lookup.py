@@ -323,13 +323,16 @@ def resource_types(
                         book_assets = [
                             file.name
                             for file in scandir(resource_filepath)
-                            if file.is_dir() and file.name.lower() in book_codes
+                            if file.is_dir()
+                            and not file.name.startswith(".")
+                            and file.name.lower() in book_codes
                         ]
                     elif resource_type == "bc":
                         book_assets = [
                             file.name
                             for file in scandir(resource_filepath)
                             if file.is_dir()
+                            and not file.name.startswith(".")
                             and re.search(bc_book_asset_pattern, file.name)
                             and file.name.split("-")[1].lower() in book_codes
                         ]

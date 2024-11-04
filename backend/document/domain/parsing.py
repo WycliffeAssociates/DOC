@@ -63,6 +63,10 @@ def find_usfm_files(
             usfm_files = glob(
                 usfm_ending_in_txt_in_subdirectory_glob_fmt_str.format(resource_dir)
             )
+    # Exclude "title.txt" from the results
+    usfm_files = [
+        filepath for filepath in usfm_files if not filepath.endswith("title.txt")
+    ]
     return usfm_files
 
 
@@ -872,6 +876,7 @@ def attempt_to_make_usfm_parseable(
                 if file.is_file()
                 and file.name != "title.txt"
                 and not file.name.startswith(".")
+                and (file.name.endswith(".usfm") or file.name.endswith(".txt"))
             ]
         )
         if chapter_verse_files:

@@ -18,7 +18,7 @@ import requests
 from document.config import settings
 from document.domain import parsing
 from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import ResourceLookupDto
+from document.domain.model import LangDirEnum, ResourceLookupDto
 from document.utils.file_utils import file_needs_update, read_file
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
@@ -42,7 +42,8 @@ def fetch_source_data(
     >>> from document.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
-    >>> result[0]
+    >>> result["git_repo"][0]
+    {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
     """
     json_file_path = join(working_dir, json_file_name)
     data = None
@@ -70,8 +71,10 @@ def download_data(
     Downloads data from a GraphQL API and saves it to a JSON file.
 
     >>> from document.domain import resource_lookup
-    >>> result = resource_lookup.download_data("assets_download/resources.json")
-    >>> result[0]
+    >>> ();result = resource_lookup.download_data("assets_download/resources.json");() # doctest: +ELLIPSIS
+    (...)
+    >>> result["git_repo"][0]
+    {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
     """
     graphql_query = """
 query MyQuery {
@@ -136,7 +139,8 @@ def fetch_gateway_languages(
     >>> from document.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_gateway_languages("assets_download/gateway_languages.json");() # doctest: +ELLIPSIS
     (...)
-    >>> result[0]
+    >>> result["language"][0]
+    {'gateway_languages': [{'gateway_language': {'ietf_code': 'es-419', 'national_name': 'Español Latin America', 'english_name': 'Latin American Spanish'}}]}
     """
     graphql_query = """
 query MyQuery {
@@ -157,9 +161,17 @@ query MyQuery {
         if response.status_code == 200:
             data = response.json()
             logger.debug("Writing json data to: %s", jsonfile_path)
+            # Filter out empty gateway_languages entries
             with open(jsonfile_path, "w") as fp:
                 fp.write(str(json.dumps(data["data"])))
-            return data["data"]
+            filtered_data = {
+                "language": [
+                    entry
+                    for entry in data["data"]["language"]
+                    if entry["gateway_languages"]
+                ]
+            }
+            return filtered_data
         else:
             logger.debug(
                 "Failed to get data from data API, graphql API might be down..."
@@ -180,9 +192,10 @@ def get_gateway_languages(
     then reifying it into its JSON object form.
 
     >>> from document.domain import resource_lookup
-    >>> ();result = resource_lookup.gateway_languages();() # doctest: +ELLIPSIS
+    >>> ();result = resource_lookup.get_gateway_languages();() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
+    'abs'
     """
     gateway_languages_collection = []
     if use_hardcoded_gateway_language_values:
@@ -276,10 +289,12 @@ def resource_types(
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
-    >>> ();result = resource_lookup.resource_types("pt-br");() # doctest: +ELLIPSIS
+    >>> lang_code = "pt-br"
+    >>> books = resource_lookup.book_codes_for_lang(lang_code)
+    >>> ();result = resource_lookup.resource_types(lang_code, "".join([book[0] for book in books]));() # doctest: +ELLIPSIS
     (...)
     >>> result
-    [('blv', 'Portuguese Bíblia Livre'), ('tw', 'Translation Words'), ('tn', 'Translation Notes'), ('ulb', 'Unlocked Literal Bible'), ('tq', 'Translation Questions')]
+    [('blv', 'Portuguese Bíblia Livre'), ('tw', 'Translation Words'), ('ulb', 'Unlocked Literal Bible')]
     """
     book_codes = book_codes_str.split(",")
     if book_codes and book_codes[0] == "all":
@@ -583,7 +598,7 @@ def resource_lookup_dto(
     >>> ();data = resource_lookup.resource_lookup_dto("pt-br", "ulb", "mat");() # doctest: +ELLIPSIS
     (...)
     >>> data
-    ResourceLookupDto(lang_code='pt-br', lang_name='Brazilian Portuguese', resource_type='ulb', resource_type_name='Unlocked Literal Bible', book_code='mat', url='https://content.bibletranslationtools.org/WA-Catalog/pt-br_blv')
+    ResourceLookupDto(lang_code='pt-br', lang_name='Brazilian Portuguese', resource_type='ulb', resource_type_name='Unlocked Literal Bible', book_code='mat', lang_direction='ltr', url='https://content.bibletranslationtools.org/WA-Catalog/pt-br_ulb')
     """
     data = fetch_source_data()
     resource_lookup_dto = None

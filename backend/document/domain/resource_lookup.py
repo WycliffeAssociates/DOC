@@ -585,7 +585,7 @@ def book_codes_for_lang(
                 repo_components = last_segment.split("_")
                 if dcs_mirror_git_username in url:
                     repo_components = update_repo_components(repo_components)
-                logger.debug("url: %s, repo_components: %s", url, repo_components)
+                # logger.debug("url: %s, repo_components: %s", url, repo_components)
                 if len(repo_components) > 2:
                     book_code = repo_components[1]
                     if book_code in book_names:
@@ -638,6 +638,7 @@ def book_codes_for_lang(
         unique_values,
         key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
     )
+    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
 
@@ -675,12 +676,12 @@ def resource_lookup_dto(
                 last_segment = get_last_segment(url, lang_code)
                 repo_components = last_segment.split("_")
                 repo_components = update_repo_components(repo_components)
-                logger.debug(
-                    "url: %s, repo_components: %s, resource_type: %s",
-                    url,
-                    repo_components,
-                    resource_type_,
-                )
+                # logger.debug(
+                #     "url: %s, repo_components: %s, resource_type: %s",
+                #     url,
+                #     repo_components,
+                #     resource_type_,
+                # )
                 if len(repo_components) > 2:
                     book_code_ = repo_components[1]
                     if (

@@ -321,25 +321,25 @@ def usfm_book_content(
     resource assets.
     """
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
+    content = read_file(content_file) if content_file else ""
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
-    if content_file:
-        frontmatter, chapters_ = split_usfm_by_chapters(read_file(content_file))
-        national_book_name = maybe_national_book_name(frontmatter)
-        updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
-        for chapter in updated_chapters:
-            chapter_num = get_chapter_num(chapter)
-            chapter_html_content = usfm_chapter_html(
-                chapter, resource_lookup_dto, chapter_num
-            )
-            cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
-                chapter_html_content
-            )
-            usfm_chapters[chapter_num] = USFMChapter(
-                content=cleaned_chapter_html_content
-                if cleaned_chapter_html_content
-                else "",
-                verses=None,
-            )
+    frontmatter, chapters_ = split_usfm_by_chapters(resource_lookup_dto, content)
+    national_book_name = maybe_national_book_name(frontmatter)
+    updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
+    for chapter in updated_chapters:
+        chapter_num = get_chapter_num(chapter)
+        chapter_html_content = usfm_chapter_html(
+            chapter, resource_lookup_dto, chapter_num
+        )
+        cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
+            chapter_html_content
+        )
+        usfm_chapters[chapter_num] = USFMChapter(
+            content=cleaned_chapter_html_content
+            if cleaned_chapter_html_content
+            else "",
+            verses=None,
+        )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,

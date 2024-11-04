@@ -785,9 +785,7 @@ def clone_git_repo(
     else:
         command = "git clone --depth=1 '{}' '{}'".format(url, resource_filepath)
     if isdir(resource_filepath):
-        logger.info(
-            "No need to clone repo as it already exists: %s.", resource_filepath
-        )
+        logger.info("No need to clone repo as it already exists: %s", resource_filepath)
     else:
         logger.debug("Attempting to clone into %s ...", resource_filepath)
         try:

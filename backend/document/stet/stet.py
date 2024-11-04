@@ -52,7 +52,6 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
     # <div class="sectionhead-5"></div>
     # </span>
-
     # <span class="verse">
     # <sup class="versemarker">20</sup>
     # I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
@@ -60,7 +59,6 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # <div class="sectionhead-5"></div>
     # </span>
     # '''
-
     verse_dict = {}
     # Find all verse spans
     verse_spans = re.findall(

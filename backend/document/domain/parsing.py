@@ -34,6 +34,7 @@ from document.domain.model import (
     USFMChapter,
     VerseRef,
 )
+from document.domain.usfm_error_detection_and_fixes import correct_usfm
 from document.markdown_transforms import markdown_transformer
 from document.utils.file_utils import read_file
 from document.utils.tw_utils import (
@@ -215,21 +216,47 @@ def remove_links(html: str) -> str:
     return html
 
 
-def split_usfm_by_chapters(usfm_text: str) -> tuple[str, list[str]]:
+def split_usfm_by_chapters(
+    resource_lookup_dto: ResourceLookupDto,
+    usfm_text: str,
+    chapter_regex: str = r"\\c\s+\d+",
+    resources_with_usfm_defects: Sequence[
+        tuple[str, str, str]
+    ] = settings.RESOURCES_WITH_USFM_DEFECTS,
+    check_all_books_for_language: bool = settings.CHECK_ALL_BOOKS_FOR_LANGUAGE,
+) -> tuple[str, list[str]]:
     """
     Split the USFM text into chapters based on the \c marker
     """
-    chapter_regex = r"\\c\s+\d+"
     chapters = re.split(chapter_regex, usfm_text)
     chapter_markers = re.findall(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
-    logger.debug("frontmatter: %s", frontmatter)
-    chapters = [
-        marker + chapter.lstrip()
-        for marker, chapter in zip(chapter_markers, chapters)
-        if chapter.lstrip()
-    ]
-    return frontmatter, chapters
+    # logger.debug("frontmatter: %s", frontmatter)
+    updated_chapters = []
+    for marker, chapter in zip(chapter_markers, chapters):
+        if chapter.lstrip():
+            # Detect certain classes of USFM defects and attempt a fix for them.
+            if check_all_books_for_language:
+                if resource_lookup_dto.lang_code in [
+                    resource[0] for resource in resources_with_usfm_defects
+                ]:
+                    updated_chapter = correct_usfm(
+                        chapter.lstrip(),
+                        resource_lookup_dto,
+                    )
+                    updated_chapters.append(marker + updated_chapter)
+            else:
+                if (
+                    resource_lookup_dto.lang_code,
+                    resource_lookup_dto.resource_type,
+                    resource_lookup_dto.book_code,
+                ) in [resource_tuple for resource_tuple in resources_with_usfm_defects]:
+                    updated_chapter = correct_usfm(
+                        chapter.lstrip(),
+                        resource_lookup_dto,
+                    )
+                    updated_chapters.append(marker + updated_chapter)
+    return frontmatter, updated_chapters
 
 
 def ensure_chapter_label(chapter_usfm_text: str) -> str:
@@ -327,7 +354,7 @@ def usfm_book_content(
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
     content = read_file(content_file) if content_file else ""
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
-    frontmatter, chapters_ = split_usfm_by_chapters(content)
+    frontmatter, chapters_ = split_usfm_by_chapters(resource_lookup_dto, content)
     national_book_name = maybe_national_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
     for chapter in updated_chapters:
@@ -335,6 +362,7 @@ def usfm_book_content(
         chapter_html_content = usfm_chapter_html(
             chapter, resource_lookup_dto, chapter_num
         )
+        # TODO This function could be called in usfm_error_detection_and_fixes module instead
         cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
             chapter_html_content
         )

@@ -199,6 +199,7 @@ class Settings(BaseSettings):
         "zlm",
     ]
 
+    CHECK_USFM: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
     # Resources known to have USFM defects found through automatic

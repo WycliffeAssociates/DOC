@@ -223,6 +223,7 @@ def split_usfm_by_chapters(
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = settings.RESOURCES_WITH_USFM_DEFECTS,
+    check_usfm: bool = settings.CHECK_USFM,
     check_all_books_for_language: bool = settings.CHECK_ALL_BOOKS_FOR_LANGUAGE,
 ) -> tuple[str, list[str]]:
     """
@@ -235,27 +236,33 @@ def split_usfm_by_chapters(
     updated_chapters = []
     for marker, chapter in zip(chapter_markers, chapters):
         if chapter.lstrip():
-            # Detect certain classes of USFM defects and attempt a fix for them.
-            if check_all_books_for_language:
-                if resource_lookup_dto.lang_code in [
-                    resource[0] for resource in resources_with_usfm_defects
-                ]:
-                    updated_chapter = correct_usfm(
-                        chapter.lstrip(),
-                        resource_lookup_dto,
-                    )
-                    updated_chapters.append(marker + updated_chapter)
+            if (
+                check_usfm
+            ):  # Detect certain classes of USFM defects and attempt a fix for them.
+                if check_all_books_for_language:
+                    if resource_lookup_dto.lang_code in [
+                        resource[0] for resource in resources_with_usfm_defects
+                    ]:
+                        updated_chapter = correct_usfm(
+                            chapter.lstrip(),
+                            resource_lookup_dto,
+                        )
+                        updated_chapters.append(marker + updated_chapter)
+                else:
+                    if (
+                        resource_lookup_dto.lang_code,
+                        resource_lookup_dto.resource_type,
+                        resource_lookup_dto.book_code,
+                    ) in [
+                        resource_tuple for resource_tuple in resources_with_usfm_defects
+                    ]:
+                        updated_chapter = correct_usfm(
+                            chapter.lstrip(),
+                            resource_lookup_dto,
+                        )
+                        updated_chapters.append(marker + updated_chapter)
             else:
-                if (
-                    resource_lookup_dto.lang_code,
-                    resource_lookup_dto.resource_type,
-                    resource_lookup_dto.book_code,
-                ) in [resource_tuple for resource_tuple in resources_with_usfm_defects]:
-                    updated_chapter = correct_usfm(
-                        chapter.lstrip(),
-                        resource_lookup_dto,
-                    )
-                    updated_chapters.append(marker + updated_chapter)
+                updated_chapters.append(marker + chapter.lstrip())
     return frontmatter, updated_chapters
 
 

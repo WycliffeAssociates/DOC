@@ -15,6 +15,8 @@ pattern_matchers = {
     "fix_missing_space_after_verse_number": r"(\\v\s+\d+)(\S)",
     "fix_standalone_verse_numbers": r"(^|\s)(?<!\\c\s)(?<!\\v\s)(?<!\\c)(?<!\\q1\s)(?<!\\q2\s)(?<!\\li1\s)(?<!\\li2\s)\b(\d+)\b(?=\s|$|[^\d\w])",
     "replace_n_with_v": r"\\n",
+    # The following are actually caused by fixes above and thus
+    # constitute a second pass of this "parser"
     "replace_vv_with_v": r"\\v\\v",
     "replace_sv_with_s": r"\\s\\v",
     "fix_space_after_section_marker": r"\\s\s+(\d+)",
@@ -22,8 +24,9 @@ pattern_matchers = {
     "replace_cc_with_c": r"(\\c \d+)\s+(\\c \d+)",
 }
 
-# Compile regex patterns
-compiled_patterns = [re.compile(pattern) for pattern in pattern_matchers]
+compiled_patterns = {
+    key: re.compile(pattern) for key, pattern in pattern_matchers.items()
+}
 
 
 def remove_null_bytes_and_control_characters(content: str) -> str:
@@ -103,33 +106,125 @@ def correct_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> s
     Detect and correct many USFM structural issues in USFM source.
     """
     logger.debug("usfm_content: %s", usfm_content)
-    # Check if any pattern matches
-    if any(pattern.search(usfm_content) for pattern in compiled_patterns):
+    corrected_usfm_content: str = usfm_content
+
+    if compiled_patterns["remove_null_bytes_and_control_characters"].search(
+        corrected_usfm_content
+    ):
         logger.debug(
-            "USFM defect detected for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "remove_null_bytes_and_control_characters",
             resource_lookup_dto.lang_code,
             resource_lookup_dto.resource_type,
             resource_lookup_dto.book_code,
         )
-        correction_functions: list[Callable[[str], str]] = [
-            remove_null_bytes_and_control_characters,
-            fix_dot_after_verse_number,
-            fix_verse_marker_without_v,
-            # fix_missing_verse_marker,
-            # fix_missing_space_after_verse_number,
-            # fix_standalone_verse_numbers,
-            replace_n_with_v,
-            replace_vv_with_v,
-            replace_sv_with_s,
-            fix_space_after_section_marker,
-            replace_qv_with_q,
-            replace_cc_with_c,
-        ]
-        corrected_content: str = usfm_content
-        # Apply corrections
-        for func in correction_functions:
-            corrected_content = func(corrected_content)
-        logger.debug("corrected_usfm_content: %s", corrected_content)
-        return corrected_content
-    # Return content unchanged if no patterns match
-    return usfm_content
+        corrected_usfm_content = remove_null_bytes_and_control_characters(
+            corrected_usfm_content
+        )
+    if compiled_patterns["fix_dot_after_verse_number"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "fix_dot_after_verse_number",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = fix_dot_after_verse_number(corrected_usfm_content)
+    if compiled_patterns["fix_verse_marker_without_v"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "fix_verse_marker_without_v",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = fix_verse_marker_without_v(corrected_usfm_content)
+    # if compiled_patterns["fix_missing_verse_marker"].search(corrected_usfm_content):
+    #     logger.debug(
+    #         "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+    #         "fix_missing_verse_marker",
+    #         resource_lookup_dto.lang_code,
+    #         resource_lookup_dto.resource_type,
+    #         resource_lookup_dto.book_code,
+    #     )
+    #     corrected_usfm_content = fix_missing_verse_marker(corrected_usfm_content)
+    # if compiled_patterns["fix_missing_space_after_verse_number"].search(
+    #     corrected_usfm_content
+    # ):
+    #     logger.debug(
+    #         "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+    #         "fix_missing_space_after_verse_number",
+    #         resource_lookup_dto.lang_code,
+    #         resource_lookup_dto.resource_type,
+    #         resource_lookup_dto.book_code,
+    #     )
+    #     corrected_usfm_content = fix_missing_space_after_verse_number(
+    #         corrected_usfm_content
+    #     )
+    if compiled_patterns["fix_standalone_verse_numbers"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "fix_standalone_verse_numbers",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = fix_standalone_verse_numbers(corrected_usfm_content)
+    if compiled_patterns["replace_n_with_v"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "replace_n_with_v",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = replace_n_with_v(corrected_usfm_content)
+    if compiled_patterns["replace_vv_with_v"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "replace_vv_with_v",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = replace_vv_with_v(corrected_usfm_content)
+    if compiled_patterns["replace_sv_with_s"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "replace_sv_with_s",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = replace_sv_with_s(corrected_usfm_content)
+    if compiled_patterns["fix_space_after_section_marker"].search(
+        corrected_usfm_content
+    ):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "fix_space_after_section_marker",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = fix_space_after_section_marker(corrected_usfm_content)
+    if compiled_patterns["replace_qv_with_q"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "replace_qv_with_q",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = replace_qv_with_q(corrected_usfm_content)
+    if compiled_patterns["replace_cc_with_c"].search(corrected_usfm_content):
+        logger.debug(
+            "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
+            "replace_cc_with_c",
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        )
+        corrected_usfm_content = replace_cc_with_c(corrected_usfm_content)
+    return corrected_usfm_content
+

@@ -291,7 +291,7 @@ class Settings(BaseSettings):
         ("bzu", "reg", "php"),
         ("bzu", "reg", "2th"),  # failed to fix
         ("cbt", "reg", "jos"),
-        ("cbt", "reg", "jdg"),
+        ("cbt", "reg", "jdg"),  # failed to fix
         ("cbt", "reg", "rut"),
         ("cbt", "reg", "est"),
         ("cbt", "reg", "ezr"),
@@ -322,17 +322,33 @@ class Settings(BaseSettings):
         ("hay-x-nyaihangiro", "reg", "1jn"),
         ("hay-x-nyaihangiro", "reg", "phm"),
         ("iba-x-desatempunak", "reg", "phm"),
-        ("iba-x-ibanempran", "reg", "2co"),
-        ("iba-x-ibanempran", "reg", "eph"),
-        ("iba-x-ibanempran", "reg", "jud"),
-        ("iba-x-ibanempran", "reg", "col"),
-        ("ife-x-ana", "reg", "1th"),
-        ("jid", "reg", "mat"),
-        ("jni", "reg", "luk"),
+        (
+            "iba-x-ibanempran",
+            "reg",
+            "2co",
+        ),  # Sometimes missing verse marker, just a number
+        (
+            "iba-x-ibanempran",
+            "reg",
+            "eph",
+        ),  # Sometimes missing verse marker, just a number
+        (
+            "iba-x-ibanempran",
+            "reg",
+            "jud",
+        ),  # Sometimes missing verse marker, just a number
+        (
+            "iba-x-ibanempran",
+            "reg",
+            "col",
+        ),  # Sometimes missing verse marker, just a number
+        ("ife-x-ana", "reg", "1th"),  # duplicated chapter markers
+        ("jid", "reg", "mat"),  # I don't see the problem with this one, test mnaually
+        ("jni", "reg", "luk"),  #  I don't see the problem with this one, test mnaually
         ("jni", "ulb", "luk"),
         ("kdx", "reg", "1pe"),
-        ("khz-x-aroma", "reg", "2ti"),
-        ("khz-x-aroma", "ulb", "rom"),  # failed to fix
+        # ("khz-x-aroma", "reg", "2ti"), # 2ti doesn't exist as a choice
+        # ("khz-x-aroma", "ulb", "rom"), # rom doesn't exist as a choice
         ("kin-x-biofu", "reg", "rut"),
         ("kin-x-kinyabinza", "reg", "phm"),
         ("kiz", "reg", "heb"),
@@ -342,8 +358,8 @@ class Settings(BaseSettings):
         ("kiz", "reg", "2jn"),
         ("kki", "reg", "mat"),
         ("kki", "reg", "3jn"),
-        ("kki", "reg", "1pe"),
-        ("kki", "reg", "php"),
+        ("kki", "reg", "1pe"),  # repeated chapter markers
+        ("kki", "reg", "php"),  # repeated chapter markers
         ("kki", "reg", "2ti"),
         ("kki", "reg", "1th"),
         ("kki", "reg", "jud"),
@@ -357,7 +373,7 @@ class Settings(BaseSettings):
         ("kod", "reg", "2ti"),
         ("kod", "reg", "heb"),
         ("kod", "reg", "col"),
-        ("kod", "reg", "jud"),
+        # ("kod", "reg", "jud"), # jude doesn't exist as a choice
         ("kod", "reg", "phm"),
         ("kqi", "reg", "2th"),
         ("kqi", "reg", "2ti"),
@@ -504,28 +520,6 @@ class Settings(BaseSettings):
         ("ziw", "reg", "1th"),
         ("ziw", "reg", "1jn"),
         ("zlm-x-kisaran", "reg", "2ti"),
-        # First run:
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[kdx-reg-1pe] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[iba-x-ibanempran-reg-2co] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[iba-x-ibanempran-reg-eph] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[iba-x-ibanempran-reg-jud] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[gwg-reg-php] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[kqi-reg-2th] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[kqi-reg-mrk] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[ruc-reg-1ti] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[ruc-reg-jhn] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[scg-x-mayau-reg-luk] - AssertionError: No verses found in HTML
-        # Second run:
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[gwg-reg-php] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[iba-x-ibanempran-reg-2co] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[iba-x-ibanempran-reg-eph] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[iba-x-ibanempran-reg-jud] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[kdx-reg-1pe] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[kqi-reg-2th] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[kqi-reg-mrk] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[ruc-reg-jhn] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[ruc-reg-1ti] - AssertionError: No verses found in HTML
-        # test-runner-1  | FAILED tests/e2e/test_dynamic_usfm_fixes.py::test_known_defective_usfm_cases[scg-x-mayau-reg-luk] - AssertionError: No verses found in HTML
     ]
 
     TEMPLATE_PATHS_MAP: Mapping[str, str] = {

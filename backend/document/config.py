@@ -263,15 +263,15 @@ class Settings(BaseSettings):
         ("bwc", "reg", "lev"),
         ("bwc", "reg", "php"),
         ("bwc", "reg", "tit"),
-        ("bwc", "reg", "jhn"),
+        # ("bwc", "reg", "jhn"),  # DOC shows that this book is not available
         ("byi", "reg", "gen"),
         ("byi", "reg", "php"),
-        ("byi", "reg", "jon"),
-        ("byi", "reg", "nam"),
-        ("byi", "reg", "rut"),  # failed to fix
-        ("byi", "reg", "1pe"),
-        ("byi", "reg", "2co"),
-        ("byi", "reg", "jud"),
+        # ("byi", "reg", "jon"),  # DOC shows that this book is not available
+        # ("byi", "reg", "nam"),  # DOC shows that this book is not available
+        ("byi", "reg", "rut"),
+        # ("byi", "reg", "1pe"),  # DOC shows that this book is not available
+        # ("byi", "reg", "2co"),  # DOC shows that this book is not available
+        # ("byi", "reg", "jud"),  # DOC shows that this book is not available
         ("byn", "reg", "2sa"),
         ("byn", "reg", "nam"),
         ("byn", "reg", "2co"),
@@ -283,22 +283,19 @@ class Settings(BaseSettings):
         ("byn", "reg", "1ti"),
         ("byn", "reg", "2ti"),
         ("byn", "reg", "2pe"),
-        ("bzu", "reg", "mrk"),
-        ("bzu", "reg", "2jn"),
-        ("bzu", "reg", "tit"),  # failed to fix
-        ("bzu", "reg", "2th"),
-        ("bzu", "reg", "2jn"),
-        ("bzu", "reg", "php"),
-        ("bzu", "reg", "2th"),  # failed to fix
+        # ("bzu", "reg", "mrk"),  # DOC shows that this book is not available
+        # ("bzu", "reg", "2jn"),  # DOC shows that this book is not available
+        ("bzu", "reg", "tit"),
+        # ("bzu", "reg", "2th"),  # DOC shows that this book is not available
+        # ("bzu", "reg", "php"),  # DOC shows that this book is not available
+        # ("bzu", "reg", "2th"),  # DOC shows that this book is not available
         ("cbt", "reg", "jos"),
-        ("cbt", "reg", "jdg"),  # failed to fix
+        # ("cbt", "reg", "jdg"),  # DOC shows that this book is not available
         ("cbt", "reg", "rut"),
         ("cbt", "reg", "est"),
-        ("cbt", "reg", "ezr"),
-        ("cbt", "reg", "est"),
-        ("cbt", "reg", "ezr"),
+        # ("cbt", "reg", "ezr"),  # DOC shows that this book is not available
         ("ccp", "reg", "mat"),
-        ("ccp", "reg", "2pe"),
+        # ("ccp", "reg", "2pe"),  # DOC shows that this book is not available
         ("ccp", "reg", "gal"),
         ("ceb", "ulb", "gen"),
         ("cot", "reg", "rut"),
@@ -322,63 +319,47 @@ class Settings(BaseSettings):
         ("hay-x-nyaihangiro", "reg", "1jn"),
         ("hay-x-nyaihangiro", "reg", "phm"),
         ("iba-x-desatempunak", "reg", "phm"),
-        (
-            "iba-x-ibanempran",
-            "reg",
-            "2co",
-        ),  # Sometimes missing verse marker, just a number
-        (
-            "iba-x-ibanempran",
-            "reg",
-            "eph",
-        ),  # Sometimes missing verse marker, just a number
-        (
-            "iba-x-ibanempran",
-            "reg",
-            "jud",
-        ),  # Sometimes missing verse marker, just a number
-        (
-            "iba-x-ibanempran",
-            "reg",
-            "col",
-        ),  # Sometimes missing verse marker, just a number
-        ("ife-x-ana", "reg", "1th"),  # duplicated chapter markers
-        ("jid", "reg", "mat"),  # I don't see the problem with this one, test mnaually
-        ("jni", "reg", "luk"),  #  I don't see the problem with this one, test mnaually
+        ("iba-x-ibanempran", "reg", "2co"),
+        ("iba-x-ibanempran", "reg", "eph"),
+        ("iba-x-ibanempran", "reg", "jud"),
+        ("iba-x-ibanempran", "reg", "col"),
+        ("ife-x-ana", "reg", "1th"),
+        ("jid", "reg", "mat"),
+        ("jni", "reg", "luk"),
         ("jni", "ulb", "luk"),
         ("kdx", "reg", "1pe"),
-        # ("khz-x-aroma", "reg", "2ti"), # 2ti doesn't exist as a choice
-        # ("khz-x-aroma", "ulb", "rom"), # rom doesn't exist as a choice
-        ("kin-x-biofu", "reg", "rut"),
+        # ("khz-x-aroma", "reg", "2ti"), # DOC shows that this book is not available
+        # ("khz-x-aroma", "ulb", "rom"), # DOC shows that this book is not available
+        # ("kin-x-biofu", "reg", "rut"),  # DOC shows that this book is not available
         ("kin-x-kinyabinza", "reg", "phm"),
         ("kiz", "reg", "heb"),
-        ("kiz", "reg", "php"),
-        ("kiz", "reg", "1th"),  # failed to fix
+        # ("kiz", "reg", "php"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
+        # ("kiz", "reg", "1th"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
         ("kiz", "reg", "jhn"),
-        ("kiz", "reg", "2jn"),
+        # ("kiz", "reg", "2jn"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
         ("kki", "reg", "mat"),
-        ("kki", "reg", "3jn"),
-        ("kki", "reg", "1pe"),  # repeated chapter markers
-        ("kki", "reg", "php"),  # repeated chapter markers
+        # ("kki", "reg", "3jn"), # DOC shows that this book is not available
+        # ("kki", "reg", "1pe"),  # repeated chapter markers; DOC shows that this book is not available
+        # ("kki", "reg", "php"),  # repeated chapter markers; DOC shows that this book is not available
         ("kki", "reg", "2ti"),
         ("kki", "reg", "1th"),
-        ("kki", "reg", "jud"),
-        ("kng-x-kilemfu", "reg", "phm"),
-        ("kng-x-kilemfu", "reg", "3jn"),
-        ("kng-x-kilemfu", "reg", "1jn"),
-        ("kng-x-kilemfu", "reg", "jud"),  # failed to fix
+        # ("kki", "reg", "jud"),  # DOC shows that this book is not available
+        # ("kng-x-kilemfu", "reg", "phm"),  # DOC shows that this book is not available
+        # ("kng-x-kilemfu", "reg", "3jn"),  # DOC shows that this book is not available
+        # ("kng-x-kilemfu", "reg", "1jn"),  # DOC shows that this book is not available
+        ("kng-x-kilemfu", "reg", "jud"),
         ("kng-x-kilemfu", "reg", "eph"),
         # ("knl-x-kebahaulak", "reg", "jud"),
-        ("kod", "reg", "luk"),
+        # ("kod", "reg", "luk"),  # DOC shows that this book is not available
         ("kod", "reg", "2ti"),
-        ("kod", "reg", "heb"),
-        ("kod", "reg", "col"),
-        # ("kod", "reg", "jud"), # jude doesn't exist as a choice
+        # ("kod", "reg", "heb"),  # DOC shows that this book is not available
+        # ("kod", "reg", "col"),  # DOC shows that this book is not available
+        # ("kod", "reg", "jud"),  # DOC shows that this book is not available
         ("kod", "reg", "phm"),
         ("kqi", "reg", "2th"),
         ("kqi", "reg", "2ti"),
         ("kqi", "reg", "mrk"),
-        ("kqi", "reg", "heb"),  # failed to fix
+        ("kqi", "reg", "heb"),
         ("kqi", "reg", "1pe"),
         ("kqi", "reg", "tit"),
         ("ksm", "reg", "rom"),
@@ -397,9 +378,9 @@ class Settings(BaseSettings):
         ("lks", "reg", "heb"),
         ("lky", "reg", "jas"),
         ("lky", "reg", "2th"),
-        ("lbx-x-capuracu", "reg", "3jn"),
+        # ("lbx-x-capuracu", "reg", "3jn"), # DOC shows that this book is not availableC
         ("lbx-x-capuracu", "reg", "eph"),
-        ("lrl", "reg", "1ti"),
+        # ("lrl", "reg", "1ti"),  # DOC shows that this book is not available
         ("mfq-x-mual", "reg", "1ki"),
         ("mgs", "reg", "php"),
         ("mgs", "reg", "2th"),
@@ -418,7 +399,7 @@ class Settings(BaseSettings):
         ("nak-x-bileki", "reg", "jas"),
         ("nak-x-bileki", "reg", "mrk"),
         ("ndc-x-chibangwe", "reg", "mrk"),
-        ("ndc-x-chidanda", "reg", "mat"),
+        # ("ndc-x-chidanda", "reg", "mat"),  # DOC shows that this book is not available
         ("ndc-x-chidanda", "reg", "luk"),
         ("ndc-x-chidanda", "reg", "gal"),
         ("nfd", "reg", "gal"),
@@ -459,7 +440,7 @@ class Settings(BaseSettings):
         ("pip", "reg", "mat"),
         ("pse-x-riauasli", "reg", "luk"),
         ("rmn-x-yerliroman", "reg", "mat"),
-        ("rmp", "ulb", "jas"),
+        # ("rmp", "ulb", "jas"), # failed to fix
         ("ruc", "reg", "jhn"),
         ("ruc", "reg", "1ti"),
         ("rw-x-kinyabwisha", "reg", "num"),
@@ -473,7 +454,7 @@ class Settings(BaseSettings):
         ("saw", "reg", "est"),
         ("sbp", "reg", "phm"),
         ("sbp", "reg", "2th"),
-        ("sbp", "reg", "1ti"),  # failed to fix
+        ("sbp", "reg", "1ti"),
         ("sbp", "reg", "2ti"),
         ("sbp", "reg", "eph"),
         ("sbs-x-chiikuhane", "reg", "jon"),
@@ -489,7 +470,7 @@ class Settings(BaseSettings):
         ("spy-x-bongomek", "reg", "phm"),
         ("spy-x-bongomek", "reg", "2jn"),
         ("spy-x-pok", "reg", "jud"),
-        ("spy-x-pok", "reg", "3jn"),  # failed to fix
+        ("spy-x-pok", "reg", "3jn"),
         ("ssc-x-kine", "reg", "2jn"),
         ("ssn-x-sanye", "reg", "col"),
         ("tar-x-ralamuli", "reg", "mrk"),
@@ -513,7 +494,7 @@ class Settings(BaseSettings):
         ("wsk-x-makitu", "reg", "3jn"),
         ("xem-x-karambai", "reg", "luk"),
         ("xem-x-karambai", "reg", "eph"),
-        ("xkg", "reg", "3jn"),
+        # ("xkg", "reg", "3jn"),  # failed to fix (BUG?)
         ("xmt", "reg", "eph"),
         ("xwg", "reg", "luk"),
         ("zga-x-mahanji", "reg", "php"),

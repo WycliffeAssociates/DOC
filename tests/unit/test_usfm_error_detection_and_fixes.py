@@ -166,8 +166,17 @@ class USFMErrorDetection(unittest.TestCase):
 
     def test_replace_cc_with_c(self) -> None:
         self.assertEqual(
-            replace_cc_with_c(r"\c 1\n\c1 Some text."),
-            r"\c1 Some text.",
+            replace_cc_with_c(
+                r"""
+\c 1
+\c 1
+Some text.
+"""
+            ),
+            r"""
+\c 1
+Some text.
+""",
         )
         self.assertEqual(
             replace_cc_with_c(

@@ -263,15 +263,9 @@ class Settings(BaseSettings):
         ("bwc", "reg", "lev"),
         ("bwc", "reg", "php"),
         ("bwc", "reg", "tit"),
-        # ("bwc", "reg", "jhn"),  # DOC shows that this book is not available
         ("byi", "reg", "gen"),
         ("byi", "reg", "php"),
-        # ("byi", "reg", "jon"),  # DOC shows that this book is not available
-        # ("byi", "reg", "nam"),  # DOC shows that this book is not available
         ("byi", "reg", "rut"),
-        # ("byi", "reg", "1pe"),  # DOC shows that this book is not available
-        # ("byi", "reg", "2co"),  # DOC shows that this book is not available
-        # ("byi", "reg", "jud"),  # DOC shows that this book is not available
         ("byn", "reg", "2sa"),
         ("byn", "reg", "nam"),
         ("byn", "reg", "2co"),
@@ -283,19 +277,11 @@ class Settings(BaseSettings):
         ("byn", "reg", "1ti"),
         ("byn", "reg", "2ti"),
         ("byn", "reg", "2pe"),
-        # ("bzu", "reg", "mrk"),  # DOC shows that this book is not available
-        # ("bzu", "reg", "2jn"),  # DOC shows that this book is not available
         ("bzu", "reg", "tit"),
-        # ("bzu", "reg", "2th"),  # DOC shows that this book is not available
-        # ("bzu", "reg", "php"),  # DOC shows that this book is not available
-        # ("bzu", "reg", "2th"),  # DOC shows that this book is not available
         ("cbt", "reg", "jos"),
-        # ("cbt", "reg", "jdg"),  # DOC shows that this book is not available
         ("cbt", "reg", "rut"),
         ("cbt", "reg", "est"),
-        # ("cbt", "reg", "ezr"),  # DOC shows that this book is not available
         ("ccp", "reg", "mat"),
-        # ("ccp", "reg", "2pe"),  # DOC shows that this book is not available
         ("ccp", "reg", "gal"),
         ("ceb", "ulb", "gen"),
         ("cot", "reg", "rut"),
@@ -306,7 +292,7 @@ class Settings(BaseSettings):
         ("erk-x-epang", "reg", "php"),
         ("eyo", "reg", "2jn"),
         ("eyo", "reg", "php"),
-        # ("gow", "reg", "3jn"),
+        # ("gow", "reg", "3jn"), # 3jn is given as choice, but it is not cloned, so does it exist?
         ("gux-x-gourmantche", "reg", "deu"),
         ("gux-x-gourmantche", "reg", "jon"),
         ("gux-x-gourmantche", "reg", "jos"),
@@ -328,9 +314,6 @@ class Settings(BaseSettings):
         ("jni", "reg", "luk"),
         ("jni", "ulb", "luk"),
         ("kdx", "reg", "1pe"),
-        # ("khz-x-aroma", "reg", "2ti"), # DOC shows that this book is not available
-        # ("khz-x-aroma", "ulb", "rom"), # DOC shows that this book is not available
-        # ("kin-x-biofu", "reg", "rut"),  # DOC shows that this book is not available
         ("kin-x-kinyabinza", "reg", "phm"),
         ("kiz", "reg", "heb"),
         # ("kiz", "reg", "php"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
@@ -338,23 +321,11 @@ class Settings(BaseSettings):
         ("kiz", "reg", "jhn"),
         # ("kiz", "reg", "2jn"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
         ("kki", "reg", "mat"),
-        # ("kki", "reg", "3jn"), # DOC shows that this book is not available
-        # ("kki", "reg", "1pe"),  # repeated chapter markers; DOC shows that this book is not available
-        # ("kki", "reg", "php"),  # repeated chapter markers; DOC shows that this book is not available
         ("kki", "reg", "2ti"),
         ("kki", "reg", "1th"),
-        # ("kki", "reg", "jud"),  # DOC shows that this book is not available
-        # ("kng-x-kilemfu", "reg", "phm"),  # DOC shows that this book is not available
-        # ("kng-x-kilemfu", "reg", "3jn"),  # DOC shows that this book is not available
-        # ("kng-x-kilemfu", "reg", "1jn"),  # DOC shows that this book is not available
         ("kng-x-kilemfu", "reg", "jud"),
         ("kng-x-kilemfu", "reg", "eph"),
-        # ("knl-x-kebahaulak", "reg", "jud"),
-        # ("kod", "reg", "luk"),  # DOC shows that this book is not available
         ("kod", "reg", "2ti"),
-        # ("kod", "reg", "heb"),  # DOC shows that this book is not available
-        # ("kod", "reg", "col"),  # DOC shows that this book is not available
-        # ("kod", "reg", "jud"),  # DOC shows that this book is not available
         ("kod", "reg", "phm"),
         ("kqi", "reg", "2th"),
         ("kqi", "reg", "2ti"),
@@ -378,9 +349,7 @@ class Settings(BaseSettings):
         ("lks", "reg", "heb"),
         ("lky", "reg", "jas"),
         ("lky", "reg", "2th"),
-        # ("lbx-x-capuracu", "reg", "3jn"), # DOC shows that this book is not availableC
         ("lbx-x-capuracu", "reg", "eph"),
-        # ("lrl", "reg", "1ti"),  # DOC shows that this book is not available
         ("mfq-x-mual", "reg", "1ki"),
         ("mgs", "reg", "php"),
         ("mgs", "reg", "2th"),
@@ -390,7 +359,7 @@ class Settings(BaseSettings):
         ("mhi-x-burolo", "reg", "1pe"),
         ("mhi-x-burolo", "reg", "2th"),
         ("mhy-x-benualima", "reg", "mrk"),
-        # ("mwe", "reg", "tit"),
+        # ("mwe", "reg", "tit"),  # book is available as choice, but resource not cloned?
         ("mxo", "reg", "mrk"),
         ("nak-x-bileki", "reg", "mat"),
         ("nak-x-bileki", "reg", "1ti"),
@@ -399,7 +368,6 @@ class Settings(BaseSettings):
         ("nak-x-bileki", "reg", "jas"),
         ("nak-x-bileki", "reg", "mrk"),
         ("ndc-x-chibangwe", "reg", "mrk"),
-        # ("ndc-x-chidanda", "reg", "mat"),  # DOC shows that this book is not available
         ("ndc-x-chidanda", "reg", "luk"),
         ("ndc-x-chidanda", "reg", "gal"),
         ("nfd", "reg", "gal"),
@@ -415,7 +383,7 @@ class Settings(BaseSettings):
         ("nyj", "reg", "col"),
         ("nyj", "reg", "nam"),
         ("nyj", "reg", "hag"),
-        # ("nyj-x-kitiri", "reg", "2th"),
+        # ("nyj-x-kitiri", "reg", "2th"),  # failed to fix; repo is cloned; I don't see obvious source issue
         ("nyn-x-runyaruguru", "reg", "1co"),
         ("nyr", "reg", "mat"),
         ("nyr", "reg", "php"),
@@ -440,7 +408,7 @@ class Settings(BaseSettings):
         ("pip", "reg", "mat"),
         ("pse-x-riauasli", "reg", "luk"),
         ("rmn-x-yerliroman", "reg", "mat"),
-        # ("rmp", "ulb", "jas"), # failed to fix
+        # ("rmp", "ulb", "jas"),  # failed to fix; repo is cloned and source looks good other than duplicate \c markers, but we handle those (BUG?)
         ("ruc", "reg", "jhn"),
         ("ruc", "reg", "1ti"),
         ("rw-x-kinyabwisha", "reg", "num"),
@@ -494,7 +462,7 @@ class Settings(BaseSettings):
         ("wsk-x-makitu", "reg", "3jn"),
         ("xem-x-karambai", "reg", "luk"),
         ("xem-x-karambai", "reg", "eph"),
-        # ("xkg", "reg", "3jn"),  # failed to fix (BUG?)
+        # ("xkg", "reg", "3jn"),  # failed to fix; source looks fine but could have UTF issues (BUG?)
         ("xmt", "reg", "eph"),
         ("xwg", "reg", "luk"),
         ("zga-x-mahanji", "reg", "php"),

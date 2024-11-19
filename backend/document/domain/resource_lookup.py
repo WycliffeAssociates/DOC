@@ -33,7 +33,7 @@ SOURCE_GATEWAY_LANGUAGES_FILENAME = "gateway_languages.json"
 @lru_cache(maxsize=2)
 def fetch_source_data(
     json_file_name: str = SOURCE_DATA_JSON_FILENAME,
-    working_dir: str = settings.RESOURCE_ASSETS_DIR,
+    assets_dir: str = settings.RESOURCE_ASSETS_DIR,
 ) -> Any:
     """
     Obtain the source data, by downloading it from json_file_url, and
@@ -45,7 +45,7 @@ def fetch_source_data(
     >>> result["git_repo"][0]
     {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
     """
-    json_file_path = join(working_dir, json_file_name)
+    json_file_path = join(assets_dir, json_file_name)
     data = None
     if file_needs_update(json_file_path):
         logger.debug("About to download %s...", json_file_name)

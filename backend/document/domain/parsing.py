@@ -232,37 +232,28 @@ def split_usfm_by_chapters(
     chapters = re.split(chapter_regex, usfm_text)
     chapter_markers = re.findall(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
-    # logger.debug("frontmatter: %s", frontmatter)
+
+    def needs_fixing() -> bool:
+        """
+        Determine if a chapter needs fixing based on configuration.
+        """
+        if check_all_books_for_language:
+            return resource_lookup_dto.lang_code in [
+                resource[0] for resource in resources_with_usfm_defects
+            ]
+        return (
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+        ) in resources_with_usfm_defects
+
     updated_chapters = []
     for marker, chapter in zip(chapter_markers, chapters):
-        if chapter.lstrip():
-            if (
-                check_usfm
-            ):  # Detect certain classes of USFM defects and attempt a fix for them.
-                if check_all_books_for_language:
-                    if resource_lookup_dto.lang_code in [
-                        resource[0] for resource in resources_with_usfm_defects
-                    ]:
-                        updated_chapter = correct_usfm(
-                            chapter.lstrip(),
-                            resource_lookup_dto,
-                        )
-                        updated_chapters.append(marker + updated_chapter)
-                else:
-                    if (
-                        resource_lookup_dto.lang_code,
-                        resource_lookup_dto.resource_type,
-                        resource_lookup_dto.book_code,
-                    ) in [
-                        resource_tuple for resource_tuple in resources_with_usfm_defects
-                    ]:
-                        updated_chapter = correct_usfm(
-                            chapter.lstrip(),
-                            resource_lookup_dto,
-                        )
-                        updated_chapters.append(marker + updated_chapter)
-            else:
-                updated_chapters.append(marker + chapter.lstrip())
+        stripped_chapter = chapter.lstrip()
+        if stripped_chapter:
+            if check_usfm and needs_fixing():
+                stripped_chapter = correct_usfm(stripped_chapter, resource_lookup_dto)
+            updated_chapters.append(marker + stripped_chapter)
     return frontmatter, updated_chapters
 
 

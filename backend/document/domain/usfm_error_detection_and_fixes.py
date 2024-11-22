@@ -11,14 +11,14 @@ pattern_matchers = {
     "remove_null_bytes_and_control_characters": r"[\x00-\x1F]+",
     "fix_dot_after_verse_number": r"(\\v\s*\d+)\s*\.\s*(\S)",
     "fix_verse_marker_without_v": r"\\(\d+)\s*\.?\s*(\S+)",
-    "fix_missing_verse_marker": r"\s*(\d+)\s*\s*(\S+)",
     "fix_missing_space_before_number": r"(?<!\\c\s)(?<!\\v\s)(?<!\\s\d)(?<!\\q1\s)(?<!\\q2\s)(?<!\\li1\s)(?<!\\li2\s)(\S)(\d\s)",
     "fix_missing_space_after_number": r"(\s+|^)(\d+)(\S)",
     "fix_missing_space_before_verse_marker": r"(\S)(\\v\s+\d+)",
     "fix_standalone_verse_numbers": r"(^|\s)(?<!\\c\s)(?<!\\v\s)(?<!\\c)(?<!\\q1\s)(?<!\\q2\s)(?<!\\li1\s)(?<!\\li2\s)\b(\d+)\b(?=\s|$|[^\d\w])",
     "replace_n_with_v": r"\\n",
     # The following are actually caused by fixes above and thus
-    # constitute a second pass of this "parser"
+    # constitute a second pass of this "parser" and are thus invoked
+    # after those rules above.
     "replace_vv_with_v": r"\\v\\v",
     "replace_sv_with_s": r"\\s\\v",
     "fix_space_after_section_marker": r"\\s\s+(\d+)",
@@ -50,10 +50,6 @@ def fix_dot_after_verse_number(content: str) -> str:
 
 def fix_verse_marker_without_v(content: str) -> str:
     return re.sub(pattern_matchers["fix_verse_marker_without_v"], r"\\v \1 \2", content)
-
-
-def fix_missing_verse_marker(content: str) -> str:
-    return re.sub(pattern_matchers["fix_missing_verse_marker"], r"\\v \1 \2", content)
 
 
 def fix_missing_space_before_number(content: str) -> str:
@@ -158,15 +154,6 @@ def correct_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> s
             resource_lookup_dto.book_code,
         )
         corrected_usfm_content = fix_verse_marker_without_v(corrected_usfm_content)
-    # if compiled_patterns["fix_missing_verse_marker"].search(corrected_usfm_content):
-    #     logger.debug(
-    #         "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
-    #         "fix_missing_verse_marker",
-    #         resource_lookup_dto.lang_code,
-    #         resource_lookup_dto.resource_type,
-    #         resource_lookup_dto.book_code,
-    #     )
-    #     corrected_usfm_content = fix_missing_verse_marker(corrected_usfm_content)
     if compiled_patterns["fix_missing_space_before_number"].search(
         corrected_usfm_content
     ):

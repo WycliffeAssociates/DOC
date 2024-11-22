@@ -933,11 +933,10 @@ def attempt_to_make_usfm_parseable(
     # non-clobberable filename.
     filename = join(
         resource_dir,
-        "{}_{}_{}_{}.usfm".format(
+        "{}_{}_{}.usfm".format(
             resource_lookup_dto.lang_code,
             resource_lookup_dto.resource_type,
             resource_lookup_dto.book_code,
-            time.time_ns(),
         ),
     )
     logger.debug("About to write filename: %s", filename)

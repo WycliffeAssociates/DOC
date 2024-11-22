@@ -10,10 +10,7 @@ USFM_RESOURCE_DIR = os.path.join(
 )
 
 
-# @pytest.mark.datafiles(USFM_RESOURCE_DIR)
-# def test_convert_usfm_to_html(datafiles: list[str]) -> None:
 def test_convert_usfm_to_html() -> None:
-    # usfm_resource_dir = str(datafiles)
     with open(f"{USFM_RESOURCE_DIR}/50-EPH.usfm", "r") as fi:
         content = fi.read()
         parsing.convert_usfm_chapter_to_html(content, "working_temp/foo")

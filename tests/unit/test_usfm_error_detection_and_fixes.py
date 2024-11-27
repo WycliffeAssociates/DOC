@@ -160,6 +160,50 @@ class USFMErrorDetection(unittest.TestCase):
 
     @pytest.mark.focus
     @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers9(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                r"""
+\v 8 وفلتين النسوان القبر سريع وهن خايفات وفارحات قوي ، وكانين يجرين علميد يبشرين الطلاب \v 9 فلقيهن عيسى في الطريق وقال لهن :(السلام عليكما) وقربين منه ومسكين ارجله وسجدين له \v 10 فقال لهن عيسى :(لا تخافينش ، سيرين لإخوتي وقولين لهم انهم يسيروا للجليل ، وهاناك عيبسروني)
+"""
+            ),
+            r"""
+\v 8 وفلتين النسوان القبر سريع وهن خايفات وفارحات قوي ، وكانين يجرين علميد يبشرين الطلاب \v 9 فلقيهن عيسى في الطريق وقال لهن :(السلام عليكما) وقربين منه ومسكين ارجله وسجدين له \v 10 فقال لهن عيسى :(لا تخافينش ، سيرين لإخوتي وقولين لهم انهم يسيروا للجليل ، وهاناك عيبسروني)
+""",
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers10(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                r"""\v 15 وأليود ولد أليعازر \li1 وأليعازر ولد متان \li1 ومتان ولد يعقوب \li1 \v 16 ويعقوب ولد يوسف رجل مريم اللي ولدت عيسى اللي يسموه المسيح \li4 \v 17 ويطلع مجموع الأجيال من إبراهيم إلى داود 14 جيل ومن داود إلى الأسر البابلي 14 جيل ومن الأسر البابلي إلى المسيح 14 جيل"""
+            ),
+            r"""\v 15 وأليود ولد أليعازر \li1 وأليعازر ولد متان \li1 ومتان ولد يعقوب \li1 \v 16 ويعقوب ولد يوسف رجل مريم اللي ولدت عيسى اللي يسموه المسيح \li4 \v 17 ويطلع مجموع الأجيال من إبراهيم إلى داود 14 جيل ومن داود إلى الأسر البابلي 14 جيل ومن الأسر البابلي إلى المسيح 14 جيل""",
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers11(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                r"""\v 1 This is a verse \v2 this is another verse 3 and this verse too 4 and another as well"""
+            ),
+            r"""\v 1 This is a verse \v2 this is another verse \v 3 and this verse too \v 4 and another as well""",
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers12(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                r"""\v 1 This is a verse \v2 this is another verse 3 and this verse too 3 and another as well"""
+            ),
+            r"""\v 1 This is a verse \v2 this is another verse 3 and this verse too 3 and another as well""",
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
     def test_fix_missing_space_after_number(self) -> None:
         self.assertEqual(
             fix_missing_space_after_number(r"\v 1Some text."),
@@ -224,6 +268,50 @@ class USFMErrorDetection(unittest.TestCase):
 1Laban aku dekaka kita nemu pemendar aku bekereja ke kita, enggau ke sida ke di Laudisia, enggau ke semua orang ke enda kala betemu betunga mua enggau aku. 2Aku dekaka ati sida diperansang sereta begempung dalam pengerindu, ngambika sida meretika semua utai, lalu nemu misteri Allah Taala, iya nya Kristus Empu, 3 ke alai semua penemu-dalam enggau penemu dilalaika.
                 """,
         )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_fix_missing_space_before_number4(self) -> None:
+        actual = fix_missing_space_before_number(
+            r"""
+\v 1 ذيه نسب عيسى المسيح ابن داود ابن ابراهيم \b \li1 \v 2 ابراهيم ولد اسحاق \li1 واسحاق ولد يعقوب \li1 ويعقوب ولد يهوذا واخوته \li1 \v 3 ويهوذا ولد فارص وزارح من ثامار \li1 وفارص ولد حصرون \li1 وحصرو ولد ارام \li1
+"""
+        )
+        expected = r"""
+\v 1 ذيه نسب عيسى المسيح ابن داود ابن ابراهيم \b \li1 \v 2 ابراهيم ولد اسحاق \li1 واسحاق ولد يعقوب \li1 ويعقوب ولد يهوذا واخوته \li1 \v 3 ويهوذا ولد فارص وزارح من ثامار \li1 وفارص ولد حصرون \li1 وحصرو ولد ارام \li1
+"""
+        print("Expected: ", expected)
+        print("Actual:   ", actual)
+        self.assertEqual(actual, expected)
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_fix_missing_space_before_number5(self) -> None:
+        self.assertEqual(
+            fix_missing_space_before_number(
+                r"""
+\v 1 ذيه نسب عيسى المسيح ابن داود ابن ابراهيم \b \q1 \v 2 ابراهيم ولد اسحاق \li1 واسحاق ولد يعقوب \li1 ويعقوب ولد يهوذا واخوته \li1 \v 3 ويهوذا ولد فارص وزارح من ثامار \li1 وفارص ولد حصرون \li1 وحصرو ولد ارام \li1
+"""
+            ),
+            r"""
+\v 1 ذيه نسب عيسى المسيح ابن داود ابن ابراهيم \b \q1 \v 2 ابراهيم ولد اسحاق \li1 واسحاق ولد يعقوب \li1 ويعقوب ولد يهوذا واخوته \li1 \v 3 ويهوذا ولد فارص وزارح من ثامار \li1 وفارص ولد حصرون \li1 وحصرو ولد ارام \li1
+""",
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_fix_missing_space_before_number6(self) -> None:
+        actual = fix_missing_space_before_number(
+            r"""
+\v 8 وفلتين النسوان القبر سريع وهن خايفات وفارحات قوي ، وكانين يجرين علميد يبشرين الطلاب \v 9 فلقيهن عيسى في الطريق وقال لهن :(السلام عليكما) وقربين منه ومسكين ارجله وسجدين له \v 10 فقال لهن عيسى :(لا تخافينش ، سيرين لإخوتي وقولين لهم انهم يسيروا للجليل ، وهاناك عيبسروني)
+"""
+        )
+        expected = r"""
+\v 8 وفلتين النسوان القبر سريع وهن خايفات وفارحات قوي ، وكانين يجرين علميد يبشرين الطلاب \v 9 فلقيهن عيسى في الطريق وقال لهن :(السلام عليكما) وقربين منه ومسكين ارجله وسجدين له \v 10 فقال لهن عيسى :(لا تخافينش ، سيرين لإخوتي وقولين لهم انهم يسيروا للجليل ، وهاناك عيبسروني)
+"""
+        print("Expected: ", expected)
+        print("Actual:   ", actual)
+        self.assertEqual(actual, expected)
 
     @pytest.mark.focus
     @pytest.mark.usfm_fixes

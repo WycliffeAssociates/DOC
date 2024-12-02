@@ -765,6 +765,74 @@ def book_codes_for_lang(
     return book_codes_sorted
 
 
+# Used for testing
+@lru_cache(maxsize=100)
+def book_codes_for_lang_from_usfm_only(
+    lang_code: str,
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    book_names: Mapping[str, str] = BOOK_NAMES,
+    dcs_mirror_git_username: str = "DCS-Mirror",
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> Sequence[tuple[str, str]]:
+    """
+    >>> from document.domain import resource_lookup
+    >>> ();result = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
+    (...)
+    >>> result[0]
+    ('gen', 'Genesis')
+    """
+    data = fetch_source_data()
+    book_codes_and_names = []
+    book_codes_and_names2: list[tuple[str, str]] = []
+    try:
+        repos_info = data["git_repo"]
+        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+        for repo_info in augmented_repos_info:
+            content = repo_info["content"]
+            language_info = content["language"]
+            url = repo_info["repo_url"]
+            if language_info["ietf_code"] == lang_code:
+                last_segment = get_last_segment(url, lang_code)
+                repo_components = last_segment.split("_")
+                if dcs_mirror_git_username in url:
+                    repo_components = update_repo_components(repo_components)
+                # logger.debug("url: %s, repo_components: %s", url, repo_components)
+                if len(repo_components) > 2:
+                    book_code = repo_components[1]
+                    if book_code in book_names:
+                        book_codes_and_names.append((book_code, book_names[book_code]))
+                elif len(repo_components) == 2 and not book_codes_and_names:
+                    if not book_codes_and_names2:
+                        resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                        clone_git_repo(url, resource_filepath)
+                        # Check repo's layout on disk to determine which books it provides.
+                        # First look at USFM assets.
+                        if repo_components[-1] in usfm_resource_types:
+                            usfm_files = parsing.find_usfm_files(resource_filepath)
+                            for usfm_file in usfm_files:
+                                book_code = Path(usfm_file).stem.lower().split("-")[1]
+                                book_codes_and_names2.append(
+                                    (book_code, book_names[book_code])
+                                )
+    except:
+        pass
+    # Keep book codes unique and sorted by canonical bible book order
+    unique_values = []
+    seen_values = set()
+    book_codes_and_names.extend(book_codes_and_names2)
+    for value in book_codes_and_names:
+        if value[0] not in seen_values:
+            unique_values.append(value)
+            seen_values.add(value[0])
+    book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
+    book_codes_sorted = sorted(
+        unique_values,
+        key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+    )
+    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
+    return book_codes_sorted
+
+
 @lru_cache(maxsize=100)
 def resource_lookup_dto(
     lang_code: str,

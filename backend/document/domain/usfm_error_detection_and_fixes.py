@@ -59,9 +59,7 @@ def fix_missing_space_before_number(content: str) -> str:
             match.group(1),
         )
         character_before_number = content[match.start() - 1]
-        character_before_before_number = content[
-            match.start() - 2
-        ]  # TODO guard against index error
+        character_before_before_number = content[match.start() - 2]
         logger.debug("character_before_number: %s", character_before_number)
         if (
             character_before_number.isdigit()
@@ -95,8 +93,6 @@ def fix_missing_space_after_number(content: str) -> str:
             ".",
         ]:  # Skip e.g., '(Zak 13:9)'
             replacement = match[1] + " " + match[2]
-            # So far haven't needed it, but in the future if this
-            # blows up for some case then you could see if re.escape helps.
             pattern2 = f"{match[1]}{match[2]}"
             content = re.sub(pattern2, replacement, content)
     return content
@@ -115,7 +111,7 @@ def fix_standalone_verse_numbers(content: str) -> str:
     # use of 14 happens twice where it refers to "fourteen generations". To
     # modify that would be a mistake. We need to determine more context to
     # see when to apply fix_standalone_verse_numbers. Toward that
-    # goal, we check for two conditions:
+    # goal, we check for three conditions:
     #
     # 1) if a valid verse marker occurs within an arbitrary distance in
     # characters of content before or after the supposed standalone verse
@@ -190,7 +186,6 @@ def fix_space_after_section_marker(content: str) -> str:
     return re.sub(pattern_matchers["fix_space_after_section_marker"], r"\\s\1", content)
 
 
-# FIXME
 def replace_qv_with_q(content: str) -> str:
     """Replace \q\v <integer>, caused by other correcting functions, with \q<integer>"""
     return re.sub(pattern_matchers["replace_qv_with_q"], r"\\q\1", content)
@@ -203,6 +198,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
     logger.debug("usfm_content: %s", usfm_content)
     corrected_usfm_content: str = usfm_content
 
+    # NOTE This is called in a different place now, leaving commented out fo now.
     # if compiled_patterns["remove_null_bytes_and_control_characters"].search(
     #     corrected_usfm_content
     # ):

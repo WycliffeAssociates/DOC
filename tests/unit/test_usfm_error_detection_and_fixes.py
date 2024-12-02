@@ -1,8 +1,10 @@
 import pytest
 import unittest
+from document.domain.model import ResourceLookupDto, LangDirEnum
 from document.domain.usfm_error_detection_and_fixes import (
     remove_null_bytes_and_control_characters,
     fix_dot_after_verse_number,
+    fix_usfm,
     fix_verse_marker_without_v,
     fix_missing_space_before_number,
     fix_missing_space_after_number,
@@ -204,6 +206,199 @@ class USFMErrorDetection(unittest.TestCase):
 
     @pytest.mark.focus
     @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers13(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                fix_missing_space_after_number(
+                    r"""
+1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+2Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+3Menyadi, lebuh aku benung gagit ati nyendiaka diri nulis ngagai kita pasal pengelepas ti dikembuan semua kitai, aku ngira diri enda tau enda nulis ngagai kita minta kita bebendar gawa ke pengarap ti udah diberi sekali aja ngagai nembiak Tuhan. 4 Laban sekeda orang udah belalai enselitka diri tama ngagai bala kitai. Sida endang lama udah diletak deka diukum laban sida enda nangika Allah Taala. Sida nyarutka pesan pasal pengasih Allah Taala, lalu ngaga nya nyadika peluang kena sida ngereja pengawa ti kamah, lalu enggai ngaku Tuan enggau Tuhan kitai, Jesus Kristus, ti siku aja.
+5 Diatu aku deka ngasuh kita ngingatka tu, taja pen kita udah nemu semua utai tu, iya nya, Tuhan udah ngelepaska orang Israel ari menua Ejip, tang udah nya, Iya munuh sida ke enda arap. 6Kingatka melikat ke enda nitihka sekat hak sida, tang ninggalka endur alai sida diau. Iya udah nanchang sida ngena rantai lalu nyimpan sida dalam endur ti pemadu petang, ngambika sida diakim lebuh Hari Pechara.
+7 Lalu kingatka mega Sodom enggau Gomorah, enggau nengeri ti ngelingi nengeri dua buah nya, ti ngereja ulah ti kamah, lalu nyarutka pengawa beleman. Sida diukum ngena api ti enda nemu padam, kena ngajar semua mensia.
+
+8Orang tu pen baka nya mega. Sida ngamahka tubuh diri, enggai diperintah Allah Taala, lalu mechat utai idup ti bemulia di serega.
+9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” 10Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+12Sida tu ngamahka gempuru kita lebuh kita beserumpu makai, laban sida enda nemu malu lebuh sida makai, lalu semina berundingka diri empu aja. Sida nya baka mua hari ti dipuputka ribut, tang nadai ngasuh hari ujan. Sida nya baka kayu ti nadai buah lebuh musin ruruh daun, mati dua kali, lalu dichabut. 13Sida nya baka gelumbang di tasik, ti ngayanka pupu ti ngasuh sida malu. Sida nya baka bintang ti terebai, ti deka dibuai ngagai endur ti pemadu petang ti disedia Allah Taala ke sida belama iya.
+14 Enok, tujuh serak ari Adam, udah benabika pasal sida nya dulu kelia: “Peda kita, Tuhan datai enggau beribu-ribu iku bala melikat Iya ti kudus, 15deka ngakim semua mensia, lalu ngukum genap iku orang ketegal semua penyai ti udah dikereja sida, enggau ketegal semua jaku jai ti udah disebut orang ke bedosa, ke enda arapka Allah Taala, kena sida ngelaban Iya!”
+
+16Orang nya seruran mutap, seruran nganu pangan diri. Sida nurutka pengingin sida ti kamah. Sida muji diri, lalu ngelangkungka orang kena sida ngambi ulih ba orang.
+Jaku Tangkan Enggau Atur
+17Tang kita, menyadi, enda tau enda ingatka utai ti udah dipadahka bala rasul Jesus Kristus Tuhan kitai sebedau utai nya nyadi. 18 Ku sida madah ngagai kita, “Ba hari ti penudi, orang ke ngelese deka datai, nurutka pengingin sida ti kamah.” 19Nya meh orang ke nyungkak orang beserekang penemu. Sida tu diperintah pengingin dunya, sereta nadai ngembuan Roh Kudus.
+20Tang kita, menyadi, enda tau enda negapka pengarap kita ti pemadu kudus, lalu besampi nitihka iring Roh Kudus; 21meruan dalam pengerindu Allah Taala; nganti pengasih Jesus Kristus Tuhan kitai ti deka mai kitai ngagai pengidup ti meruan belama iya.
+22Kasihka orang ke kakang ati; 23 Rampas sekeda orang ari api, lalu selamatka sida; kasihka sida ti bukai enggau ati ti nangi, datai ke kita nyau begedika gari ti udah dikena sida ngereja ulah ti kamah.
+Sampi Puji
+24Ngagai Iya ke ulih nagang kita rebah, lalu nyerahka kita nadai bepenyalah sereta enggau ati ti gaga ngagai Iya ke bemulia, 25ngagai Allah Taala ti siku aja ke nyadi Juruselamat kitai, beri meh puji, mulia, pengering, enggau kuasa, ulih Jesus Kristus Tuhan kitai, kenyau ari dulu kelia, ngagai diatu, enggau ke belama-lama iya! Amin.
+        """
+                )
+            ),
+            r"""
+\v 1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+\v 2 Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+\v 3 Menyadi, lebuh aku benung gagit ati nyendiaka diri nulis ngagai kita pasal pengelepas ti dikembuan semua kitai, aku ngira diri enda tau enda nulis ngagai kita minta kita bebendar gawa ke pengarap ti udah diberi sekali aja ngagai nembiak Tuhan. \v 4 Laban sekeda orang udah belalai enselitka diri tama ngagai bala kitai. Sida endang lama udah diletak deka diukum laban sida enda nangika Allah Taala. Sida nyarutka pesan pasal pengasih Allah Taala, lalu ngaga nya nyadika peluang kena sida ngereja pengawa ti kamah, lalu enggai ngaku Tuan enggau Tuhan kitai, Jesus Kristus, ti siku aja.
+\v 5 Diatu aku deka ngasuh kita ngingatka tu, taja pen kita udah nemu semua utai tu, iya nya, Tuhan udah ngelepaska orang Israel ari menua Ejip, tang udah nya, Iya munuh sida ke enda arap. \v 6 Kingatka melikat ke enda nitihka sekat hak sida, tang ninggalka endur alai sida diau. Iya udah nanchang sida ngena rantai lalu nyimpan sida dalam endur ti pemadu petang, ngambika sida diakim lebuh Hari Pechara.
+\v 7 Lalu kingatka mega Sodom enggau Gomorah, enggau nengeri ti ngelingi nengeri dua buah nya, ti ngereja ulah ti kamah, lalu nyarutka pengawa beleman. Sida diukum ngena api ti enda nemu padam, kena ngajar semua mensia.
+
+\v 8 Orang tu pen baka nya mega. Sida ngamahka tubuh diri, enggai diperintah Allah Taala, lalu mechat utai idup ti bemulia di serega.
+\v 9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” \v 10 Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. \v 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+\v 12 Sida tu ngamahka gempuru kita lebuh kita beserumpu makai, laban sida enda nemu malu lebuh sida makai, lalu semina berundingka diri empu aja. Sida nya baka mua hari ti dipuputka ribut, tang nadai ngasuh hari ujan. Sida nya baka kayu ti nadai buah lebuh musin ruruh daun, mati dua kali, lalu dichabut. \v 13 Sida nya baka gelumbang di tasik, ti ngayanka pupu ti ngasuh sida malu. Sida nya baka bintang ti terebai, ti deka dibuai ngagai endur ti pemadu petang ti disedia Allah Taala ke sida belama iya.
+\v 14 Enok, tujuh serak ari Adam, udah benabika pasal sida nya dulu kelia: “Peda kita, Tuhan datai enggau beribu-ribu iku bala melikat Iya ti kudus, \v 15 deka ngakim semua mensia, lalu ngukum genap iku orang ketegal semua penyai ti udah dikereja sida, enggau ketegal semua jaku jai ti udah disebut orang ke bedosa, ke enda arapka Allah Taala, kena sida ngelaban Iya!”
+
+\v 16 Orang nya seruran mutap, seruran nganu pangan diri. Sida nurutka pengingin sida ti kamah. Sida muji diri, lalu ngelangkungka orang kena sida ngambi ulih ba orang.
+Jaku Tangkan Enggau Atur
+\v 17 Tang kita, menyadi, enda tau enda ingatka utai ti udah dipadahka bala rasul Jesus Kristus Tuhan kitai sebedau utai nya nyadi. \v 18 Ku sida madah ngagai kita, “Ba hari ti penudi, orang ke ngelese deka datai, nurutka pengingin sida ti kamah.” \v 19 Nya meh orang ke nyungkak orang beserekang penemu. Sida tu diperintah pengingin dunya, sereta nadai ngembuan Roh Kudus.
+\v 20 Tang kita, menyadi, enda tau enda negapka pengarap kita ti pemadu kudus, lalu besampi nitihka iring Roh Kudus; \v 21 meruan dalam pengerindu Allah Taala; nganti pengasih Jesus Kristus Tuhan kitai ti deka mai kitai ngagai pengidup ti meruan belama iya.
+\v 22 Kasihka orang ke kakang ati; \v 23 Rampas sekeda orang ari api, lalu selamatka sida; kasihka sida ti bukai enggau ati ti nangi, datai ke kita nyau begedika gari ti udah dikena sida ngereja ulah ti kamah.
+Sampi Puji
+\v 24 Ngagai Iya ke ulih nagang kita rebah, lalu nyerahka kita nadai bepenyalah sereta enggau ati ti gaga ngagai Iya ke bemulia, \v 25 ngagai Allah Taala ti siku aja ke nyadi Juruselamat kitai, beri meh puji, mulia, pengering, enggau kuasa, ulih Jesus Kristus Tuhan kitai, kenyau ari dulu kelia, ngagai diatu, enggau ke belama-lama iya! Amin.
+        """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers14(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                fix_missing_space_after_number(
+                    r"""
+1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+2Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+        """
+                )
+            ),
+            r"""
+\v 1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+\v 2 Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+        """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers15(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                fix_missing_space_after_number(
+                    r"""
+1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+2Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+3Menyadi, lebuh aku benung gagit ati nyendiaka diri nulis ngagai kita pasal pengelepas ti dikembuan semua kitai, aku ngira diri enda tau enda nulis ngagai kita minta kita bebendar gawa ke pengarap ti udah diberi sekali aja ngagai nembiak Tuhan. 4 Laban sekeda orang udah belalai enselitka diri tama ngagai bala kitai. Sida endang lama udah diletak deka diukum laban sida enda nangika Allah Taala. Sida nyarutka pesan pasal pengasih Allah Taala, lalu ngaga nya nyadika peluang kena sida ngereja pengawa ti kamah, lalu enggai ngaku Tuan enggau Tuhan kitai, Jesus Kristus, ti siku aja.
+5 Diatu aku deka ngasuh kita ngingatka tu, taja pen kita udah nemu semua utai tu, iya nya, Tuhan udah ngelepaska orang Israel ari menua Ejip, tang udah nya, Iya munuh sida ke enda arap. 6Kingatka melikat ke enda nitihka sekat hak sida, tang ninggalka endur alai sida diau. Iya udah nanchang sida ngena rantai lalu nyimpan sida dalam endur ti pemadu petang, ngambika sida diakim lebuh Hari Pechara.
+7 Lalu kingatka mega Sodom enggau Gomorah, enggau nengeri ti ngelingi nengeri dua buah nya, ti ngereja ulah ti kamah, lalu nyarutka pengawa beleman. Sida diukum ngena api ti enda nemu padam, kena ngajar semua mensia.
+        """
+                )
+            ),
+            r"""
+\v 1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+\v 2 Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+\v 3 Menyadi, lebuh aku benung gagit ati nyendiaka diri nulis ngagai kita pasal pengelepas ti dikembuan semua kitai, aku ngira diri enda tau enda nulis ngagai kita minta kita bebendar gawa ke pengarap ti udah diberi sekali aja ngagai nembiak Tuhan. \v 4 Laban sekeda orang udah belalai enselitka diri tama ngagai bala kitai. Sida endang lama udah diletak deka diukum laban sida enda nangika Allah Taala. Sida nyarutka pesan pasal pengasih Allah Taala, lalu ngaga nya nyadika peluang kena sida ngereja pengawa ti kamah, lalu enggai ngaku Tuan enggau Tuhan kitai, Jesus Kristus, ti siku aja.
+\v 5 Diatu aku deka ngasuh kita ngingatka tu, taja pen kita udah nemu semua utai tu, iya nya, Tuhan udah ngelepaska orang Israel ari menua Ejip, tang udah nya, Iya munuh sida ke enda arap. \v 6 Kingatka melikat ke enda nitihka sekat hak sida, tang ninggalka endur alai sida diau. Iya udah nanchang sida ngena rantai lalu nyimpan sida dalam endur ti pemadu petang, ngambika sida diakim lebuh Hari Pechara.
+\v 7 Lalu kingatka mega Sodom enggau Gomorah, enggau nengeri ti ngelingi nengeri dua buah nya, ti ngereja ulah ti kamah, lalu nyarutka pengawa beleman. Sida diukum ngena api ti enda nemu padam, kena ngajar semua mensia.
+        """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers16(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                fix_missing_space_after_number(
+                    r"""
+1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+2Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+3Menyadi, lebuh aku benung gagit ati nyendiaka diri nulis ngagai kita pasal pengelepas ti dikembuan semua kitai, aku ngira diri enda tau enda nulis ngagai kita minta kita bebendar gawa ke pengarap ti udah diberi sekali aja ngagai nembiak Tuhan. 4 Laban sekeda orang udah belalai enselitka diri tama ngagai bala kitai. Sida endang lama udah diletak deka diukum laban sida enda nangika Allah Taala. Sida nyarutka pesan pasal pengasih Allah Taala, lalu ngaga nya nyadika peluang kena sida ngereja pengawa ti kamah, lalu enggai ngaku Tuan enggau Tuhan kitai, Jesus Kristus, ti siku aja.
+5 Diatu aku deka ngasuh kita ngingatka tu, taja pen kita udah nemu semua utai tu, iya nya, Tuhan udah ngelepaska orang Israel ari menua Ejip, tang udah nya, Iya munuh sida ke enda arap. 6Kingatka melikat ke enda nitihka sekat hak sida, tang ninggalka endur alai sida diau. Iya udah nanchang sida ngena rantai lalu nyimpan sida dalam endur ti pemadu petang, ngambika sida diakim lebuh Hari Pechara.
+7 Lalu kingatka mega Sodom enggau Gomorah, enggau nengeri ti ngelingi nengeri dua buah nya, ti ngereja ulah ti kamah, lalu nyarutka pengawa beleman. Sida diukum ngena api ti enda nemu padam, kena ngajar semua mensia.
+
+8Orang tu pen baka nya mega. Sida ngamahka tubuh diri, enggai diperintah Allah Taala, lalu mechat utai idup ti bemulia di serega.
+        """
+                )
+            ),
+            r"""
+\v 1 Ari Jude, menyadi James, ke nyadi ulun Jesus Kristus,
+
+Ngagai orang ke udah dikangau, ke dikerinduka Allah Taala ti Apai, sereta dijaga Jesus Kristus:
+
+\v 2 Awakka pengasih, pemaik enggau pengerindu nambah-menambah diberi ngagai kita.
+Pengajar Ti Pelesu
+\v 3 Menyadi, lebuh aku benung gagit ati nyendiaka diri nulis ngagai kita pasal pengelepas ti dikembuan semua kitai, aku ngira diri enda tau enda nulis ngagai kita minta kita bebendar gawa ke pengarap ti udah diberi sekali aja ngagai nembiak Tuhan. \v 4 Laban sekeda orang udah belalai enselitka diri tama ngagai bala kitai. Sida endang lama udah diletak deka diukum laban sida enda nangika Allah Taala. Sida nyarutka pesan pasal pengasih Allah Taala, lalu ngaga nya nyadika peluang kena sida ngereja pengawa ti kamah, lalu enggai ngaku Tuan enggau Tuhan kitai, Jesus Kristus, ti siku aja.
+\v 5 Diatu aku deka ngasuh kita ngingatka tu, taja pen kita udah nemu semua utai tu, iya nya, Tuhan udah ngelepaska orang Israel ari menua Ejip, tang udah nya, Iya munuh sida ke enda arap. \v 6 Kingatka melikat ke enda nitihka sekat hak sida, tang ninggalka endur alai sida diau. Iya udah nanchang sida ngena rantai lalu nyimpan sida dalam endur ti pemadu petang, ngambika sida diakim lebuh Hari Pechara.
+\v 7 Lalu kingatka mega Sodom enggau Gomorah, enggau nengeri ti ngelingi nengeri dua buah nya, ti ngereja ulah ti kamah, lalu nyarutka pengawa beleman. Sida diukum ngena api ti enda nemu padam, kena ngajar semua mensia.
+
+\v 8 Orang tu pen baka nya mega. Sida ngamahka tubuh diri, enggai diperintah Allah Taala, lalu mechat utai idup ti bemulia di serega.
+        """,
+        )
+
+    # FIXME This fails because test_missing_space_after_number0 fails
+    # @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_numbers17(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_numbers(
+                fix_missing_space_after_number(
+                    r"""
+9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” 10Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+        """
+                )
+            ),
+            r"""
+\v 9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” \v 10 Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. \v 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+        """,
+        )
+
+    # FIXME Fails because of issue with fix_missing_space_after_number
+    # @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_fix_usfm(self) -> None:
+        self.assertEqual(
+            fix_usfm(
+                r"""
+9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” 10Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+        """,
+                ResourceLookupDto(
+                    lang_code="iba-x-ibanempran",
+                    lang_name="foo",
+                    resource_type="reg",
+                    resource_type_name="Bible",
+                    book_code="jud",
+                    lang_direction=LangDirEnum.LTR,
+                    url="bar",
+                ),
+            ),
+            r"""
+\v 9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” \v 10 Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. \v 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+        """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
     def test_fix_missing_space_after_number(self) -> None:
         self.assertEqual(
             fix_missing_space_after_number(r"\v 1Some text."),
@@ -237,6 +432,66 @@ class USFMErrorDetection(unittest.TestCase):
             ),
             r"""\v 1  Jodi ntooh mo nya dik kaya,nongislah gook merataplah nih songsara dik nimpa mo? \v 2 Kokaya mo jeh modamb,gok adohmo jeh oduk naiik gogat! \v 3  Omas ngant Perakmo jeh togoringk,togoringk,e dik jodi saksi tohadap mo gook akan ngudap daginggkmo wook opi,Mo jeh ngumpul rita pado onu-onu dik jeh pongkosiik.
 """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_fix_missing_space_after_number5(self) -> None:
+        self.assertEqual(
+            # ("iba-x-ibanempran", "reg", "jud"),
+            fix_missing_space_after_number(
+                r"""
+24Ngagai Iya ke ulih nagang kita rebah, lalu nyerahka kita nadai bepenyalah sereta enggau ati ti gaga ngagai Iya ke bemulia, 25ngagai Allah Taala ti siku aja ke nyadi Juruselamat kitai, beri meh puji, mulia, pengering, enggau kuasa, ulih Jesus Kristus Tuhan kitai, kenyau ari dulu kelia, ngagai diatu, enggau ke belama-lama iya! Amin.
+"""
+            ),
+            r"""
+24 Ngagai Iya ke ulih nagang kita rebah, lalu nyerahka kita nadai bepenyalah sereta enggau ati ti gaga ngagai Iya ke bemulia, 25 ngagai Allah Taala ti siku aja ke nyadi Juruselamat kitai, beri meh puji, mulia, pengering, enggau kuasa, ulih Jesus Kristus Tuhan kitai, kenyau ari dulu kelia, ngagai diatu, enggau ke belama-lama iya! Amin.
+""",
+        )
+
+    # FIXME 11 gets matched and then split into 1 1
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_missing_space_after_number6(self) -> None:
+        self.assertEqual(
+            fix_missing_space_after_number(
+                r"""
+9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” 10Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+        """
+            ),
+            r"""
+9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” 10 Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
+        """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_missing_space_after_number7(self) -> None:
+        self.assertEqual(
+            fix_missing_space_after_number(
+                r"""
+\v 1 Indro tahaky gny ino gny fitiava nomen'gny Ray asika,ba hitokava asika ho Zanak'Agnahary, dra zay isika. Noho zay atony zay, zao totolo zao dra sy mahafatsy asika, satria sy mahafatasy anazy zay. [ Fanamariha : gny dika-zaka taloha dra sy magnisy ho:''Dra izay isika.''] \v 2 Ry malala, zanak'Agnahary isika amizao, dra zay dra bo sy nambara ho hanahaky gny ino isika . Isika dra mahafatasy fa gny miseho i Kristy,dra ho tahaky Anazy isika, satria hahita Anazy manahaky Anazy isika. \v 3 Gny ze mana anizay fahatokisa momba gny ho avy mifotosy aminazy zay dra magnalio gny vatany ba halio tahaky Anazy.
+\v 4 Zay manota iaby dra manao ze sy ara-dalana; fa gny fahota dra sy ara-dalana. \v 5 Andrareo dra mahafatasy fa i Kristy dra nambara ba hangalaky reo fahota, dra ao aminazy dra sy misy fahota. \v 6 Sy misy olo ze mitoesy ao aminazy dra bo manota nahita anazy dre nahafatasy anazy.
+\v 7 Ry zanaky malala, ka anga hisy olo hamitaky andrareo, gny raiky ze manao gny fahamarigna dra mary,tahaky gny mahamarigna an'i Kristy. \v 8 Gny raiky ze manota dra laha tamin'gny devoly,fa gny devoly dra nanota hatragny am-bolohany. Noho zay atony zay gny Zanak'Agnahary dra naseho, ba hahafahany mandrava reo asan'gny devoly.
+\v 9 Dre iza dre iza naterak'Agnahary dra sy hanohy gny fahota satria gny tegnany laha tamin'Agnahary dra mitoesy ao aminazy. Sy afaky manohy gny fahota izy satria naterak 'Agnahary. \v 10 Ao amin'izay gny hampiboahany reo zanak'Agnahary vo reo zanaky gny devoly. Dre iza dre iza sy manao gny mary dra sy laha tamin'Agnahary; dre gny raiky ze sy tia gny rahalahiny avo koa .
+\v 11 Fa zay gny hafasy ze fa rendrareo hatragny am-piboahany: fa isika dra tokony mifakatia, \v 12 fa sy manahaky an'i Kaina, ze laha tamin'gny rasy vo namono gny rahalahiny. Fa nanao akory izy gny namono anazy? Satria reo asany dra rasy , dra gny agny rahalahiny dra mary.
+\v 13 Ka gaga,ry rahalahiko,raha malaiky andrareo gny tany. \v 14 Fatasika fa niala tamin'gny fahafatesa magnagny ami fiaigna isika satria tia an'ereo rahalahiny isika. Zay sy tia dra mitoesy agny amy fahafatesa. \v 15 Ze malaiky gny rahalahiny dra mpamono olo. Fatasindrareo fa sy misy mpamono olo mana fiaigna mandrakizay mitoesy ao aminazy.
+\v 16 Amin'izay gny hahafatarasika gny fitiava, satria Kristy nanolosy gny ainy hi asika. Isika avo koa dra tokony manolosy gny aisika ho an'ireo rahalahy.\v 17 Fa dre iza dre iza mana gny hanagnan'izao totolo zao zao, dra mahita gny fahasahiragnan'gny rahalahiny, dra mandrindry gny fony fangorahany anazy, amin'gny fomba manao akory gny hipetraran'gny fitiavan'Agnahary ao aminazy? \v 18 Ry zanako malalako, ao isika sy hitia amin'gny zaka dre koa amy vava, fa amin'gny asa vo fahamarigna.
+\v 19 Avy amin'izay gny hahafatarasika fa avy amin'gny fahamarina isika, dra mampatoky gny fosika eo anatrehany isika. \v 20 Fa raha magnahy asika gny fosika, Zagnahary dra lahibe noho gny fosika,dra mahafatasy gny raha-iaby Izy. \v 21 Ry malala, raha sy magnahy asika gny fosika, dra mana fahatokisa amin'Agnahary isika. \v 22 Dre ino dre ino angatahisika dra ho azosika laha taminazy, satria isika mitandry reo didiny vo manao ze tiany eo anatrehany.
+\v 23 Zao gny didiny: tokony mino gny agnaran'gny Zanany Jesosy Kristy dra mifakatia isika, tahaky gny fa nagnomezany asika ze didy zay. \v 24 Gny raiky ze mita reo didin'Agnahary dra mitoesy ao aminazy, dra Zagnahary mitoesy ao aminazy. Amin'izay gny hahafatarasika fa izy dra mitoera ao amisika, amin'gny Fagnahy ze nomeny asika.
+        """
+            ),
+            r"""
+\v 1 Indro tahaky gny ino gny fitiava nomen'gny Ray asika,ba hitokava asika ho Zanak'Agnahary, dra zay isika. Noho zay atony zay, zao totolo zao dra sy mahafatsy asika, satria sy mahafatasy anazy zay. [ Fanamariha : gny dika-zaka taloha dra sy magnisy ho:''Dra izay isika.''] \v 2 Ry malala, zanak'Agnahary isika amizao, dra zay dra bo sy nambara ho hanahaky gny ino isika . Isika dra mahafatasy fa gny miseho i Kristy,dra ho tahaky Anazy isika, satria hahita Anazy manahaky Anazy isika. \v 3 Gny ze mana anizay fahatokisa momba gny ho avy mifotosy aminazy zay dra magnalio gny vatany ba halio tahaky Anazy.
+\v 4 Zay manota iaby dra manao ze sy ara-dalana; fa gny fahota dra sy ara-dalana. \v 5 Andrareo dra mahafatasy fa i Kristy dra nambara ba hangalaky reo fahota, dra ao aminazy dra sy misy fahota. \v 6 Sy misy olo ze mitoesy ao aminazy dra bo manota nahita anazy dre nahafatasy anazy.
+\v 7 Ry zanaky malala, ka anga hisy olo hamitaky andrareo, gny raiky ze manao gny fahamarigna dra mary,tahaky gny mahamarigna an'i Kristy. \v 8 Gny raiky ze manota dra laha tamin'gny devoly,fa gny devoly dra nanota hatragny am-bolohany. Noho zay atony zay gny Zanak'Agnahary dra naseho, ba hahafahany mandrava reo asan'gny devoly.
+\v 9 Dre iza dre iza naterak'Agnahary dra sy hanohy gny fahota satria gny tegnany laha tamin'Agnahary dra mitoesy ao aminazy. Sy afaky manohy gny fahota izy satria naterak 'Agnahary. \v 10 Ao amin'izay gny hampiboahany reo zanak'Agnahary vo reo zanaky gny devoly. Dre iza dre iza sy manao gny mary dra sy laha tamin'Agnahary; dre gny raiky ze sy tia gny rahalahiny avo koa .
+\v 11 Fa zay gny hafasy ze fa rendrareo hatragny am-piboahany: fa isika dra tokony mifakatia, \v 12 fa sy manahaky an'i Kaina, ze laha tamin'gny rasy vo namono gny rahalahiny. Fa nanao akory izy gny namono anazy? Satria reo asany dra rasy , dra gny agny rahalahiny dra mary.
+\v 13 Ka gaga,ry rahalahiko,raha malaiky andrareo gny tany. \v 14 Fatasika fa niala tamin'gny fahafatesa magnagny ami fiaigna isika satria tia an'ereo rahalahiny isika. Zay sy tia dra mitoesy agny amy fahafatesa. \v 15 Ze malaiky gny rahalahiny dra mpamono olo. Fatasindrareo fa sy misy mpamono olo mana fiaigna mandrakizay mitoesy ao aminazy.
+\v 16 Amin'izay gny hahafatarasika gny fitiava, satria Kristy nanolosy gny ainy hi asika. Isika avo koa dra tokony manolosy gny aisika ho an'ireo rahalahy.\v 17 Fa dre iza dre iza mana gny hanagnan'izao totolo zao zao, dra mahita gny fahasahiragnan'gny rahalahiny, dra mandrindry gny fony fangorahany anazy, amin'gny fomba manao akory gny hipetraran'gny fitiavan'Agnahary ao aminazy? \v 18 Ry zanako malalako, ao isika sy hitia amin'gny zaka dre koa amy vava, fa amin'gny asa vo fahamarigna.
+\v 19 Avy amin'izay gny hahafatarasika fa avy amin'gny fahamarina isika, dra mampatoky gny fosika eo anatrehany isika. \v 20 Fa raha magnahy asika gny fosika, Zagnahary dra lahibe noho gny fosika,dra mahafatasy gny raha-iaby Izy. \v 21 Ry malala, raha sy magnahy asika gny fosika, dra mana fahatokisa amin'Agnahary isika. \v 22 Dre ino dre ino angatahisika dra ho azosika laha taminazy, satria isika mitandry reo didiny vo manao ze tiany eo anatrehany.
+\v 23 Zao gny didiny: tokony mino gny agnaran'gny Zanany Jesosy Kristy dra mifakatia isika, tahaky gny fa nagnomezany asika ze didy zay. \v 24 Gny raiky ze mita reo didin'Agnahary dra mitoesy ao aminazy, dra Zagnahary mitoesy ao aminazy. Amin'izay gny hahafatarasika fa izy dra mitoera ao amisika, amin'gny Fagnahy ze nomeny asika.
+        """,
         )
 
     @pytest.mark.focus
@@ -337,6 +592,36 @@ class USFMErrorDetection(unittest.TestCase):
         self.assertEqual(
             fix_missing_space_before_verse_marker(r"\v 5 5Some text."),
             r"\v 5 5Some text.",
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_fix_missing_space_before_verse_marker4(self) -> None:
+        self.assertEqual(
+            fix_missing_space_before_verse_marker(
+                r"""
+\v 1 Indro tahaky gny ino gny fitiava nomen'gny Ray asika,ba hitokava asika ho Zanak'Agnahary, dra zay isika. Noho zay atony zay, zao totolo zao dra sy mahafatsy asika, satria sy mahafatasy anazy zay. [ Fanamariha : gny dika-zaka taloha dra sy magnisy ho:''Dra izay isika.''] \v 2 Ry malala, zanak'Agnahary isika amizao, dra zay dra bo sy nambara ho hanahaky gny ino isika . Isika dra mahafatasy fa gny miseho i Kristy,dra ho tahaky Anazy isika, satria hahita Anazy manahaky Anazy isika. \v 3 Gny ze mana anizay fahatokisa momba gny ho avy mifotosy aminazy zay dra magnalio gny vatany ba halio tahaky Anazy.
+\v 4 Zay manota iaby dra manao ze sy ara-dalana; fa gny fahota dra sy ara-dalana. \v 5 Andrareo dra mahafatasy fa i Kristy dra nambara ba hangalaky reo fahota, dra ao aminazy dra sy misy fahota. \v 6 Sy misy olo ze mitoesy ao aminazy dra bo manota nahita anazy dre nahafatasy anazy.
+\v 7 Ry zanaky malala, ka anga hisy olo hamitaky andrareo, gny raiky ze manao gny fahamarigna dra mary,tahaky gny mahamarigna an'i Kristy. \v 8 Gny raiky ze manota dra laha tamin'gny devoly,fa gny devoly dra nanota hatragny am-bolohany. Noho zay atony zay gny Zanak'Agnahary dra naseho, ba hahafahany mandrava reo asan'gny devoly.
+\v 9 Dre iza dre iza naterak'Agnahary dra sy hanohy gny fahota satria gny tegnany laha tamin'Agnahary dra mitoesy ao aminazy. Sy afaky manohy gny fahota izy satria naterak 'Agnahary. \v 10 Ao amin'izay gny hampiboahany reo zanak'Agnahary vo reo zanaky gny devoly. Dre iza dre iza sy manao gny mary dra sy laha tamin'Agnahary; dre gny raiky ze sy tia gny rahalahiny avo koa .
+\v 11 Fa zay gny hafasy ze fa rendrareo hatragny am-piboahany: fa isika dra tokony mifakatia, \v 12 fa sy manahaky an'i Kaina, ze laha tamin'gny rasy vo namono gny rahalahiny. Fa nanao akory izy gny namono anazy? Satria reo asany dra rasy , dra gny agny rahalahiny dra mary.
+\v 13 Ka gaga,ry rahalahiko,raha malaiky andrareo gny tany. \v 14 Fatasika fa niala tamin'gny fahafatesa magnagny ami fiaigna isika satria tia an'ereo rahalahiny isika. Zay sy tia dra mitoesy agny amy fahafatesa. \v 15 Ze malaiky gny rahalahiny dra mpamono olo. Fatasindrareo fa sy misy mpamono olo mana fiaigna mandrakizay mitoesy ao aminazy.
+\v 16 Amin'izay gny hahafatarasika gny fitiava, satria Kristy nanolosy gny ainy hi asika. Isika avo koa dra tokony manolosy gny aisika ho an'ireo rahalahy.\v 17 Fa dre iza dre iza mana gny hanagnan'izao totolo zao zao, dra mahita gny fahasahiragnan'gny rahalahiny, dra mandrindry gny fony fangorahany anazy, amin'gny fomba manao akory gny hipetraran'gny fitiavan'Agnahary ao aminazy? \v 18 Ry zanako malalako, ao isika sy hitia amin'gny zaka dre koa amy vava, fa amin'gny asa vo fahamarigna.
+\v 19 Avy amin'izay gny hahafatarasika fa avy amin'gny fahamarina isika, dra mampatoky gny fosika eo anatrehany isika. \v 20 Fa raha magnahy asika gny fosika, Zagnahary dra lahibe noho gny fosika,dra mahafatasy gny raha-iaby Izy. \v 21 Ry malala, raha sy magnahy asika gny fosika, dra mana fahatokisa amin'Agnahary isika. \v 22 Dre ino dre ino angatahisika dra ho azosika laha taminazy, satria isika mitandry reo didiny vo manao ze tiany eo anatrehany.
+\v 23 Zao gny didiny: tokony mino gny agnaran'gny Zanany Jesosy Kristy dra mifakatia isika, tahaky gny fa nagnomezany asika ze didy zay. \v 24 Gny raiky ze mita reo didin'Agnahary dra mitoesy ao aminazy, dra Zagnahary mitoesy ao aminazy. Amin'izay gny hahafatarasika fa izy dra mitoera ao amisika, amin'gny Fagnahy ze nomeny asika.
+        """
+            ),
+            r"""
+\v 1 Indro tahaky gny ino gny fitiava nomen'gny Ray asika,ba hitokava asika ho Zanak'Agnahary, dra zay isika. Noho zay atony zay, zao totolo zao dra sy mahafatsy asika, satria sy mahafatasy anazy zay. [ Fanamariha : gny dika-zaka taloha dra sy magnisy ho:''Dra izay isika.''] \v 2 Ry malala, zanak'Agnahary isika amizao, dra zay dra bo sy nambara ho hanahaky gny ino isika . Isika dra mahafatasy fa gny miseho i Kristy,dra ho tahaky Anazy isika, satria hahita Anazy manahaky Anazy isika. \v 3 Gny ze mana anizay fahatokisa momba gny ho avy mifotosy aminazy zay dra magnalio gny vatany ba halio tahaky Anazy.
+\v 4 Zay manota iaby dra manao ze sy ara-dalana; fa gny fahota dra sy ara-dalana. \v 5 Andrareo dra mahafatasy fa i Kristy dra nambara ba hangalaky reo fahota, dra ao aminazy dra sy misy fahota. \v 6 Sy misy olo ze mitoesy ao aminazy dra bo manota nahita anazy dre nahafatasy anazy.
+\v 7 Ry zanaky malala, ka anga hisy olo hamitaky andrareo, gny raiky ze manao gny fahamarigna dra mary,tahaky gny mahamarigna an'i Kristy. \v 8 Gny raiky ze manota dra laha tamin'gny devoly,fa gny devoly dra nanota hatragny am-bolohany. Noho zay atony zay gny Zanak'Agnahary dra naseho, ba hahafahany mandrava reo asan'gny devoly.
+\v 9 Dre iza dre iza naterak'Agnahary dra sy hanohy gny fahota satria gny tegnany laha tamin'Agnahary dra mitoesy ao aminazy. Sy afaky manohy gny fahota izy satria naterak 'Agnahary. \v 10 Ao amin'izay gny hampiboahany reo zanak'Agnahary vo reo zanaky gny devoly. Dre iza dre iza sy manao gny mary dra sy laha tamin'Agnahary; dre gny raiky ze sy tia gny rahalahiny avo koa .
+\v 11 Fa zay gny hafasy ze fa rendrareo hatragny am-piboahany: fa isika dra tokony mifakatia, \v 12 fa sy manahaky an'i Kaina, ze laha tamin'gny rasy vo namono gny rahalahiny. Fa nanao akory izy gny namono anazy? Satria reo asany dra rasy , dra gny agny rahalahiny dra mary.
+\v 13 Ka gaga,ry rahalahiko,raha malaiky andrareo gny tany. \v 14 Fatasika fa niala tamin'gny fahafatesa magnagny ami fiaigna isika satria tia an'ereo rahalahiny isika. Zay sy tia dra mitoesy agny amy fahafatesa. \v 15 Ze malaiky gny rahalahiny dra mpamono olo. Fatasindrareo fa sy misy mpamono olo mana fiaigna mandrakizay mitoesy ao aminazy.
+\v 16 Amin'izay gny hahafatarasika gny fitiava, satria Kristy nanolosy gny ainy hi asika. Isika avo koa dra tokony manolosy gny aisika ho an'ireo rahalahy. \v 17 Fa dre iza dre iza mana gny hanagnan'izao totolo zao zao, dra mahita gny fahasahiragnan'gny rahalahiny, dra mandrindry gny fony fangorahany anazy, amin'gny fomba manao akory gny hipetraran'gny fitiavan'Agnahary ao aminazy? \v 18 Ry zanako malalako, ao isika sy hitia amin'gny zaka dre koa amy vava, fa amin'gny asa vo fahamarigna.
+\v 19 Avy amin'izay gny hahafatarasika fa avy amin'gny fahamarina isika, dra mampatoky gny fosika eo anatrehany isika. \v 20 Fa raha magnahy asika gny fosika, Zagnahary dra lahibe noho gny fosika,dra mahafatasy gny raha-iaby Izy. \v 21 Ry malala, raha sy magnahy asika gny fosika, dra mana fahatokisa amin'Agnahary isika. \v 22 Dre ino dre ino angatahisika dra ho azosika laha taminazy, satria isika mitandry reo didiny vo manao ze tiany eo anatrehany.
+\v 23 Zao gny didiny: tokony mino gny agnaran'gny Zanany Jesosy Kristy dra mifakatia isika, tahaky gny fa nagnomezany asika ze didy zay. \v 24 Gny raiky ze mita reo didin'Agnahary dra mitoesy ao aminazy, dra Zagnahary mitoesy ao aminazy. Amin'izay gny hahafatarasika fa izy dra mitoera ao amisika, amin'gny Fagnahy ze nomeny asika.
+        """,
         )
 
     @pytest.mark.usfm_fixes

@@ -12,7 +12,7 @@ pattern_matchers = {
     "fix_dot_after_verse_number": r"(\\v\s*\d+)\s*\.\s*(\S)",
     "fix_verse_marker_without_v": r"\\(\d+)\s*\.?\s*(\S+)",
     "fix_missing_space_before_number": r"(?<!\\c\s)(?<!\\v\s)(?<!\\v\s\d)(?<!\\q\d\s)(?<!\\li)(?<!\\li\d)(?<=\S)(?<!\\\S)(\d+)(?=\s)",
-    "fix_missing_space_after_number": r"(\s+|^)(\d+)(\S)",
+    "fix_missing_space_after_number": r"(\s+|^)(\d+)(\S+)",
     "fix_missing_space_before_verse_marker": r"(\S)(\\v\s+\d+)",
     "fix_standalone_verse_numbers": r"(?<!\\)(?<!\\c\s)(?<!\\v\s)(?<!\\v\s\d)(?<!\\q\d\s)(?<!\\li)(?<!\\li\d)\b(\d+)\b(?=\s|$|[^\d\w])",
     "replace_n_with_v": r"\\n",
@@ -59,8 +59,17 @@ def fix_missing_space_before_number(content: str) -> str:
             match.group(1),
         )
         character_before_number = content[match.start() - 1]
+        character_before_before_number = content[
+            match.start() - 2
+        ]  # TODO guard against index error
         logger.debug("character_before_number: %s", character_before_number)
-        if character_before_number.isdigit() and match.group(1).isdigit():
+        if (
+            character_before_number.isdigit()
+            and match.group(1).isdigit()
+            or character_before_number in [".", ","]  # handle 299.100 or 299,100
+            and character_before_before_number.isdigit()
+            and match.group(1).isdigit()
+        ):
             logger.debug(
                 "Actually, it wasn't missing a space before number after all upon further checking"
             )
@@ -73,24 +82,24 @@ def fix_missing_space_before_number(content: str) -> str:
 
 
 def fix_missing_space_after_number(content: str) -> str:
-    result = ""
-    if match := compiled_patterns["fix_missing_space_after_number"].search(content):
-        logger.debug(
-            "match.group(1): %s, match.group(2): %s, match.group(3): %s",
-            match.group(1),
-            match.group(2),
-            match.group(3),
-        )
-        if match.group(2).isdigit() and match.group(3).isdigit():
-            logger.debug(
-                "Actually, it wasn't missing a space after number after all upon further checking"
-            )
-            result = content
-        else:
-            result = re.sub(
-                pattern_matchers["fix_missing_space_after_number"], r"\1\2 \3", content
-            )
-    return result
+    matches = re.findall(compiled_patterns["fix_missing_space_after_number"], content)
+    for match in matches:
+        if not match[2].isdigit() and match[2][0] not in [
+            ":",
+            "-",
+            ")",
+            "(",
+            "[",
+            "]",
+            ",",
+            ".",
+        ]:  # Skip e.g., '(Zak 13:9)'
+            replacement = match[1] + " " + match[2]
+            # So far haven't needed it, but in the future if this
+            # blows up for some case then you could see if re.escape helps.
+            pattern2 = f"{match[1]}{match[2]}"
+            content = re.sub(pattern2, replacement, content)
+    return content
 
 
 def fix_missing_space_before_verse_marker(content: str) -> str:
@@ -211,7 +220,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content
     ):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "fix_dot_after_verse_number",
             match.group(),
             corrected_usfm_content[
@@ -228,7 +237,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content
     ):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "fix_verse_marker_without_v",
             match.group(),
             corrected_usfm_content[
@@ -245,7 +254,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content
     ):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "fix_missing_space_before_number",
             match.group(),
             corrected_usfm_content[
@@ -262,7 +271,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content
     ):
         logger.debug(
-            "Potential USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, then will attempt fix...",
+            "Potential USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, then will attempt fix...",
             "fix_missing_space_after_number",
             match.group(),
             corrected_usfm_content[
@@ -279,7 +288,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content
     ):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "fix_missing_space_before_verse_marker",
             match.group(),
             corrected_usfm_content[
@@ -298,7 +307,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content
     ):
         logger.debug(
-            "Possible USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, attempt to fix...",
+            "Possible USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, attempt to fix...",
             "fix_standalone_verse_numbers",
             match.group(),
             corrected_usfm_content[
@@ -313,7 +322,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content = fix_standalone_verse_numbers(corrected_usfm_content)
     if match := compiled_patterns["replace_n_with_v"].search(corrected_usfm_content):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "replace_n_with_v",
             match.group(),
             corrected_usfm_content[
@@ -328,7 +337,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content = replace_n_with_v(corrected_usfm_content)
     if match := compiled_patterns["replace_vv_with_v"].search(corrected_usfm_content):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "replace_vv_with_v",
             match.group(),
             corrected_usfm_content[
@@ -343,7 +352,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content = replace_vv_with_v(corrected_usfm_content)
     if match := compiled_patterns["replace_sv_with_s"].search(corrected_usfm_content):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "replace_sv_with_s",
             match.group(),
             corrected_usfm_content[
@@ -360,7 +369,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content
     ):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "fix_space_after_section_marker",
             match.group(),
             corrected_usfm_content[
@@ -375,7 +384,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content = fix_space_after_section_marker(corrected_usfm_content)
     if match := compiled_patterns["replace_qv_with_q"].search(corrected_usfm_content):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "replace_qv_with_q",
             match.group(),
             corrected_usfm_content[
@@ -390,7 +399,7 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
         corrected_usfm_content = replace_qv_with_q(corrected_usfm_content)
     if match := compiled_patterns["replace_cc_with_c"].search(corrected_usfm_content):
         logger.debug(
-            "USFM defect, %s, detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
+            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
             "replace_cc_with_c",
             match.group(),
             corrected_usfm_content[

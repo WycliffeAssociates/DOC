@@ -2,22 +2,16 @@
 This module tests languages which were found through automatic randomized testing and subsequent manual investigation to have certain potentially fixable, on the fly, USFM defects that prevent them from being parsed.
 """
 
-import os
-import re
 
-from typing import Mapping, Sequence
+from typing import Sequence
 import pytest
 from document.config import settings
-from document.domain import bible_books, model, exceptions, parsing, resource_lookup
+from document.domain import model, exceptions, parsing, resource_lookup
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from tests.shared.utils import (
-    check_finished_document_with_body_success,
-    check_finished_document_with_verses_success,
-    check_finished_document_without_verses_success,
-    check_result,
-)
+from tests.shared.utils import check_finished_document_with_verses_success
+
 
 logger = settings.logger(__name__)
 
@@ -25,7 +19,7 @@ logger = settings.logger(__name__)
 def languages_with_usfm_defects(
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
-    ] = settings.RESOURCES_WITH_USFM_DEFECTS
+    ] = parsing.RESOURCES_WITH_USFM_DEFECTS
 ) -> list[str]:
     lang_codes = [resource_tuple[0] for resource_tuple in resources_with_usfm_defects]
     return sorted(set(lang_codes))
@@ -34,12 +28,12 @@ def languages_with_usfm_defects(
 def resources_with_usfm_defects_(
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
-    ] = settings.RESOURCES_WITH_USFM_DEFECTS
+    ] = parsing.RESOURCES_WITH_USFM_DEFECTS
 ) -> Sequence[tuple[str, str, str]]:
     return resources_with_usfm_defects
 
 
-# Test programmatically fixing all books of languages known to have USFM defects
+# Test programmatically checking all books of languages known to have USFM defects
 @pytest.mark.skip
 @pytest.mark.usfm_fixes
 @pytest.mark.parametrize(
@@ -48,7 +42,9 @@ def resources_with_usfm_defects_(
 )
 def test_all_usfm_books_for_language(lang_code: str) -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        book_codes_and_names = resource_lookup.book_codes_for_lang(lang_code)
+        book_codes_and_names = resource_lookup.book_codes_for_lang_from_usfm_only(
+            lang_code
+        )
         if not book_codes_and_names:
             raise exceptions.NoBooksError(message="no available books.")
         usfm_resource_types_and_book_tuples_ = (

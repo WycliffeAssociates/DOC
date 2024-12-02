@@ -18,7 +18,11 @@ import requests
 from document.config import settings
 from document.domain import parsing
 from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import LangDirEnum, ResourceLookupDto
+from document.domain.model import (
+    LangDirEnum,
+    ResourceLookupDto,
+    NON_USFM_RESOURCE_TYPES,
+)
 from document.utils.file_utils import file_needs_update, read_file
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
@@ -28,6 +32,129 @@ logger = settings.logger(__name__)
 SOURCE_DATA_JSON_FILENAME = "resources.json"
 
 SOURCE_GATEWAY_LANGUAGES_FILENAME = "gateway_languages.json"
+
+# This can be expanded to include any additional types (if
+# there are any) that we want to be available to users. These are all
+# that I found of relevance in the data API.
+RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
+    "ayt": "Bahasa Indonesian Bible",
+    "bc": "Bible Commentary",
+    "blv": "Portuguese Bíblia Livre",
+    "cuv": "新标点和合本",
+    "f10": "French Louis Segond 1910 Bible",
+    "nav": "New Arabic Version (Ketab El Hayat)",
+    "reg": "Bible",
+    "tn": "Translation Notes",
+    "tn-condensed": "Condensed Translation Notes",
+    "tq": "Translation Questions",
+    "tw": "Translation Words",
+    # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used
+    "ugnt": "unfoldingWord® Greek New Testament",
+    "uhb": "unfoldingWord® Hebrew Bible",
+    "ulb": "Unlocked Literal Bible",
+}
+
+# NOTE This is only used to see if a lang_code is in the collection
+# otherwise it is a heart language. Eventually the graphql data api may
+# provide gateway/heart boolean value.
+GATEWAY_LANGUAGES: Sequence[str] = [
+    "abs",
+    "aju",
+    "am",
+    "apd",
+    "ar",
+    "ar-x-dcv",
+    "ary",
+    "arz",
+    "as",
+    "ase",
+    "bem",
+    "bg",
+    "bgw",
+    "bi",
+    "bn",
+    "ceb",
+    "cmn",
+    "cmn-x-omc",
+    "csl",
+    "dz",
+    "en",
+    "es",
+    "es-419",
+    "fa",
+    "fil",
+    "fr",
+    "grt",
+    "gu",
+    "gug",
+    "ha",
+    "hbs",
+    "hca",
+    "he",
+    "hi",
+    "hne",
+    "hu",
+    "id",
+    "id-x-dcv",
+    "idb",
+    "ilo",
+    "ins",
+    "ja",
+    "jv",
+    "kas",
+    "km",
+    "kn",
+    "lbj",
+    "ln",
+    "lo",
+    "mai",
+    "mg",
+    "ml",
+    "mn",
+    "mni",
+    "mnk",
+    "mr",
+    "ms",
+    "my",
+    "ne",
+    "nl",
+    "npi",
+    "or",
+    "pa",
+    "pbt",
+    "pes",
+    "pis",
+    "plt",
+    "pmy",
+    "pnb",
+    "prs",
+    "ps",
+    "psr",
+    "pt",
+    "pt-br",
+    "raj",
+    "rsl",
+    "ru",
+    "rwr",
+    "sn",
+    "sw",
+    "swc",
+    "swh",
+    "ta",
+    "te",
+    "th",
+    "ti",
+    "tl",
+    "tn",
+    "tpi",
+    "tr",
+    "tsg",
+    "ug",
+    "ur",
+    "vi",
+    "zh",
+    "zlm",
+]
 
 
 @lru_cache(maxsize=2)
@@ -185,7 +312,7 @@ def get_gateway_languages(
     json_file_name: str = SOURCE_GATEWAY_LANGUAGES_FILENAME,
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
     use_hardcoded_gateway_language_values: bool = True,
-    hardcoded_gateway_languages: Sequence[str] = settings.GATEWAY_LANGUAGES,
+    hardcoded_gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
 ) -> Any:
     """
     Obtain the source data, by downloading it from json_file_url, and
@@ -230,7 +357,7 @@ def get_gateway_languages(
 
 def lang_codes_and_names(
     # lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
-    gateway_languages: Sequence[str] = settings.GATEWAY_LANGUAGES,
+    gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
 ) -> Sequence[tuple[str, str, bool]]:
     """
     >>> from document.domain import resource_lookup
@@ -281,9 +408,7 @@ def resource_types(
     book_codes_str: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
     bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     book_names: dict[str, str] = BOOK_NAMES,
 ) -> Sequence[tuple[str, str]]:
@@ -463,10 +588,8 @@ def get_last_segment(url: str, lang_code: str) -> str:
 def update_repo_components(
     repo_components: list[str],
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    non_usfm_resource_types: Sequence[str] = settings.NON_USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    non_usfm_resource_types: Sequence[str] = NON_USFM_RESOURCE_TYPES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[str]:
     last_component = repo_components[-1]
     # Some DCS-Mirror URLs have an unusual pattern wherein a non resource type is the last component
@@ -649,9 +772,7 @@ def resource_lookup_dto(
     book_code: str,
     dcs_mirror_git_username: str = "DCS-Mirror",
     zmq_git_username: str = "faustin_azaza",
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> Optional[ResourceLookupDto]:
     """
     >>> from document.domain import resource_lookup

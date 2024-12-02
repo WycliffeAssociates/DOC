@@ -26,6 +26,9 @@ from document.domain.model import (
 
 logger = settings.logger(__name__)
 
+END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
+BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+
 
 def assemble_content_by_lang_then_book(
     usfm_books: Sequence[USFMBook],
@@ -163,10 +166,10 @@ def assemble_usfm_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     hr: str = "<hr/>",
     close_direction_html: str = "</div>",
-    fmt_str: str = settings.BOOK_NAME_FMT_STR,
+    fmt_str: str = BOOK_NAME_FMT_STR,
 ) -> str:
     content = []
     content.append(usfm_language_direction_html(usfm_book))
@@ -207,7 +210,7 @@ def assemble_tn_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> str:
     content = []
@@ -232,7 +235,7 @@ def assemble_tq_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> str:
     content = []
@@ -256,7 +259,7 @@ def assemble_tw_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> str:
     content = []

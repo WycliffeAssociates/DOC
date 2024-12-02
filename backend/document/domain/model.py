@@ -19,6 +19,19 @@ from pydantic.functional_validators import model_validator
 VerseRef = str
 ChapterNum = int
 
+TN_RESOURCE_TYPE: str = "tn"
+EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
+TQ_RESOURCE_TYPE: str = "tq"
+TW_RESOURCE_TYPE: str = "tw"
+BC_RESOURCE_TYPE: str = "bc"
+NON_USFM_RESOURCE_TYPES: Sequence[str] = [
+    TN_RESOURCE_TYPE,
+    EN_TN_CONDENSED_RESOURCE_TYPE,
+    TQ_RESOURCE_TYPE,
+    TW_RESOURCE_TYPE,
+    BC_RESOURCE_TYPE,
+]
+
 
 @final
 class AssemblyStrategyEnum(str, Enum):
@@ -183,11 +196,11 @@ class DocumentRequest(BaseModel):
         """
         usfm_resource_types = settings.USFM_RESOURCE_TYPES
         non_usfm_resource_types = [
-            settings.EN_TN_CONDENSED_RESOURCE_TYPE,
-            settings.TN_RESOURCE_TYPE,
-            settings.TQ_RESOURCE_TYPE,
-            settings.TW_RESOURCE_TYPE,
-            settings.BC_RESOURCE_TYPE,
+            EN_TN_CONDENSED_RESOURCE_TYPE,
+            TN_RESOURCE_TYPE,
+            TQ_RESOURCE_TYPE,
+            TW_RESOURCE_TYPE,
+            BC_RESOURCE_TYPE,
         ]
         all_resource_types = [*usfm_resource_types, *non_usfm_resource_types]
         if not self.resource_requests:

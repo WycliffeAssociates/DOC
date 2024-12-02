@@ -151,7 +151,6 @@ def create_docx_subdoc(
             p_run_lang.set(qn("w:eastAsia"), lang_code)
             # bidi is short for bidirectionality text
             p_run_lang.set(qn("w:bidi"), lang_code)
-
             # # Set font for this run.
             # p_run.font.name = "Noto Sans Regular"
             # r = p_run._element
@@ -163,7 +162,6 @@ def create_docx_subdoc(
             p_run_lang.set(qn("w:eastAsia"), updated_lang_code)
             # bidi is short for bidirectionality text
             p_run_lang.set(qn("w:bidi"), updated_lang_code)
-
             # # Set font for this run.
             # p_run.font.name = "Noto Sans Regular"
             # r = p_run._element
@@ -176,7 +174,6 @@ def create_docx_subdoc(
             p_run_lang.set(qn("w:val"), "en-US")
             p_run_lang.set(qn("w:eastAsia"), "en-US")
             p_run_lang.set(qn("w:bidi"), "en-US")
-
         p_rpr.append(p_run_lang)
         # Add a horizontal ruler at the end of the paragraph if requested.
         if add_hr_p:

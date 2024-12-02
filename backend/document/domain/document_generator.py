@@ -70,6 +70,9 @@ from pydantic import Json
 
 logger = settings.logger(__name__)
 
+OPENING_H3_FMT_STR: str = "<h3>{}"
+OPENING_H3_WITH_ID_FMT_STR: str = '<h3 id="{}-{}">{}'
+
 
 def contains_tw(resource_request: ResourceRequest, tw_regex: str = "tw.*") -> bool:
     """Return True if the resource_request describes a TW resource."""
@@ -243,7 +246,7 @@ def translation_words_section(
     usfm_books: Optional[Sequence[USFMBook]],
     limit_words: bool,
     resource_requests: Sequence[ResourceRequest],
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = "<h2>{}</h2>",
 ) -> str:
     """
     Build and return the translation words definition section, i.e.,
@@ -365,8 +368,8 @@ def name_content_pair_content(
 def modify_content_for_anchors(
     name_content_pair: TWNameContentPair,
     book_content_unit: TWBook,
-    opening_h3_fmt_str: str = settings.OPENING_H3_FMT_STR,
-    opening_h3_with_id_fmt_str: str = settings.OPENING_H3_WITH_ID_FMT_STR,
+    opening_h3_fmt_str: str = OPENING_H3_FMT_STR,
+    opening_h3_with_id_fmt_str: str = OPENING_H3_WITH_ID_FMT_STR,
 ) -> str:
     return name_content_pair.content.replace(
         opening_h3_fmt_str.format(name_content_pair.localized_word),

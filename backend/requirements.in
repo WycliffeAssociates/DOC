@@ -7,8 +7,6 @@
 aiofiles
 celery
 celery-types
-chevron # For stet
-types-chevron # For stet
 docxtpl
 fastapi[all]
 flower

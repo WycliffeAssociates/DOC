@@ -169,7 +169,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("jid", "reg", "mat"),
     ("jni", "reg", "luk"),
     ("jni", "ulb", "luk"),
-    ("kdx", "reg", "1pe"),
     ("kin-x-kinyabinza", "reg", "phm"),
     ("kiz", "reg", "heb"),
     # ("kiz", "reg", "php"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)

@@ -26,7 +26,6 @@ services:
         # "randomized",
         # "focus",
         # "stet",
-        # "not usfm_fixes and not all and not randomized and not english_randomized",
         "not all and not randomized and not english_randomized",
         "-n",
         "auto",

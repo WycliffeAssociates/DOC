@@ -1,28 +1,29 @@
 import re
-from pathlib import Path
+from datetime import datetime
 from typing import Mapping, Optional, Sequence
 
-import jinja2
 import mistune
 from celery import current_task
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import ChapterNum, USFMBook, USFMChapter
+from document.domain.model import USFMBook, USFMChapter
 from document.domain.parsing import usfm_book_content
 from document.domain.resource_lookup import (
+    RESOURCE_TYPE_CODES_AND_NAMES,
     provision_asset_files,
     resource_lookup_dto,
     resource_types,
-    RESOURCE_TYPE_CODES_AND_NAMES,
 )
 from document.stet.model import VerseEntry, VerseReferenceDto, WordEntry, WordEntryDto
 from document.stet.util import is_valid_int
-from document.utils.file_utils import template_path
 from docx import Document  # type: ignore
-from htmldocx import HtmlToDocx  # type: ignore
+from docx.document import Document as DocxDocument  # type: ignore
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
-from docx.shared import Pt  # type: ignore
+from docx.shared import Pt, RGBColor  # type: ignore
+from docx.table import Table, _Cell, _Row  # type: ignore
+from htmldocx import HtmlToDocx  # type: ignore
 
 logger = settings.logger(__name__)
 
@@ -99,7 +100,6 @@ def get_word_entry_dtos(
             word_entry_dto = WordEntryDto()
             # Extract data from word field
             match = re.match(r"(.*)(\n)?(.*)?", row.cells[0].text)
-            # TODO Maybe shouldn't raise an exception here
             if not match:
                 raise ValueError(f"Couldn't parse word def: {row.cells[0].text}")
             word = match.group(1)
@@ -138,11 +138,6 @@ def get_word_entry_dtos(
                     chapter_num = int(match.group(2))
                     verses = match.group(3)
                     comment = match.group(4)
-                    # Clean up comments
-                    # if comment:
-                    #     # Replace asterisks with Markdown-compatible asterisks
-                    #     comment = re.sub(r"\*", r"\\*", comment)
-                    # Write row to table
                     if comment:
                         source_reference = (
                             f"{book_name} {chapter_num}:{verses}{comment}"
@@ -150,13 +145,6 @@ def get_word_entry_dtos(
                     else:
                         source_reference = f"{book_name} {chapter_num}:{verses}"
                     target_reference = f"{book_name} {chapter_num}:{verses}"
-                    # logger.debug(
-                    #     "book_name: %s, chapter_num: %s, verse_num(s): %s, comment: %s",
-                    #     book_name,
-                    #     chapter_num,
-                    #     verses,
-                    #     comment,
-                    # )
                     verse_refs: list[str] = verses.split(",")
                     valid_verse_refs: list[str] = []
                     for verse_ref in verse_refs:
@@ -188,11 +176,10 @@ def get_word_entry_dtos(
     return word_entry_dtos, list(set(book_codes_))
 
 
-def format_docx_tables(docx_filepath: str) -> None:
+def format_docx_tables(doc: Document) -> Document:
     """
     Programmatically improve table borders and cell text padding.
     """
-    doc = Document(docx_filepath)
     # Loop through tables and set borders
     for table in doc.tables:
         tbl = table._element
@@ -223,7 +210,67 @@ def format_docx_tables(docx_filepath: str) -> None:
                 cell_paragraph.paragraph_format.space_after = Pt(
                     0
                 )  # Remove extra space after
+    return doc
+
+
+def add_checkbox_column(docx_filepath: str) -> None:
+    """
+    Add a third column to each table in a DOCX file, with each cell in the new column containing an unchecked checkbox.
+    """
+    doc: DocxDocument = Document(docx_filepath)
+    for table in doc.tables:  # type: Table
+        add_column_with_checkboxes(table)
     doc.save(docx_filepath)
+
+
+def add_column_with_checkboxes(table: Table) -> None:
+    """
+    Add a new column to the right of a table, with each cell containing an unchecked checkbox.
+    """
+    for row in table.rows:
+        # Append a new cell to the row's XML
+        new_cell = add_cell_to_row(row)
+        if new_cell:
+            add_checkbox_to_cell(new_cell)
+
+
+def add_cell_to_row(row: _Row) -> Optional[_Cell]:
+    """
+    Add a new cell to the row by manipulating its XML structure.
+    Returns the new cell object.
+    """
+    tc = OxmlElement("w:tc")  # Create a new table cell element
+    tcPr = OxmlElement("w:tcPr")  # Table cell properties
+    tc.append(tcPr)  # Append properties to the cell
+    row._tr.append(tc)  # Append the new cell to the row's XML
+    # Wrap the XML element in a python-docx cell object
+    return _Cell(tc, row.table)
+
+
+def add_checkbox_to_cell(cell: _Cell) -> None:
+    """
+    Add an unchecked checkbox to a table cell.
+    """
+    # Create a checkbox element
+    checkbox: OxmlElement = OxmlElement("w:sdt")  # Structured document tag
+    sdtPr: OxmlElement = OxmlElement("w:sdtPr")
+    checkBox: OxmlElement = OxmlElement("w:checkBox")
+    sdtPr.append(checkBox)
+    checkbox.append(sdtPr)
+    sdtContent: OxmlElement = OxmlElement("w:sdtContent")
+    p: OxmlElement = OxmlElement("w:p")  # Paragraph
+    r: OxmlElement = OxmlElement("w:r")  # Run
+    t: OxmlElement = OxmlElement("w:t")  # Text
+    t.text = "☐"  # Use a Unicode checkbox character
+    r.append(t)
+    p.append(r)
+    sdtContent.append(p)
+    checkbox.append(sdtContent)
+    # Add the checkbox to the cell
+    if hasattr(cell, "_tc"):  # Ensure cell has '_tc' attribute for safety
+        tc: Optional[OxmlElement] = getattr(cell, "_tc", None)
+        if tc:
+            tc.append(checkbox)
 
 
 def extract_chapter_and_beyond(text: str) -> Optional[str]:
@@ -406,15 +453,231 @@ def generate_docx_document(
                 )
             )
         word_entries.append(word_entry)
-    # Create HTML file and then convert it to Docx with library
     current_task.update_state(state="Converting to Docx")
-    template = Path(template_path("stet_html")).read_text(encoding="utf-8")
-    env = jinja2.Environment(autoescape=True).from_string(template)
-    full_html = env.render(data=word_entries)
-    filepath_ = f"{working_dir}/{document_request_key_}.html"
-    with open(filepath_, "w", encoding="utf-8") as outfile2:
-        outfile2.write(full_html)
-    html_to_docx = HtmlToDocx()
-    html_to_docx.parse_html_file(filepath_, f"{output_dir}/{Path(docx_filepath_).stem}")
-    format_docx_tables(docx_filepath_)
+    generate_docx(word_entries, docx_filepath_, lang0_code, lang1_code)
     return docx_filepath_
+
+
+def generate_docx(
+    word_entries: list[WordEntry], docx_filepath: str, lang0_code: str, lang1_code: str
+) -> None:
+    """
+    Generates a DOCX document from a list of word entries and saves it to the given file path.
+    :param word_entries: A list of word entries containing the word, strongs numbers, definition, and verses.
+    :param docx_filepath: The file path where the generated DOCX document will be saved.
+    :param lang0_code: Source language code for the document header.
+    :param lang1_code: Target language code for the document header.
+    """
+    doc = Document()
+    html_to_docx = HtmlToDocx()
+    for word_entry in word_entries:
+        # Add the word heading
+        heading: str = (
+            f"{word_entry.word} ({word_entry.strongs_numbers})"
+            if word_entry.strongs_numbers
+            else word_entry.word
+        )
+        doc.add_heading(heading, level=1)
+        # Convert the HTML definition to DOCX content
+        if word_entry.definition:
+            html_to_docx.add_html_to_document(word_entry.definition, doc)
+        # Create a table with three columns
+        table = doc.add_table(rows=1, cols=3)
+        table.style = "Table Grid"
+        # Set the header of the table and apply bold formatting
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = "Source Reference"
+        hdr_cells[1].text = "Target Reference"
+        hdr_cells[2].text = "Status"
+        hdr_cells[2].paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        for hdr_cell in hdr_cells:
+            hdr_cell.paragraphs[0].runs[0].bold = True
+        # Add verses to the table
+        for verse in word_entry.verses:
+            # Row for references
+            row_cells = table.add_row().cells
+            source_run = row_cells[0].paragraphs[0].add_run(verse.source_reference)
+            source_run.bold = True
+            target_run = row_cells[1].paragraphs[0].add_run(verse.target_reference)
+            target_run.bold = True
+            status_run = row_cells[2].paragraphs[0].add_run("Ok")
+            status_run.bold = True
+            row_cells[2].paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            # Row for texts
+            row_cells = table.add_row().cells
+            # Add source_text with bold formatting for the word
+            source_paragraph = row_cells[0].paragraphs[0]
+            source_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
+            start = 0
+            word_lower = word_entry.word.lower()
+            for idx in range(len(verse.source_text)):
+                # Find case-insensitive occurrences of the word
+                start_idx = verse.source_text.lower().find(word_lower, start)
+                if start_idx == -1:
+                    break
+                # Add the text before the word
+                source_paragraph.add_run(verse.source_text[start:start_idx])
+                # Add the word with bold formatting
+                bold_run = source_paragraph.add_run(
+                    verse.source_text[start_idx : start_idx + len(word_entry.word)]
+                )
+                bold_run.bold = True
+                start = start_idx + len(word_entry.word)
+            # Add remaining text after the last occurrence of the word
+            source_paragraph.add_run(verse.source_text[start:])
+            # Add target_text with wider line spacing
+            target_paragraph = row_cells[1].paragraphs[0]
+            target_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
+            target_paragraph.add_run(verse.target_text)
+            # Vertically centered Unicode checkbox
+            checkbox_cell = row_cells[2]
+            checkbox_paragraph = checkbox_cell.paragraphs[0]
+            checkbox_paragraph.text = "\u2610"
+            checkbox_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            # Set vertical alignment to center using XML
+            tc = checkbox_cell._tc  # Access the XML element of the table cell
+            tcPr = tc.get_or_add_tcPr()  # Get or add the cell properties
+            vAlign = OxmlElement("w:vAlign")  # Create the vertical alignment element
+            vAlign.set(qn("w:val"), "center")  # Set alignment to "center"
+            tcPr.append(vAlign)  # Append the vertical alignment to cell properties
+        # Adjust column widths to prioritize the first two columns
+        adjust_table_columns(table)
+    doc = add_footer(doc)
+    doc = add_header(doc, lang0_code, lang1_code)
+    doc = add_lined_page_at_end(doc)
+    doc.save(docx_filepath)
+
+
+def add_lined_page_at_end(doc: Document) -> Document:
+    """
+    Adds a single page filled with ruled lines to the end of the document for note-taking.
+    Each line spans the full page width and is evenly spaced.
+    :param doc: The Word document to which the ruled page will be added.
+    :return: The modified Word document.
+    """
+    section = doc.add_section(start_type=1)  # Add a new section for a new page
+    section.left_margin = section.right_margin = Pt(72)  # 1-inch margins
+    section.top_margin = section.bottom_margin = Pt(72)
+    usable_height = section.page_height - section.top_margin - section.bottom_margin
+    line_spacing = Pt(18)  # Approx. 1.5x line spacing for handwriting clarity
+    num_lines = int(usable_height / line_spacing)
+    # Add a single paragraph with blank lines separated by line breaks
+    lined_paragraph = doc.add_paragraph()
+    lined_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+    lined_paragraph.paragraph_format.space_before = Pt(0)
+    lined_paragraph.paragraph_format.space_after = Pt(0)
+    lined_paragraph.paragraph_format.line_spacing = line_spacing
+    for _ in range(num_lines - 3):
+        lined_paragraph.add_run("_" * 100)  # Add a visible placeholder for each line
+        lined_paragraph.add_run("\n")  # Add a line break to simulate ruled lines
+    return doc
+
+
+def adjust_table_columns(table: Table) -> None:
+    """
+    Adjusts the table columns so that the last column ('Status') is minimal,
+    while the other columns take up the remaining space.
+    :param table: The table to adjust.
+    """
+    # Set widths for each column
+    column_widths = [5.5, 5.5, 1.0]  # Adjust widths in inches (example values)
+    # Apply widths to the columns
+    for col_idx, width in enumerate(column_widths):
+        for cell in table.columns[col_idx].cells:
+            tc = cell._tc
+            tcPr = tc.get_or_add_tcPr()
+            tcW = OxmlElement("w:tcW")
+            tcW.set(qn("w:w"), str(int(width * 1440)))  # Convert inches to twips
+            tcW.set(qn("w:type"), "dxa")
+            tcPr.append(tcW)
+
+
+def add_footer(doc: Document) -> Document:
+    """
+    Programmatically add page numbers and a date timestamp in the footer.
+    Page number will be centered, and the date timestamp will be aligned to the right
+    on the same line. The date timestamp will be prepended with 'Generated on ',
+    and both will be grey. The timestamp will stay within the right margin.
+    """
+    section = doc.sections[0]
+    footer = section.footer
+    # Page width adjustments
+    page_width = section.page_width
+    left_margin = section.left_margin
+    right_margin = section.right_margin
+    # Calculate usable content width
+    usable_width = page_width - left_margin - right_margin
+    # Create or get the footer paragraph
+    footer_paragraph = (
+        footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
+    )
+    footer_paragraph.alignment = None  # Disable global alignment to use tab stops
+    # Configure tab stops
+    p_pr = footer_paragraph._p.get_or_add_pPr()  # Access paragraph properties
+    tabs = p_pr.find(qn("w:tabs"))  # Find existing 'w:tabs' element if it exists
+    if tabs is None:
+        tabs = OxmlElement("w:tabs")  # Create the 'w:tabs' element
+        p_pr.append(tabs)
+    # Add a center tab stop at half of usable content width
+    center_position = int(usable_width / 2)  # Center of the usable area
+    center_tab = OxmlElement("w:tab")
+    center_tab.set(qn("w:val"), "center")
+    center_tab.set(qn("w:pos"), str(center_position))
+    tabs.append(center_tab)
+    # Add a right-aligned tab stop slightly before the right margin
+    right_position = int(usable_width)
+    right_tab = OxmlElement("w:tab")
+    right_tab.set(qn("w:val"), "right")
+    right_tab.set(
+        qn("w:pos"), str(right_position - 720)
+    )  # 720 twips (0.5 inches) padding
+    tabs.append(right_tab)
+    # Add the page number field
+    footer_paragraph.add_run("\t")  # Tab to center position
+    field_code = "PAGE"
+    field = OxmlElement("w:fldSimple")
+    field.set(qn("w:instr"), field_code)
+    page_run = footer_paragraph.add_run()
+    page_run._r.append(field)
+    page_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for page number
+    # Add the "Generated on" text
+    footer_paragraph.add_run("\t")  # Tab to right position
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    date_text = f"Generated on {current_datetime}"
+    date_run = footer_paragraph.add_run(date_text)
+    date_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for timestamp
+    date_run.font.size = Pt(10)  # Optional: Adjust font size for consistency
+    return doc
+
+
+def add_header(doc: Document, source_lang_code: str, target_lang_code: str) -> Document:
+    """
+    Add a header with:
+    - 'Spiritual Terms Evaluation Tool' left.
+    - 'source_lang_code/target_lang_code' aligned to the right.
+    """
+    section = doc.sections[0]
+    header = section.header
+    header_paragraph = header.add_paragraph()
+    header_paragraph.style.font.size = Pt(12)  # Optional: Adjust font size
+    # Add the "Spiritual Terms Evaluation Tool" text with grey color
+    run1 = header_paragraph.add_run("Spiritual Terms Evaluation Tool")
+    run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
+    # Add a tab and the "EN/FR" text with grey color
+    header_paragraph.add_run("\t")  # Add a tab for alignment
+    run2 = header_paragraph.add_run(
+        f"{source_lang_code.upper()}/{target_lang_code.upper()}"
+    )
+    run2.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
+    # Adjust tab stops (tab position must be an integer)
+    page_width = section.page_width
+    left_margin = section.left_margin
+    right_margin = section.right_margin
+    usable_width = page_width - left_margin - right_margin
+    # Set the tab stop closer to the right margin but within bounds
+    tab_position = int(left_margin + (usable_width * 0.75))  # 75% of usable width
+    header_paragraph.paragraph_format.tab_stops.add_tab_stop(
+        tab_position, alignment=WD_ALIGN_PARAGRAPH.RIGHT
+    )
+    header_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    return doc

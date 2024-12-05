@@ -10,13 +10,13 @@ icdiff==2.0.7
     # via pytest-icdiff
 iniconfig==2.0.0
     # via pytest
-mypy==1.11.2
+mypy==1.13.0
     # via -r ./backend/requirements-prod.in
 mypy-extensions==1.0.0
     # via mypy
-packaging==24.1
+packaging==24.2
     # via
-    #   -c ./backend/requirements.txt
+    #   -c /Users/lriley/src/WA/github.com/linearcombination/DOC/backend/requirements.txt
     #   pytest
 pluggy==1.5.0
     # via pytest
@@ -39,5 +39,5 @@ pytest-xdist==3.6.1
     # via -r ./backend/requirements-prod.in
 typing-extensions==4.12.2
     # via
-    #   -c ./backend/requirements.txt
+    #   -c /Users/lriley/src/WA/github.com/linearcombination/DOC/backend/requirements.txt
     #   mypy

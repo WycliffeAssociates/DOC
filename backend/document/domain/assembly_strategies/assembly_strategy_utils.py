@@ -20,10 +20,18 @@ logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5, H6 = "h1", "h2", "h3", "h4", "h5", "h6"
 
+LTR_DIRECTION_HTML: str = "<div style='direction: ltr;'>"
+RTL_DIRECTION_HTML: str = "<div style='direction: rtl;'>"
+TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR: str = "<div style='column-count: 2;'>{}</div>"
+TQ_HEADING_AND_QUESTIONS_FMT_STR: str = (
+    "<h3>{}</h3>\n<div style='column-count: 2;'>{}</div>"
+)
+CHAPTER_HEADER_FMT_STR: str = '<h2 class="chapter">Chapter {}</h2>'
+
 
 def chapter_heading(
     chapter_num: int,
-    chapter_header_fmt_str: str = settings.CHAPTER_HEADER_FMT_STR,
+    chapter_header_fmt_str: str = CHAPTER_HEADER_FMT_STR,
 ) -> str:
     return chapter_header_fmt_str.format(chapter_num)
 
@@ -83,8 +91,6 @@ def has_footnotes(html_content: str) -> bool:
     return bool(search(r'<div[^>]*class="footnotes"', html_content))
 
 
-
-
 def bc_book_intro(
     bc_book: Optional[BCBook],
     hr: str = "<hr/>",
@@ -124,8 +130,8 @@ def chapter_commentary(
 
 def usfm_language_direction_html(
     usfm_book: Optional[USFMBook],
-    rtl_direction_html: str = settings.RTL_DIRECTION_HTML,
-    ltr_direction_html: str = settings.LTR_DIRECTION_HTML,
+    rtl_direction_html: str = RTL_DIRECTION_HTML,
+    ltr_direction_html: str = LTR_DIRECTION_HTML,
 ) -> str:
     if usfm_book and usfm_book.lang_direction == LangDirEnum.RTL:
         return rtl_direction_html
@@ -135,8 +141,8 @@ def usfm_language_direction_html(
 
 def tn_language_direction_html(
     tn_book: Optional[TNBook],
-    rtl_direction_html: str = settings.RTL_DIRECTION_HTML,
-    ltr_direction_html: str = settings.LTR_DIRECTION_HTML,
+    rtl_direction_html: str = RTL_DIRECTION_HTML,
+    ltr_direction_html: str = LTR_DIRECTION_HTML,
 ) -> str:
     if tn_book and tn_book.lang_direction == LangDirEnum.RTL:
         return rtl_direction_html
@@ -146,8 +152,8 @@ def tn_language_direction_html(
 
 def tq_language_direction_html(
     tq_book: Optional[TQBook],
-    rtl_direction_html: str = settings.RTL_DIRECTION_HTML,
-    ltr_direction_html: str = settings.LTR_DIRECTION_HTML,
+    rtl_direction_html: str = RTL_DIRECTION_HTML,
+    ltr_direction_html: str = LTR_DIRECTION_HTML,
 ) -> str:
     if tq_book and tq_book.lang_direction == LangDirEnum.RTL:
         return rtl_direction_html
@@ -158,7 +164,7 @@ def tq_language_direction_html(
 def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,
-    fmt_str: str = settings.TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
+    fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
     hr: str = "<hr/>",
 ) -> str:
     """
@@ -176,7 +182,7 @@ def tn_chapter_verses(
 def tq_chapter_verses(
     tq_book: Optional[TQBook],
     chapter_num: int,
-    fmt_str: str = settings.TQ_HEADING_AND_QUESTIONS_FMT_STR,
+    fmt_str: str = TQ_HEADING_AND_QUESTIONS_FMT_STR,
     hr: str = "<hr/>",
 ) -> str:
     """Return the HTML for verses in chapter_num."""

@@ -34,6 +34,21 @@ from document.utils.tw_utils import localized_translation_word
 
 logger = settings.logger(__name__)
 
+TRANSLATION_WORD_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{})"
+TRANSLATION_WORD_PREFIX_ANCHOR_LINK_FMT_STR: str = "({}: [{}](#{}-{}))"
+# TODO This needs to be changed to the .NET USFM renderer's marker
+# pattern. This is the USFM-Tools singlePageRenderer's expected output,
+# i.e., the output from the previous renderer.
+TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{}-ch-{}-v-{})"
+# Return a list of the Markdown section titles that our
+# Python-Markdown remove_section_processor extension should remove.
+MARKDOWN_SECTIONS_TO_REMOVE: list[str] = [
+    "Examples from the Bible stories",
+    "Links",
+    "Picture of",
+    "Pictures",
+]
+
 
 def remove_md_section(source: str, section_name: str) -> str:
     """
@@ -60,7 +75,7 @@ def remove_md_section(source: str, section_name: str) -> str:
 
 
 def remove_sections(
-    source: str, sections_to_remove: list[str] = settings.MARKDOWN_SECTIONS_TO_REMOVE
+    source: str, sections_to_remove: list[str] = MARKDOWN_SECTIONS_TO_REMOVE
 ) -> str:
     """
     Removes sections with specified headers. That is, remove the
@@ -146,7 +161,7 @@ def transform_tw_rc_link(
     resource_requests: Sequence[ResourceRequest],
     translation_words_dict: dict[str, str],
     tw: str = "tw",
-    fmt_str: str = settings.TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation word rc wikilink into a Markdown
@@ -207,7 +222,7 @@ def transform_tw_markdown_links(
     resource_requests: Sequence[ResourceRequest],
     translation_words_dict: dict[str, str],
     tw: str = "tw",
-    fmt_str: str = settings.TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation word relative file link into a
@@ -261,7 +276,7 @@ def transform_tw_wiki_rc_links(
     resource_requests: Sequence[ResourceRequest],
     translation_words_dict: dict[str, str],
     tw: str = "tw",
-    fmt_str: str = settings.TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation word rc link into source anchor link
@@ -313,7 +328,7 @@ def transform_tw_wiki_rc_links2(
     resource_requests: Sequence[ResourceRequest],
     translation_words_dict: dict[str, str],
     tw: str = "tw",
-    fmt_str: str = settings.TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation word rc link into source anchor link
@@ -366,7 +381,7 @@ def transform_tw_star_rc_link(
     resource_requests: Sequence[ResourceRequest],
     translation_words_dict: dict[str, str],
     tw: str = "tw",
-    fmt_str: str = settings.TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation word rc wikilink into a Markdown
@@ -473,7 +488,7 @@ def transform_tw_wiki_prefixed_rc_links(
     resource_requests: Sequence[ResourceRequest],
     translation_words_dict: dict[str, str],
     tw: str = "tw",
-    fmt_str: str = settings.TRANSLATION_WORD_PREFIX_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_WORD_PREFIX_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation word rc TW wikilink into source anchor link
@@ -605,7 +620,7 @@ def transform_tn_prefixed_markdown_links(
     resource_requests: Sequence[ResourceRequest],
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
     tn: str = "tn",
-    fmt_str: str = settings.TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation note rc link into a link pointing to
@@ -678,7 +693,7 @@ def transform_tn_markdown_links(
     resource_requests: Sequence[ResourceRequest],
     tn: str = "tn",
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
-    fmt_str: str = settings.TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation note rc link into a link pointing to
@@ -753,7 +768,7 @@ def transform_tn_missing_book_code_markdown_links(
     resource_requests: Sequence[ResourceRequest],
     tn: str = "tn",
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
-    fmt_str: str = settings.TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
+    fmt_str: str = TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
 ) -> str:
     """
     Transform the translation note rc link into a link pointing to
@@ -871,7 +886,7 @@ def transform_tn_missing_book_code_markdown_links_no_paren(
         #     )
         #     if exists(path):  # file path to TN note exists
         #         # Create anchor link to translation note
-        #         new_link = settings.TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR.format(
+        #         new_link = TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR.format(
         #             scripture_ref,
         #             lang_code,
         #             BOOK_NUMBERS[book_code].zfill(3),

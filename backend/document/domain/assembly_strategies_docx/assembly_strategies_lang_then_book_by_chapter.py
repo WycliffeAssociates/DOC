@@ -32,6 +32,8 @@ from docxcompose.composer import Composer  # type: ignore
 
 logger = settings.logger(__name__)
 
+BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+
 
 def assemble_content_by_lang_then_book(
     usfm_books: Sequence[USFMBook],
@@ -176,7 +178,7 @@ def assemble_usfm_by_book(
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-    fmt_str: str = settings.BOOK_NAME_FMT_STR,
+    fmt_str: str = BOOK_NAME_FMT_STR,
 ) -> Composer:
     """
     Construct the HTML for a 'by book' strategy wherein at least

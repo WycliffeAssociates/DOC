@@ -28,6 +28,15 @@ from document.utils.number_utils import is_even
 
 logger = settings.logger(__name__)
 
+HTML_ROW_BEGIN: str = "<div class='row'>"
+HTML_ROW_END: str = "</div>"
+HTML_COLUMN_BEGIN: str = "<div class='column'>"
+HTML_COLUMN_END: str = "</div>"
+HTML_COLUMN_LEFT_BEGIN: str = "<div class='column-left'>"
+HTML_COLUMN_RIGHT_BEGIN: str = "<div class='column-right'>"
+END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
+BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+
 
 def assemble_content_by_book_then_lang(
     usfm_books: Sequence[USFMBook],
@@ -165,12 +174,12 @@ def assemble_usfm_by_chapter(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     hr: str = "<hr/>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-    fmt_str: str = settings.BOOK_NAME_FMT_STR,
+    fmt_str: str = BOOK_NAME_FMT_STR,
 ) -> str:
     """
     Construct the HTML wherein at least one USFM resource exists, one column
@@ -270,7 +279,7 @@ def assemble_tn_by_chapter(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
@@ -344,7 +353,7 @@ def assemble_tq_by_chapter(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> str:
@@ -394,7 +403,7 @@ def assemble_tw_by_chapter(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
 ) -> str:
     content = []
 
@@ -416,15 +425,15 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    html_row_begin: str = settings.HTML_ROW_BEGIN,
-    html_column_begin: str = settings.HTML_COLUMN_BEGIN,
-    html_column_left_begin: str = settings.HTML_COLUMN_LEFT_BEGIN,
-    html_column_right_begin: str = settings.HTML_COLUMN_RIGHT_BEGIN,
-    html_column_end: str = settings.HTML_COLUMN_END,
-    html_row_end: str = settings.HTML_ROW_END,
+    html_row_begin: str = HTML_ROW_BEGIN,
+    html_column_begin: str = HTML_COLUMN_BEGIN,
+    html_column_left_begin: str = HTML_COLUMN_LEFT_BEGIN,
+    html_column_right_begin: str = HTML_COLUMN_RIGHT_BEGIN,
+    html_column_end: str = HTML_COLUMN_END,
+    html_row_end: str = HTML_ROW_END,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
-    fmt_str: str = settings.BOOK_NAME_FMT_STR,
+    fmt_str: str = BOOK_NAME_FMT_STR,
 ) -> str:
     """
     Construct the HTML for the two column scripture left scripture

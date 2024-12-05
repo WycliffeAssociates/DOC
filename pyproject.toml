@@ -84,6 +84,7 @@ markers = [
     "focus", # : Marks a subset of tests which we want to run instead
     # of the whole suite
     "stet", # : Marks tests for the STET system
+    "usfm_fixes", # : Marks test for programmatically fixed USFM
     ]
 # Speed up pytest collection times
 norecursedirs = [

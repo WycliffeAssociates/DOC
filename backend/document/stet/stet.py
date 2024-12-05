@@ -13,6 +13,7 @@ from document.domain.resource_lookup import (
     provision_asset_files,
     resource_lookup_dto,
     resource_types,
+    RESOURCE_TYPE_CODES_AND_NAMES,
 )
 from document.stet.model import VerseEntry, VerseReferenceDto, WordEntry, WordEntryDto
 from document.stet.util import is_valid_int
@@ -241,9 +242,7 @@ def generate_docx_document(
     working_dir: str = settings.WORKING_DIR,
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> str:
     """
     Generate the scriptural terms evaluation document.

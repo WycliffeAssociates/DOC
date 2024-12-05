@@ -106,9 +106,7 @@ def test_translation_word_link_alt_gu(datafiles: list[str]) -> None:
     assert expected == source
 
 
-@pytest.mark.datafiles(GU_TW_RESOURCE_DIR)
-def test_translation_note_link_gu(datafiles: list[str]) -> None:
-    tw_resource_dir = str(datafiles)
+def test_translation_note_link_gu() -> None:
     source = """* [ઉત્પત્તિ 4:18-19](rc://gu/tn/help/gen/04/18)
 * [ઉત્પત્તિ 4:23-24](rc://gu/tn/help/gen/04/23)
 * [લૂક 3:36-38](rc://gu/tn/help/luk/03/36)"""

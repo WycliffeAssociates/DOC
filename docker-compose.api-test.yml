@@ -17,10 +17,12 @@ services:
 
     entrypoint: pytest
     command: [
-        "-vv",
+        "-vvv",
         "--log-cli-level=DEBUG",
+        # "--maxfail=10",
         "-m",
         # "all",
+        # "usfm_fixes",
         # "randomized",
         # "focus",
         # "stet",

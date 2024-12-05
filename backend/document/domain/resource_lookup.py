@@ -18,7 +18,11 @@ import requests
 from document.config import settings
 from document.domain import parsing
 from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import LangDirEnum, ResourceLookupDto
+from document.domain.model import (
+    LangDirEnum,
+    ResourceLookupDto,
+    NON_USFM_RESOURCE_TYPES,
+)
 from document.utils.file_utils import file_needs_update, read_file
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
@@ -29,11 +33,134 @@ SOURCE_DATA_JSON_FILENAME = "resources.json"
 
 SOURCE_GATEWAY_LANGUAGES_FILENAME = "gateway_languages.json"
 
+# This can be expanded to include any additional types (if
+# there are any) that we want to be available to users. These are all
+# that I found of relevance in the data API.
+RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
+    "ayt": "Bahasa Indonesian Bible",
+    "bc": "Bible Commentary",
+    "blv": "Portuguese Bíblia Livre",
+    "cuv": "新标点和合本",
+    "f10": "French Louis Segond 1910 Bible",
+    "nav": "New Arabic Version (Ketab El Hayat)",
+    "reg": "Bible",
+    "tn": "Translation Notes",
+    "tn-condensed": "Condensed Translation Notes",
+    "tq": "Translation Questions",
+    "tw": "Translation Words",
+    # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used
+    "ugnt": "unfoldingWord® Greek New Testament",
+    "uhb": "unfoldingWord® Hebrew Bible",
+    "ulb": "Unlocked Literal Bible",
+}
+
+# NOTE This is only used to see if a lang_code is in the collection
+# otherwise it is a heart language. Eventually the graphql data api may
+# provide gateway/heart boolean value.
+GATEWAY_LANGUAGES: Sequence[str] = [
+    "abs",
+    "aju",
+    "am",
+    "apd",
+    "ar",
+    "ar-x-dcv",
+    "ary",
+    "arz",
+    "as",
+    "ase",
+    "bem",
+    "bg",
+    "bgw",
+    "bi",
+    "bn",
+    "ceb",
+    "cmn",
+    "cmn-x-omc",
+    "csl",
+    "dz",
+    "en",
+    "es",
+    "es-419",
+    "fa",
+    "fil",
+    "fr",
+    "grt",
+    "gu",
+    "gug",
+    "ha",
+    "hbs",
+    "hca",
+    "he",
+    "hi",
+    "hne",
+    "hu",
+    "id",
+    "id-x-dcv",
+    "idb",
+    "ilo",
+    "ins",
+    "ja",
+    "jv",
+    "kas",
+    "km",
+    "kn",
+    "lbj",
+    "ln",
+    "lo",
+    "mai",
+    "mg",
+    "ml",
+    "mn",
+    "mni",
+    "mnk",
+    "mr",
+    "ms",
+    "my",
+    "ne",
+    "nl",
+    "npi",
+    "or",
+    "pa",
+    "pbt",
+    "pes",
+    "pis",
+    "plt",
+    "pmy",
+    "pnb",
+    "prs",
+    "ps",
+    "psr",
+    "pt",
+    "pt-br",
+    "raj",
+    "rsl",
+    "ru",
+    "rwr",
+    "sn",
+    "sw",
+    "swc",
+    "swh",
+    "ta",
+    "te",
+    "th",
+    "ti",
+    "tl",
+    "tn",
+    "tpi",
+    "tr",
+    "tsg",
+    "ug",
+    "ur",
+    "vi",
+    "zh",
+    "zlm",
+]
+
 
 @lru_cache(maxsize=2)
 def fetch_source_data(
     json_file_name: str = SOURCE_DATA_JSON_FILENAME,
-    working_dir: str = settings.RESOURCE_ASSETS_DIR,
+    assets_dir: str = settings.RESOURCE_ASSETS_DIR,
 ) -> Any:
     """
     Obtain the source data, by downloading it from json_file_url, and
@@ -45,7 +172,7 @@ def fetch_source_data(
     >>> result["git_repo"][0]
     {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
     """
-    json_file_path = join(working_dir, json_file_name)
+    json_file_path = join(assets_dir, json_file_name)
     data = None
     if file_needs_update(json_file_path):
         logger.debug("About to download %s...", json_file_name)
@@ -185,7 +312,7 @@ def get_gateway_languages(
     json_file_name: str = SOURCE_GATEWAY_LANGUAGES_FILENAME,
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
     use_hardcoded_gateway_language_values: bool = True,
-    hardcoded_gateway_languages: Sequence[str] = settings.GATEWAY_LANGUAGES,
+    hardcoded_gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
 ) -> Any:
     """
     Obtain the source data, by downloading it from json_file_url, and
@@ -230,7 +357,7 @@ def get_gateway_languages(
 
 def lang_codes_and_names(
     # lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
-    gateway_languages: Sequence[str] = settings.GATEWAY_LANGUAGES,
+    gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
 ) -> Sequence[tuple[str, str, bool]]:
     """
     >>> from document.domain import resource_lookup
@@ -281,9 +408,7 @@ def resource_types(
     book_codes_str: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
     bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     book_names: dict[str, str] = BOOK_NAMES,
 ) -> Sequence[tuple[str, str]]:
@@ -463,10 +588,8 @@ def get_last_segment(url: str, lang_code: str) -> str:
 def update_repo_components(
     repo_components: list[str],
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    non_usfm_resource_types: Sequence[str] = settings.NON_USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    non_usfm_resource_types: Sequence[str] = NON_USFM_RESOURCE_TYPES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[str]:
     last_component = repo_components[-1]
     # Some DCS-Mirror URLs have an unusual pattern wherein a non resource type is the last component
@@ -642,6 +765,74 @@ def book_codes_for_lang(
     return book_codes_sorted
 
 
+# Used for testing
+@lru_cache(maxsize=100)
+def book_codes_for_lang_from_usfm_only(
+    lang_code: str,
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    book_names: Mapping[str, str] = BOOK_NAMES,
+    dcs_mirror_git_username: str = "DCS-Mirror",
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> Sequence[tuple[str, str]]:
+    """
+    >>> from document.domain import resource_lookup
+    >>> ();result = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
+    (...)
+    >>> result[0]
+    ('gen', 'Genesis')
+    """
+    data = fetch_source_data()
+    book_codes_and_names = []
+    book_codes_and_names2: list[tuple[str, str]] = []
+    try:
+        repos_info = data["git_repo"]
+        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+        for repo_info in augmented_repos_info:
+            content = repo_info["content"]
+            language_info = content["language"]
+            url = repo_info["repo_url"]
+            if language_info["ietf_code"] == lang_code:
+                last_segment = get_last_segment(url, lang_code)
+                repo_components = last_segment.split("_")
+                if dcs_mirror_git_username in url:
+                    repo_components = update_repo_components(repo_components)
+                # logger.debug("url: %s, repo_components: %s", url, repo_components)
+                if len(repo_components) > 2:
+                    book_code = repo_components[1]
+                    if book_code in book_names:
+                        book_codes_and_names.append((book_code, book_names[book_code]))
+                elif len(repo_components) == 2 and not book_codes_and_names:
+                    if not book_codes_and_names2:
+                        resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                        clone_git_repo(url, resource_filepath)
+                        # Check repo's layout on disk to determine which books it provides.
+                        # First look at USFM assets.
+                        if repo_components[-1] in usfm_resource_types:
+                            usfm_files = parsing.find_usfm_files(resource_filepath)
+                            for usfm_file in usfm_files:
+                                book_code = Path(usfm_file).stem.lower().split("-")[1]
+                                book_codes_and_names2.append(
+                                    (book_code, book_names[book_code])
+                                )
+    except:
+        pass
+    # Keep book codes unique and sorted by canonical bible book order
+    unique_values = []
+    seen_values = set()
+    book_codes_and_names.extend(book_codes_and_names2)
+    for value in book_codes_and_names:
+        if value[0] not in seen_values:
+            unique_values.append(value)
+            seen_values.add(value[0])
+    book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
+    book_codes_sorted = sorted(
+        unique_values,
+        key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+    )
+    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
+    return book_codes_sorted
+
+
 @lru_cache(maxsize=100)
 def resource_lookup_dto(
     lang_code: str,
@@ -649,9 +840,7 @@ def resource_lookup_dto(
     book_code: str,
     dcs_mirror_git_username: str = "DCS-Mirror",
     zmq_git_username: str = "faustin_azaza",
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> Optional[ResourceLookupDto]:
     """
     >>> from document.domain import resource_lookup

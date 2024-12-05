@@ -20,35 +20,6 @@ class Settings(BaseSettings):
     # GITHUB_API_TOKEN: str = "FOO"  # This might be used in a later version
     DATA_API_URL: HttpUrl
 
-    LTR_DIRECTION_HTML: str = "<div style='direction: ltr;'>"
-    RTL_DIRECTION_HTML: str = "<div style='direction: rtl;'>"
-
-    END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
-    RESOURCE_TYPE_NAME_FMT_STR: str = "<h2>{}</h2>"
-    TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR: str = "<div style='column-count: 2;'>{}</div>"
-    TQ_HEADING_AND_QUESTIONS_FMT_STR: str = (
-        "<h3>{}</h3>\n<div style='column-count: 2;'>{}</div>"
-    )
-    HTML_ROW_BEGIN: str = "<div class='row'>"
-    HTML_ROW_END: str = "</div>"
-    HTML_COLUMN_BEGIN: str = "<div class='column'>"
-    HTML_COLUMN_END: str = "</div>"
-    HTML_COLUMN_LEFT_BEGIN: str = "<div class='column-left'>"
-    HTML_COLUMN_RIGHT_BEGIN: str = "<div class='column-right'>"
-    BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
-    CHAPTER_HEADER_FMT_STR: str = '<h2 class="chapter">Chapter {}</h2>'
-    UNORDERED_LIST_BEGIN_STR: str = "<ul>"
-    UNORDERED_LIST_END_STR: str = "</ul>"
-    OPENING_H3_FMT_STR: str = "<h3>{}"
-    OPENING_H3_WITH_ID_FMT_STR: str = '<h3 id="{}-{}">{}'
-    TRANSLATION_WORD_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{})"
-    TRANSLATION_WORD_PREFIX_ANCHOR_LINK_FMT_STR: str = "({}: [{}](#{}-{}))"
-    TRANSLATION_WORD_PREFIX_FMT_STR: str = "({}: {})"
-    # TODO This needs to be changed to the .NET USFM renderer's marker
-    # pattern. This is the USFM-Tools singlePageRenderer's expected output,
-    # i.e., the output from the previous renderer.
-    TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{}-ch-{}-v-{})"
-
     USFM_RESOURCE_TYPES: Sequence[str] = [
         "avd",
         "ayt",
@@ -64,158 +35,10 @@ class Settings(BaseSettings):
         "usfm",
     ]
 
-    # This can be expanded to include any additional types (if
-    # there are any) that we want to be available to users. These are all
-    # that I found of relevance in the data API.
-    RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
-        "ayt": "Bahasa Indonesian Bible",
-        "bc": "Bible Commentary",
-        "blv": "Portuguese Bíblia Livre",
-        "cuv": "新标点和合本",
-        "f10": "French Louis Segond 1910 Bible",
-        "nav": "New Arabic Version (Ketab El Hayat)",
-        "reg": "Bible",
-        "tn": "Translation Notes",
-        "tn-condensed": "Condensed Translation Notes",
-        "tq": "Translation Questions",
-        "tw": "Translation Words",
-        # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used
-        "ugnt": "unfoldingWord® Greek New Testament",
-        "uhb": "unfoldingWord® Hebrew Bible",
-        "ulb": "Unlocked Literal Bible",
-    }
     SHOW_TN_BOOK_INTRO: bool = False
-    TN_RESOURCE_TYPE: str = "tn"
-    EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
-    TQ_RESOURCE_TYPE: str = "tq"
-    TW_RESOURCE_TYPE: str = "tw"
-    BC_RESOURCE_TYPE: str = "bc"
-    NON_USFM_RESOURCE_TYPES: Sequence[str] = [
-        TN_RESOURCE_TYPE,
-        EN_TN_CONDENSED_RESOURCE_TYPE,
-        TQ_RESOURCE_TYPE,
-        TW_RESOURCE_TYPE,
-        BC_RESOURCE_TYPE,
-    ]
-    # NOTE This is only used to see if a lang_code is in the collection
-    # otherwise it is a heart language. Eventually the graphql data api may
-    # provide gateway/heart boolean value.
-    GATEWAY_LANGUAGES: Sequence[str] = [
-        "abs",
-        "aju",
-        "am",
-        "apd",
-        "ar",
-        "ar-x-dcv",
-        "ary",
-        "arz",
-        "as",
-        "ase",
-        "bem",
-        "bg",
-        "bgw",
-        "bi",
-        "bn",
-        "ceb",
-        "cmn",
-        "cmn-x-omc",
-        "csl",
-        "dz",
-        "en",
-        "es",
-        "es-419",
-        "fa",
-        "fil",
-        "fr",
-        "grt",
-        "gu",
-        "gug",
-        "ha",
-        "hbs",
-        "hca",
-        "he",
-        "hi",
-        "hne",
-        "hu",
-        "id",
-        "id-x-dcv",
-        "idb",
-        "ilo",
-        "ins",
-        "ja",
-        "jv",
-        "kas",
-        "km",
-        "kn",
-        "lbj",
-        "ln",
-        "lo",
-        "mai",
-        "mg",
-        "ml",
-        "mn",
-        "mni",
-        "mnk",
-        "mr",
-        "ms",
-        "my",
-        "ne",
-        "nl",
-        "npi",
-        "or",
-        "pa",
-        "pbt",
-        "pes",
-        "pis",
-        "plt",
-        "pmy",
-        "pnb",
-        "prs",
-        "ps",
-        "psr",
-        "pt",
-        "pt-br",
-        "raj",
-        "rsl",
-        "ru",
-        "rwr",
-        "sn",
-        "sw",
-        "swc",
-        "swh",
-        "ta",
-        "te",
-        "th",
-        "ti",
-        "tl",
-        "tn",
-        "tpi",
-        "tr",
-        "tsg",
-        "ug",
-        "ur",
-        "vi",
-        "zh",
-        "zlm",
-    ]
 
-    TEMPLATE_PATHS_MAP: Mapping[str, str] = {
-        "stet": "backend/templates/mustache/template.mustache",
-        "stet_html": "backend/templates/html/stet.html",
-        "book_intro": "backend/templates/tn/book_intro_template.md",
-        "header_enclosing": "backend/templates/html/header_enclosing.html",
-        "header_enclosing_landscape": "backend/templates/html/header_enclosing_landscape.html",  # used by dft project
-        "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
-        "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
-        "footer_enclosing": "backend/templates/html/footer_enclosing.html",
-        "cover": "backend/templates/html/cover.html",
-        "email-html": "backend/templates/html/email.html",
-        "email": "backend/templates/text/email.txt",
-    }
-
-    # fmt: off
-    BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
-    # fmt: on
+    CHECK_USFM: bool
+    CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
     def logger(self, name: str) -> logging.Logger:
         """
@@ -264,15 +87,6 @@ class Settings(BaseSettings):
     # case of the final PDF). In hours.
     ASSET_CACHING_PERIOD: int
 
-    # Return a list of the Markdown section titles that our
-    # Python-Markdown remove_section_processor extension should remove.
-    MARKDOWN_SECTIONS_TO_REMOVE: list[str] = [
-        "Examples from the Bible stories",
-        "Links",
-        "Picture of",
-        "Pictures",
-    ]
-
     EMAIL_SEND_SUBJECT: str
     TO_EMAIL_ADDRESS: EmailStr
 
@@ -287,13 +101,6 @@ class Settings(BaseSettings):
     PORT: int
     # Used by docker
     IMAGE_TAG: str
-
-    # User agent value required by domain host to allow serving
-    # files. Other values could possibly also work.
-    USER_AGENT: str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
-
-    # Used in assembly_strategy_utils module when zero-filling various strings
-    NUM_ZEROS: int = 3
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 

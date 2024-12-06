@@ -434,6 +434,7 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     fmt_str: str = BOOK_NAME_FMT_STR,
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> str:
     """
     Construct the HTML for the two column scripture left scripture
@@ -557,13 +558,15 @@ def assemble_usfm_by_chapter_2c_sl_sr(
         usfm_books
     )
     # Content team doesn't want TN book intros: https://github.com/WycliffeAssociates/DOC/issues/121
+    # Update Dec 6th, 2024: Content team wanted them put back in.
     # Add book intros for each tn_book
-    # for tn_book in tn_books:
-    #     if tn_book.book_intro:
-    #         content.append(tn_language_direction_html(tn_book))
-    #         book_intro_ = tn_book.book_intro
-    #         content.append(adjust_book_intro_headings(book_intro_))
-    #         content.append(close_direction_html)
+    if show_tn_book_intro:
+        for tn_book in tn_books:
+            if tn_book.book_intro:
+                content.append(tn_language_direction_html(tn_book))
+                book_intro_ = tn_book.book_intro
+                content.append(adjust_book_intro_headings(book_intro_))
+                content.append(close_direction_html)
     for bc_book in bc_books:
         content.append(bc_book_intro(bc_book))
     # Get unique book codes in usfm_books

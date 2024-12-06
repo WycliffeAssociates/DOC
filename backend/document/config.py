@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         "usfm",
     ]
 
-    SHOW_TN_BOOK_INTRO: bool = False
+    SHOW_TN_BOOK_INTRO: bool = True
 
     CHECK_USFM: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool

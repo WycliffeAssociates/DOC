@@ -55,7 +55,7 @@ def assemble_content_by_lang_then_book(
         .union(tw_book.lang_code for tw_book in tw_books)
         .union(bc_book.lang_code for bc_book in bc_books)
     )
-    most_lang_codes = list(all_lang_codes)
+    lang_codes = list(all_lang_codes)
     # Collect and deduplicate book codes
     all_book_codes = (
         {usfm_book.book_code for usfm_book in usfm_books}
@@ -64,12 +64,10 @@ def assemble_content_by_lang_then_book(
         .union(tw_book.book_code for tw_book in tw_books)
         .union(bc_book.book_code for bc_book in bc_books)
     )
-    most_book_codes = list(all_book_codes)
+    book_codes = list(all_book_codes)
     # Cache book_id_map lookup
-    book_codes_sorted = sorted(
-        most_book_codes, key=lambda book_code: book_id_map[book_code]
-    )
-    for lang_code in most_lang_codes:
+    book_codes_sorted = sorted(book_codes, key=lambda book_code: book_id_map[book_code])
+    for lang_code in lang_codes:
         for book_code in book_codes_sorted:
             # logger.debug("lang_code: %s, book_code: %s", lang_code, book_code)
             selected_usfm_books = [

@@ -10,6 +10,7 @@ from document.domain.model import USFMBook, USFMChapter
 from document.domain.parsing import usfm_book_content
 from document.domain.resource_lookup import (
     RESOURCE_TYPE_CODES_AND_NAMES,
+    prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
     resource_types,
@@ -351,7 +352,10 @@ def generate_docx_document(
             )
             if lang0_resource_lookup_dto_ and lang0_resource_lookup_dto_.url:
                 current_task.update_state(state="Provisioning asset files")
-                lang0_resource_dir = provision_asset_files(lang0_resource_lookup_dto_)
+                lang0_resource_dir = prepare_resource_filepath(
+                    lang0_resource_lookup_dto_
+                )
+                provision_asset_files(lang0_resource_lookup_dto_, lang0_resource_dir)
                 current_task.update_state(state="Parsing asset files")
                 source_usfm_book = usfm_book_content(
                     lang0_resource_lookup_dto_,
@@ -366,7 +370,10 @@ def generate_docx_document(
                 lang1_code, lang1_usfm_resource_type, book_code
             )
             if lang1_resource_lookup_dto_ and lang1_resource_lookup_dto_.url:
-                lang1_resource_dir = provision_asset_files(lang1_resource_lookup_dto_)
+                lang1_resource_dir = prepare_resource_filepath(
+                    lang1_resource_lookup_dto_
+                )
+                provision_asset_files(lang1_resource_lookup_dto_, lang1_resource_dir)
                 target_usfm_book = usfm_book_content(
                     lang1_resource_lookup_dto_,
                     lang1_resource_dir,

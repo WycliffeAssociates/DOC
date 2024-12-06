@@ -439,8 +439,8 @@ def usfm_asset_file(
     usfm_ending_in_txt_in_subdirectory_glob_fmt_str: str = "{}**/**/*.txt",
 ) -> Optional[str]:
     """
-    Find the USFM asset and return its path as string. Returns an
-    empty string if path not found.
+    Find the USFM asset and return its path as string or
+    None if path not found.
     """
     usfm_files = find_usfm_files(resource_dir)
     filtered_usfm_files: list[str] = []
@@ -465,9 +465,6 @@ def usfm_chapter_html(
     chapter_num: int,
     working_dir: str = settings.WORKING_DIR,
 ) -> Optional[str]:
-    """
-    Parse USFM asset content into HTML and return HTML as string.
-    """
     resource_filepath_sans_suffix = f"{working_dir}/{resource_lookup_dto.lang_code}_{resource_lookup_dto.resource_type}_{resource_lookup_dto.book_code}_{chapter_num}"
     t0 = time.time()
     convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
@@ -623,9 +620,8 @@ def usfm_book_content(
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
-    HTML content returned into a model.USFMBook data structure containing
-    chapters, verses, footnotes, for use during interleaving with other
-    resource assets.
+    HTML content returned into a model.USFMBook data structure for use
+    during interleaving with other resource assets.
     """
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
     content = read_file(content_file) if content_file else ""

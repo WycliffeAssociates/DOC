@@ -325,9 +325,11 @@ def fetch_usfm_book_content_units(
     current_task.update_state(state="Provisioning USFM asset files for TW resource")
     t0 = time.time()
     resource_dirs = [
-        resource_lookup.provision_asset_files(dto)
+        resource_lookup.prepare_resource_filepath(dto)
         for dto in found_usfm_resource_lookup_dtos
     ]
+    for resource_dir, dto in zip(resource_dirs, found_usfm_resource_lookup_dtos):
+        resource_lookup.provision_asset_files(dto, resource_dir)
     t1 = time.time()
     logger.debug(
         "Time to provision USFM asset files (acquire and write to disk) for TW resource: %s",
@@ -997,9 +999,11 @@ def generate_document(
         current_task.update_state(state="Provisioning asset files")
         t0 = time.time()
         resource_dirs = [
-            resource_lookup.provision_asset_files(dto)
+            resource_lookup.prepare_resource_filepath(dto)
             for dto in found_resource_lookup_dtos
         ]
+        for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
+            resource_lookup.provision_asset_files(dto, resource_dir)
         t1 = time.time()
         logger.debug(
             "Time to provision asset files (acquire and write to disk): %s", t1 - t0
@@ -1170,9 +1174,11 @@ def generate_docx_document(
         current_task.update_state(state="Provisioning asset files")
         t0 = time.time()
         resource_dirs = [
-            resource_lookup.provision_asset_files(dto)
+            resource_lookup.prepare_resource_filepath(dto)
             for dto in found_resource_lookup_dtos
         ]
+        for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
+            resource_lookup.provision_asset_files(dto, resource_dir)
         t1 = time.time()
         logger.debug(
             "Time to provision asset files (acquire and write to disk): %s", t1 - t0

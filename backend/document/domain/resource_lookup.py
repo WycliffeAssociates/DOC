@@ -316,7 +316,9 @@ def get_gateway_languages(
 ) -> Any:
     """
     Obtain the source data, by downloading it from json_file_url, and
-    then reifying it into its JSON object form.
+    then reifying it into its JSON object form unless
+    use_hardcoded_gateway_language_values is True in which case just
+    return the hardcoded list of gateway languages.
 
     >>> from document.domain import resource_lookup
     >>> ();result = resource_lookup.get_gateway_languages();() # doctest: +ELLIPSIS
@@ -529,10 +531,11 @@ def usfm_resource_types_and_book_tuples(
                             book_code=book_code,
                         )
                         logger.debug("dto: %s", dto)
-                        resource_dir = provision_asset_files(dto)
+                        resource_filepath = prepare_resource_filepath(dto)
+                        provision_asset_files(dto, resource_filepath)
                         content_file = parsing.usfm_asset_file(
                             dto,
-                            resource_dir,
+                            resource_filepath,
                         )
                         logger.debug("content_file: %s", content_file)
                         if content_file:
@@ -617,7 +620,9 @@ def update_repo_components(
 
 def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
     """
-    DOC needs to support en/tn_condensed, id/ayt, id/tq, and id/tw none of which are supplied by the data API so we augment the data returned from the data API to include them here.
+    DOC needs to support en/tn_condensed, id/ayt, id/tq, and id/tw
+    none of which are supplied by the data API so we augment the data
+    returned from the data API to include them here.
     """
     # The data API only provides id_tn repo for id, we have to
     # add the other repos for id that are available for DOC's use.
@@ -929,22 +934,21 @@ def resource_lookup_dto(
     return resource_lookup_dto
 
 
-def provision_asset_files(resource_lookup_dto: ResourceLookupDto) -> str:
-    """
-    Prepare the resource directory and then download the
-    resource's file assets into that directory. Return resource_dir.
-    """
-    return acquire_resource_assets(resource_lookup_dto)
+def provision_asset_files(
+    resource_lookup_dto: ResourceLookupDto,
+    resource_filepath: str,
+) -> None:
+    if (
+        resource_lookup_dto.url is not None
+    ):  # We know that resource_url is not None because of how we got here, but mypy isn't convinced. Let's convince mypy.
+        clone_git_repo(resource_lookup_dto.url, resource_filepath)
 
 
-def acquire_resource_assets(
+def prepare_resource_filepath(
     resource_lookup_dto: ResourceLookupDto,
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
 ) -> str:
-    """
-    git clone resource asset.
-    Return the resource's cloned filepath.
-    """
+
     resource_filepath = ""
     if (
         resource_lookup_dto.url is not None
@@ -953,7 +957,6 @@ def acquire_resource_assets(
             working_dir,
             get_last_segment(resource_lookup_dto.url, resource_lookup_dto.lang_code),
         )
-        clone_git_repo(resource_lookup_dto.url, resource_filepath)
     return resource_filepath
 
 
@@ -962,11 +965,6 @@ def clone_git_repo(
     resource_filepath: str,
     branch: Optional[str] = None,
 ) -> None:
-    """
-    Clone the git repo. If the repo was previously cloned but
-    the ASSET_CACHING_PERIOD has expired then delete the repo and
-    clone it again to get updates.
-    """
     if branch:  # CLient specified a particular branch
         command = "git clone --depth=1 --branch '{}' '{}' '{}'".format(
             branch, url, resource_filepath

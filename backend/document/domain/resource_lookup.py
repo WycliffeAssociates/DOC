@@ -491,6 +491,7 @@ def resource_types(
 
 
 # Used by some tests
+@lru_cache(maxsize=100)
 def usfm_resource_types_and_book_tuples(
     lang_code: str,
     book_codes_str: str,
@@ -532,7 +533,7 @@ def usfm_resource_types_and_book_tuples(
                         )
                         logger.debug("dto: %s", dto)
                         resource_filepath = prepare_resource_filepath(dto)
-                        provision_asset_files(dto, resource_filepath)
+                        provision_asset_files(dto.url, resource_filepath)
                         content_file = parsing.usfm_asset_file(
                             dto,
                             resource_filepath,
@@ -935,20 +936,19 @@ def resource_lookup_dto(
 
 
 def provision_asset_files(
-    resource_lookup_dto: ResourceLookupDto,
+    url: Optional[str],
     resource_filepath: str,
 ) -> None:
     if (
-        resource_lookup_dto.url is not None
+        url is not None
     ):  # We know that resource_url is not None because of how we got here, but mypy isn't convinced. Let's convince mypy.
-        clone_git_repo(resource_lookup_dto.url, resource_filepath)
+        clone_git_repo(url, resource_filepath)
 
 
 def prepare_resource_filepath(
     resource_lookup_dto: ResourceLookupDto,
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
 ) -> str:
-
     resource_filepath = ""
     if (
         resource_lookup_dto.url is not None

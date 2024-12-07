@@ -355,7 +355,9 @@ def generate_docx_document(
                 lang0_resource_dir = prepare_resource_filepath(
                     lang0_resource_lookup_dto_
                 )
-                provision_asset_files(lang0_resource_lookup_dto_, lang0_resource_dir)
+                provision_asset_files(
+                    lang0_resource_lookup_dto_.url, lang0_resource_dir
+                )
                 current_task.update_state(state="Parsing asset files")
                 source_usfm_book = usfm_book_content(
                     lang0_resource_lookup_dto_,
@@ -373,7 +375,9 @@ def generate_docx_document(
                 lang1_resource_dir = prepare_resource_filepath(
                     lang1_resource_lookup_dto_
                 )
-                provision_asset_files(lang1_resource_lookup_dto_, lang1_resource_dir)
+                provision_asset_files(
+                    lang1_resource_lookup_dto_.url, lang1_resource_dir
+                )
                 target_usfm_book = usfm_book_content(
                     lang1_resource_lookup_dto_,
                     lang1_resource_dir,

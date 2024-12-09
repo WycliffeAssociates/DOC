@@ -1,7 +1,7 @@
 """This module provides configuration values used by the application."""
 import logging
 from logging import config as lc
-from typing import Mapping, Sequence, final
+from typing import Sequence, final
 
 import yaml
 from pydantic import EmailStr, HttpUrl
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         "usfm",
     ]
 
-    SHOW_TN_BOOK_INTRO: bool = False
+    SHOW_TN_BOOK_INTRO: bool = True
 
     CHECK_USFM: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool

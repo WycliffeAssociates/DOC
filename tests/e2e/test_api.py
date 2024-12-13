@@ -1693,3 +1693,43 @@ def test_en_ulb_1jn_en_ulb_3jn_language_book_order_with_no_email_1c() -> None:
             assert (
                 "1 John</h2>" in body_content and "3 John</h2>" in body_content
             ), "Document should have had both 1 John and 3 John in it, but it didn't"
+
+@pytest.mark.focus
+def test_en_tn_mat_with_book_intro() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                # "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "mat",
+                    },
+                ],
+            },
+        )
+        finished_document_request_key = check_result(
+            response, suffix="html", poll_duration=4
+        )
+        html_filepath = os.path.join(
+            settings.DOCUMENT_OUTPUT_DIR,
+            "{}.html".format(finished_document_request_key),
+        )
+        with open(html_filepath, "r") as fin:
+            html = fin.read()
+            body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
+            assert body_match, "Body not found in HTML"
+            body_content = body_match.group(1)
+            if settings.SHOW_TN_BOOK_INTRO:
+                assert (
+                    "Outline of the Book of Matthew" in body_content
+                ), "Document should have had TN book intro for mat, but didn't"

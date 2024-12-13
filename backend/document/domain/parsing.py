@@ -779,7 +779,7 @@ def tn_book_content(
     resource_dir: str,
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
-    include_tn_book_intros: bool = False,
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> TNBook:
     chapter_verses = tn_chapter_verses(
         resource_dir,
@@ -788,7 +788,7 @@ def tn_book_content(
         resource_requests,
     )
     book_intro = ""
-    if include_tn_book_intros:
+    if show_tn_book_intro:
         book_intro = book_intro_markdown(resource_dir, resource_lookup_dto.book_code)
         if book_intro:
             book_intro = markdown_transformer.remove_sections(book_intro)

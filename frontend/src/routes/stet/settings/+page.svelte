@@ -22,9 +22,6 @@
   //   usfmAvailableStore
   // } from '$lib/stores/ResourceTypesStore'
   import {
-    lang0CodeAndNameStore,
-    lang1CodeAndNameStore,
-    langCodesStore,
     langCountStore
   } from '$lib/stet/stores/LanguagesStore'
   // import { bookCountStore } from '$lib/stores/BooksStore'
@@ -120,7 +117,7 @@
             />
             <rect x="0.5" y="0.5" width="55" height="47" rx="11.5" stroke="#E5E8EB" />
           </svg>
-          {#if $lang0CodeAndNameStore && $lang1CodeAndNameStore}
+          {#if $langCountStore}
             <!-- badge -->
             <div
               class="text-center absolute -top-0.5 -right-0.5

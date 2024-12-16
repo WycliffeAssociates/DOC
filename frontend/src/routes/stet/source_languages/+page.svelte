@@ -13,6 +13,7 @@
   import WizardBasket from '$lib/stet/WizardBasket.svelte'
   import {
     lang0CodeAndNameStore,
+    lang1CodeAndNameStore,
     langCodesStore,
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore,
@@ -68,42 +69,29 @@
     })
     .catch((err) => console.log(err))
 
-  let nonEmptyGatewayLanguages: boolean
-  $: nonEmptyGatewayLanguages = $gatewayCodeAndNamesStore.every((item) => item.length > 0)
-
-  let nonEmptyHeartLanguages: boolean
-  $: nonEmptyHeartLanguages = $heartCodeAndNamesStore.every((item) => item.length > 0)
-
   // Set $langCountStore
   $: {
-    if (nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
+    if ($lang0CodeAndNameStore && $lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang0CodeAndNameStore))
+      codes.push(getCode($lang1CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
-    } else if (nonEmptyGatewayLanguages && !nonEmptyHeartLanguages) {
+    } else if ($lang0CodeAndNameStore && !$lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang0CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
-    } else if (!nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
+    } else if (!$lang0CodeAndNameStore && $lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang1CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
     } else {
       $langCountStore = 0
       $langCodesStore = []
       $lang0CodeAndNameStore = ''
+      $lang1CodeAndNameStore = ''
     }
   }
 

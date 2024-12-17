@@ -19,6 +19,7 @@ from document.stet.model import VerseEntry, VerseReferenceDto, WordEntry, WordEn
 from document.stet.util import is_valid_int
 from docx import Document  # type: ignore
 from docx.document import Document as DocxDocument  # type: ignore
+from docx.text.paragraph import Paragraph # type: ignore
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
@@ -72,14 +73,8 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
         verse_number = re.search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
         if verse_number:
             verse_number_ = verse_number.group(1)
-            # Remove all <sup> tags and their content from the verse text
-            verse_text = re.sub(r"<sup.*?>.*?</sup>", "", verse_span)
-            # Remove <div> tags that do not have class matching "poetry-<integer>"
-            verse_text = re.sub(
-                r"<div(?!.*class=\"poetry-(\d+)\").*?>.*?</div>", "", verse_text
-            )
-            # Remove the remaining HTML tags and strip extra spaces
-            verse_text = re.sub(r"<.*?>", "", verse_text).strip()
+            # Remove versemarker
+            verse_text = re.sub(r'<sup class="versemarker">.*?</sup>', "", verse_span)
             # Add to the dictionary with verse number as the key and verse text as the value
             verse_dict[verse_number_] = verse_text
     return verse_dict
@@ -516,30 +511,14 @@ def generate_docx(
             row_cells[2].paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             # Row for texts
             row_cells = table.add_row().cells
-            # Add source_text with bold formatting for the word
+            # Process HTML content in source_text and highlight keyword
             source_paragraph = row_cells[0].paragraphs[0]
             source_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
-            start = 0
-            word_lower = word_entry.word.lower()
-            for idx in range(len(verse.source_text)):
-                # Find case-insensitive occurrences of the word
-                start_idx = verse.source_text.lower().find(word_lower, start)
-                if start_idx == -1:
-                    break
-                # Add the text before the word
-                source_paragraph.add_run(verse.source_text[start:start_idx])
-                # Add the word with bold formatting
-                bold_run = source_paragraph.add_run(
-                    verse.source_text[start_idx : start_idx + len(word_entry.word)]
-                )
-                bold_run.bold = True
-                start = start_idx + len(word_entry.word)
-            # Add remaining text after the last occurrence of the word
-            source_paragraph.add_run(verse.source_text[start:])
+            add_highlighted_html_to_docx(verse.source_text, source_paragraph, word_entry.word)
             # Add target_text with wider line spacing
             target_paragraph = row_cells[1].paragraphs[0]
             target_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
-            target_paragraph.add_run(verse.target_text)
+            add_plain_html_to_docx(verse.target_text, target_paragraph)
             # Vertically centered Unicode checkbox
             checkbox_cell = row_cells[2]
             checkbox_paragraph = checkbox_cell.paragraphs[0]
@@ -558,6 +537,54 @@ def generate_docx(
     doc = add_lined_page_at_end(doc)
     doc.save(docx_filepath)
 
+
+def add_highlighted_html_to_docx(html: str, paragraph: Paragraph, keyword: str) -> None:
+    """
+    Convert HTML to DOCX and highlight occurrences of a keyword in bold.
+    :param html: The HTML string to convert.
+    :param paragraph: The DOCX paragraph where the content will be added.
+    :param keyword: The keyword to highlight in bold.
+    """
+    # Use HtmlToDocx to convert the HTML to a temporary document
+    html_to_docx = HtmlToDocx()
+    temp_doc = Document()
+    html_to_docx.add_html_to_document(html, temp_doc)
+    keyword_lower = keyword.lower()
+    # Parse through all paragraphs in the temporary document
+    for temp_paragraph in temp_doc.paragraphs:
+        text = temp_paragraph.text
+        start = 0
+        while True:
+            # Case-insensitive search for the keyword
+            start_idx = text.lower().find(keyword_lower, start)
+            if start_idx == -1:
+                break
+            # Add text before the keyword
+            if start_idx > start:
+                paragraph.add_run(text[start:start_idx])
+            # Add the bold keyword
+            bold_run = paragraph.add_run(text[start_idx : start_idx + len(keyword)])
+            bold_run.bold = True
+            start = start_idx + len(keyword)
+        # Add the remaining text
+        if start < len(text):
+            paragraph.add_run(text[start:])
+
+
+def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:
+    """
+    Convert HTML to DOCX without highlighting.
+
+    :param html: The HTML string to convert.
+    :param paragraph: The DOCX paragraph where content will be added.
+    """
+    # Use HtmlToDocx to convert the HTML to the target paragraph
+    html_to_docx = HtmlToDocx()
+    temp_doc = Document()
+    html_to_docx.add_html_to_document(html, temp_doc)
+    # Add plain text from the temp_doc into the target paragraph
+    for temp_paragraph in temp_doc.paragraphs:
+        paragraph.add_run(temp_paragraph.text)
 
 def add_lined_page_at_end(doc: Document) -> Document:
     """

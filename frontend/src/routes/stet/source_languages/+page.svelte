@@ -27,7 +27,7 @@
   // showing the heart languages, otherwise the default stands of
   // showing the gateway languages.
   $: {
-    if ($heartCodeAndNamesStore.length > 0 && $gatewayCodeAndNamesStore.length === 0) {
+    if ($lang0CodeAndNameStore && heartCodesAndNames.includes($lang0CodeAndNameStore)) {
       showGatewayLanguages = false
     }
   }

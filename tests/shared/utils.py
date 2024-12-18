@@ -7,6 +7,7 @@ import httpx
 from document.config import settings
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
+from docx import Document  # type: ignore
 
 logger = settings.logger(__name__)
 
@@ -17,7 +18,6 @@ AcceptedSuffixes = Union[
 
 def check_result(
     response: httpx._models.Response,
-    /,
     suffix: AcceptedSuffixes,
     poll_duration: int = 4,
     status_url_fmt_str: str = "/task_status/{}",
@@ -58,6 +58,24 @@ def check_result(
             time.sleep(poll_duration)
     return finished_document_request_key
 
+
+def document_contains_substring(doc: Document, substring: str, case_insensitive: bool = False) -> bool:
+    if case_insensitive:
+        substring = substring.lower()
+    # Check all paragraphs
+    for paragraph in doc.paragraphs:
+        text = paragraph.text.lower() if case_insensitive else paragraph.text
+        if substring in text:
+            return True
+    # Check all tables
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                text = cell.text.lower() if case_insensitive else cell.text
+                if substring in text:
+                    return True
+    # Substring not found
+    return False
 
 def check_finished_document_with_verses_success(
     response: httpx._models.Response,

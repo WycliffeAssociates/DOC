@@ -19,7 +19,7 @@ from document.stet.model import VerseEntry, VerseReferenceDto, WordEntry, WordEn
 from document.stet.util import is_valid_int
 from docx import Document  # type: ignore
 from docx.document import Document as DocxDocument  # type: ignore
-from docx.text.paragraph import Paragraph # type: ignore
+from docx.text.paragraph import Paragraph  # type: ignore
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
@@ -97,7 +97,7 @@ def get_word_entry_dtos(
             # Extract data from word field
             match = re.match(r"(.*)(\n)?(.*)?", row.cells[0].text)
             if not match:
-                raise ValueError(f"Couldn't parse word def: {row.cells[0].text}")
+                raise ValueError(f"Couldn't parse word: {row.cells[0].text}")
             word = match.group(1)
             word_entry_dto.word = word
             raw_strongs = match.group(3)
@@ -105,12 +105,15 @@ def get_word_entry_dtos(
             definition = ""
             previous_paragraph_style_name = ""
             for paragraph in row.cells[1].paragraphs:
+                text = paragraph.text.strip()
                 if previous_paragraph_style_name not in (paragraph.style.name, ""):
                     definition += "\n"
                 if paragraph.style.name == "List Paragraph":
-                    definition += f"- {paragraph.text.strip()}\n"
+                    if text:
+                        definition += f"- {paragraph.text.strip()}\n"
                 else:
-                    definition += f"{paragraph.text.strip()}\n"
+                    if text:
+                        definition += f"{paragraph.text.strip()}\n"
                 previous_paragraph_style_name = paragraph.style.name
             word_entry_dto.definition = definition
             # process verse list
@@ -359,9 +362,9 @@ def generate_docx_document(
                     lang0_resource_dir,
                 )
                 for chapter_num_, chapter_ in source_usfm_book.chapters.items():
-                    source_usfm_book.chapters[
-                        chapter_num_
-                    ].verses = split_chapter_into_verses(chapter_)
+                    source_usfm_book.chapters[chapter_num_].verses = (
+                        split_chapter_into_verses(chapter_)
+                    )
                 source_usfm_books.append(source_usfm_book)
             lang1_resource_lookup_dto_ = resource_lookup_dto(
                 lang1_code, lang1_usfm_resource_type, book_code
@@ -378,9 +381,9 @@ def generate_docx_document(
                     lang1_resource_dir,
                 )
                 for chapter_num_, chapter_ in target_usfm_book.chapters.items():
-                    target_usfm_book.chapters[
-                        chapter_num_
-                    ].verses = split_chapter_into_verses(chapter_)
+                    target_usfm_book.chapters[chapter_num_].verses = (
+                        split_chapter_into_verses(chapter_)
+                    )
                 target_usfm_books.append(target_usfm_book)
     current_task.update_state(state="Assembling content")
     for word_entry_dto in word_entry_dtos:
@@ -514,7 +517,9 @@ def generate_docx(
             # Process HTML content in source_text and highlight keyword
             source_paragraph = row_cells[0].paragraphs[0]
             source_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
-            add_highlighted_html_to_docx(verse.source_text, source_paragraph, word_entry.word)
+            add_highlighted_html_to_docx(
+                verse.source_text, source_paragraph, word_entry.word
+            )
             # Add target_text with wider line spacing
             target_paragraph = row_cells[1].paragraphs[0]
             target_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
@@ -585,6 +590,7 @@ def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:
     # Add plain text from the temp_doc into the target paragraph
     for temp_paragraph in temp_doc.paragraphs:
         paragraph.add_run(temp_paragraph.text)
+
 
 def add_lined_page_at_end(doc: Document) -> Document:
     """

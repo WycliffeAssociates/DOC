@@ -509,7 +509,7 @@ def generate_docx(
             source_run.bold = True
             target_run = row_cells[1].paragraphs[0].add_run(verse.target_reference)
             target_run.bold = True
-            status_run = row_cells[2].paragraphs[0].add_run("Ok")
+            status_run = row_cells[2].paragraphs[0].add_run("OK")
             status_run.bold = True
             row_cells[2].paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             # Row for texts

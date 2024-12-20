@@ -540,6 +540,7 @@ def generate_docx(
     doc = add_footer(doc)
     doc = add_header(doc, lang0_code, lang1_code)
     doc = add_lined_page_at_end(doc)
+    reduce_spacing_around_tables(doc)
     doc.save(docx_filepath)
 
 
@@ -557,7 +558,7 @@ def add_highlighted_html_to_docx(html: str, paragraph: Paragraph, keyword: str) 
     keyword_lower = keyword.lower()
     # Parse through all paragraphs in the temporary document
     for temp_paragraph in temp_doc.paragraphs:
-        text = temp_paragraph.text
+        text = temp_paragraph.text.strip()
         start = 0
         while True:
             # Case-insensitive search for the keyword
@@ -589,7 +590,7 @@ def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:
     html_to_docx.add_html_to_document(html, temp_doc)
     # Add plain text from the temp_doc into the target paragraph
     for temp_paragraph in temp_doc.paragraphs:
-        paragraph.add_run(temp_paragraph.text)
+        paragraph.add_run(temp_paragraph.text.strip())
 
 
 def add_lined_page_at_end(doc: Document) -> Document:
@@ -634,6 +635,49 @@ def adjust_table_columns(table: Table) -> None:
             tcW.set(qn("w:w"), str(int(width * 1440)))  # Convert inches to twips
             tcW.set(qn("w:type"), "dxa")
             tcPr.append(tcW)
+
+
+def reduce_spacing_around_tables(
+    doc: Document, before_table_space: int = 0, after_table_space: int = 0
+) -> None:
+    """
+    Reduces the whitespace around tables in a Word document.
+
+    Parameters:
+        doc (Document): A `Document` instance from python-docx.
+        before_table_space (int): The spacing (in points) to set before a table. Default is 0.
+        after_table_space (int): The spacing (in points) to set after a table. Default is 0.
+    """
+
+    def set_spacing(
+        paragraph: Paragraph, before: Optional[int] = None, after: Optional[int] = None
+    ) -> None:
+        # Access or create the <w:spacing> element
+        pPr = paragraph._element.get_or_add_pPr()
+        spacing = pPr.find(qn("w:spacing"))
+        if spacing is None:
+            spacing = OxmlElement("w:spacing")
+            pPr.append(spacing)
+        if before is not None:
+            spacing.set(qn("w:before"), str(before))
+        if after is not None:
+            spacing.set(qn("w:after"), str(after))
+
+    # Iterate through all elements in the document
+    previous_element = None
+    for element in doc.element.body:
+        if element.tag.endswith("tbl"):  # Table tag
+            # If there's a previous element, adjust its spacing after the element
+            if previous_element is not None and previous_element.tag.endswith("p"):
+                paragraph = Paragraph(previous_element, doc)
+                set_spacing(paragraph, after=before_table_space)
+            previous_element = element
+        elif element.tag.endswith("p"):  # Paragraph tag
+            paragraph = Paragraph(element, doc)
+            if previous_element is not None and previous_element.tag.endswith("tbl"):
+                # Adjust spacing for the paragraph following a table
+                set_spacing(paragraph, before=after_table_space)
+            previous_element = element
 
 
 def add_footer(doc: Document) -> Document:

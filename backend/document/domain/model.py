@@ -6,7 +6,10 @@ validation and JSON serialization.
 """
 
 from enum import Enum
+from html import escape
 from typing import Any, NamedTuple, Optional, Sequence, final
+from dataclasses import dataclass, field
+from pprint import pformat
 
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
@@ -24,12 +27,14 @@ EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
 TQ_RESOURCE_TYPE: str = "tq"
 TW_RESOURCE_TYPE: str = "tw"
 BC_RESOURCE_TYPE: str = "bc"
+RG_RESOURCE_TYPE: str = "rg"
 NON_USFM_RESOURCE_TYPES: Sequence[str] = [
     TN_RESOURCE_TYPE,
     EN_TN_CONDENSED_RESOURCE_TYPE,
     TQ_RESOURCE_TYPE,
     TW_RESOURCE_TYPE,
     BC_RESOURCE_TYPE,
+    RG_RESOURCE_TYPE,
 ]
 
 
@@ -201,6 +206,7 @@ class DocumentRequest(BaseModel):
             TQ_RESOURCE_TYPE,
             TW_RESOURCE_TYPE,
             BC_RESOURCE_TYPE,
+            RG_RESOURCE_TYPE,
         ]
         all_resource_types = [*usfm_resource_types, *non_usfm_resource_types]
         if not self.resource_requests:
@@ -486,3 +492,124 @@ class Attachment(NamedTuple):
 
     filepath: str
     mime_type: tuple[str, str]
+
+
+# Models for reviewer's guide:
+
+
+@final
+class Part1Item(NamedTuple):
+    text: str
+    reference: str
+
+
+@final
+class Part2Item(NamedTuple):
+    reference: str
+    question: str
+    answer: str
+
+
+@final
+class BibleReference(NamedTuple):
+    book_code: str
+    book_name: str
+    chapter: int
+    verse_ref: str
+
+
+@final
+class ParsedText(NamedTuple):
+    bible_reference: Optional[BibleReference] = None
+    background: Optional[str] = None
+    directive: Optional[str] = None
+    part_1: list[Part1Item] = []
+    part_1_directive: Optional[str] = None
+    part_2: list[Part2Item] = []
+    part_2_directive: Optional[str] = None
+    comment_section: Optional[str] = None
+
+
+@final
+class RGChapter(NamedTuple):
+    content: ParsedText
+
+
+@final
+class RGBook(NamedTuple):
+    lang_code: str
+    lang_name: str
+    book_code: str
+    resource_type_name: str
+    chapters: dict[ChapterNum, RGChapter]
+    lang_direction: LangDirEnum
+
+    # For pprint
+    def __repr__(self) -> str:
+        chapters_str = pformat(self.chapters)
+        return (
+            f"RGBook(\n"
+            f"  lang_code={self.lang_code},\n"
+            f"  lang_name={self.lang_name},\n"
+            f"  book_code={self.book_code},\n"
+            f"  resource_type_name={self.resource_type_name},\n"
+            f"  chapters={chapters_str},\n"
+            f"  lang_direction={self.lang_direction}\n"
+            f")"
+        )
+
+
+# Functions to render RGBook and its constituent parts to HTML
+
+
+def render_part1_item(item: Part1Item) -> str:
+    return f"<li>{escape(item.text)} <em>{escape(item.reference)}</em></li>"
+
+
+def render_part2_item(item: Part2Item) -> str:
+    return f"<tr><td>{escape(item.reference)}</td><td>{escape(item.question)}</td><td>{escape(item.answer)}</td></tr>"
+
+
+def render_bible_reference(ref: Optional[BibleReference]) -> str:
+    if not ref:
+        return ""
+    return (
+        f"<p><strong>{escape(ref.book_name)} {ref.chapter}:{escape(ref.verse_ref)}</strong> "
+        # f"(Code: {escape(ref.book_code)})</p>"
+    )
+
+
+def render_parsed_text(parsed: ParsedText) -> str:
+    part1_html = "".join(render_part1_item(item) for item in parsed.part_1)
+    part2_html = "".join(render_part2_item(item) for item in parsed.part_2)
+
+    return f"""
+    {render_bible_reference(parsed.bible_reference)}
+    {f"<p><b>Background:</b> {escape(parsed.background)}</p>" if parsed.background else ""}
+    {f"<p><i>{escape(parsed.directive)}</i></p>" if parsed.directive else ""}
+    <p><b>Part 1</b></p>
+    {f"<p>{escape(parsed.part_1_directive)}</p>" if parsed.part_1_directive else ""}
+    {f"<ul>{part1_html}</ul>" if part1_html else ""}
+    <p><b>Part 2</b></p>
+    {f"<p>{escape(parsed.part_2_directive)}</p>" if parsed.part_2_directive else ""}
+    {f"<table>{part2_html}</table>" if part2_html else ""}
+    {f"<p>{escape(parsed.comment_section)}</p>" if parsed.comment_section else ""}
+    """
+
+
+def render_chapter(chapter: RGChapter) -> str:
+    return f"<div class='chapter'>{render_parsed_text(chapter.content)}</div>"
+
+
+def render_book(book: RGBook) -> str:
+    chapters_html = "".join(
+        f"<div class='chapter' id='chapter-{num}'>{render_chapter(ch)}</div>"
+        for num, ch in book.chapters.items()
+    )
+    return f"""
+    <div class='rg-book' lang='{escape(book.lang_code)}' dir='{book.lang_direction.name.lower()}'>
+        <h1>{escape(book.resource_type_name)}</h1>
+        <h2>{escape(book.lang_name)} ({escape(book.book_code)})</h2>
+        {chapters_html}
+    </div>
+    """

@@ -2,6 +2,8 @@
 Tests for assembly strategy book-then-language
 """
 
+import os
+import re
 import pytest
 from document.config import settings
 from document.domain import model
@@ -12,11 +14,17 @@ from tests.shared.utils import (
     check_finished_document_with_body_success,
     check_finished_document_with_verses_success,
     check_finished_document_without_verses_success,
+    check_result,
 )
+
+logger = settings.logger(__name__)
+
 
 # data api does not provide en tq at this time
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -78,7 +86,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -140,7 +150,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -202,7 +214,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -264,7 +278,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -326,7 +342,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_epub_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_epub_by_chapter() -> (
+    None
+):
     with TestClient(app=app) as client:
         response = client.post(
             "/documents",
@@ -388,7 +406,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -450,7 +470,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -512,7 +534,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -574,7 +598,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_
 
 # Must have two languages to use blo assembly_strategy_kind
 @pytest.mark.skip
-def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -616,7 +642,9 @@ def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_orde
 
 # Must have two languages to use blo assembly_strategy_kind
 @pytest.mark.skip
-def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_by_chapter() -> None:
+def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -658,7 +686,9 @@ def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_orde
 
 # Must have two languages to use blo assembly_strategy_kind
 @pytest.mark.skip
-def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_c_by_chapter() -> None:
+def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -700,7 +730,9 @@ def test_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_book_language_orde
 
 # Must have two languages to use blo assembly_strategy_kind
 @pytest.mark.skip
-def test_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_by_chapter() -> None:
+def test_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -742,7 +774,9 @@ def test_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_by_chap
 
 # Must have two languages to use blo assembly_strategy_kind
 @pytest.mark.skip
-def test_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_c_by_chapter() -> None:
+def test_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -786,7 +820,9 @@ def test_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_book_language_order_1c_c_by_ch
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -848,7 +884,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col
 
 # data api does not provide udb for tl
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -915,7 +953,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col
 
 # data api does not provide udb for tl
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -982,7 +1022,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col
 
 # data api does not provide udb for tl
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col_tl_tw_col_tl_udb_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1048,7 +1090,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_tl_ulb_col_tl_tn_col_tl_tq_col
 
 
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1098,7 +1142,9 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_lan
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1148,7 +1194,9 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_lan
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1199,7 +1247,9 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_lan
 
 
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1251,7 +1301,9 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_book_lan
 
 # DocumentRequest validation requests that each of two languages when two are submitted have the same books
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1318,7 +1370,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_ti
 
 # DocumentRequest validation requests that each of two languages when two are submitted have the same books
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1384,7 +1438,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_ti
 
 
 @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1451,7 +1507,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_ti
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_book_language_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1503,7 +1561,9 @@ def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_book_lan
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_book_language_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1555,7 +1615,9 @@ def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_book_lan
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_book_language_order_1c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1622,7 +1684,9 @@ def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_s
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_book_language_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1688,7 +1752,9 @@ def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_s
 
 
 @pytest.mark.skip
-def test_en_tn_col_en_tw_col_en_tn_tit_en_tw_tit_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_book_language_order_1c_by_chapter() -> None:
+def test_en_tn_col_en_tw_col_en_tn_tit_en_tw_tit_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1748,7 +1814,9 @@ def test_en_tn_col_en_tw_col_en_tn_tit_en_tw_tit_sw_tn_col_sw_tw_col_sw_tn_tit_s
         check_finished_document_with_body_success(response)
 
 
-def test_en_tn_col_en_tw_col_en_tn_tit_en_tw_tit_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_book_language_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_en_tw_col_en_tn_tit_en_tw_tit_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1810,7 +1878,9 @@ def test_en_tn_col_en_tw_col_en_tn_tit_en_tw_tit_sw_tn_col_sw_tw_col_sw_tn_tit_s
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_book_language_order_1c_by_chapter() -> None:
+def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1852,7 +1922,9 @@ def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_book_langua
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_book_language_order_1c_c_by_chapter() -> None:
+def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1956,7 +2028,9 @@ def test_en_tw_col_sw_tw_col_sw_tw_tit_book_language_order_1c_c_by_chapter() -> 
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_book_language_order_1c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1998,7 +2072,9 @@ def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_book_langua
 
 # en tq is not provided by data api
 @pytest.mark.skip
-def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_book_language_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2245,7 +2321,9 @@ def test_en_ulb_col_sw_ulb_col_sw_ulb_tit_book_language_order_1c_c_by_chapter() 
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_book_language_order_1c_by_chapter() -> None:
+def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2293,7 +2371,9 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_book_language_order
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_book_language_order_1c_c_by_chapter() -> None:
+def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2338,7 +2418,9 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_book_language_order
         check_finished_document_with_verses_success(response)
 
 
-def test_ceb_ulb_mrk_ceb_tw_mrk_ceb_tq_mrk_ceb_tn_mrk_fr_ulb_mrk_fr_tw_mrk_fr_tq_mrk_fr_tn_mrk_fr_f10_mrk_pt_br_ulb_mrk_pt_br_tw_mrk_pt_br_tq_mrk_pt_br_tn_mrk_book_language_order_1c_by_chapter() -> None:
+def test_ceb_ulb_mrk_ceb_tw_mrk_ceb_tq_mrk_ceb_tn_mrk_fr_ulb_mrk_fr_tw_mrk_fr_tq_mrk_fr_tn_mrk_fr_f10_mrk_pt_br_ulb_mrk_pt_br_tw_mrk_pt_br_tq_mrk_pt_br_tn_mrk_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2423,7 +2505,9 @@ def test_ceb_ulb_mrk_ceb_tw_mrk_ceb_tq_mrk_ceb_tn_mrk_fr_ulb_mrk_fr_tw_mrk_fr_tq
         check_finished_document_with_verses_success(response)
 
 
-def test_ceb_ulb_mrk_ceb_tw_mrk_ceb_tq_mrk_ceb_tn_mrk_fr_ulb_mrk_fr_tw_mrk_fr_tq_mrk_fr_tn_mrk_fr_f10_mrk_pt_br_ulb_mrk_pt_br_tw_mrk_pt_br_tq_mrk_pt_br_tn_mrk_book_language_order_1c_c_by_chapter() -> None:
+def test_ceb_ulb_mrk_ceb_tw_mrk_ceb_tq_mrk_ceb_tn_mrk_fr_ulb_mrk_fr_tw_mrk_fr_tq_mrk_fr_tn_mrk_fr_f10_mrk_pt_br_ulb_mrk_pt_br_tw_mrk_pt_br_tq_mrk_pt_br_tn_mrk_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2511,7 +2595,9 @@ def test_ceb_ulb_mrk_ceb_tw_mrk_ceb_tq_mrk_ceb_tn_mrk_fr_ulb_mrk_fr_tw_mrk_fr_tq
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2559,7 +2645,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2607,7 +2695,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_book_language_order_1c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2650,7 +2740,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_book_language_order_1c_by_cha
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_book_language_order_1c_c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2693,7 +2785,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_book_language_order_1c_c_by_c
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2736,7 +2830,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_by_cha
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2997,7 +3093,9 @@ def test_tl_ulb_gen_tl_udb_gen_book_language_order_1c_c_by_chapter() -> None:
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_book_language_order_1c_by_chapter() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -3040,7 +3138,9 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_book_language_order_1c_by_chap
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_book_language_order_1c_c_by_chapter() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -3421,7 +3521,9 @@ def test_tl_udb_gen_book_language_order_1c_c_by_chapter() -> None:
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_book_language_order_1c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_book_language_order_1c_by_chapter() -> (
+    None
+):
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -3470,7 +3572,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_book_language_order
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_book_language_order_1c_c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -3516,7 +3620,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_book_language_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_by_chapter() -> (
+    None
+):
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -3565,7 +3671,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -3614,7 +3722,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_by_chapter() -> (
+    None
+):
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -3658,7 +3768,9 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_by_cha
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -3783,7 +3895,9 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_book_language_order_1c_c_by_chapter() -
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_ndh_x_chindali_reg_mat_ndh_x_chindali_tn_mat_ndh_x_chindali_tq_mat_ndh_x_chindali_tw_mat_ndh_x_chindali_udb_mat_book_language_order_1c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_ndh_x_chindali_reg_mat_ndh_x_chindali_tn_mat_ndh_x_chindali_tq_mat_ndh_x_chindali_tw_mat_ndh_x_chindali_udb_mat_book_language_order_1c_by_chapter() -> (
+    None
+):
     """
     Show that the succeeding resource request's, fr-f10-rev,
     content is rendered and the failing resource requests are reported
@@ -3851,7 +3965,9 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_ndh_x_chindali_reg_mat_ndh_x_chindali_t
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_ndh_x_chindali_reg_mat_ndh_x_chindali_tn_mat_ndh_x_chindali_tq_mat_ndh_x_chindali_tw_mat_ndh_x_chindali_udb_mat_book_language_order_1c_c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_ndh_x_chindali_reg_mat_ndh_x_chindali_tn_mat_ndh_x_chindali_tq_mat_ndh_x_chindali_tw_mat_ndh_x_chindali_udb_mat_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     """
     Show that the succeeding resource request's, fr-f10-rev,
     content is rendered and the failing resource requests are reported
@@ -3919,7 +4035,9 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_ndh_x_chindali_reg_mat_ndh_x_chindali_t
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_ndh_x_chindali_reg_mat_ndh_x_chindali_tn_mat_ndh_x_chindali_tq_mat_ndh_x_chindali_tw_mat_ndh_x_chindali_udb_mat_book_language_order_by_chapter() -> None:
+def test_ndh_x_chindali_reg_mat_ndh_x_chindali_tn_mat_ndh_x_chindali_tq_mat_ndh_x_chindali_tw_mat_ndh_x_chindali_udb_mat_book_language_order_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -3964,7 +4082,9 @@ def test_ndh_x_chindali_reg_mat_ndh_x_chindali_tn_mat_ndh_x_chindali_tq_mat_ndh_
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4024,7 +4144,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_e
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4084,7 +4206,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_e
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4144,7 +4268,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_e
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4205,7 +4331,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_e
 
 
 @pytest.mark.skip
-def test_es_ulb_col_es_tn_col_en_tq_col_es_tw_col_book_language_order_1c_by_chapter() -> None:
+def test_es_ulb_col_es_tn_col_en_tq_col_es_tw_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     """
     Ask for a combination of available and unavailable resources.
     """
@@ -4249,7 +4377,9 @@ def test_es_ulb_col_es_tn_col_en_tq_col_es_tw_col_book_language_order_1c_by_chap
 
 
 @pytest.mark.skip
-def test_es_ulb_col_es_tn_col_en_tq_col_es_tw_col_book_language_order_1c_c_by_chapter() -> None:
+def test_es_ulb_col_es_tn_col_en_tq_col_es_tw_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     """
     Ask for a combination of available and unavailable resources.
     """
@@ -4292,7 +4422,9 @@ def test_es_ulb_col_es_tn_col_en_tq_col_es_tw_col_book_language_order_1c_c_by_ch
         check_finished_document_without_verses_success(response)
 
 
-def test_es_419_ulb_col_es_419_tn_col_es419_tq_col_es_419_tw_col_book_language_order_1c_by_chapter() -> None:
+def test_es_419_ulb_col_es_419_tn_col_es419_tq_col_es_419_tw_col_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4332,7 +4464,9 @@ def test_es_419_ulb_col_es_419_tn_col_es419_tq_col_es_419_tw_col_book_language_o
         check_finished_document_with_verses_success(response)
 
 
-def test_es_419_ulb_col_es_419_tn_col_es419_tq_col_es_419_tw_col_book_language_order_1c_c_by_chapter() -> None:
+def test_es_419_ulb_col_es_419_tn_col_es419_tq_col_es_419_tw_col_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4372,7 +4506,9 @@ def test_es_419_ulb_col_es_419_tn_col_es419_tq_col_es_419_tw_col_book_language_o
         check_finished_document_with_verses_success(response)
 
 
-def test_es_419_ulb_rom_es_419_tn_rom_es_419_tq_rom_es_419_tw_rom_pt_br_ulb_rom_pt_br_tn_rom_pt_br_tq_rom_pt_br_tw_rom_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_es_419_ulb_rom_es_419_tn_rom_es_419_tq_rom_es_419_tw_rom_pt_br_ulb_rom_pt_br_tn_rom_pt_br_tq_rom_pt_br_tw_rom_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4432,7 +4568,9 @@ def test_es_419_ulb_rom_es_419_tn_rom_es_419_tq_rom_es_419_tw_rom_pt_br_ulb_rom_
         check_finished_document_with_verses_success(response)
 
 
-def test_es_419_ulb_rom_es_419_tn_rom_es_419_tq_rom_es_419_tw_rom_pt_br_ulb_rom_pt_br_tn_rom_pt_br_tq_rom_pt_br_tw_rom_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_es_419_ulb_rom_es_419_tn_rom_es_419_tq_rom_es_419_tw_rom_pt_br_ulb_rom_pt_br_tn_rom_pt_br_tq_rom_pt_br_tw_rom_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4492,7 +4630,9 @@ def test_es_419_ulb_rom_es_419_tn_rom_es_419_tq_rom_es_419_tw_rom_pt_br_ulb_rom_
         check_finished_document_with_verses_success(response)
 
 
-def test_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order_1c_by_chapter() -> None:
+def test_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4532,7 +4672,9 @@ def test_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_orde
         check_finished_document_with_verses_success(response)
 
 
-def test_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order_1c_c_by_chapter() -> None:
+def test_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4572,7 +4714,9 @@ def test_es_419_ulb_rom_es_419_tn_rom_en_tq_rom_es_419_tw_rom_book_language_orde
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_rom_en_tn_rom_en_tq_rom_en_tw_rom_zh_cuv_rom_zh_cuv_tn_rom_zh_cuv_tq_rom_zh_cuv_tw_rom_book_language_order_2c_sl_sr_by_chapter() -> None:
+def test_en_ulb_rom_en_tn_rom_en_tq_rom_en_tw_rom_zh_cuv_rom_zh_cuv_tn_rom_zh_cuv_tq_rom_zh_cuv_tw_rom_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4632,7 +4776,9 @@ def test_en_ulb_rom_en_tn_rom_en_tq_rom_en_tw_rom_zh_cuv_rom_zh_cuv_tn_rom_zh_cu
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_rom_en_tn_rom_en_tq_rom_en_tw_rom_zh_cuv_rom_zh_cuv_tn_rom_zh_cuv_tq_rom_zh_cuv_tw_rom_book_language_order_2c_sl_sr_c_by_chapter() -> None:
+def test_en_ulb_rom_en_tn_rom_en_tq_rom_en_tw_rom_zh_cuv_rom_zh_cuv_tn_rom_zh_cuv_tq_rom_zh_cuv_tw_rom_book_language_order_2c_sl_sr_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -4690,3 +4836,407 @@ def test_en_ulb_rom_en_tn_rom_en_tq_rom_en_tw_rom_zh_cuv_rom_zh_cuv_tn_rom_zh_cu
             },
         )
         check_finished_document_with_verses_success(response)
+
+
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_es_419_rg_gal_en_bc_es_419_bc_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
+    None
+):
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tq",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "tq",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "bc",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-418",
+                        "resource_type": "bc",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-418",
+                        "resource_type": "tw",
+                        "book_code": "gal",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_en_bc_es_419_bc_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
+    None
+):
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "bc",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-418",
+                        "resource_type": "bc",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-418",
+                        "resource_type": "tw",
+                        "book_code": "gal",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
+    None
+):
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tw",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-418",
+                        "resource_type": "tw",
+                        "book_code": "gal",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_book_language_order_1c_by_chapter() -> (
+    None
+):
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_book_language_order_2c_sl_sr_by_chapter() -> (
+    None
+):
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "tn",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "rg",
+                        "book_code": "gal",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response)
+
+
+@pytest.mark.focus
+def test_en_ulb_gal_es_419_ulb_gal_book_language_order_1c_by_chapter_check_blo_algo_used() -> (
+    None
+):
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": True,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                    {
+                        "lang_code": "es-419",
+                        "resource_type": "ulb",
+                        "book_code": "gal",
+                    },
+                ],
+            },
+        )
+        finished_document_request_key = check_result(
+            response, suffix="html", poll_duration=4
+        )
+        html_filepath = os.path.join(
+            settings.DOCUMENT_OUTPUT_DIR,
+            "{}.html".format(finished_document_request_key),
+        )
+        with open(html_filepath, "r") as fin:
+            html = fin.read()
+            body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
+            assert body_match, "Body not found in HTML"
+            body_content = body_match.group(1)
+            assert is_within_distance(
+                body_content,
+                "So they glorified God because of me.",
+                " no de hombres",
+                350,
+            ), "Two phrases should be near each other, within the specified distance, otherwise book then lang algo is not being used when it should be"
+
+
+def is_within_distance(text: str, substr1: str, substr2: str, distance: int) -> bool:
+    """
+    Check if substr2 is within a certain distance of substr1 in the given text.
+
+    :param text: The text to search.
+    :param substr1: The first substring to find.
+    :param substr2: The second substring to find.
+    :param distance: The maximum distance allowed between substr1 and substr2.
+    :return: True if substr2 is within the distance of substr1, otherwise False.
+    """
+    index1 = text.find(substr1)
+    index2 = text.find(substr2)
+    logger.debug("index1: %s, index2: %s", index1, index2)
+
+    # If either substring is not found, return False
+    if index1 == -1 or index2 == -1:
+        return False
+
+    # Check if the distance between substr1 and substr2 is within the given distance
+    logger.debug("distance: %s", abs(index1 - index2))
+    return abs(index1 - index2) <= distance
+
+
+if __name__ == "__main__":
+    text = """
+The quick brown
+    fox jumps over the lazy dog"""
+    substr1 = "quick"
+    substr2 = "fox"
+    distance = 16
+
+    assert is_within_distance(text, substr1, substr2, distance)

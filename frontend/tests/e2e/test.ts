@@ -93,3 +93,21 @@ test('test es-419 resource types', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
+
+test('test that reviewers guide is only shown when book is chosen that it includes', async ({ page }) => {
+  await page.goto('http://localhost:8001/languages');
+  await page.getByText('English').click();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByText('1 Corinthians').click();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).not.toBeVisible();
+});
+
+test('test that reviewers guide is only shown when book is chosen that it includes - part 2', async ({ page }) => {
+  await page.goto('http://localhost:8001/languages');
+  await page.getByText('English').click();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByText('Galatians').click();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible();
+});

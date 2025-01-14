@@ -16,6 +16,7 @@ from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
+from document.domain.structured_reviewers_guide import get_rg_books
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.exceptions import MissingChapterMarkerError
 from document.domain.model import (
@@ -30,6 +31,7 @@ from document.domain.model import (
     TQChapter,
     TWBook,
     TWNameContentPair,
+    RGBook,
     USFMBook,
     USFMChapter,
     VerseRef,
@@ -38,6 +40,7 @@ from document.domain.model import (
     TQ_RESOURCE_TYPE,
     TW_RESOURCE_TYPE,
     BC_RESOURCE_TYPE,
+    RG_RESOURCE_TYPE,
 )
 from document.domain.usfm_error_detection_and_fixes import fix_usfm
 from document.markdown_transforms import markdown_transformer
@@ -639,18 +642,20 @@ def usfm_book_content(
             chapter_html_content
         )
         usfm_chapters[chapter_num] = USFMChapter(
-            content=cleaned_chapter_html_content
-            if cleaned_chapter_html_content
-            else "",
+            content=(
+                cleaned_chapter_html_content if cleaned_chapter_html_content else ""
+            ),
             verses=None,
         )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
-        national_book_name=national_book_name
-        if national_book_name
-        else BOOK_NAMES[resource_lookup_dto.book_code],
+        national_book_name=(
+            national_book_name
+            if national_book_name
+            else BOOK_NAMES[resource_lookup_dto.book_code]
+        ),
         resource_type_name=resource_lookup_dto.resource_type_name,
         chapters=usfm_chapters if usfm_chapters else {},
         lang_direction=resource_lookup_dto.lang_direction,
@@ -792,6 +797,14 @@ def tn_book_content(
         book_intro = book_intro_markdown(resource_dir, resource_lookup_dto.book_code)
         if book_intro:
             book_intro = markdown_transformer.remove_sections(book_intro)
+            tw_resource_dir_ = tw_resource_dir(resource_lookup_dto.lang_code)
+            translation_words_dict_ = translation_words_dict(tw_resource_dir_)
+            book_intro = markdown_transformer.transform_tw_links(
+                book_intro,
+                resource_lookup_dto.lang_code,
+                resource_requests,
+                translation_words_dict_,
+            )
             book_intro = markdown_transformer.transform_ta_and_tn_links(
                 book_intro,
                 resource_lookup_dto.lang_code,
@@ -1049,18 +1062,23 @@ def books(
     tq_resource_type: str = TQ_RESOURCE_TYPE,
     tw_resource_type: str = TW_RESOURCE_TYPE,
     bc_resource_type: str = BC_RESOURCE_TYPE,
+    rg_resource_type: str = RG_RESOURCE_TYPE,
+    docx_file_path: str = "en_rg_nt_survey.docx",
 ) -> tuple[
     Sequence[USFMBook],
     Sequence[TNBook],
     Sequence[TQBook],
     Sequence[TWBook],
     Sequence[BCBook],
+    Sequence[RGBook],
 ]:
     usfm_books = []
     tn_books = []
     tq_books = []
     tw_books = []
     bc_books = []
+    rg_books = []
+    filtered_rg_books = []
     for resource_lookup_dto, resource_dir in zip(resource_lookup_dtos, resource_dirs):
         if resource_lookup_dto.resource_type in usfm_resource_types:
             usfm_book = usfm_book_content(
@@ -1092,7 +1110,24 @@ def books(
                 resource_lookup_dto, resource_dir, resource_requests, layout_for_print
             )
             bc_books.append(bc_book)
-    return usfm_books, tn_books, tq_books, tw_books, bc_books
+        elif resource_lookup_dto.resource_type == rg_resource_type:
+            logger.debug(
+                "About to get_rg_books from: %s", f"{resource_dir}/{docx_file_path}"
+            )
+            rg_books = get_rg_books(
+                f"{resource_dir}/{docx_file_path}",
+                resource_lookup_dto.lang_code,
+                resource_lookup_dto.lang_name,
+                resource_lookup_dto.resource_type_name,
+                resource_lookup_dto.lang_direction,
+            )
+            filtered_rg_books = [
+                rg_book
+                for rg_book in rg_books
+                if rg_book.lang_code == resource_lookup_dto.lang_code
+                and rg_book.book_code == resource_lookup_dto.book_code
+            ]
+    return usfm_books, tn_books, tq_books, tw_books, bc_books, filtered_rg_books
 
 
 def ensure_paragraph_before_verses(

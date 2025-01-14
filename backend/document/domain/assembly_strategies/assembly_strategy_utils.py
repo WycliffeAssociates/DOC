@@ -12,6 +12,8 @@ from document.domain.model import (
     TNBook,
     TQBook,
     USFMBook,
+    RGBook,
+    render_chapter,
 )
 
 
@@ -160,6 +162,17 @@ def tq_language_direction_html(
         return ltr_direction_html
 
 
+def rg_language_direction_html(
+    rg_book: Optional[RGBook],
+    rtl_direction_html: str = RTL_DIRECTION_HTML,
+    ltr_direction_html: str = LTR_DIRECTION_HTML,
+) -> str:
+    if rg_book and rg_book.lang_direction == LangDirEnum.RTL:
+        return rtl_direction_html
+    else:
+        return ltr_direction_html
+
+
 def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,
@@ -194,6 +207,26 @@ def tq_chapter_verses(
                 "".join(tq_verses.values()),
             )
         )
+        content.append(hr)
+    return "".join(content)
+
+
+def rg_chapter_verses(
+    rg_book: Optional[RGBook],
+    chapter_num: int,
+    # TODO
+    fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
+    hr: str = "<hr/>",
+) -> str:
+    """
+    Return the HTML for verses that are in the chapter with
+    chapter_num.
+    """
+    content = []
+    if rg_book and chapter_num in rg_book.chapters:
+        rg_verses = render_chapter(rg_book.chapters[chapter_num])
+        # logger.debug("rg_verses: %s", rg_verses)
+        content.append(rg_verses)
         content.append(hr)
     return "".join(content)
 

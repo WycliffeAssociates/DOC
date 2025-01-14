@@ -1,5 +1,7 @@
 """This module provides the FastAPI API definition."""
 
+import os
+import shutil
 
 from document.config import settings
 from document.domain import exceptions
@@ -9,6 +11,12 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+ASSETS_DOWNLOAD_DIR = "/app/assets_download"
+BACKUP_DIR = "/app/"
+EN_RG_DIR = os.path.join(ASSETS_DOWNLOAD_DIR, "en_rg")
+DOCX_FILE_SRC = os.path.join(BACKUP_DIR, "en_rg_nt_survey.docx")
+DOCX_FILE_DEST = os.path.join(EN_RG_DIR, "en_rg_nt_survey.docx")
 
 app = FastAPI()
 
@@ -65,6 +73,24 @@ async def validation_exception_handler(
     return JSONResponse(
         content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
     )
+
+
+# Until reviewer's guides can be accessed via data API, create their
+# directory and copy them into place
+@app.on_event("startup")
+async def initialize_assets() -> None:
+    """
+    Ensures the en_rg directory and the .docx file exist in the assets_download volume.
+    """
+    try:
+        # Create the en_rg directory if it doesn't exist
+        os.makedirs(EN_RG_DIR, exist_ok=True)
+        # Copy the .docx file if it doesn't already exist
+        if not os.path.exists(DOCX_FILE_DEST):
+            shutil.copy(DOCX_FILE_SRC, DOCX_FILE_DEST)
+        print("Assets initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing assets: {e}")
 
 
 app.include_router(doc_router)

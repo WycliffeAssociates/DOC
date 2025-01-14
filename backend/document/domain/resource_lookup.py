@@ -23,7 +23,11 @@ from document.domain.model import (
     ResourceLookupDto,
     NON_USFM_RESOURCE_TYPES,
 )
-from document.utils.file_utils import file_needs_update, read_file
+from document.utils.file_utils import file_needs_update, read_file, make_dir
+from document.domain.structured_reviewers_guide import (
+    find_bible_references,
+    parse_bible_reference,
+)
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -44,6 +48,7 @@ RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
     "f10": "French Louis Segond 1910 Bible",
     "nav": "New Arabic Version (Ketab El Hayat)",
     "reg": "Bible",
+    "rg": "NT Survey Reviewer's Guide",
     "tn": "Translation Notes",
     "tn-condensed": "Condensed Translation Notes",
     "tq": "Translation Questions",
@@ -413,6 +418,7 @@ def resource_types(
     resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     book_names: dict[str, str] = BOOK_NAMES,
+    docx_file_path: str = "en_rg_nt_survey.docx",
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
@@ -441,7 +447,8 @@ def resource_types(
                     url = repo_info["repo_url"]
                     last_segment = get_last_segment(url, lang_code)
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    clone_git_repo(url, resource_filepath)
+                    if last_segment[-4:] != "docx":
+                        clone_git_repo(url, resource_filepath)
                     logger.debug("resource_filepath: %s", resource_filepath)
                     # Check repo on disk to see if at least one of the books
                     # chosen by the user is there
@@ -465,6 +472,25 @@ def resource_types(
                         ]
                     elif resource_type in usfm_resource_types:
                         book_assets = parsing.find_usfm_files(resource_filepath)
+                    elif resource_type == "rg":
+                        between_texts, bible_reference_strs = find_bible_references(
+                            f"{resource_filepath}/{docx_file_path}"
+                        )
+                        bible_references = [
+                            parse_bible_reference(bible_reference)
+                            for bible_reference in bible_reference_strs
+                        ]
+                        book_codes_ = [
+                            bible_reference.book_code
+                            for bible_reference in bible_references
+                            if bible_reference
+                        ]
+                        # Here book assets is really book codes, but this will work with our conditional below
+                        book_assets = [
+                            book_code
+                            for book_code in book_codes
+                            if book_code in book_codes_
+                        ]
                     # Checking if at least one of the books chosen by the user in the prior
                     # user step is included in the repo. For example, the user may have
                     # chosen an Old Testament book and there is no English bible commentary
@@ -586,6 +612,8 @@ def get_last_segment(url: str, lang_code: str) -> str:
         last_segment = "my_ulb"
     elif lang_code == "fa" and last_segment == "fa_opv":
         last_segment = "fa_ulb"
+    elif lang_code == "en" and last_segment[-4:] == "docx":
+        last_segment = "en_rg"
     return last_segment
 
 
@@ -680,6 +708,20 @@ def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
         },
     }
     repos_info.append(en_tn_condensed)
+    # data API does not provide rg for en, but DOC needs to support it
+    en_rg = {
+        "repo_url": "https://github.com/WycliffeAssociates/TS-biel-files/blob/master/training/en/Refinement%20and%20Publication/Reviewers'%20Guide/NT%20Survey%20RG%20Files/NT%20Survey%20Reviewers'%20Guide.docx",
+        "content": {
+            "resource_type": "rg",
+            "language": {
+                "english_name": "English",
+                "ietf_code": "en",
+                "national_name": "English",
+                "direction": "ltr",
+            },
+        },
+    }
+    repos_info.append(en_rg)
     # logger.debug("repos_info[-4:]: %s", repos_info[-4:])
     return repos_info
 
@@ -857,6 +899,7 @@ def resource_lookup_dto(
     """
     data = fetch_source_data()
     resource_lookup_dto = None
+    rg_resource_lookup_dtos = []
     two_component_url_resource_lookup_dtos = []
     more_than_two_component_url_resource_lookup_dtos = []
     try:
@@ -869,22 +912,52 @@ def resource_lookup_dto(
             url = repo_info["repo_url"]
             if language_info["ietf_code"] == lang_code:
                 last_segment = get_last_segment(url, lang_code)
-                repo_components = last_segment.split("_")
-                repo_components = update_repo_components(repo_components)
-                # logger.debug(
-                #     "url: %s, repo_components: %s, resource_type: %s",
-                #     url,
-                #     repo_components,
-                #     resource_type_,
-                # )
-                if len(repo_components) > 2:
-                    book_code_ = repo_components[1]
-                    if (
-                        (book_code_ in url or zmq_git_username in url)
-                        and resource_type == resource_type_
-                        and resource_type_ in resource_type_codes_and_names
-                        and book_code_ == book_code
-                    ):
+                if last_segment[-4:] == "docx":
+                    logger.debug("docx detected, url: %s", url)
+                    resource_lookup_dto = ResourceLookupDto(
+                        lang_code=lang_code,
+                        lang_name=language_info["english_name"],
+                        resource_type=resource_type,
+                        resource_type_name=resource_type_codes_and_names[resource_type],
+                        book_code=book_code,
+                        lang_direction=language_info["direction"],
+                        url=url,
+                    )
+                    rg_resource_lookup_dtos.append(resource_lookup_dto)
+                else:
+                    repo_components = last_segment.split("_")
+                    repo_components = update_repo_components(repo_components)
+                    # logger.debug(
+                    #     "url: %s, repo_components: %s, resource_type: %s",
+                    #     url,
+                    #     repo_components,
+                    #     resource_type_,
+                    # )
+                    if len(repo_components) > 2:
+                        book_code_ = repo_components[1]
+                        if (
+                            (book_code_ in url or zmq_git_username in url)
+                            and resource_type == resource_type_
+                            and resource_type_ in resource_type_codes_and_names
+                            and book_code_ == book_code
+                        ):
+                            resource_lookup_dto = ResourceLookupDto(
+                                lang_code=lang_code,
+                                lang_name=language_info["english_name"],
+                                resource_type=resource_type,
+                                resource_type_name=resource_type_codes_and_names[
+                                    resource_type
+                                ],
+                                book_code=book_code,
+                                lang_direction=language_info["direction"],
+                                url=url,
+                            )
+                            more_than_two_component_url_resource_lookup_dtos.append(
+                                resource_lookup_dto
+                            )
+                    elif (
+                        len(repo_components) == 2 and resource_type == resource_type_
+                    ):  # Here we handle cases like es-419_ulb, es-419_tn, en_ulb, etc.
                         resource_lookup_dto = ResourceLookupDto(
                             lang_code=lang_code,
                             lang_name=language_info["english_name"],
@@ -896,22 +969,9 @@ def resource_lookup_dto(
                             lang_direction=language_info["direction"],
                             url=url,
                         )
-                        more_than_two_component_url_resource_lookup_dtos.append(
+                        two_component_url_resource_lookup_dtos.append(
                             resource_lookup_dto
                         )
-                elif (
-                    len(repo_components) == 2 and resource_type == resource_type_
-                ):  # Here we handle cases like es-419_ulb, es-419_tn, en_ulb, etc.
-                    resource_lookup_dto = ResourceLookupDto(
-                        lang_code=lang_code,
-                        lang_name=language_info["english_name"],
-                        resource_type=resource_type,
-                        resource_type_name=resource_type_codes_and_names[resource_type],
-                        book_code=book_code,
-                        lang_direction=language_info["direction"],
-                        url=url,
-                    )
-                    two_component_url_resource_lookup_dtos.append(resource_lookup_dto)
     except:
         logger.debug(
             "Problem creating ResourceLookupDto instance for %s, %s, %s, likely a data problem",
@@ -927,7 +987,9 @@ def resource_lookup_dto(
     #     "more_than_two_component_url_resource_lookup_dtos: %s",
     #     more_than_two_component_url_resource_lookup_dtos,
     # )
-    if more_than_two_component_url_resource_lookup_dtos:
+    if rg_resource_lookup_dtos:
+        resource_lookup_dto = rg_resource_lookup_dtos[0]
+    elif more_than_two_component_url_resource_lookup_dtos:
         resource_lookup_dto = more_than_two_component_url_resource_lookup_dtos[0]
     elif two_component_url_resource_lookup_dtos:
         resource_lookup_dto = two_component_url_resource_lookup_dtos[0]
@@ -939,10 +1001,10 @@ def provision_asset_files(
     url: Optional[str],
     resource_filepath: str,
 ) -> None:
-    if (
-        url is not None
-    ):  # We know that resource_url is not None because of how we got here, but mypy isn't convinced. Let's convince mypy.
+    if url is not None and url[-4:] != "docx":
         clone_git_repo(url, resource_filepath)
+    elif url is not None and url[-4:] == "docx":
+        download_rg_file(url, resource_filepath)
 
 
 def prepare_resource_filepath(
@@ -986,6 +1048,40 @@ def clone_git_repo(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="git clone failed",
             )
+
+
+def download_rg_file(
+    url: str,
+    resource_filepath: str,
+) -> None:
+    # TODO Until data API provides reviewer's guide URL that is
+    # downloadable, we provide the reviewer's guide in our build process
+    # using directives in our Dockerfile. Downloading the file using curl
+    # doesn't work as it is below. There is a way to authenticate to github
+    # using curl and download the file, but this requires using an
+    # authentication token which would need to be shared via an env var that
+    # is not committed to git.
+    pass
+    # logger.debug("About to download rg file: %s to: %s", url, resource_filepath)
+    # make_dir(resource_filepath)
+    # command = "curl -L -o '{}/en_rg_nt_survey.docx' '{}'".format(resource_filepath, url)
+    # if exists(resource_filepath):
+    #     logger.info(
+    #         "No need to download file as it already exists: %s", resource_filepath
+    #     )
+    # else:
+    #     logger.debug("Attempting to download file into %s ...", resource_filepath)
+    #     try:
+    #         subprocess.call(command, shell=True)
+    #         logger.debug("curl command: %s", command)
+    #         logger.debug("download file succeeded.")
+    #     except subprocess.SubprocessError:
+    #         logger.debug("curl command: %s", command)
+    #         logger.debug("download file failed!")
+    #         raise HTTPException(
+    #             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #             detail="download file failed",
+    #         )
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     chapter_commentary,
     chapter_heading,
     chapter_intro,
+    rg_chapter_verses,
     tn_chapter_verses,
     tq_chapter_verses,
 )
@@ -22,6 +23,7 @@ from document.domain.model import (
     BCBook,
     ChunkSizeEnum,
     LangDirEnum,
+    RGBook,
     TNBook,
     TQBook,
     TWBook,
@@ -41,6 +43,7 @@ def assemble_content_by_lang_then_book(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
+    rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
     book_names: Mapping[str, str] = BOOK_NAMES,
@@ -59,6 +62,7 @@ def assemble_content_by_lang_then_book(
         .union(tq_book.lang_code for tq_book in tq_books)
         .union(tw_book.lang_code for tw_book in tw_books)
         .union(bc_book.lang_code for bc_book in bc_books)
+        .union(rg_book.lang_code for rg_book in rg_books)
     )
     most_lang_codes = list(all_lang_codes)
     # Collect and deduplicate book codes
@@ -68,6 +72,7 @@ def assemble_content_by_lang_then_book(
         .union(tq_book.book_code for tq_book in tq_books)
         .union(tw_book.book_code for tw_book in tw_books)
         .union(bc_book.book_code for bc_book in bc_books)
+        .union(rg_book.book_code for rg_book in rg_books)
     )
     most_book_codes = list(all_book_codes)
     # Cache book_id_map lookup
@@ -115,6 +120,12 @@ def assemble_content_by_lang_then_book(
                 if bc_book.lang_code == lang_code and bc_book.book_code == book_code
             ]
             bc_book = selected_bc_books[0] if selected_bc_books else None
+            selected_rg_books = [
+                rg_book
+                for rg_book in rg_books
+                if rg_book.lang_code == lang_code and rg_book.book_code == book_code
+            ]
+            rg_book = selected_rg_books[0] if selected_rg_books else None
             if usfm_book is not None:
                 composers.append(
                     assemble_usfm_by_book(
@@ -124,6 +135,7 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
             elif usfm_book is None and tn_book is not None:
@@ -135,6 +147,7 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
             elif usfm_book is None and tn_book is None and tq_book is not None:
@@ -146,13 +159,14 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
             elif (
                 usfm_book is None
                 and tn_book is None
                 and tq_book is None
-                and (tw_book is not None or bc_book is not None)
+                and (tw_book is not None or bc_book is not None or rg_book is not None)
             ):
                 composers.append(
                     assemble_tw_by_book(
@@ -162,6 +176,7 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
     first_composer = composers[0]
@@ -177,6 +192,7 @@ def assemble_usfm_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
     fmt_str: str = BOOK_NAME_FMT_STR,
 ) -> Composer:
@@ -208,6 +224,7 @@ def assemble_usfm_by_book(
             fmt_str.format(usfm_book.national_book_name),
             usfm_book.lang_code,
             is_rtl,
+            False,
         )
         composer.append(subdoc)
         for (
@@ -217,6 +234,7 @@ def assemble_usfm_by_book(
             add_one_column_section(doc)
             tn_verses: str = ""
             tq_verses: str = ""
+            rg_verses: str = ""
             chapter_intro_ = ""
             chapter_commentary_ = ""
             if tn_book:
@@ -226,6 +244,8 @@ def assemble_usfm_by_book(
                 chapter_commentary_ = chapter_commentary(bc_book, chapter_num)
             if tq_book:
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
+            if rg_book:
+                rg_verses = rg_chapter_verses(rg_book, chapter_num)
             subdoc = create_docx_subdoc(
                 chapter.content,
                 usfm_book.lang_code,
@@ -237,7 +257,7 @@ def assemble_usfm_by_book(
                 composer.append(subdoc)
             if chapter_commentary_:
                 subdoc = create_docx_subdoc(
-                    chapter_commentary_, usfm_book.lang_code, is_rtl
+                    chapter_commentary_, usfm_book.lang_code, is_rtl, False
                 )
                 composer.append(subdoc)
             if tn_verses:
@@ -246,6 +266,7 @@ def assemble_usfm_by_book(
                     tn_verses,
                     usfm_book.lang_code,
                     is_rtl,
+                    False,
                 )
                 composer.append(subdoc)
                 add_one_column_section(doc)
@@ -257,11 +278,25 @@ def assemble_usfm_by_book(
                     tq_verses,
                     usfm_book.lang_code,
                     is_rtl,
+                    False,
                 )
                 composer.append(subdoc)
                 add_one_column_section(doc)
                 p = doc.add_paragraph()
                 add_hr(p)
+            if rg_verses:
+                # add_two_column_section(doc)
+                subdoc = create_docx_subdoc(
+                    rg_verses,
+                    usfm_book.lang_code,
+                    is_rtl,
+                    False,
+                )
+                composer.append(subdoc)
+                add_one_column_section(doc)
+                # TODO Is this necessary? I see two hr after RG
+                # p = doc.add_paragraph()
+                # add_hr(p)
             # TODO Get feedback on whether we should allow a user to select a primary _and_
             # a secondary USFM resource. If we want to limit the user to only one USFM per
             # document then we would want to control that in the UI and maybe also at the API
@@ -287,6 +322,7 @@ def assemble_tn_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> Composer:
     """
@@ -352,7 +388,20 @@ def assemble_tn_by_book(
                 add_one_column_section(doc)
                 p = doc.add_paragraph()
                 add_hr(p)
+            rg_verses = rg_chapter_verses(rg_book, chapter_num)
+            if rg_book and rg_verses:
+                # add_two_column_section(doc)
+                subdoc = create_docx_subdoc(
+                    rg_verses,
+                    rg_book.lang_code,
+                    rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                )
+                composer.append(subdoc)
+                # add_one_column_section(doc)
+                p = doc.add_paragraph()
+                add_hr(p)
             add_page_break(doc)
+
     return composer
 
 
@@ -363,6 +412,7 @@ def assemble_tq_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
 ) -> Composer:
     """
     Construct the HTML for a 'by book' strategy wherein at least
@@ -394,6 +444,15 @@ def assemble_tq_by_book(
                     tq_book and tq_book.lang_direction == LangDirEnum.RTL,
                 )
                 composer.append(subdoc)
+            rg_verses = rg_chapter_verses(rg_book, chapter_num)
+            if rg_book and rg_verses:
+                # add_two_column_section(doc)
+                subdoc = create_docx_subdoc(
+                    rg_verses,
+                    rg_book.lang_code,
+                    rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                )
+                composer.append(subdoc)
             add_page_break(doc)
     return composer
 
@@ -405,8 +464,8 @@ def assemble_tw_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
 ) -> Composer:
-
     """
     TW is handled outside this module, that is why no
     code for TW is explicitly included here.

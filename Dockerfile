@@ -72,13 +72,13 @@ RUN cd USFMParserDriver && \
     ${DOTNET_ROOT}/dotnet build --configuration Release
 
 # Make the output directory where resource asset files are cloned.
-RUN mkdir -p /app/assets_download
+RUN mkdir -p assets_download
 # Make the directory where intermediate document parts are saved.
-RUN mkdir -p /app/working_temp
+RUN mkdir -p working_temp
 # Make the output directory where generated HTML and PDFs are placed.
-RUN mkdir -p /app/document_output
+RUN mkdir -p document_output
 # Make the directory where stet source documents are stored
-RUN mkdir -p /app/stet
+RUN mkdir -p stet
 
 COPY backend/document/stet/data/stet_*.docx stet/
 
@@ -103,8 +103,15 @@ COPY template.docx .
 COPY template_compact.docx .
 # Next two lines are useful when the data (graphql) API are down so
 # that we can still test
-COPY resources.json assets_download/resources.json
-RUN touch assets_download/resources.json
+# COPY resources.json assets_download/resources.json
+# RUN touch assets_download/resources.json
+
+# We copy this into its final place using a FastAPI initialization hook. We
+# can't do it in Dockerfile because of the volumes definition that we
+# need which overshadows /app/assets_download directory. It is not yet
+# available through the data API or at a reasonably sized clonable
+# github repo.
+COPY en_rg_nt_survey.docx .
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests

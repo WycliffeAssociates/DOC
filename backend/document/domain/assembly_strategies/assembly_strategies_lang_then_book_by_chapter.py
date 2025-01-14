@@ -8,11 +8,13 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     chapter_heading,
     chapter_intro,
     has_footnotes,
+    rg_language_direction_html,
     tn_book_intro,
     tn_chapter_verses,
     tn_language_direction_html,
     tq_chapter_verses,
     tq_language_direction_html,
+    rg_chapter_verses,
     usfm_language_direction_html,
 )
 from document.domain.model import (
@@ -21,6 +23,7 @@ from document.domain.model import (
     TNBook,
     TQBook,
     TWBook,
+    RGBook,
     USFMBook,
 )
 
@@ -36,6 +39,7 @@ def assemble_content_by_lang_then_book(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
+    rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     book_names: Mapping[str, str] = BOOK_NAMES,
 ) -> str:
@@ -54,6 +58,7 @@ def assemble_content_by_lang_then_book(
         .union(tq_book.lang_code for tq_book in tq_books)
         .union(tw_book.lang_code for tw_book in tw_books)
         .union(bc_book.lang_code for bc_book in bc_books)
+        .union(rg_book.lang_code for rg_book in rg_books)
     )
     lang_codes = list(all_lang_codes)
     # Collect and deduplicate book codes
@@ -63,6 +68,7 @@ def assemble_content_by_lang_then_book(
         .union(tq_book.book_code for tq_book in tq_books)
         .union(tw_book.book_code for tw_book in tw_books)
         .union(bc_book.book_code for bc_book in bc_books)
+        .union(rg_book.book_code for rg_book in rg_books)
     )
     book_codes = list(all_book_codes)
     # Cache book_id_map lookup
@@ -105,6 +111,12 @@ def assemble_content_by_lang_then_book(
                 if bc_book.lang_code == lang_code and bc_book.book_code == book_code
             ]
             bc_book = selected_bc_books[0] if selected_bc_books else None
+            selected_rg_books = [
+                rg_book
+                for rg_book in rg_books
+                if rg_book.lang_code == lang_code and rg_book.book_code == book_code
+            ]
+            rg_book = selected_rg_books[0] if selected_rg_books else None
             if usfm_book is not None:
                 content.append(
                     assemble_usfm_by_book(
@@ -114,6 +126,7 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
             elif usfm_book is None and tn_book is not None:
@@ -125,6 +138,7 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
             elif usfm_book is None and tn_book is None and tq_book is not None:
@@ -136,13 +150,14 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
             elif (
                 usfm_book is None
                 and tn_book is None
                 and tq_book is None
-                and (tw_book is not None or bc_book is not None)
+                and (tw_book is not None or bc_book is not None or rg_book is not None)
             ):
                 content.append(
                     assemble_tw_by_book(
@@ -152,6 +167,7 @@ def assemble_content_by_lang_then_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
+                        rg_book,
                     )
                 )
     return "".join(content)
@@ -164,6 +180,7 @@ def assemble_usfm_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     hr: str = "<hr/>",
     close_direction_html: str = "</div>",
@@ -184,6 +201,7 @@ def assemble_usfm_by_book(
                 usfm_book2 is not None
                 or tn_book is not None
                 or tq_book is not None
+                or rg_book is not None
                 or tw_book is not None
             ):
                 content.append(hr)
@@ -191,6 +209,7 @@ def assemble_usfm_by_book(
             content.append(chapter_commentary(bc_book, chapter_num))
             content.append(tn_chapter_verses(tn_book, chapter_num))
             content.append(tq_chapter_verses(tq_book, chapter_num))
+            content.append(rg_chapter_verses(rg_book, chapter_num))
             # If the user chose two USFM resource types for a language. e.g., fr:
             # ulb, f10, show the second USFM content here
             if usfm_book2:
@@ -208,6 +227,7 @@ def assemble_tn_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> str:
@@ -221,6 +241,7 @@ def assemble_tn_by_book(
             content.append(chapter_commentary(bc_book, chapter_num))
             content.append(tn_chapter_verses(tn_book, chapter_num))
             content.append(tq_chapter_verses(tq_book, chapter_num))
+            content.append(rg_chapter_verses(rg_book, chapter_num))
             content.append(end_of_chapter_html)
     content.append(close_direction_html)
     return "".join(content)
@@ -233,6 +254,7 @@ def assemble_tq_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> str:
@@ -243,8 +265,57 @@ def assemble_tq_by_book(
             content.append(chapter_commentary(bc_book, chapter_num))
             content.append(chapter_heading(chapter_num))
             content.append(tq_chapter_verses(tq_book, chapter_num))
+            content.append(rg_chapter_verses(rg_book, chapter_num))
             content.append(end_of_chapter_html)
     content.append(close_direction_html)
+    return "".join(content)
+
+
+def assemble_rg_by_chapter(
+    usfm_books: Sequence[USFMBook],
+    tn_books: Sequence[TNBook],
+    tq_books: Sequence[TQBook],
+    tw_books: Sequence[TWBook],
+    bc_books: Sequence[BCBook],
+    rg_books: Sequence[RGBook],
+    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    close_direction_html: str = "</div>",
+) -> str:
+    """
+    Construct the HTML for a 'by chapter' strategy wherein at least
+    rg_books exists.
+    """
+    content = []
+
+    def bc_sort_key(resource: BCBook) -> str:
+        return resource.lang_code
+
+    def rg_sort_key(resource: RGBook) -> str:
+        return resource.lang_code
+
+    bc_books = sorted(bc_books, key=bc_sort_key)
+    rg_books = sorted(rg_books, key=rg_sort_key)
+    for rg_book_ in rg_books:
+        for chapter_num, chapter in rg_book_.chapters.items():
+            content.append("Chapter {}".format(chapter_num))
+            for bc_book in [
+                bc_book
+                for bc_book in bc_books
+                if bc_book.lang_code == rg_book_.lang_code
+                and bc_book.book_code == rg_book_.book_code
+            ]:
+                if chapter_num in bc_book.chapters:
+                    content.append(chapter_commentary(bc_book, chapter_num))
+            for rg_book in [
+                rg_book
+                for rg_book in rg_books
+                if rg_book.lang_code == rg_book_.lang_code
+                and rg_book.book_code == rg_book_.book_code
+            ]:
+                if chapter_num in rg_book.chapters:
+                    content.append(rg_language_direction_html(rg_book))
+                    content.append(rg_chapter_verses(rg_book, chapter_num))
+                    content.append(close_direction_html)
     return "".join(content)
 
 
@@ -257,6 +328,7 @@ def assemble_tw_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
+    rg_book: Optional[RGBook],
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> str:
@@ -265,4 +337,9 @@ def assemble_tw_by_book(
         for chapter_num in bc_book.chapters:
             content.append(chapter_commentary(bc_book, chapter_num))
             content.append(end_of_chapter_html)
+    if rg_book:
+        for chapter_num in rg_book.chapters:
+            content.append(rg_chapter_verses(rg_book, chapter_num))
+            content.append(end_of_chapter_html)
+
     return "".join(content)

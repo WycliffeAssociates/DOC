@@ -47,6 +47,7 @@ from document.domain.model import (
     DocumentRequestSourceEnum,
     ResourceLookupDto,
     ResourceRequest,
+    RGBook,
     TNBook,
     TQBook,
     TWBook,
@@ -391,6 +392,7 @@ def assemble_content(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
+    rg_books: Sequence[RGBook],
     found_resource_lookup_dtos: Sequence[ResourceLookupDto],
 ) -> str:
     """
@@ -410,6 +412,7 @@ def assemble_content(
                 tq_books,
                 tw_books,
                 bc_books,
+                rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             )
         )
@@ -424,6 +427,7 @@ def assemble_content(
                 tq_books,
                 tw_books,
                 bc_books,
+                rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             )
         )
@@ -487,6 +491,7 @@ def assemble_docx_content(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
+    rg_books: Sequence[RGBook],
 ) -> Composer:
     """
     Assemble and return the content from all requested resources according to the
@@ -504,6 +509,7 @@ def assemble_docx_content(
             tq_books,
             tw_books,
             bc_books,
+            rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
         )
@@ -517,6 +523,7 @@ def assemble_docx_content(
             tq_books,
             tw_books,
             bc_books,
+            rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
         )
@@ -1011,7 +1018,7 @@ def generate_document(
         current_task.update_state(state="Parsing asset files")
         # Initialize found resources from their provisioned assets.
         t0 = time.time()
-        usfm_books, tn_books, tq_books, tw_books, bc_books = parsing.books(
+        usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
             found_resource_lookup_dtos,
             resource_dirs,
             document_request.resource_requests,
@@ -1028,6 +1035,7 @@ def generate_document(
             tq_books,
             tw_books,
             bc_books,
+            rg_books,
             found_resource_lookup_dtos,
         )
         if usfm_books:
@@ -1186,7 +1194,7 @@ def generate_docx_document(
         current_task.update_state(state="Parsing asset files")
         # Initialize found resources from their provisioned assets.
         t0 = time.time()
-        usfm_books, tn_books, tq_books, tw_books, bc_books = parsing.books(
+        usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
             found_resource_lookup_dtos,
             resource_dirs,
             document_request.resource_requests,
@@ -1203,6 +1211,7 @@ def generate_docx_document(
             tq_books,
             tw_books,
             bc_books,
+            rg_books,
         )
         # TODO At this point, like in generate_document, we should check the
         # underlying HTML content to see if it contains verses and display a

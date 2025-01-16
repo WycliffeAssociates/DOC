@@ -1,6 +1,5 @@
 from typing import Mapping, Optional, Sequence
 
-from document.domain.bible_books import BOOK_NAMES
 from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     bc_book_intro,
@@ -8,24 +7,25 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     chapter_heading,
     chapter_intro,
     has_footnotes,
+    rg_chapter_verses,
     rg_language_direction_html,
     tn_book_intro,
     tn_chapter_verses,
     tn_language_direction_html,
     tq_chapter_verses,
     tq_language_direction_html,
-    rg_chapter_verses,
     usfm_language_direction_html,
 )
+from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
     TNBook,
     TQBook,
     TWBook,
-    RGBook,
     USFMBook,
 )
+from document.domain.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
 

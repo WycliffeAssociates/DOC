@@ -23,12 +23,12 @@ from document.domain.model import (
     BCBook,
     ChunkSizeEnum,
     LangDirEnum,
-    RGBook,
     TNBook,
     TQBook,
     TWBook,
     USFMBook,
 )
+from document.domain.reviewers_guide.model import RGBook
 from docx import Document  # type: ignore
 from docxcompose.composer import Composer  # type: ignore
 

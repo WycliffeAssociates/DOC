@@ -19,39 +19,9 @@ logger = settings.logger(__name__)
 
 # User agent value required by domain host to allow serving
 # files. Other values could possibly also work.
-USER_AGENT: str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
-
-TEMPLATE_PATHS_MAP: Mapping[str, str] = {
-    "stet": "backend/templates/mustache/template.mustache",
-    "stet_html": "backend/templates/html/stet.html",
-    "book_intro": "backend/templates/tn/book_intro_template.md",
-    "header_enclosing": "backend/templates/html/header_enclosing.html",
-    "header_enclosing_landscape": "backend/templates/html/header_enclosing_landscape.html",  # used by dft project
-    "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
-    "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
-    "footer_enclosing": "backend/templates/html/footer_enclosing.html",
-    "cover": "backend/templates/html/cover.html",
-    "email-html": "backend/templates/html/email.html",
-    "email": "backend/templates/text/email.txt",
-}
-
-
-def template_path(
-    key: str, template_paths_map: Mapping[str, str] = TEMPLATE_PATHS_MAP
-) -> str:
-    """
-    Return the path to the requested template give a lookup key.
-    Return a different path if the code is running inside the Docker
-    container.
-    """
-    return template_paths_map[key]
-
-
-def template(template_lookup_key: str) -> str:
-    """Return template as string."""
-    with open(template_path(template_lookup_key), "r") as filepath:
-        template = filepath.read()
-    return template
+USER_AGENT: str = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
+)
 
 
 def delete_tree(dir: str) -> None:

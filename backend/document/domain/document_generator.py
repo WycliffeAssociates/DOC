@@ -7,7 +7,6 @@ import re
 import smtplib
 import subprocess
 import time
-
 from datetime import datetime
 from email.encoders import encode_base64
 from email.mime.base import MIMEBase
@@ -17,13 +16,9 @@ from os.path import basename, exists, join
 from pathlib import Path
 from typing import Any, Optional, Sequence, cast
 
-import jinja2
 from celery import current_task
 from document.config import settings
 from document.domain import parsing, resource_lookup, worker
-from document.stet import stet
-from document.domain.bible_books import BOOK_NAMES
-
 from document.domain.assembly_strategies.assembly_strategies_book_then_lang_by_chapter import (
     assemble_content_by_book_then_lang,
 )
@@ -37,6 +32,7 @@ from document.domain.assembly_strategies_docx import (
     assembly_strategies_lang_then_book_by_chapter as lang_then_book,
 )
 from document.domain.assembly_strategies_docx.assembly_strategy_utils import add_hr
+from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import (
     AssemblyLayoutEnum,
     AssemblyStrategyEnum,
@@ -47,19 +43,19 @@ from document.domain.model import (
     DocumentRequestSourceEnum,
     ResourceLookupDto,
     ResourceRequest,
-    RGBook,
     TNBook,
     TQBook,
     TWBook,
     TWNameContentPair,
     USFMBook,
 )
+from document.domain.reviewers_guide.model import RGBook
+from document.stet import stet
 from document.utils.file_utils import (
     file_needs_update,
-    template,
-    template_path,
     write_file,
 )
+from document.utils.template_env import env
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
@@ -146,27 +142,16 @@ def document_request_key(
 
 
 def instantiated_email_template(document_request_key: str) -> str:
-    """
-    Instantiate Jinja2 template. Return instantiated template as string.
-    """
-    with open(template_path("email"), "r") as filepath:
-        template = filepath.read()
-    env = jinja2.Environment(autoescape=True).from_string(template)
-    return env.render(data=document_request_key)
+    template = env.get_template("text/email.txt")
+    return template.render(data=document_request_key)
 
 
 def instantiated_html_header_template(
     template_lookup_key: str, title1: str, title2: str, title3: str
 ) -> str:
-    """
-    Instantiate Jinja2 template. Return instantiated template as string.
-    """
-    template = ""
-    with open(template_path(template_lookup_key), "r") as filepath:
-        template = filepath.read()
-    env = jinja2.Environment(autoescape=True).from_string(template)
+    template = env.get_template(template_lookup_key)
     timestring = datetime.now().ctime()
-    return env.render(
+    return template.render(
         timestring=timestring, title1=title1, title2=title2, title3=title3
     )
 
@@ -174,7 +159,7 @@ def instantiated_html_header_template(
 def enclose_html_content(
     content: str,
     document_html_header: str,
-    document_html_footer: str = template("footer_enclosing"),
+    document_html_footer: str = "</body></html>",
 ) -> str:
     """
     Write the enclosing HTML header and footer elements around the
@@ -197,15 +182,19 @@ def document_html_header(
     compactness.
     """
     if generate_docx:
-        return template("header_no_css_enclosing")
+        template = env.get_template("html/header_no_css_enclosing.html")
+        return template.render()
+
     if assembly_layout_kind and assembly_layout_kind in [
         AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,
     ]:
         return instantiated_html_header_template(
-            "header_compact_enclosing", title1, title2, title3
+            "html/header_compact_enclosing.html", title1, title2, title3
         )
-    return instantiated_html_header_template("header_enclosing", title1, title2, title3)
+    return instantiated_html_header_template(
+        "html/header_enclosing.html", title1, title2, title3
+    )
 
 
 # def uses_section(
@@ -701,36 +690,6 @@ def convert_html_to_epub(
     logger.debug("Time for converting HTML to ePub: %s", t1 - t0)
 
 
-# def convert_markdown_to_docx(
-#     markdown_filepath: str,
-#     docx_filepath: str,
-# ) -> None:
-#     """Generate Docx and copy it to output directory."""
-#     t0 = time.time()
-#     # command = [
-#     #     "pandoc",
-#     #     markdown_filepath,
-#     #     "--from markdown",
-#     #     "--to docx",
-#     #     "--output",
-#     #     docx_filepath,
-#     # ]
-#     command = [
-#         "pandoc",
-#         markdown_filepath,
-#         "-o",
-#         docx_filepath,
-#     ]
-#     logger.debug("Generate Docx command: %s", " ".join(command))
-#     subprocess.run(
-#         command,
-#         check=True,
-#         text=True,
-#     )
-#     t1 = time.time()
-#     logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
-
-
 def convert_html_to_docx(
     html_filepath: str,
     docx_filepath: str,
@@ -1108,7 +1067,6 @@ def generate_stet_docx_document(
         stet.generate_docx_document(
             lang0_code, lang1_code, document_request_key_, docx_filepath_
         )
-        # convert_markdown_to_docx(markdown_filepath, docx_filepath_)
         if should_send_email(email_address):
             attachments = [
                 Attachment(

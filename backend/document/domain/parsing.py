@@ -16,10 +16,15 @@ from document.config import settings
 from document.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
-from document.domain.structured_reviewers_guide import get_rg_books
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.exceptions import MissingChapterMarkerError
 from document.domain.model import (
+    BC_RESOURCE_TYPE,
+    EN_TN_CONDENSED_RESOURCE_TYPE,
+    RG_RESOURCE_TYPE,
+    TN_RESOURCE_TYPE,
+    TQ_RESOURCE_TYPE,
+    TW_RESOURCE_TYPE,
     BCBook,
     BCChapter,
     ChapterNum,
@@ -31,17 +36,12 @@ from document.domain.model import (
     TQChapter,
     TWBook,
     TWNameContentPair,
-    RGBook,
     USFMBook,
     USFMChapter,
     VerseRef,
-    TN_RESOURCE_TYPE,
-    EN_TN_CONDENSED_RESOURCE_TYPE,
-    TQ_RESOURCE_TYPE,
-    TW_RESOURCE_TYPE,
-    BC_RESOURCE_TYPE,
-    RG_RESOURCE_TYPE,
 )
+from document.domain.reviewers_guide.model import RGBook
+from document.domain.reviewers_guide.parser import get_rg_books
 from document.domain.usfm_error_detection_and_fixes import fix_usfm
 from document.markdown_transforms import markdown_transformer
 from document.utils.file_utils import read_file

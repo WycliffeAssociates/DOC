@@ -67,7 +67,7 @@ test('test transfer from biel', async ({ page }) => {
     'http://localhost:8001/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fchunga_moses%2Fleb-x-bisa_col_text_reg&book_name=Colossians'
   )
   await expect(page.getByText('Bisa')).toBeVisible()
-  await expect(page.getByText('Colossians')).toBeVisible({ timeout: 20000 })
+  await expect(page.getByText('Colossians')).toBeVisible({ timeout: 40000 })
 })
 
 test('test transfer from biel 2', async ({ page }) => {

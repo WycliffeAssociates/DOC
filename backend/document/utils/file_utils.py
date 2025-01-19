@@ -1,15 +1,16 @@
 """This module provides various file utilities."""
 
-from contextlib import closing
 import codecs
 import json
 import os
 import pathlib
+import shutil
 import urllib
 import zipfile
-import shutil
+from contextlib import closing
 from datetime import datetime, timedelta
-from typing import Any, Mapping, Optional, Union
+from os.path import join
+from typing import Any, Optional, Union
 from urllib.request import urlopen
 
 import yaml
@@ -154,3 +155,31 @@ def file_needs_update(
     max_delay: timedelta = timedelta(minutes=60 * asset_caching_period)
     # Has it been more than settings.ASSET_CACHING_PERIOD hours since last modification time?
     return now - file_mod_time > max_delay
+
+
+def html_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the HTML output file path."""
+    return join(output_dir, "{}.html".format(document_request_key))
+
+
+def pdf_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the PDF output file path."""
+    return join(output_dir, "{}.pdf".format(document_request_key))
+
+
+def epub_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the ePub output file path."""
+    return join(output_dir, "{}.epub".format(document_request_key))
+
+
+def docx_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the docx output file path."""
+    return join(output_dir, "{}.docx".format(document_request_key))

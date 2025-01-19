@@ -1,30 +1,27 @@
 from dataclasses import dataclass, field
-from typing import Optional, final
+from typing import NamedTuple, Optional, final
 from pydantic import BaseModel, EmailStr
 
 
-@dataclass
-class VerseEntry:
-    """A verse entry from the given doc"""
-
+@final
+class VerseEntry(NamedTuple):
     source_reference: str
     source_text: str
     target_reference: str
     target_text: str
 
 
+@final
 @dataclass
 class WordEntry:
-    """A word entry from the given doc"""
-
     word: str = ""
     strongs_numbers: str = ""
     definition: str = ""
     verses: list[VerseEntry] = field(default_factory=list)
 
 
-@dataclass
-class VerseReferenceDto:
+@final
+class VerseReferenceDto(NamedTuple):
     lang0_code: str
     lang1_code: str
     book_code: Optional[str]
@@ -32,13 +29,12 @@ class VerseReferenceDto:
     chapter_num: int
     source_reference: str
     target_reference: str
-    verse_refs: list[str] = field(default_factory=list)
+    verse_refs: list[str]  # = field(default_factory=list)
 
 
+@final
 @dataclass
 class WordEntryDto:
-    """A word entry data transfer object from the given doc"""
-
     word: str = ""
     strongs_numbers: str = ""
     definition: str = ""

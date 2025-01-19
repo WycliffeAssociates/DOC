@@ -42,7 +42,10 @@ from document.domain.model import (
 )
 from document.domain.reviewers_guide.model import RGBook
 from document.domain.reviewers_guide.parser import get_rg_books
-from document.domain.usfm_error_detection_and_fixes import fix_usfm
+from document.domain.usfm_error_detection_and_fixes import (
+    RESOURCES_WITH_USFM_DEFECTS,
+    fix_usfm,
+)
 from document.markdown_transforms import markdown_transformer
 from document.utils.file_utils import read_file
 from document.utils.tw_utils import (
@@ -59,275 +62,6 @@ H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
 # fmt: off
 BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
 # fmt: on
-
-
-# Resources known to have USFM defects found through automatic
-# randomized testing and subsequent manual investigation. Where possible
-# we handle these defects on the fly. As an aside: When we find one
-# defective USFM resource for a language then the language might have
-# others.
-RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
-    ("aaz-x-amarasibarat", "reg", "2pe"),
-    ("aec", "reg", "mat"),
-    ("ahm", "reg", "php"),
-    ("ahm", "reg", "php"),
-    ("aoa", "reg", "col"),
-    ("aoa", "reg", "luk"),
-    ("ayn", "reg", "jud"),
-    ("bds", "reg", "phm"),
-    ("bem-x-kabenmushi", "reg", "zec"),
-    ("bem-x-kabenmushi", "reg", "2sa"),
-    ("bem-x-kabenmushi", "reg", "mat"),
-    ("bem-x-kabenmushi", "reg", "isa"),
-    ("bem-x-kabenmushi", "reg", "jer"),
-    ("bem-x-kabenmushi", "reg", "sng"),
-    ("bem-x-kabenmushi", "reg", "deu"),
-    ("bem-x-kabenmushi", "reg", "1ki"),
-    ("bem-x-kabenmushi", "reg", "1ch"),
-    ("bem-x-kabenmushi", "reg", "ecc"),
-    ("bem-x-kabenmushi", "reg", "2ki"),
-    ("bi", "reg", "act"),
-    ("bji", "reg", "mat"),
-    ("bji", "reg", "1co"),
-    ("bji", "reg", "jud"),
-    ("bji", "reg", "1co"),
-    ("bji", "reg", "luk"),
-    ("bji", "reg", "gal"),
-    ("bji", "reg", "col"),
-    ("bji", "reg", "2pe"),
-    ("bji", "reg", "luk"),
-    ("bji", "reg", "col"),
-    ("bji", "reg", "php"),
-    ("bji", "reg", "heb"),
-    ("bji", "reg", "1jn"),
-    ("bji", "reg", "col"),
-    ("bjz", "reg", "eph"),
-    ("blo", "reg", "rom"),
-    ("blo", "reg", "act"),
-    ("blo", "reg", "col"),
-    ("blo", "reg", "php"),
-    ("blo", "reg", "heb"),
-    ("blo", "reg", "1jn"),
-    ("blo", "reg", "col"),
-    ("bne", "reg", "gal"),
-    ("bof", "reg", "mat"),
-    ("bou", "reg", "gen"),
-    ("btd-x-boang", "reg", "mat"),
-    ("btd-x-boang", "reg", "1ti"),
-    ("btd-x-boang", "reg", "phm"),
-    ("btm", "reg", "phm"),
-    ("btm", "reg", "1th"),
-    ("btm", "reg", "2co"),
-    ("btm", "reg", "1pe"),
-    ("bwc", "reg", "lev"),
-    ("bwc", "reg", "php"),
-    ("bwc", "reg", "tit"),
-    ("byi", "reg", "gen"),
-    ("byi", "reg", "php"),
-    ("byi", "reg", "rut"),
-    ("byn", "reg", "2sa"),
-    ("byn", "reg", "nam"),
-    ("byn", "reg", "2co"),
-    ("byn", "reg", "jud"),
-    ("byn", "reg", "dan"),
-    ("byn", "reg", "hab"),
-    ("byn", "reg", "hag"),
-    ("byn", "reg", "mic"),
-    ("byn", "reg", "1ti"),
-    ("byn", "reg", "2ti"),
-    ("byn", "reg", "2pe"),
-    ("bzu", "reg", "tit"),
-    ("cbt", "reg", "jos"),
-    ("cbt", "reg", "rut"),
-    ("cbt", "reg", "est"),
-    ("ccp", "reg", "mat"),
-    ("ccp", "reg", "gal"),
-    ("ceb", "ulb", "gen"),
-    ("cot", "reg", "rut"),
-    ("cot", "reg", "oba"),
-    ("dne", "reg", "3jn"),
-    ("ekp", "reg", "2co"),
-    ("ema-x-emai", "reg", "act"),
-    ("erk-x-epang", "reg", "php"),
-    ("eyo", "reg", "2jn"),
-    ("eyo", "reg", "php"),
-    # ("gow", "reg", "3jn"), # 3jn is given as choice, but it is not cloned, so does it exist?
-    ("gux-x-gourmantche", "reg", "deu"),
-    ("gux-x-gourmantche", "reg", "jon"),
-    ("gux-x-gourmantche", "reg", "jos"),
-    ("gwg", "reg", "php"),
-    ("gwg", "reg", "3jn"),
-    ("gwg", "reg", "2co"),
-    ("gwg", "reg", "2jn"),
-    ("gwg", "reg", "gal"),
-    ("gwg", "reg", "rom"),
-    ("hay-x-nyaihangiro", "reg", "1jn"),
-    ("hay-x-nyaihangiro", "reg", "phm"),
-    ("iba-x-desatempunak", "reg", "phm"),
-    ("iba-x-ibanempran", "reg", "2co"),
-    ("iba-x-ibanempran", "reg", "eph"),
-    ("iba-x-ibanempran", "reg", "jud"),
-    ("iba-x-ibanempran", "reg", "col"),
-    ("ife-x-ana", "reg", "1th"),
-    ("jid", "reg", "mat"),
-    ("jni", "reg", "luk"),
-    ("jni", "ulb", "luk"),
-    ("kin-x-kinyabinza", "reg", "phm"),
-    ("kiz", "reg", "heb"),
-    # ("kiz", "reg", "php"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
-    # ("kiz", "reg", "1th"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
-    ("kiz", "reg", "jhn"),
-    # ("kiz", "reg", "2jn"),  # USFM is found under cloned repo with name kiz_reg; resource_lookup_dto is None (BUG?)
-    ("kki", "reg", "mat"),
-    ("kki", "reg", "2ti"),
-    ("kki", "reg", "1th"),
-    ("kng-x-kilemfu", "reg", "jud"),
-    ("kng-x-kilemfu", "reg", "eph"),
-    ("kod", "reg", "2ti"),
-    ("kod", "reg", "phm"),
-    ("kqi", "reg", "2th"),
-    ("kqi", "reg", "2ti"),
-    ("kqi", "reg", "mrk"),
-    ("kqi", "reg", "heb"),
-    ("kqi", "reg", "1pe"),
-    ("kqi", "reg", "tit"),
-    ("ksm", "reg", "rom"),
-    ("ksm", "reg", "1pe"),
-    ("ksm", "reg", "2ti"),
-    ("ksm", "reg", "heb"),
-    ("ksm", "reg", "col"),
-    ("ksm", "reg", "2pe"),
-    ("kyt", "reg", "2ti"),
-    ("kyt", "reg", "eph"),
-    ("lbx-x-capuracu", "reg", "mrk"),
-    ("lch-ZM-luchazi", "reg", "gen"),
-    ("ldo", "reg", "1co"),
-    ("leb-x-bisa", "reg", "zep"),
-    ("lio", "reg", "phm"),
-    ("lks", "reg", "heb"),
-    ("lky", "reg", "jas"),
-    ("lky", "reg", "2th"),
-    ("lbx-x-capuracu", "reg", "eph"),
-    ("mfq-x-mual", "reg", "1ki"),
-    ("mgs", "reg", "php"),
-    ("mgs", "reg", "2th"),
-    ("mhi-x-burolo", "reg", "mat"),
-    ("mhi-x-burolo", "reg", "2jn"),
-    ("mhi-x-burolo", "reg", "2th"),
-    ("mhi-x-burolo", "reg", "1pe"),
-    ("mhi-x-burolo", "reg", "2th"),
-    ("mhy-x-benualima", "reg", "mrk"),
-    # ("mwe", "reg", "tit"),  # book is available as choice, but resource not cloned?
-    ("mxo", "reg", "mrk"),
-    ("nak-x-bileki", "reg", "mat"),
-    ("nak-x-bileki", "reg", "1ti"),
-    ("nak-x-bileki", "reg", "eph"),
-    ("nak-x-bileki", "reg", "2ti"),
-    ("nak-x-bileki", "reg", "jas"),
-    ("nak-x-bileki", "reg", "mrk"),
-    ("ndc-x-chibangwe", "reg", "mrk"),
-    ("ndc-x-chidanda", "reg", "luk"),
-    ("ndc-x-chidanda", "reg", "gal"),
-    ("nfd", "reg", "gal"),
-    ("nfd", "reg", "2th"),
-    ("nfd", "reg", "2ti"),
-    ("nfd", "reg", "heb"),
-    ("nhx", "reg", "jos"),
-    ("nnb-x-kishula", "reg", "mrk"),
-    ("not", "reg", "jos"),
-    ("now", "reg", "mic"),
-    ("nue", "reg", "php"),
-    ("nya-x-nyanja", "reg", "jon"),
-    ("nyj", "reg", "col"),
-    ("nyj", "reg", "nam"),
-    ("nyj", "reg", "hag"),
-    # ("nyj-x-kitiri", "reg", "2th"),  # failed to fix; repo is cloned; I don't see obvious source issue
-    ("nyn-x-runyaruguru", "reg", "1co"),
-    ("nyr", "reg", "mat"),
-    ("nyr", "reg", "php"),
-    ("nyr", "reg", "3jn"),
-    ("nyr", "reg", "jud"),
-    ("nyr", "reg", "jas"),
-    ("nza-x-mbembnthal", "reg", "act"),
-    ("nza-x-mbembnthal", "reg", "luk"),
-    ("nza-x-mbembnthal", "reg", "jud"),
-    ("okv-x-bokoro", "reg", "2co"),
-    ("okv-x-bokoro", "reg", "1jn"),
-    ("okv-x-bokoro", "reg", "php"),
-    ("okv-x-bokoro", "reg", "jud"),
-    ("okv-x-bokoro", "reg", "jas"),
-    ("omw-x-bonta", "reg", "1co"),
-    ("ors-x-oranglau", "reg", "mrk"),
-    ("ors-x-oranglau", "reg", "jhn"),
-    ("pip", "reg", "1ti"),
-    ("pip", "reg", "2co"),
-    ("pip", "reg", "2th"),
-    ("pip", "reg", "rom"),
-    ("pip", "reg", "mat"),
-    ("pse-x-riauasli", "reg", "luk"),
-    ("rmn-x-yerliroman", "reg", "mat"),
-    # ("rmp", "ulb", "jas"),  # failed to fix; repo is cloned and source looks good other than duplicate \c markers, but we handle those (BUG?)
-    ("ruc", "reg", "jhn"),
-    ("ruc", "reg", "1ti"),
-    ("rw-x-kinyabwisha", "reg", "num"),
-    ("rw-x-kinyabwisha", "reg", "luk"),
-    ("saw", "reg", "1ch"),
-    ("saw", "reg", "luk"),
-    ("saw", "reg", "psa"),
-    ("saw", "reg", "job"),
-    ("saw", "reg", "sng"),
-    ("saw", "reg", "dan"),
-    ("saw", "reg", "est"),
-    ("sbp", "reg", "phm"),
-    ("sbp", "reg", "2th"),
-    ("sbp", "reg", "1ti"),
-    ("sbp", "reg", "2ti"),
-    ("sbp", "reg", "eph"),
-    ("sbs-x-chiikuhane", "reg", "jon"),
-    ("scg-x-mayau", "reg", "luk"),
-    ("scg-x-mayau", "reg", "jas"),
-    ("sdm-x-beginci", "reg", "2th"),
-    ("sdm-x-beginci", "reg", "2pe"),
-    ("set-x-csentani", "reg", "mrk"),
-    ("set-x-csentani", "reg", "2jn"),
-    ("sie-x-makoma", "reg", "2th"),
-    ("sie-x-makoma", "reg", "2jn"),
-    ("sie-x-makoma", "reg", "rut"),
-    ("spy-x-bongomek", "reg", "phm"),
-    ("spy-x-bongomek", "reg", "2jn"),
-    ("spy-x-pok", "reg", "jud"),
-    ("spy-x-pok", "reg", "3jn"),
-    ("ssc-x-kine", "reg", "2jn"),
-    ("ssn-x-sanye", "reg", "col"),
-    ("tar-x-ralamuli", "reg", "mrk"),
-    ("tbp-x-airo", "reg", "php"),
-    ("thr", "reg", "tit"),
-    ("ttl-x-totelnamib", "reg", "3jn"),
-    ("txy", "reg", "1co"),
-    ("txy", "reg", "2jn"),
-    ("tyn", "reg", "jud"),
-    ("tyn", "reg", "mrk"),
-    ("vin", "reg", "2co"),
-    ("vin", "reg", "1th"),
-    ("vin", "reg", "1ti"),
-    ("vin", "reg", "gal"),
-    ("wbj", "reg", "luk"),
-    ("wbj", "reg", "tit"),
-    ("wbj", "reg", "2jn"),
-    ("wkd", "reg", "mrk"),
-    ("wkd", "reg", "3jn"),
-    ("wsk-x-makitu", "reg", "php"),
-    ("wsk-x-makitu", "reg", "3jn"),
-    ("xem-x-karambai", "reg", "luk"),
-    ("xem-x-karambai", "reg", "eph"),
-    # ("xkg", "reg", "3jn"),  # failed to fix; source looks fine but could have UTF issues (BUG?)
-    ("xmt", "reg", "eph"),
-    ("xwg", "reg", "luk"),
-    ("zga-x-mahanji", "reg", "php"),
-    ("ziw", "reg", "1th"),
-    ("ziw", "reg", "1jn"),
-    ("zlm-x-kisaran", "reg", "2ti"),
-]
 
 
 def find_usfm_files(
@@ -1252,3 +986,55 @@ def attempt_to_make_usfm_parseable(
     with open(filename, "w") as fout:
         fout.write("".join(usfm_content))
     return filename
+
+
+# Used by STET
+def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> str:
+    if chapter_num in usfm_book.chapters:
+        chapter = usfm_book.chapters[chapter_num]
+        if chapter.verses:
+            verse = chapter.verses[verse_ref] if verse_ref in chapter.verses else ""
+            logger.debug(
+                "book_code: %s, chapter_num: %s, verse_num: %s, verse: %s",
+                usfm_book.book_code,
+                chapter_num,
+                verse_ref,
+                verse,
+            )
+            return verse
+        return ""
+    return ""
+
+
+# Used by STET
+def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
+    # Sample HTML content with multiple verse elements
+    # html_content = '''
+    # <span class="verse">
+    # <sup class="versemarker">19</sup>
+    # For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
+    # <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
+    # <div class="sectionhead-5"></div>
+    # </span>
+    # <span class="verse">
+    # <sup class="versemarker">20</sup>
+    # I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
+    # <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
+    # <div class="sectionhead-5"></div>
+    # </span>
+    # '''
+    verse_dict = {}
+    # Find all verse spans
+    verse_spans = re.findall(
+        r'<span class="verse">(.*?)</span>', chapter.content, re.DOTALL
+    )
+    for verse_span in verse_spans:
+        # Extract the verse number from the versemarker
+        verse_number = re.search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
+        if verse_number:
+            verse_number_ = verse_number.group(1)
+            # Remove versemarker
+            verse_text = re.sub(r'<sup class="versemarker">.*?</sup>', "", verse_span)
+            # Add to the dictionary with verse number as the key and verse text as the value
+            verse_dict[verse_number_] = verse_text
+    return verse_dict

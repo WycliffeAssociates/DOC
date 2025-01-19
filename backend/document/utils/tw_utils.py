@@ -5,15 +5,19 @@ resources that we use in multiple places.
 
 import os
 import pathlib
+import re
 from glob import glob
-from typing import Optional
+from typing import Optional, Sequence
 
 from document.config import settings
-
+from document.domain.document_generator import fetch_usfm_book_content_units
+from document.domain.model import ResourceRequest, TWBook, TWNameContentPair, USFMBook
 
 logger = settings.logger(__name__)
 
 TW = "tw"
+OPENING_H3_FMT_STR: str = "<h3>{}"
+OPENING_H3_WITH_ID_FMT_STR: str = '<h3 id="{}-{}">{}'
 
 
 def translation_word_filepaths(resource_dir: str) -> list[str]:
@@ -104,3 +108,149 @@ def translation_words_dict(tw_resource_dir: Optional[str]) -> dict[str, str]:
             for word_filepath in filepaths
         }
     return translation_words_dict
+
+
+def translation_words_section(
+    tw_book: TWBook,
+    usfm_books: Optional[Sequence[USFMBook]],
+    limit_words: bool,
+    resource_requests: Sequence[ResourceRequest],
+    resource_type_name_fmt_str: str = "<h2>{}</h2>",
+) -> str:
+    """
+    Build and return the translation words definition section, i.e.,
+    the list of all translation words for this language, book combination.
+    Limit the translation words to only those that appear in the USFM
+    resouce chosen if limit_words is True and a USFM resource was also
+    chosen.
+    """
+
+    content = []
+    if tw_book.name_content_pairs:
+        content.append(resource_type_name_fmt_str.format(tw_book.resource_type_name))
+    selected_name_content_pairs = get_selected_name_content_pairs(
+        tw_book, usfm_books, limit_words, resource_requests
+    )
+    for name_content_pair in selected_name_content_pairs:
+        content.append(name_content_pair_content(name_content_pair, tw_book))
+    return "".join(content)
+
+
+def get_selected_name_content_pairs(
+    tw_book: TWBook,
+    usfm_books: Optional[Sequence[USFMBook]],
+    limit_words: bool,
+    resource_requests: Sequence[ResourceRequest],
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> list[TWNameContentPair]:
+    selected_name_content_pairs = []
+    if usfm_books and limit_words:
+        selected_name_content_pairs = filter_name_content_pairs(tw_book, usfm_books)
+    elif not usfm_books and limit_words:
+        usfm_books = fetch_usfm_book_content_units(resource_requests)
+        selected_name_content_pairs = filter_name_content_pairs(tw_book, usfm_books)
+    else:
+        selected_name_content_pairs = tw_book.name_content_pairs
+    return selected_name_content_pairs
+
+
+def filter_name_content_pairs(
+    tw_book: TWBook, usfm_books: Optional[Sequence[USFMBook]]
+) -> list[TWNameContentPair]:
+    selected_name_content_pairs = []
+    if usfm_books:
+        for name_content_pair in tw_book.name_content_pairs:
+            for usfm_book in usfm_books:
+                for chapter in usfm_book.chapters.values():
+                    if re.search(
+                        re.escape(name_content_pair.localized_word),
+                        chapter.content,
+                    ):
+                        selected_name_content_pairs.append(name_content_pair)
+                        break
+    return selected_name_content_pairs
+
+
+def contains_tw(resource_request: ResourceRequest, tw_regex: str = "tw.*") -> bool:
+    """Return True if the resource_request describes a TW resource."""
+    value = bool(re.compile(tw_regex).match(resource_request.resource_type))
+    return value
+
+
+def name_content_pair_content(
+    name_content_pair: TWNameContentPair,
+    tw_book: TWBook,
+    # include_uses_section: bool,
+) -> str:
+    name_content_pair.content = modify_content_for_anchors(name_content_pair, tw_book)
+    # uses_section_ = ""
+    # if (
+    #     include_uses_section
+    #     and name_content_pair.localized_word in book_content_unit.uses
+    # ):
+    #     uses_section_ = uses_section(
+    #         book_content_unit.uses[name_content_pair.localized_word]
+    #     )
+    #     name_content_pair.content = f"{name_content_pair.content}{uses_section_}"
+    return name_content_pair.content
+
+
+def filter_unique_by_lang_code(tw_books: Sequence[TWBook]) -> list[TWBook]:
+    unique_tw_books = []
+    seen_lang_codes = set()
+    for tw_book in tw_books:
+        lang_code = tw_book.lang_code
+        if lang_code not in seen_lang_codes:
+            seen_lang_codes.add(lang_code)
+            unique_tw_books.append(tw_book)
+    return unique_tw_books
+
+
+def modify_content_for_anchors(
+    name_content_pair: TWNameContentPair,
+    book_content_unit: TWBook,
+    opening_h3_fmt_str: str = OPENING_H3_FMT_STR,
+    opening_h3_with_id_fmt_str: str = OPENING_H3_WITH_ID_FMT_STR,
+) -> str:
+    return name_content_pair.content.replace(
+        opening_h3_fmt_str.format(name_content_pair.localized_word),
+        opening_h3_with_id_fmt_str.format(
+            book_content_unit.lang_code,
+            name_content_pair.localized_word,
+            name_content_pair.localized_word,
+        ),
+    )
+
+
+# def uses_section(
+#     uses: Sequence[TWUse],
+#     translation_word_verse_section_header_str: str = settings.TRANSLATION_WORD_VERSE_SECTION_HEADER_STR,
+#     unordered_list_begin_str: str = settings.UNORDERED_LIST_BEGIN_STR,
+#     translation_word_verse_ref_item_fmt_str: str = settings.TRANSLATION_WORD_VERSE_REF_ITEM_FMT_STR,
+#     unordered_list_end_str: str = settings.UNORDERED_LIST_END_STR,
+#     book_numbers: Mapping[str, str] = bible_books.BOOK_NUMBERS,
+#     book_names: Mapping[str, str] = bible_books.BOOK_NAMES,
+#     num_zeros: int = 3,
+# ) -> str:
+#     """
+#     Construct and return the 'Uses:' section which comes at the end of
+#     a translation word definition and wherein each item points to
+#     verses (as targeted by lang_code, book_id, chapter_num, and
+#     verse_num) wherein the word occurs.
+#     """
+#     html: list[str] = []
+#     html.append(translation_word_verse_section_header_str)
+#     html.append(unordered_list_begin_str)
+#     for use in uses:
+#         html_content_str = translation_word_verse_ref_item_fmt_str.format(
+#             use.lang_code,
+#             book_numbers[use.book_id].zfill(num_zeros),
+#             str(use.chapter_num).zfill(num_zeros),
+#             str(use.verse_num).zfill(num_zeros),
+#             book_names[use.book_id],
+#             use.chapter_num,
+#             use.verse_num,
+#         )
+#         html.append(html_content_str)
+#     html.append(unordered_list_end_str)
+#     return "\n".join(html)

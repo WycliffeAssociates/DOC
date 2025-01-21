@@ -6,11 +6,12 @@ resources that we use in multiple places.
 import os
 import pathlib
 import re
+import time
 from glob import glob
 from typing import Optional, Sequence
 
 from document.config import settings
-from document.domain.document_generator import fetch_usfm_book_content_units
+from document.domain import parsing, resource_lookup
 from document.domain.model import ResourceRequest, TWBook, TWNameContentPair, USFMBook
 
 logger = settings.logger(__name__)
@@ -220,6 +221,51 @@ def modify_content_for_anchors(
             name_content_pair.localized_word,
         ),
     )
+
+
+def fetch_usfm_book_content_units(
+    resource_requests: Sequence[ResourceRequest],
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> list[USFMBook]:
+    usfm_resource_lookup_dtos = []
+    for resource_request in resource_requests:
+        for usfm_type in usfm_resource_types:
+            resource_lookup_dto = resource_lookup.resource_lookup_dto(
+                resource_request.lang_code,
+                usfm_type,
+                resource_request.book_code,
+            )
+            if resource_lookup_dto:
+                usfm_resource_lookup_dtos.append(resource_lookup_dto)
+    # Determine which resource URLs were actually found.
+    found_usfm_resource_lookup_dtos = [
+        resource_lookup_dto
+        for resource_lookup_dto in usfm_resource_lookup_dtos
+        if resource_lookup_dto.url is not None
+    ]
+    t0 = time.time()
+    resource_dirs = [
+        resource_lookup.prepare_resource_filepath(dto)
+        for dto in found_usfm_resource_lookup_dtos
+    ]
+    for resource_dir, dto in zip(resource_dirs, found_usfm_resource_lookup_dtos):
+        resource_lookup.provision_asset_files(dto.url, resource_dir)
+    t1 = time.time()
+    logger.debug(
+        "Time to provision USFM asset files (acquire and write to disk) for TW resource: %s",
+        t1 - t0,
+    )
+    # Initialize found resources from their provisioned assets.
+    usfm_book_content_units = [
+        parsing.usfm_book_content(
+            resource_lookup_dto,
+            resource_dir,
+        )
+        for resource_lookup_dto, resource_dir in zip(
+            found_usfm_resource_lookup_dtos, resource_dirs
+        )
+    ]
+    return usfm_book_content_units
 
 
 # def uses_section(

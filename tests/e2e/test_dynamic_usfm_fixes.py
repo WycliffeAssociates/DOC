@@ -6,7 +6,7 @@ This module tests languages which were found through automatic randomized testin
 from typing import Sequence
 import pytest
 from document.config import settings
-from document.domain import model, exceptions, parsing, resource_lookup
+from document.domain import model, exceptions, resource_lookup, usfm_error_detection_and_fixes
 from document.entrypoints.app import app
 from fastapi.testclient import TestClient
 
@@ -19,7 +19,7 @@ logger = settings.logger(__name__)
 def languages_with_usfm_defects(
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
-    ] = parsing.RESOURCES_WITH_USFM_DEFECTS
+    ] = usfm_error_detection_and_fixes.RESOURCES_WITH_USFM_DEFECTS
 ) -> list[str]:
     lang_codes = [resource_tuple[0] for resource_tuple in resources_with_usfm_defects]
     return sorted(set(lang_codes))
@@ -28,7 +28,7 @@ def languages_with_usfm_defects(
 def resources_with_usfm_defects_(
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
-    ] = parsing.RESOURCES_WITH_USFM_DEFECTS
+    ] = usfm_error_detection_and_fixes.RESOURCES_WITH_USFM_DEFECTS
 ) -> Sequence[tuple[str, str, str]]:
     return resources_with_usfm_defects
 

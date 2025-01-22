@@ -1,15 +1,16 @@
 """This module provides various file utilities."""
 
-from contextlib import closing
 import codecs
 import json
 import os
 import pathlib
+import shutil
 import urllib
 import zipfile
-import shutil
+from contextlib import closing
 from datetime import datetime, timedelta
-from typing import Any, Mapping, Optional, Union
+from os.path import join
+from typing import Any, Optional, Union
 from urllib.request import urlopen
 
 import yaml
@@ -19,39 +20,9 @@ logger = settings.logger(__name__)
 
 # User agent value required by domain host to allow serving
 # files. Other values could possibly also work.
-USER_AGENT: str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
-
-TEMPLATE_PATHS_MAP: Mapping[str, str] = {
-    "stet": "backend/templates/mustache/template.mustache",
-    "stet_html": "backend/templates/html/stet.html",
-    "book_intro": "backend/templates/tn/book_intro_template.md",
-    "header_enclosing": "backend/templates/html/header_enclosing.html",
-    "header_enclosing_landscape": "backend/templates/html/header_enclosing_landscape.html",  # used by dft project
-    "header_no_css_enclosing": "backend/templates/html/header_no_css_enclosing.html",
-    "header_compact_enclosing": "backend/templates/html/header_compact_enclosing.html",
-    "footer_enclosing": "backend/templates/html/footer_enclosing.html",
-    "cover": "backend/templates/html/cover.html",
-    "email-html": "backend/templates/html/email.html",
-    "email": "backend/templates/text/email.txt",
-}
-
-
-def template_path(
-    key: str, template_paths_map: Mapping[str, str] = TEMPLATE_PATHS_MAP
-) -> str:
-    """
-    Return the path to the requested template give a lookup key.
-    Return a different path if the code is running inside the Docker
-    container.
-    """
-    return template_paths_map[key]
-
-
-def template(template_lookup_key: str) -> str:
-    """Return template as string."""
-    with open(template_path(template_lookup_key), "r") as filepath:
-        template = filepath.read()
-    return template
+USER_AGENT: str = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
+)
 
 
 def delete_tree(dir: str) -> None:
@@ -184,3 +155,31 @@ def file_needs_update(
     max_delay: timedelta = timedelta(minutes=60 * asset_caching_period)
     # Has it been more than settings.ASSET_CACHING_PERIOD hours since last modification time?
     return now - file_mod_time > max_delay
+
+
+def html_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the HTML output file path."""
+    return join(output_dir, "{}.html".format(document_request_key))
+
+
+def pdf_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the PDF output file path."""
+    return join(output_dir, "{}.pdf".format(document_request_key))
+
+
+def epub_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the ePub output file path."""
+    return join(output_dir, "{}.epub".format(document_request_key))
+
+
+def docx_filepath(
+    document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
+    """Given document_request_key, return the docx output file path."""
+    return join(output_dir, "{}.docx".format(document_request_key))

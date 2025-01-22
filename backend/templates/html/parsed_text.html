@@ -1,0 +1,26 @@
+{% if bible_reference %}
+{{bible_reference}}
+{% endif %}
+{% if background %}
+<p><b>Background:</b> {{background}}</p>
+{% endif %}
+{% if directive %}
+<p><i>{{directive}}</i></p>
+{% endif %}
+<p><b>Part 1</b></p>
+{% if part_1_directive %}
+<p>{{part_1_directive}}</p>
+{% endif %}
+{% if part1_html %}
+<ul>{{part1_html}}</ul>
+{% endif %}
+<p><b>Part 2</b></p>
+{% if part_2_directive %}
+<p>{{part_2_directive}}</p>
+{% endif %}
+{% if part2_html %}
+<table>{{part2_html}}</table>
+{% endif %}
+{% if comment_section %}
+<p>{{comment_section}}</p>
+{% endif %}

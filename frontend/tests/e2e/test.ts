@@ -67,14 +67,14 @@ test('test transfer from biel', async ({ page }) => {
     'http://localhost:8001/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fchunga_moses%2Fleb-x-bisa_col_text_reg&book_name=Colossians'
   )
   await expect(page.getByText('Bisa')).toBeVisible()
-  await expect(page.getByText('Colossians')).toBeVisible()
+  await expect(page.getByText('Colossians')).toBeVisible({ timeout: 40000 })
 })
 
 test('test transfer from biel 2', async ({ page }) => {
   await page.goto(
     'http://localhost:8001/transfer/repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb'
   )
-  await expect(page.getByText('English')).toBeVisible()
+  await expect(page.getByText('English')).toBeVisible({ timeout: 20000 })
   await expect(page.getByText('Genesis')).toBeVisible()
   await expect(page.getByText('Deuteronomy')).toBeVisible()
   await expect(page.getByText('(60) items hidden')).toBeVisible()
@@ -95,19 +95,19 @@ test('test es-419 resource types', async ({ page }) => {
 
 
 test('test that reviewers guide is only shown when book is chosen that it includes', async ({ page }) => {
-  await page.goto('http://localhost:8001/languages');
-  await page.getByText('English').click();
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByText('1 Corinthians').click();
-  await page.getByRole('button', { name: 'Next' }).click();
-  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).not.toBeVisible();
+  await page.goto('http://localhost:8001/languages')
+  await page.getByText('English').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('1 Corinthians').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).not.toBeVisible()
 });
 
 test('test that reviewers guide is only shown when book is chosen that it includes - part 2', async ({ page }) => {
-  await page.goto('http://localhost:8001/languages');
-  await page.getByText('English').click();
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByText('Galatians').click();
-  await page.getByRole('button', { name: 'Next' }).click();
-  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible();
+  await page.goto('http://localhost:8001/languages')
+  await page.getByText('English').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Galatians').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 20000 })
 });

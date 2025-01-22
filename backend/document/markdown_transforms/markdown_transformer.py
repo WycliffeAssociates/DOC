@@ -5,8 +5,8 @@ from typing import Sequence
 
 from document.config import settings
 from document.domain.bible_books import BOOK_NUMBERS
-from document.domain.model import (
-    ResourceRequest,
+from document.domain.model import ResourceRequest
+from document.markdown_transforms.model import (
     WikiLink,
 )
 from document.markdown_transforms.link_regexes import (

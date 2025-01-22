@@ -24,7 +24,7 @@ from document.domain.model import (
     NON_USFM_RESOURCE_TYPES,
 )
 from document.utils.file_utils import file_needs_update, read_file, make_dir
-from document.domain.structured_reviewers_guide import (
+from document.domain.reviewers_guide.parser import (
     find_bible_references,
     parse_bible_reference,
 )

@@ -6,16 +6,9 @@ from re import search, sub
 from typing import Optional, Sequence
 
 from document.config import settings
-from document.domain.model import (
-    BCBook,
-    LangDirEnum,
-    TNBook,
-    TQBook,
-    USFMBook,
-    RGBook,
-    render_chapter,
-)
-
+from document.domain.model import BCBook, LangDirEnum, TNBook, TQBook, USFMBook
+from document.domain.reviewers_guide.model import RGBook
+from document.domain.reviewers_guide.render_to_html import render_chapter
 
 logger = settings.logger(__name__)
 
@@ -214,8 +207,6 @@ def tq_chapter_verses(
 def rg_chapter_verses(
     rg_book: Optional[RGBook],
     chapter_num: int,
-    # TODO
-    fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
     hr: str = "<hr/>",
 ) -> str:
     """
@@ -225,7 +216,6 @@ def rg_chapter_verses(
     content = []
     if rg_book and chapter_num in rg_book.chapters:
         rg_verses = render_chapter(rg_book.chapters[chapter_num])
-        # logger.debug("rg_verses: %s", rg_verses)
         content.append(rg_verses)
         content.append(hr)
     return "".join(content)

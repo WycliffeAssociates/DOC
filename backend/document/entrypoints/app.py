@@ -7,6 +7,7 @@ from document.config import settings
 from document.domain import exceptions
 from document.entrypoints.routes import router as doc_router
 from document.entrypoints.stet.routes import router as stet_router
+from document.entrypoints.passages.routes import router as passages_router
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -95,3 +96,4 @@ async def initialize_assets() -> None:
 
 app.include_router(doc_router)
 app.include_router(stet_router)
+app.include_router(passages_router)

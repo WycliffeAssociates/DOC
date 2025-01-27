@@ -371,7 +371,6 @@ def usfm_book_content(
         chapter_html_content = usfm_chapter_html(
             chapter, resource_lookup_dto, chapter_num
         )
-        # TODO This function could be called in usfm_error_detection_and_fixes module instead
         cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
             chapter_html_content
         )
@@ -988,7 +987,7 @@ def attempt_to_make_usfm_parseable(
     return filename
 
 
-# Used by STET
+# Used by STET and RG_PASSAGES
 def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> str:
     if chapter_num in usfm_book.chapters:
         chapter = usfm_book.chapters[chapter_num]
@@ -1006,7 +1005,7 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
     return ""
 
 
-# Used by STET
+# Used by STET and RG_PASSAGES
 def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # Sample HTML content with multiple verse elements
     # html_content = '''

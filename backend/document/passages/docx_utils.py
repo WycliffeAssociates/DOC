@@ -111,39 +111,37 @@ def add_checkbox_to_cell(cell: _Cell) -> None:
 
 def add_header(
     doc: Document,
-    source_lang_code: str,
-    target_lang_code: str,
-    header_text: str = "Spiritual Terms Evaluation Tool",
+    lang_name: str,
+    header_text: str = "Passages",
 ) -> Document:
     """
     Add a header with:
     - header_text left.
-    - 'source_lang_code/target_lang_code' aligned to the right.
     """
     section = doc.sections[0]
     header = section.header
     header_paragraph = header.add_paragraph()
     header_paragraph.style.font.size = Pt(12)  # Optional: Adjust font size
-    # Add the "Spiritual Terms Evaluation Tool" text with grey color
-    run1 = header_paragraph.add_run(header_text)
+    # Add the header text with grey color
+    run1 = header_paragraph.add_run(header_text + ": " + lang_name)
     run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
     # Add a tab and the "EN/FR" text with grey color
-    header_paragraph.add_run("\t")  # Add a tab for alignment
-    run2 = header_paragraph.add_run(
-        f"{source_lang_code.upper()}/{target_lang_code.upper()}"
-    )
-    run2.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
+    # header_paragraph.add_run("\t")  # Add a tab for alignment
+    # run2 = header_paragraph.add_run(
+    #     f"{source_lang_code.upper()}/{target_lang_code.upper()}"
+    # )
+    # run2.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
     # Adjust tab stops (tab position must be an integer)
-    page_width = section.page_width
-    left_margin = section.left_margin
-    right_margin = section.right_margin
-    usable_width = page_width - left_margin - right_margin
+    # page_width = section.page_width
+    # left_margin = section.left_margin
+    # right_margin = section.right_margin
+    # usable_width = page_width - left_margin - right_margin
     # Set the tab stop closer to the right margin but within bounds
-    tab_position = int(left_margin + (usable_width * 0.75))  # 75% of usable width
-    header_paragraph.paragraph_format.tab_stops.add_tab_stop(
-        tab_position, alignment=WD_ALIGN_PARAGRAPH.RIGHT
-    )
-    header_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    # tab_position = int(left_margin + (usable_width * 0.75))  # 75% of usable width
+    # header_paragraph.paragraph_format.tab_stops.add_tab_stop(
+    #     tab_position, alignment=WD_ALIGN_PARAGRAPH.RIGHT
+    # )
+    # header_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
     return doc
 
 
@@ -284,12 +282,6 @@ def reduce_spacing_around_tables(
 
 
 def add_footer(doc: Document) -> Document:
-    """
-    Programmatically add page numbers and a date timestamp in the footer.
-    Page number will be centered, and the date timestamp will be aligned to the right
-    on the same line. The date timestamp will be prepended with 'Generated on ',
-    and both will be grey. The timestamp will stay within the right margin.
-    """
     section = doc.sections[0]
     footer = section.footer
     # Page width adjustments

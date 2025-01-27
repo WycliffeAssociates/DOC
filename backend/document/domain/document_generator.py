@@ -3,6 +3,7 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
+from document.passages.model import PassageReferenceDto
 import subprocess
 import time
 from datetime import datetime
@@ -45,6 +46,7 @@ from document.domain.model import (
 )
 from document.domain.reviewers_guide.model import RGBook
 from document.stet import document_generator as stet_document_generator
+from document.passages import document_generator as passages_document_generator
 from document.utils.docx_util import generate_docx_toc
 from document.utils.file_utils import (
     docx_filepath,
@@ -235,6 +237,65 @@ def generate_stet_docx_document(
     if file_needs_update(docx_filepath_):
         stet_document_generator.generate_docx_document(
             lang0_code, lang1_code, document_request_key_, docx_filepath_
+        )
+        if should_send_email(email_address):
+            attachments = [
+                Attachment(
+                    filepath=docx_filepath_,
+                    mime_type=(
+                        "application",
+                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    ),
+                )
+            ]
+            current_task.update_state(state="Sending email")
+            send_email_with_attachment(
+                email_address,
+                attachments,
+                document_request_key_,
+            )
+    else:
+        logger.debug("Cache hit for %s", docx_filepath_)
+    return document_request_key_
+
+
+@worker.app.task
+def generate_passages_docx_document(
+    lang_code: str,
+    passage_references: str,  # comma-delimited string of passage references
+    email_address: str,
+    book_names: dict[str, str] = BOOK_NAMES,
+) -> Json[str]:
+    logger.debug(
+        "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
+        lang_code,
+        passage_references,
+        email_address,
+    )
+
+    passage_reference_dtos = []
+    for passage_reference in passage_references.split(";"):
+        passage_reference_components = passage_reference.split()
+        book_code = passage_reference_components[0]
+        chapter_and_verse = passage_reference_components[1]
+        chapter_and_verse_components = chapter_and_verse.split(":")
+        # TODO This could throw an error
+        chapter_num = int(chapter_and_verse_components[0])
+        verse_reference = chapter_and_verse_components[1]
+        passage_reference_dtos.append(
+            PassageReferenceDto(
+                lang_code=lang_code,
+                book_code=book_code,
+                book_name=book_names[book_code],
+                chapter_num=chapter_num,
+                verse_reference=verse_reference,
+            )
+        )
+    document_request_key_ = f"{lang_code}_passages"
+    docx_filepath_ = docx_filepath(document_request_key_)
+    if file_needs_update(docx_filepath_):
+        passages_document_generator.generate_docx_document(
+            lang_code, passage_reference_dtos, document_request_key_, docx_filepath_
         )
         if should_send_email(email_address):
             attachments = [
@@ -926,7 +987,6 @@ def get_languages_title_page_strings(
                 ", ".join(sorted(lang1_book_names)),
             )
     return lang0_title, lang1_title
-
 
 
 if __name__ == "__main__":

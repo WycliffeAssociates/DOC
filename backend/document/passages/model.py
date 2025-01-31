@@ -3,7 +3,7 @@ from typing import Optional, NamedTuple, final
 
 
 @final
-class PassageReferenceDto(NamedTuple):
+class PassageReferenceDto(BaseModel):
     lang_code: str
     book_code: str
     book_name: str
@@ -20,5 +20,6 @@ class PassageDto(NamedTuple):
 @final
 class PassagesDocumentRequest(BaseModel):
     lang_code: str
-    passage_references: str  # comma-delimited passage references
+    lang_name: str
+    passage_references: list[PassageReferenceDto]
     email_address: Optional[EmailStr]

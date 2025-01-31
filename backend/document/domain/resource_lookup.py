@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 import requests
 from document.config import settings
 from document.domain import parsing
-from document.domain.bible_books import BOOK_NAMES
+from document.domain.bible_books import BOOK_NAMES, BOOK_CHAPTERS
 from document.domain.model import (
     LangDirEnum,
     ResourceLookupDto,
@@ -362,6 +362,7 @@ def get_gateway_languages(
     return gateway_languages_collection
 
 
+@lru_cache(maxsize=100)
 def lang_codes_and_names(
     # lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
     gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
@@ -378,7 +379,7 @@ def lang_codes_and_names(
         gateway_languages_ = gateway_languages
     data = fetch_source_data()
     values = []
-    if "git_repo" not in data:
+    if data and "git_repo" not in data:
         raise Exception("Data API is down!")
     try:
         repos_info = data["git_repo"]
@@ -811,6 +812,23 @@ def book_codes_for_lang(
     )
     # logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
+
+
+@lru_cache(maxsize=100)
+def chapters_in_books(
+    book_chapters: Mapping[str, int] = BOOK_CHAPTERS
+) -> dict[str, list[int]]:
+    chapters_in_book: dict[str, list[int]] = {
+        book_code: list(range(1, num_of_chapters + 1))
+        for book_code, num_of_chapters in book_chapters.items()
+    }
+    return chapters_in_book
+
+
+# @lru_cache(maxsize=100)
+# def chapters_in_book(book_code: str) -> list[int]:
+#     result = chapters_in_books(book_code)
+#     return result[book_code]
 
 
 # Used for testing

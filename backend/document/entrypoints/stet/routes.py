@@ -61,8 +61,8 @@ async def target_lang_codes_and_names(
     return languages
 
 
-@router.post("/stet/documents_stet_docx")
-async def generate_stet_docx_document(
+@router.post("/stet/documents_docx")
+async def generate_docx_document(
     stet_document_request: model.StetDocumentRequest,
 ) -> JSONResponse:
     # Top level exception handler

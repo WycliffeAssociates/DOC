@@ -1,23 +1,21 @@
 <script lang="ts">
-  import {
-    PUBLIC_STET_SOURCE_LANG_CODES_NAMES_URL,
-    PUBLIC_TAILWIND_SM_MIN_WIDTH
-  } from '$env/static/public'
+  import { onMount } from 'svelte'
+  import { PUBLIC_LANG_CODES_NAMES_URL, PUBLIC_TAILWIND_SM_MIN_WIDTH } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
   import MobileLanguageDisplay from './MobileLanguageDisplay.svelte'
   import DesktopLanguageDisplay from './DesktopLanguageDisplay.svelte'
   import Modal from '$lib/Modal.svelte'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
-  import WizardBreadcrumb from '$lib/stet/WizardBreadcrumb.svelte'
-  import WizardBasket from '$lib/stet/WizardBasket.svelte'
+  import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
+  import WizardBasket from '$lib/passages/WizardBasket.svelte'
   import {
-    lang0CodeAndNameStore,
-    lang1CodeAndNameStore,
-    langCodesStore,
-    langCountStore
-  } from '$lib/stet/stores/LanguagesStore'
-  import { getCode, getName } from '$lib/stet/utils'
+    langCodeAndNameStore,
+    langCountStore,
+    gatewayCodeAndNamesStore,
+    heartCodeAndNamesStore
+  } from '$lib/passages/stores/LanguageStore'
+  import { getCode, getName } from '$lib/passages/utils'
 
   let showGatewayLanguages = true
   // If user has previously chosen (during this session, i.e., prior
@@ -25,7 +23,7 @@
   // showing the heart languages, otherwise the default stands of
   // showing the gateway languages.
   $: {
-    if ($lang0CodeAndNameStore && heartCodesAndNames.includes($lang0CodeAndNameStore)) {
+    if ($langCodeAndNameStore && heartCodesAndNames.includes($langCodeAndNameStore)) {
       showGatewayLanguages = false
     }
   }
@@ -33,9 +31,9 @@
   let showFilterMenu = false
   let showWizardBasketModal = false
 
-  async function getSourceLangCodesNames(
+  async function getLangCodesNames(
     apiRootUrl: string = env.PUBLIC_BACKEND_API_URL,
-    langCodesAndNamesUrl: string = <string>PUBLIC_STET_SOURCE_LANG_CODES_NAMES_URL
+    langCodesAndNamesUrl: string = <string>PUBLIC_LANG_CODES_NAMES_URL
   ): Promise<Array<[string, string, boolean]>> {
     const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
     const langCodeNameAndTypes: Array<[string, string, boolean]> = await response.json()
@@ -50,46 +48,34 @@
   let langCodeNameAndTypes: Array<[string, string, boolean]> = []
   let gatewayCodesAndNames: Array<string> = []
   let heartCodesAndNames: Array<string> = []
-  getSourceLangCodesNames()
-    .then((langCodeNameAndTypes_) => {
-      // Save result for later use
-      langCodeNameAndTypes = langCodeNameAndTypes_
-      gatewayCodesAndNames = langCodeNameAndTypes_
-        .filter((element: [string, string, boolean]) => {
-          return element[2]
-        })
-        .map((tuple: [string, string, boolean]) => `${tuple[0]}, ${tuple[1]}`)
-      heartCodesAndNames = langCodeNameAndTypes_
-        .filter((element: [string, string, boolean]) => {
-          return !element[2]
-        })
-        .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-    })
-    .catch((err) => console.log(err))
+
+  onMount(() => {
+    getLangCodesNames()
+      .then((langCodeNameAndTypes_) => {
+        // Save result for later use
+        langCodeNameAndTypes = langCodeNameAndTypes_
+        gatewayCodesAndNames = langCodeNameAndTypes_
+          .filter((element: [string, string, boolean]) => {
+            return element[2]
+          })
+          .map((tuple: [string, string, boolean]) => `${tuple[0]}, ${tuple[1]}`)
+        heartCodesAndNames = langCodeNameAndTypes_
+          .filter((element: [string, string, boolean]) => {
+            return !element[2]
+          })
+          .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
+      })
+      .catch((err) => console.log(err))
+  })
 
   // Set $langCountStore
   $: {
-    if ($lang0CodeAndNameStore && $lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang0CodeAndNameStore))
-      codes.push(getCode($lang1CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
-    } else if ($lang0CodeAndNameStore && !$lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang0CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
-    } else if (!$lang0CodeAndNameStore && $lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang1CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
+    if ($langCodeAndNameStore) {
+      console.log(`langCodeAndNameStore: ${langCodeAndNameStore}`)
+      $langCountStore = 1
     } else {
       $langCountStore = 0
-      $langCodesStore = []
-      $lang0CodeAndNameStore = ''
-      $lang1CodeAndNameStore = ''
+      $langCodeAndNameStore = ''
     }
   }
 
@@ -130,9 +116,7 @@
 <div class="flex flex-grow flex-row overflow-y-auto overflow-x-hidden">
   <!-- center -->
   <div class="flex flex-1 flex-col bg-white sm:w-2/3">
-    <h3 class="ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">
-      Select the source language
-    </h3>
+    <h3 class="ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">Select the language</h3>
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
       {#if !langCodeNameAndTypes || langCodeNameAndTypes.length === 0}
         <div class="ml-4">

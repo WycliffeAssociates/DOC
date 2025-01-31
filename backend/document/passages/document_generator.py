@@ -25,6 +25,7 @@ logger = settings.logger(__name__)
 
 def generate_docx_document(
     lang_code: str,
+    lang_name: str,
     passage_reference_dtos: list[PassageReferenceDto],
     document_request_key_: str,
     docx_filepath_: str,
@@ -117,7 +118,7 @@ def generate_docx_document(
         )
         passages.append(passage_dto)
     current_task.update_state(state="Converting to Docx")
-    generate_docx(passages, docx_filepath_, lang_code)
+    generate_docx(passages, docx_filepath_, lang_code, lang_name)
     return docx_filepath_
 
 
@@ -125,6 +126,7 @@ def generate_docx(
     passage_dtos: list[PassageDto],
     docx_filepath: str,
     lang_code: str,
+    lang_name: str,
 ) -> None:
     doc = Document()
     html_to_docx = HtmlToDocx()
@@ -132,5 +134,5 @@ def generate_docx(
         html_to_docx.add_html_to_document(passage_dto.passage_reference, doc)
         html_to_docx.add_html_to_document(passage_dto.passage_text, doc)
     doc = add_footer(doc)
-    doc = add_header(doc, lang_code, header_text="Passages")
+    doc = add_header(doc, lang_name, header_text="Passages")
     doc.save(docx_filepath)

@@ -3,6 +3,7 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
+import json
 from document.passages.model import PassageReferenceDto
 import subprocess
 import time
@@ -262,40 +263,37 @@ def generate_stet_docx_document(
 @worker.app.task
 def generate_passages_docx_document(
     lang_code: str,
-    passage_references: str,  # comma-delimited string of passage references
+    lang_name: str,
+    passage_reference_dtos_json: str,
     email_address: str,
     book_names: dict[str, str] = BOOK_NAMES,
 ) -> Json[str]:
+    passage_reference_dtos_list = json.loads(passage_reference_dtos_json)
+    passage_reference_dtos = [
+        PassageReferenceDto(**d) for d in passage_reference_dtos_list
+    ]
     logger.debug(
         "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
         lang_code,
-        passage_references,
+        passage_reference_dtos,
         email_address,
     )
-
-    passage_reference_dtos = []
-    for passage_reference in passage_references.split(";"):
-        passage_reference_components = passage_reference.split()
-        book_code = passage_reference_components[0]
-        chapter_and_verse = passage_reference_components[1]
-        chapter_and_verse_components = chapter_and_verse.split(":")
-        # TODO This could throw an error
-        chapter_num = int(chapter_and_verse_components[0])
-        verse_reference = chapter_and_verse_components[1]
-        passage_reference_dtos.append(
-            PassageReferenceDto(
-                lang_code=lang_code,
-                book_code=book_code,
-                book_name=book_names[book_code],
-                chapter_num=chapter_num,
-                verse_reference=verse_reference,
-            )
-        )
-    document_request_key_ = f"{lang_code}_passages"
+    translation_table = str.maketrans(":;,-", "____")
+    passages_key = "_".join(
+        [
+            f"{passage_reference.book_code}_{passage_reference.chapter_num}_{passage_reference.verse_reference.translate(translation_table)}"
+            for passage_reference in passage_reference_dtos
+        ]
+    )
+    document_request_key_ = f"{lang_code}_{passages_key}_passages"
     docx_filepath_ = docx_filepath(document_request_key_)
     if file_needs_update(docx_filepath_):
         passages_document_generator.generate_docx_document(
-            lang_code, passage_reference_dtos, document_request_key_, docx_filepath_
+            lang_code,
+            lang_name,
+            passage_reference_dtos,
+            document_request_key_,
+            docx_filepath_,
         )
         if should_send_email(email_address):
             attachments = [

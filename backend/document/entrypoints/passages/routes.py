@@ -1,3 +1,4 @@
+import json
 from os import scandir
 from typing import Sequence
 from fastapi import APIRouter
@@ -17,52 +18,6 @@ router = APIRouter()
 logger = settings.logger(__name__)
 
 
-# # TODO
-# @router.get("/rg_passages/source_languages")
-# async def source_lang_codes_and_names(
-#     stet_dir: str = settings.STET_DIR,
-# ) -> Sequence[tuple[str, str, bool]]:
-#     """
-#     Return list of all available language code, name tuples for which Translation Services has provided a source document.
-#     """
-#     # Scan what source docs are available and make sure to filter
-#     # source language candidates to only those languages.
-#     ietf_codes = [
-#         entry.name.split("stet_")[-1].removesuffix(".docx")
-#         for entry in scandir(stet_dir)
-#         if entry.is_file()
-#         and entry.name.startswith("stet_")
-#         and entry.name.endswith(".docx")
-#     ]
-#     logger.debug("source ietf_codes: %s", ietf_codes)
-#     languages = [
-#         lang_code_and_name
-#         for lang_code_and_name in resource_lookup.lang_codes_and_names()
-#         if lang_code_and_name[0] in ietf_codes
-#     ]
-#     logger.debug("source languages: %s", languages)
-#     return languages
-
-
-# # TODO
-# @router.get("/stet/target_languages/{lang0_code}")
-# async def target_lang_codes_and_names(
-#     lang0_code: str,
-# ) -> Sequence[tuple[str, str, bool]]:
-#     """
-#     Return list of all available language code, name tuples excluding
-#     the source language chosen: lang0_code.
-#     """
-#     logger.debug("source language: %s", lang0_code)
-#     languages = [
-#         lang_code_and_name
-#         for lang_code_and_name in resource_lookup.lang_codes_and_names()
-#         if lang_code_and_name[0] != lang0_code
-#     ]
-#     logger.debug("target languages: %s", languages)
-#     return languages
-
-
 @router.post("/passages/document_docx")
 async def generate_passages_docx_document(
     passages_document_request: model.PassagesDocumentRequest,
@@ -72,7 +27,12 @@ async def generate_passages_docx_document(
         task = document_generator.generate_passages_docx_document.apply_async(
             args=(
                 passages_document_request.lang_code,
-                passages_document_request.passage_references,
+                passages_document_request.lang_name,
+                # Serialize the list of objects to a JSON string
+                json.dumps(
+                    passages_document_request.passage_references,
+                    default=lambda obj: obj.model_dump(),
+                ),
                 passages_document_request.email_address,
             )
         )

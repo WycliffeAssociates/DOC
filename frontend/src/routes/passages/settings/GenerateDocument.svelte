@@ -1,13 +1,9 @@
 <script lang="ts">
   import { env } from '$env/dynamic/public'
   import DownloadButton from './DownloadButton.svelte'
-  import { documentReadyStore, errorStore } from '$lib/stet/stores/NotificationStore'
-  import {
-    lang0CodeAndNameStore,
-    lang1CodeAndNameStore,
-    langCodesStore,
-    langCountStore
-  } from '$lib/stet/stores/LanguagesStore'
+  import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import {
     // docTypeStore,
     // generatePdfStore,
@@ -16,18 +12,21 @@
     emailStore,
     documentRequestKeyStore,
     settingsUpdated
-  } from '$lib/stet/stores/SettingsStore'
-  import { taskIdStore, taskStateStore } from '$lib/stet/stores/TaskStore'
-  import { getCode } from '$lib/stet/utils'
+  } from '$lib/passages/stores/SettingsStore'
+  import { taskIdStore, taskStateStore } from '$lib/passages/stores/TaskStore'
+  import { getCode, getName } from '$lib/passages/utils'
   import LogRocket from 'logrocket'
   import TaskStatus from './TaskStatus.svelte'
+  import type { PassagesDocumentRequest } from '$lib/passages/models/passage'
+  import { toSnakeCase } from '$lib/camel-to-snake-case-util'
+  import { omitIdFromPassageReferences } from '$lib/passages/utils'
 
   let apiRootUrl = env.PUBLIC_BACKEND_API_URL
   let fileServerUrl: string = env.PUBLIC_FILE_SERVER_URL
 
   async function poll(taskId: string): Promise<string | [string, string]> {
     console.log(`taskId in poll: ${taskId}`)
-    let res = await fetch(`${apiRootUrl}/stet/task_status/${taskId}`, {
+    let res = await fetch(`${apiRootUrl}/passages/task_status/${taskId}`, {
       method: 'GET'
     })
     let json = await res.json()
@@ -46,23 +45,26 @@
     generatingDocument = true
     $settingsUpdated = false
     // Create the JSON structure to POST.
-    let documentRequest = {
-      lang0_code: getCode($lang0CodeAndNameStore),
-      lang1_code: getCode($lang1CodeAndNameStore),
-      email_address: $emailStore
+    const documentRequest: PassagesDocumentRequest = {
+      langCode: getCode($langCodeAndNameStore),
+      langName: getName($langCodeAndNameStore),
+      passageReferences: $passagesStore,
+      emailAddress: $emailStore,
     }
-    console.log('document request: ', JSON.stringify(documentRequest, null, 2))
+    const documentRequestWithoutIds = omitIdFromPassageReferences(documentRequest)
+    console.log('document request: ', JSON.stringify(toSnakeCase(documentRequestWithoutIds), null, 2))
     $errorStore = null
     $documentReadyStore = false
     $documentRequestKeyStore = ''
-    let endpointUrl = `${apiRootUrl}/stet/documents_docx`
+    let endpointUrl = `${apiRootUrl}/passages/document_docx`
     // if ($generateDocxStore) {
     //   endpointUrl = `${apiRootUrl}/documents_docx`
     // }
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(documentRequest)
+      // toSnakeCase for FastAPI (python) endpoint
+      body: JSON.stringify(toSnakeCase(documentRequestWithoutIds))
     })
     const data = await response.json()
     if (!response.ok) {
@@ -145,8 +147,8 @@
   // $: ePubDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.epub`
   let docxDownloadUrl: string
   $: docxDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.docx`
-  let htmlDownloadUrl: string
-  $: htmlDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.html`
+  // let htmlDownloadUrl: string
+  // $: htmlDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.html`
 
   function viewFromUrl(url: string) {
     console.log(`url: ${url}`)
@@ -183,7 +185,7 @@
       </div>
     </div>
   {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdated}
-    {#if $lang0CodeAndNameStore && $lang1CodeAndNameStore}
+    {#if $langCodeAndNameStore}
       <div class="pb-4">
         <button
           class="blue-gradient w-1/2 rounded-md p-4 text-center"

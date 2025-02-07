@@ -123,26 +123,8 @@ def add_header(
     header_paragraph = header.add_paragraph()
     header_paragraph.style.font.size = Pt(12)  # Optional: Adjust font size
     # Add the header text with grey color
-    # TODO Ideally we want to display lang_name and not lang_code
     run1 = header_paragraph.add_run(header_text + ": " + lang_name)
     run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
-    # Add a tab and the "EN/FR" text with grey color
-    # header_paragraph.add_run("\t")  # Add a tab for alignment
-    # run2 = header_paragraph.add_run(
-    #     f"{source_lang_code.upper()}/{target_lang_code.upper()}"
-    # )
-    # run2.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
-    # Adjust tab stops (tab position must be an integer)
-    # page_width = section.page_width
-    # left_margin = section.left_margin
-    # right_margin = section.right_margin
-    # usable_width = page_width - left_margin - right_margin
-    # Set the tab stop closer to the right margin but within bounds
-    # tab_position = int(left_margin + (usable_width * 0.75))  # 75% of usable width
-    # header_paragraph.paragraph_format.tab_stops.add_tab_stop(
-    #     tab_position, alignment=WD_ALIGN_PARAGRAPH.RIGHT
-    # )
-    # header_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
     return doc
 
 

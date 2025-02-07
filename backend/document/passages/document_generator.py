@@ -19,6 +19,10 @@ from document.passages.model import PassageDto, PassageReferenceDto
 from document.passages.parser import get_verse_text
 from docx import Document  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
+from docx.oxml import parse_xml  # type: ignore
+from docx.table import _Cell, Table  # type: ignore
+from docx.shared import Inches  # type: ignore
+
 
 logger = settings.logger(__name__)
 
@@ -122,6 +126,55 @@ def generate_docx_document(
     return docx_filepath_
 
 
+# def generate_docx(
+#     passage_dtos: list[PassageDto],
+#     docx_filepath: str,
+#     lang_code: str,
+#     lang_name: str,
+# ) -> None:
+#     doc = Document()
+#     html_to_docx = HtmlToDocx()
+#     for passage_dto in passage_dtos:
+#         html_to_docx.add_html_to_document(passage_dto.passage_reference, doc)
+#         html_to_docx.add_html_to_document(passage_dto.passage_text, doc)
+#     doc = add_footer(doc)
+#     doc = add_header(doc, lang_name, header_text="Passages")
+#     doc.save(docx_filepath)
+
+
+
+# def generate_docx(
+#     passage_dtos: list[PassageDto],
+#     docx_filepath: str,
+#     lang_code: str,
+#     lang_name: str,
+# ) -> None:
+#     doc = Document()
+#     html_to_docx = HtmlToDocx()
+#     for passage_dto in passage_dtos:
+#         table = doc.add_table(rows=1, cols=2)
+#         table.autofit = False  # Fix column sizes
+#         # Set column widths (left 2/3, right 1/3)
+#         width_full = 12240  # Approximate total width for a standard docx page
+#         left_col_width = int(width_full * (2 / 3))
+#         right_col_width = width_full - left_col_width
+#         table.columns[0].width = left_col_width
+#         table.columns[1].width = right_col_width
+#         # Add passage content to the left column
+#         cell_left = table.cell(0, 0)
+#         html_to_docx.add_html_to_document(passage_dto.passage_reference, cell_left)
+#         html_to_docx.add_html_to_document(passage_dto.passage_text, cell_left)
+#         # Add vertical line to separate columns
+#         cell_right = table.cell(0, 1)
+#         cell_right.text = ""  # Keep it blank for notes
+#         add_vertical_line(cell_right)
+#     doc = add_footer(doc)
+#     doc = add_header(doc, lang_name, header_text="Passages")
+#     doc.save(docx_filepath)
+
+# from docx.table import Table
+
+
 def generate_docx(
     passage_dtos: list[PassageDto],
     docx_filepath: str,
@@ -131,8 +184,41 @@ def generate_docx(
     doc = Document()
     html_to_docx = HtmlToDocx()
     for passage_dto in passage_dtos:
-        html_to_docx.add_html_to_document(passage_dto.passage_reference, doc)
-        html_to_docx.add_html_to_document(passage_dto.passage_text, doc)
+        table: Table = doc.add_table(rows=1, cols=2)
+        table.autofit = False  # Disable automatic resizing
+        # Define column widths (convert from Twips to Inches for clarity)
+        left_col_width = Inches(4.0)  # 2/3 of 6-inch total width
+        right_col_width = Inches(2.0)  # 1/3 of 6-inch total width
+        # Set cell widths explicitly
+        cell_left: _Cell = table.cell(0, 0)
+        cell_left.width = left_col_width
+        html_to_docx.add_html_to_document(passage_dto.passage_reference, cell_left)
+        html_to_docx.add_html_to_document(passage_dto.passage_text, cell_left)
+        cell_right: _Cell = table.cell(0, 1)
+        cell_right.width = right_col_width
+        cell_right.text = ""  # Keep it blank for notes
+        add_vertical_line(cell_right)
     doc = add_footer(doc)
     doc = add_header(doc, lang_name, header_text="Passages")
     doc.save(docx_filepath)
+
+
+# Define the WordprocessingML namespace
+WORD_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+
+def add_vertical_line(cell: _Cell) -> None:
+    """Adds a vertical line to the left side of the given table cell."""
+    cell_xml = cell._tc  # Access the underlying XML of the cell
+    # Ensure the `<w:tcPr>` (table cell properties) element exists
+    tc_pr = cell_xml.find(f"{{{WORD_NAMESPACE}}}tcPr")
+    if tc_pr is None:
+        tc_pr = parse_xml(f'<w:tcPr xmlns:w="{WORD_NAMESPACE}"/>')
+        cell_xml.append(tc_pr)
+    # Add the left border
+    borders_xml = f"""
+    <w:tcBorders xmlns:w="{WORD_NAMESPACE}">
+        <w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+    </w:tcBorders>
+    """
+    tc_pr.append(parse_xml(borders_xml))

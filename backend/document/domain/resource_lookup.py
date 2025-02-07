@@ -8,26 +8,28 @@ import json
 import re
 import subprocess
 from functools import lru_cache
+from glob import glob
 from os import scandir
 from os.path import exists, isdir, join
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence, TypedDict
 from urllib.parse import urlparse
 
 import requests
+import yaml
 from document.config import settings
 from document.domain import parsing
-from document.domain.bible_books import BOOK_NAMES, BOOK_CHAPTERS
+from document.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
 from document.domain.model import (
+    NON_USFM_RESOURCE_TYPES,
     LangDirEnum,
     ResourceLookupDto,
-    NON_USFM_RESOURCE_TYPES,
 )
-from document.utils.file_utils import file_needs_update, read_file, make_dir
 from document.domain.reviewers_guide.parser import (
     find_bible_references,
     parse_bible_reference,
 )
+from document.utils.file_utils import file_needs_update, make_dir, read_file
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -743,6 +745,7 @@ def book_codes_for_lang(
     ('gen', 'Genesis')
     """
     data = fetch_source_data()
+    book_codes_and_names_nationalized = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
     try:
@@ -758,59 +761,82 @@ def book_codes_for_lang(
                 if dcs_mirror_git_username in url:
                     repo_components = update_repo_components(repo_components)
                 # logger.debug("url: %s, repo_components: %s", url, repo_components)
-                if len(repo_components) > 2:
-                    book_code = repo_components[1]
-                    if book_code in book_names:
-                        book_codes_and_names.append((book_code, book_names[book_code]))
-                elif (
-                    len(repo_components) == 2 and not book_codes_and_names
-                ):  # e.g., amo_reg, id_tn
-                    if not book_codes_and_names2:
-                        resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                        clone_git_repo(url, resource_filepath)
-                        # Check repo's layout on disk to determine which books it provides.
-                        # First look at USFM assets.
-                        if repo_components[-1] in usfm_resource_types:
-                            usfm_files = parsing.find_usfm_files(resource_filepath)
-                            for usfm_file in usfm_files:
-                                book_code = Path(usfm_file).stem.lower().split("-")[1]
-                                book_codes_and_names2.append(
-                                    (book_code, book_names[book_code])
-                                )
-                        # If no USFM assets found, look for others
+
+                if [
+                    usfm_resource_type
+                    for usfm_resource_type in usfm_resource_types
+                    if usfm_resource_type in url
+                ]:
+                    resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                    clone_git_repo(url, resource_filepath)
+                    book_codes_and_names_nationalized = (
+                        book_codes_and_names_from_manifest(resource_filepath)
+                    )
+                    logger.debug(
+                        "book_codes_and_names_nationalized: %s",
+                        book_codes_and_names_nationalized,
+                    )
+                if not book_codes_and_names_nationalized:
+                    if len(repo_components) > 2:
+                        book_code = repo_components[1]
+                        if book_code in book_names:
+                            book_codes_and_names.append(
+                                (book_code, book_names[book_code])
+                            )
+                    elif (
+                        len(repo_components) == 2 and not book_codes_and_names
+                    ):  # e.g., amo_reg, id_tn
                         if not book_codes_and_names2:
-                            # Search for book directories amongst a subset of non-USFM repo assets
-                            if repo_components[-1] in ["tn", "tq"]:
-                                subdirs = [
-                                    file
-                                    for file in scandir(resource_filepath)
-                                    if file.is_dir() and file.name in book_names
-                                ]
-                                # logger.debug("subdirs (as book codes): %s", subdirs)
-                                for subdir in subdirs:
-                                    book_codes_and_names2.append(
-                                        (
-                                            subdir.name.lower(),
-                                            book_names[subdir.name.lower()],
-                                        )
+                            resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                            clone_git_repo(url, resource_filepath)
+                            # Check repo's layout on disk to determine which books it provides.
+                            # First look at USFM assets.
+                            if repo_components[-1] in usfm_resource_types:
+                                usfm_files = parsing.find_usfm_files(resource_filepath)
+                                for usfm_file in usfm_files:
+                                    book_code = (
+                                        Path(usfm_file).stem.lower().split("-")[1]
                                     )
+                                    book_codes_and_names2.append(
+                                        (book_code, book_names[book_code])
+                                    )
+                            # If no USFM assets found, look for others
+                            if not book_codes_and_names2:
+                                # Search for book directories amongst a subset of non-USFM repo assets
+                                if repo_components[-1] in ["tn", "tq"]:
+                                    subdirs = [
+                                        file
+                                        for file in scandir(resource_filepath)
+                                        if file.is_dir() and file.name in book_names
+                                    ]
+                                    # logger.debug("subdirs (as book codes): %s", subdirs)
+                                    for subdir in subdirs:
+                                        book_codes_and_names2.append(
+                                            (
+                                                subdir.name.lower(),
+                                                book_names[subdir.name.lower()],
+                                            )
+                                        )
                         # logger.debug("book_codes_and_names2: %s", book_codes_and_names2)
     except:
         pass
     # Keep book codes unique and sorted by canonical bible book order
-    unique_values = []
-    seen_values = set()
-    book_codes_and_names.extend(book_codes_and_names2)
-    for value in book_codes_and_names:
-        if value[0] not in seen_values:
-            unique_values.append(value)
-            seen_values.add(value[0])
-    book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
-    book_codes_sorted = sorted(
-        unique_values,
-        key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
-    )
-    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
+    if not book_codes_and_names_nationalized:
+        unique_values = []
+        seen_values = set()
+        book_codes_and_names.extend(book_codes_and_names2)
+        for value in book_codes_and_names:
+            if value[0] not in seen_values:
+                unique_values.append(value)
+                seen_values.add(value[0])
+        book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
+        book_codes_sorted = sorted(
+            unique_values,
+            key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+        )
+    else:
+        book_codes_sorted = book_codes_and_names_nationalized
+    logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
 
@@ -825,10 +851,71 @@ def chapters_in_books(
     return chapters_in_book
 
 
-# @lru_cache(maxsize=100)
-# def chapters_in_book(book_code: str) -> list[int]:
-#     result = chapters_in_books(book_code)
-#     return result[book_code]
+def load_manifest(file_path: str) -> str:
+    with open(file_path, "r") as file:
+        return file.read()
+
+
+class Book(TypedDict):
+    title: str
+    identifier: str
+
+
+class Data(TypedDict):
+    projects: list[Book]
+
+
+def book_codes_and_names_from_manifest(
+    resource_dir: str,
+    manifest_glob_fmt_str: str = "{}/**/manifest.{}",
+    manifest_glob_alt_fmt_str: str = "{}/manifest.{}",
+) -> list[tuple[str, str]]:
+    """
+    Look up the language direction in the manifest file if one is
+    available for this resource.
+    """
+    # Try to find manifest yaml at typical directory
+    manifest_candidates = glob(manifest_glob_fmt_str.format(resource_dir, "yaml"))
+    if not manifest_candidates:
+        # Now try to find manifest yaml at parent directory of typical directory
+        manifest_candidates = glob(
+            manifest_glob_alt_fmt_str.format(resource_dir, "yaml")
+        )
+        if not manifest_candidates:
+            # Some languages provide their manifest in json format.
+            # Try to find manifest json at typical directory
+            manifest_candidates = glob(
+                manifest_glob_fmt_str.format(resource_dir, "json")
+            )
+            if not manifest_candidates:
+                # Try to find manifest json at parent directory of typical directory
+                manifest_candidates = glob(
+                    manifest_glob_alt_fmt_str.format(resource_dir, "json")
+                )
+    logger.debug("manifest_candidates: %s", manifest_candidates)
+    if manifest_candidates:
+        candidate = manifest_candidates[0]
+        suffix = str(Path(candidate).suffix)
+        book_codes_and_names: list[tuple[str, str]] = []
+        # Get nationalized book names
+        manifest_data = load_manifest(candidate)
+        # logger.debug("manifest_data: %s", manifest_data)
+        if suffix == ".yaml":
+            data: Data = yaml.safe_load(manifest_data)
+            book_codes_and_names = [
+                (book["identifier"], book["title"]) for book in data["projects"]
+            ]
+        # TODO Heart languages often have .json manifest files
+        # and they often have a file per verse span, not per book.
+        # elif suffix == "json":
+        #     contents = orjson.loads(load_manifest(candidate))
+        #     # TODO Get nationalized book names
+        #     for book_info in contents["projects"]:
+        #         logger.debug("book_info: %s", book_info)
+        #         book_codes_and_names.append(
+        #             (book_info["identifier"], book_info["title"])
+        #         )
+    return book_codes_and_names
 
 
 # Used for testing
@@ -848,6 +935,7 @@ def book_codes_for_lang_from_usfm_only(
     ('gen', 'Genesis')
     """
     data = fetch_source_data()
+    book_codes_and_names_nationalized = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
     try:
@@ -859,43 +947,70 @@ def book_codes_for_lang_from_usfm_only(
             url = repo_info["repo_url"]
             if language_info["ietf_code"] == lang_code:
                 last_segment = get_last_segment(url, lang_code)
-                repo_components = last_segment.split("_")
-                if dcs_mirror_git_username in url:
-                    repo_components = update_repo_components(repo_components)
-                # logger.debug("url: %s, repo_components: %s", url, repo_components)
-                if len(repo_components) > 2:
-                    book_code = repo_components[1]
-                    if book_code in book_names:
-                        book_codes_and_names.append((book_code, book_names[book_code]))
-                elif len(repo_components) == 2 and not book_codes_and_names:
-                    if not book_codes_and_names2:
-                        resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                        clone_git_repo(url, resource_filepath)
-                        # Check repo's layout on disk to determine which books it provides.
-                        # First look at USFM assets.
-                        if repo_components[-1] in usfm_resource_types:
-                            usfm_files = parsing.find_usfm_files(resource_filepath)
-                            for usfm_file in usfm_files:
-                                book_code = Path(usfm_file).stem.lower().split("-")[1]
-                                book_codes_and_names2.append(
-                                    (book_code, book_names[book_code])
-                                )
+                if [
+                    usfm_resource_type
+                    for usfm_resource_type in usfm_resource_types
+                    if usfm_resource_type in url
+                ]:
+                    resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                    # logger.debug("resource_filepath: %s", resource_filepath)
+                    clone_git_repo(url, resource_filepath)
+                    book_codes_and_names_nationalized = (
+                        book_codes_and_names_from_manifest(resource_filepath)
+                    )
+                    logger.debug(
+                        "book_codes_and_names_nationalized: %s",
+                        book_codes_and_names_nationalized,
+                    )
+                if not book_codes_and_names_nationalized:
+                    repo_components = last_segment.split("_")
+                    if dcs_mirror_git_username in url:
+                        repo_components = update_repo_components(repo_components)
+                    # logger.debug("url: %s, repo_components: %s", url, repo_components)
+                    if len(repo_components) > 2:
+                        logger.debug("url for len(repo_components) > 2: %s", url)
+                        book_code = repo_components[1]
+                        if book_code in book_names:
+                            book_codes_and_names.append(
+                                (book_code, book_names[book_code])
+                            )
+                    elif len(repo_components) == 2 and not book_codes_and_names:
+                        if (
+                            not book_codes_and_names2
+                            and repo_components[1] in usfm_resource_types
+                        ):
+                            logger.debug("url for len(repo_components) == 2): %s", url)
+                            resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                            clone_git_repo(url, resource_filepath)
+                            # Check repo's layout on disk to determine which USFM books it provides.
+                            if repo_components[-1] in usfm_resource_types:
+                                usfm_files = parsing.find_usfm_files(resource_filepath)
+                                for usfm_file in usfm_files:
+                                    book_code = (
+                                        Path(usfm_file).stem.lower().split("-")[1]
+                                    )
+                                    book_codes_and_names2.append(
+                                        (book_code, book_names[book_code])
+                                    )
     except:
         pass
     # Keep book codes unique and sorted by canonical bible book order
-    unique_values = []
-    seen_values = set()
-    book_codes_and_names.extend(book_codes_and_names2)
-    for value in book_codes_and_names:
-        if value[0] not in seen_values:
-            unique_values.append(value)
-            seen_values.add(value[0])
-    book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
-    book_codes_sorted = sorted(
-        unique_values,
-        key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
-    )
-    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
+    if not book_codes_and_names_nationalized:
+        unique_values = []
+        seen_values = set()
+        book_codes_and_names.extend(book_codes_and_names2)
+        for value in book_codes_and_names:
+            if value[0] not in seen_values:
+                unique_values.append(value)
+                seen_values.add(value[0])
+        book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
+        book_codes_sorted = sorted(
+            unique_values,
+            key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+        )
+    else:
+        book_codes_sorted = book_codes_and_names_nationalized
+    logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
 

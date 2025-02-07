@@ -103,7 +103,7 @@
     if (selectedBookCode && selectedChapter && verseReference) {
       const bookName = bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? "Unknown";
       addPassageReference(
-        $langCodeAndNameStore[0],
+        $langCodeAndNameStore.split(",")[0],
         selectedBookCode,
         bookName,
         Number(selectedChapter),

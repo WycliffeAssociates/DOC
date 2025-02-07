@@ -12,7 +12,7 @@ from docx import Document  # type: ignore
 def test_en_es_419_stet_docx() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
-            "/stet/documents_stet_docx",
+            "/stet/documents_docx",
             json={
                 "lang0_code": "en",
                 "lang1_code": "es-419",
@@ -27,7 +27,7 @@ def test_en_es_419_stet_docx() -> None:
 def test_en_abu_stet_docx() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
-            "/stet/documents_stet_docx",
+            "/stet/documents_docx",
             json={
                 "lang0_code": "en",
                 "lang1_code": "abu",
@@ -42,7 +42,7 @@ def test_en_abu_stet_docx() -> None:
 def test_en_ln_stet_docx() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
-            "/stet/documents_stet_docx",
+            "/stet/documents_docx",
             json={
                 "lang0_code": "en",
                 "lang1_code": "ln",
@@ -56,7 +56,7 @@ def test_en_ln_stet_docx() -> None:
 def test_en_ln_stet_docx_contents() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
-            "/stet/documents_stet_docx",
+            "/stet/documents_docx",
             json={
                 "lang0_code": "en",
                 "lang1_code": "ln",
@@ -67,7 +67,6 @@ def test_en_ln_stet_docx_contents() -> None:
         substring = "For the Mighty One has done great things for me,and his name is holy."
         suffix: AcceptedSuffixes = "docx"
         finished_document_request_key = check_result(response, suffix=suffix)
-
         finished_document_path = os.path.join(
             settings.DOCUMENT_OUTPUT_DIR,
             "{}.{}".format(finished_document_request_key, suffix),

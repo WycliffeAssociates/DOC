@@ -725,7 +725,6 @@ def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
         },
     }
     repos_info.append(en_rg)
-    # logger.debug("repos_info[-4:]: %s", repos_info[-4:])
     return repos_info
 
 
@@ -760,8 +759,6 @@ def book_codes_for_lang(
                 repo_components = last_segment.split("_")
                 if dcs_mirror_git_username in url:
                     repo_components = update_repo_components(repo_components)
-                # logger.debug("url: %s, repo_components: %s", url, repo_components)
-
                 if [
                     usfm_resource_type
                     for usfm_resource_type in usfm_resource_types
@@ -771,10 +768,6 @@ def book_codes_for_lang(
                     clone_git_repo(url, resource_filepath)
                     book_codes_and_names_nationalized = (
                         book_codes_and_names_from_manifest(resource_filepath)
-                    )
-                    logger.debug(
-                        "book_codes_and_names_nationalized: %s",
-                        book_codes_and_names_nationalized,
                     )
                 if not book_codes_and_names_nationalized:
                     if len(repo_components) > 2:
@@ -817,7 +810,6 @@ def book_codes_for_lang(
                                                 book_names[subdir.name.lower()],
                                             )
                                         )
-                        # logger.debug("book_codes_and_names2: %s", book_codes_and_names2)
     except:
         pass
     # Keep book codes unique and sorted by canonical bible book order
@@ -836,7 +828,7 @@ def book_codes_for_lang(
         )
     else:
         book_codes_sorted = book_codes_and_names_nationalized
-    logger.debug("book_codes_sorted: %s", book_codes_sorted)
+    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
 
@@ -918,7 +910,6 @@ def book_codes_and_names_from_manifest(
     return book_codes_and_names
 
 
-# Used for testing
 @lru_cache(maxsize=100)
 def book_codes_for_lang_from_usfm_only(
     lang_code: str,
@@ -953,22 +944,15 @@ def book_codes_for_lang_from_usfm_only(
                     if usfm_resource_type in url
                 ]:
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    # logger.debug("resource_filepath: %s", resource_filepath)
                     clone_git_repo(url, resource_filepath)
                     book_codes_and_names_nationalized = (
                         book_codes_and_names_from_manifest(resource_filepath)
-                    )
-                    logger.debug(
-                        "book_codes_and_names_nationalized: %s",
-                        book_codes_and_names_nationalized,
                     )
                 if not book_codes_and_names_nationalized:
                     repo_components = last_segment.split("_")
                     if dcs_mirror_git_username in url:
                         repo_components = update_repo_components(repo_components)
-                    # logger.debug("url: %s, repo_components: %s", url, repo_components)
                     if len(repo_components) > 2:
-                        logger.debug("url for len(repo_components) > 2: %s", url)
                         book_code = repo_components[1]
                         if book_code in book_names:
                             book_codes_and_names.append(
@@ -979,7 +963,6 @@ def book_codes_for_lang_from_usfm_only(
                             not book_codes_and_names2
                             and repo_components[1] in usfm_resource_types
                         ):
-                            logger.debug("url for len(repo_components) == 2): %s", url)
                             resource_filepath = f"{resource_assets_dir}/{last_segment}"
                             clone_git_repo(url, resource_filepath)
                             # Check repo's layout on disk to determine which USFM books it provides.
@@ -1010,7 +993,7 @@ def book_codes_for_lang_from_usfm_only(
         )
     else:
         book_codes_sorted = book_codes_and_names_nationalized
-    logger.debug("book_codes_sorted: %s", book_codes_sorted)
+    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
 

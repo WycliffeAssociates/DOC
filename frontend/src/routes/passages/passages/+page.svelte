@@ -1,7 +1,6 @@
 <script lang="ts">
+  import BibleReferenceSelector from './BibleReferenceSelector.svelte'
   import { onMount } from 'svelte'
-  import otBooks from '$lib/ot-books'
-  import { ntBookStore, otBookStore, bookCountStore } from '$lib/passages/stores/BooksStore'
   import {
     PUBLIC_BOOK_CODES_FROM_USFM_ONLY_URL,
     PUBLIC_CHAPTERS_IN_BOOKS_URL,
@@ -10,8 +9,6 @@
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
-  import MobileLanguageDisplay from './MobileLanguageDisplay.svelte'
-  import DesktopLanguageDisplay from './DesktopLanguageDisplay.svelte'
   import Modal from '$lib/Modal.svelte'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
@@ -101,9 +98,10 @@
 
   const addPassage = () => {
     if (selectedBookCode && selectedChapter && verseReference) {
-      const bookName = bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? "Unknown";
+      const bookName =
+        bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'
       addPassageReference(
-        $langCodeAndNameStore.split(",")[0],
+        $langCodeAndNameStore.split(',')[0],
         selectedBookCode,
         bookName,
         Number(selectedChapter),
@@ -145,66 +143,51 @@
           <ProgressIndicator />
         </div>
       {:else}
-        <div class="flex items-center">
-          <!-- Bible Book Dropdown -->
-          <div>
-            <label for="book" class="block text-sm font-medium text-gray-700">Bible Book</label>
-            <select
-              id="book"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              on:change={handleBookChange}
-              bind:value={selectedBookCode}
-            >
-              <option value="" disabled selected>Choose a book</option>
-              {#each bookCodesAndNames as [code, name]}
-                <option value={code}>{name}</option>
-              {/each}
-            </select>
-          </div>
-
-          <!-- Chapter Dropdown -->
-          <div>
-            <label for="chapter" class="block text-sm font-medium text-gray-700">Chapter</label>
-            <select
-              id="chapter"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              on:change={handleChapterChange}
-              value={selectedChapter}
-              disabled={!selectedBookCode || !chaptersForSelectedBook.length}
-            >
-              <option value="" disabled selected>Choose a chapter</option>
-              {#each chaptersForSelectedBook as chapter}
-                <option value={String(chapter)} selected={String(chapter) === selectedChapter}>
-                  {chapter}
-                </option>
-              {/each}
-            </select>
-          </div>
-
-          <!-- Verse Reference Input -->
-          <div>
-            <label for="verses" class="block text-sm font-medium text-gray-700">Verse(s)</label>
-            <input
-              id="verses"
-              type="text"
-              placeholder="e.g., 1,2,5-7"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              on:input={handleVerseInput}
-              bind:value={verseReference}
-            />
-          </div>
-
-          <!-- Add Passage Button -->
-          <button
-            type="button"
-            class="mb-4 mt-2 w-1/2 rounded-md
-                    border border-[#E5E8EB] bg-[#F2F3F5] p-4
-                    text-center text-xl text-[#B3B9C2] hover:bg-[#efefef]"
-            on:click={addPassage}
-          >
-            Add Passage
+        <BibleReferenceSelector
+          {bookCodesAndNames}
+          bind:selectedBookCode
+          bind:selectedChapter
+          bind:verseReference
+          {chaptersForSelectedBook}
+          {handleBookChange}
+          {handleChapterChange}
+          {handleVerseInput}
+          {addPassage}
+        />
+        {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
+          <button class="ml-2" on:click={() => (showWizardBasketModal = true)}>
+            <div class="relative">
+              <svg
+                width="56"
+                height="48"
+                viewBox="0 0 56 48"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M35 15H21C19.9 15 19 15.9 19 17V31C19 32.1 19.9 33 21 33H35C36.1 33 37 32.1 37 31V17C37 15.9 36.1 15 35 15ZM26.71 28.29C26.6175 28.3827 26.5076 28.4563 26.3866 28.5064C26.2657 28.5566 26.136 28.5824 26.005 28.5824C25.874 28.5824 25.7443 28.5566 25.6234 28.5064C25.5024 28.4563 25.3925 28.3827 25.3 28.29L21.71 24.7C21.6174 24.6074 21.544 24.4975 21.4939 24.3765C21.4438 24.2556 21.418 24.1259 21.418 23.995C21.418 23.8641 21.4438 23.7344 21.4939 23.6135C21.544 23.4925 21.6174 23.3826 21.71 23.29C21.8026 23.1974 21.9125 23.124 22.0335 23.0739C22.1544 23.0238 22.2841 22.998 22.415 22.998C22.5459 22.998 22.6756 23.0238 22.7965 23.0739C22.9175 23.124 23.0274 23.1974 23.12 23.29L26 26.17L32.88 19.29C33.067 19.103 33.3206 18.998 33.585 18.998C33.8494 18.998 34.103 19.103 34.29 19.29C34.477 19.477 34.582 19.7306 34.582 19.995C34.582 20.2594 34.477 20.513 34.29 20.7L26.71 28.29Z"
+                  fill="#33445C"
+                />
+                <rect x="0.5" y="0.5" width="55" height="47" rx="11.5" stroke="#E5E8EB" />
+              </svg>
+              {#if $passagesStore.length > 0}
+                <!-- badge -->
+                <div
+                  class="bg-neutral-focus absolute -right-0.5 -top-0.5
+                           h-7 w-7
+                           rounded-full
+                           text-center text-xl text-[#33445C]"
+                  style="background: linear-gradient(180deg, #1876FD 0%, #015AD9 100%);"
+                >
+                  <span
+                    class="text-[8px]
+                                   text-white">{$passagesStore.length}</span
+                  >
+                </div>
+              {/if}
+            </div>
           </button>
-        </div>
+        {/if}
       {/if}
     </div>
   </div>

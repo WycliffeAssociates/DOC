@@ -26,6 +26,7 @@ services:
         # "randomized",
         # "focus",
         # "stet",
+        # "passages",
         "not all and not randomized and not english_randomized",
         "-n",
         "auto",

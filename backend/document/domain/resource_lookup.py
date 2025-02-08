@@ -756,9 +756,6 @@ def book_codes_for_lang(
             url = repo_info["repo_url"]
             if language_info["ietf_code"] == lang_code:
                 last_segment = get_last_segment(url, lang_code)
-                repo_components = last_segment.split("_")
-                if dcs_mirror_git_username in url:
-                    repo_components = update_repo_components(repo_components)
                 if [
                     usfm_resource_type
                     for usfm_resource_type in usfm_resource_types
@@ -770,6 +767,9 @@ def book_codes_for_lang(
                         book_codes_and_names_from_manifest(resource_filepath)
                     )
                 if not book_codes_and_names_nationalized:
+                    repo_components = last_segment.split("_")
+                    if dcs_mirror_git_username in url:
+                        repo_components = update_repo_components(repo_components)
                     if len(repo_components) > 2:
                         book_code = repo_components[1]
                         if book_code in book_names:

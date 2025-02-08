@@ -1,18 +1,12 @@
 <script lang="ts">
-  // import type { SelectElement } from './types'
-  // import Switch from './Switch.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
   import {
     emailStore,
     documentRequestKeyStore,
-    settingsUpdated
   } from '$lib/passages/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
-  // import {
-  //   langCountStore
-  // } from '$lib/passages/stores/LanguageStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import GenerateDocument from './GenerateDocument.svelte'
   import LogRocket from 'logrocket'
@@ -80,118 +74,6 @@
     </div>
     <!-- main content -->
     <main class="flex-1 overflow-y-auto p-4">
-      <!-- <h3 class="mb-2 mt-2 text-2xl text-[#33445C]">File type</h3> -->
-      <!-- <div class="ml-4"> -->
-      <!--   <div class="mb-2"> -->
-      <!--     <label> -->
-      <!--       <input -->
-      <!--         name="docType" -->
-      <!--         value={'docx'} -->
-      <!--         bind:group={$docTypeStore} -->
-      <!--         type="radio" -->
-      <!--         on:change={() => { -->
-      <!--           $settingsUpdated = true -->
-      <!--           $errorStore = '' -->
-      <!--         }} -->
-      <!--         class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600" -->
-      <!--       /> -->
-      <!--       <span class="text-xl text-[#33445C]">Docx</span> -->
-      <!--     </label> -->
-      <!--   </div> -->
-      <!--   <div class="mb-2"> -->
-      <!--     <label> -->
-      <!--       <input -->
-      <!--         name="docType" -->
-      <!--         value={'epub'} -->
-      <!--         bind:group={$docTypeStore} -->
-      <!--         type="radio" -->
-      <!--         on:change={() => { -->
-      <!--           $settingsUpdated = true -->
-      <!--           $errorStore = '' -->
-      <!--         }} -->
-      <!--         class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600" -->
-      <!--       /> -->
-      <!--       <span class="text-xl text-[#33445C]">ePub</span> -->
-      <!--     </label> -->
-      <!--   </div> -->
-      <!--   {#if showPdfAsOption} -->
-      <!--     <div class="mb-2"> -->
-      <!--       <label> -->
-      <!--         <input -->
-      <!--           name="docType" -->
-      <!--           value={'pdf'} -->
-      <!--           bind:group={$docTypeStore} -->
-      <!--           type="radio" -->
-      <!--           on:change={() => { -->
-      <!--             $settingsUpdated = true -->
-      <!--             $errorStore = '' -->
-      <!--           }} -->
-      <!--           class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600" -->
-      <!--         /> -->
-      <!--         <span class="text-xl text-[#33445C]">PDF</span> -->
-      <!--       </label> -->
-      <!--     </div> -->
-      <!--   {/if} -->
-      <!-- </div> -->
-      <!-- <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Layout</h3> -->
-      <!-- <div class="ml-4"> -->
-      <!--   {#if $langCodesStore[1]} -->
-      <!--     <div class="mb-2"> -->
-      <!--       <label> -->
-      <!--         <input -->
-      <!--           name="assemblyType" -->
-      <!--           value={'lbo'} -->
-      <!--           bind:group={$assemblyStrategyKindStore} -->
-      <!--           type="radio" -->
-      <!--           on:change={() => { -->
-      <!--             $settingsUpdated = true -->
-      <!--             $errorStore = '' -->
-      <!--           }} -->
-      <!--           class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600" -->
-      <!--         /> -->
-      <!--         <span class="text-xl text-[#33445C]">Interleave content by book</span> -->
-      <!--       </label> -->
-      <!--     </div> -->
-      <!--     <div class="mb-6"> -->
-      <!--       <label> -->
-      <!--         <input -->
-      <!--           name="assemblyType" -->
-      <!--           value={'blo'} -->
-      <!--           bind:group={$assemblyStrategyKindStore} -->
-      <!--           type="radio" -->
-      <!--           on:change={() => { -->
-      <!--             $settingsUpdated = true -->
-      <!--             $errorStore = '' -->
-      <!--           }} -->
-      <!--           class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600" -->
-      <!--         /> -->
-      <!--         <span class="text-xl text-[#33445C]">Interleave content by chapter</span> -->
-      <!--       </label> -->
-      <!--     </div> -->
-      <!--   {/if} -->
-      <!--   <div class="flex"> -->
-      <!--     <Switch bind:checked={$layoutForPrintStore} id="layout-for-print-store" /> -->
-      <!--     <span class="ml-2 text-xl text-[#33445C]">Print optimization</span> -->
-      <!--   </div> -->
-      <!--   <div class="mt-2"> -->
-      <!--     <span class="text-lg text-[#33445C]" -->
-      <!--       >Enabling this option will remove extra whitespace</span -->
-      <!--     > -->
-      <!--   </div> -->
-      <!--   {#if $twResourceRequestedStore && $usfmAvailableStore} -->
-      <!--     <div class="mb-2 mt-6 flex"> -->
-      <!--       <Switch bind:checked={$limitTwStore} id="limit-tw-store" /> -->
-      <!--       <span class="ml-2 text-xl text-[#33445C]">Limit TW words</span> -->
-      <!--     </div> -->
-      <!--     <div> -->
-      <!--       <span class="text-lg text-[#33445C]" -->
-      <!--         >Enabling this option will filter TW words down to only those that occur in the -->
-      <!--         scripture for the books chosen</span -->
-      <!--       > -->
-      <!--     </div> -->
-      <!--   {/if} -->
-      <!-- </div> -->
-
       <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Notification</h3>
       <div class="ml-4">
         {#if !$documentReadyStore}

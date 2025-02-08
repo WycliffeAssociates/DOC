@@ -12,8 +12,6 @@
   import {
     langCodeAndNameStore,
     langCountStore,
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore
   } from '$lib/passages/stores/LanguageStore'
   import { getCode, getName } from '$lib/passages/utils'
 

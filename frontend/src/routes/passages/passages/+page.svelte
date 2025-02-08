@@ -122,9 +122,6 @@
   $: console.log(`selectedBookCode: ${selectedBookCode}`)
   $: console.log(`selectedChapter: ${selectedChapter}`)
   $: console.log(`verseReference: ${verseReference}`)
-  // $: console.log(`chapters: ${JSON.stringify(chapters)}`)
-  // $: console.log(`bookCodesAndNames: ${JSON.stringify(bookCodesAndNames)}`)
-  // $: console.log(`typeof bookCodesAndNames: ${typeof bookCodesAndNames}`)
   $: console.log(`$passagesStore: ${JSON.stringify($passagesStore)}`)
 </script>
 

@@ -229,7 +229,9 @@ def remove_links(html: str) -> str:
 
 
 def split_usfm_by_chapters(
-    resource_lookup_dto: ResourceLookupDto,
+    lang_code: str,
+    resource_type: str,
+    book_code: str,
     usfm_text: str,
     chapter_regex: str = r"\\c\s+\d+",
     resources_with_usfm_defects: Sequence[
@@ -250,13 +252,13 @@ def split_usfm_by_chapters(
         Determine if a chapter needs fixing based on configuration.
         """
         if check_all_books_for_language:
-            return resource_lookup_dto.lang_code in [
+            return lang_code in [
                 resource[0] for resource in resources_with_usfm_defects
             ]
         return (
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         ) in resources_with_usfm_defects
 
     updated_chapters = []
@@ -264,7 +266,9 @@ def split_usfm_by_chapters(
         stripped_chapter = chapter.lstrip()
         if stripped_chapter:
             if check_usfm and needs_fixing():
-                stripped_chapter = fix_usfm(stripped_chapter, resource_lookup_dto)
+                stripped_chapter = fix_usfm(
+                    stripped_chapter, lang_code, resource_type, book_code
+                )
             updated_chapters.append(marker + stripped_chapter)
     return frontmatter, updated_chapters
 
@@ -363,7 +367,12 @@ def usfm_book_content(
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
     content = read_file(content_file) if content_file else ""
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
-    frontmatter, chapters_ = split_usfm_by_chapters(resource_lookup_dto, content)
+    frontmatter, chapters_ = split_usfm_by_chapters(
+        resource_lookup_dto.lang_code,
+        resource_lookup_dto.resource_type,
+        resource_lookup_dto.book_code,
+        content,
+    )
     national_book_name = maybe_national_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
     for chapter in updated_chapters:

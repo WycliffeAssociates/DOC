@@ -25,6 +25,7 @@ from document.domain.model import (
     LangDirEnum,
     ResourceLookupDto,
 )
+from document.domain import parsing
 from document.domain.reviewers_guide.parser import (
     find_bible_references,
     parse_bible_reference,
@@ -756,6 +757,9 @@ def book_codes_for_lang(
             url = repo_info["repo_url"]
             if language_info["ietf_code"] == lang_code:
                 last_segment = get_last_segment(url, lang_code)
+                repo_components = last_segment.split("_")
+                if dcs_mirror_git_username in url:
+                    repo_components = update_repo_components(repo_components)
                 if [
                     usfm_resource_type
                     for usfm_resource_type in usfm_resource_types
@@ -763,13 +767,49 @@ def book_codes_for_lang(
                 ]:
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
                     clone_git_repo(url, resource_filepath)
-                    book_codes_and_names_nationalized = (
+                    book_codes_and_names_nationalized.extend(
                         book_codes_and_names_from_manifest(resource_filepath)
                     )
-                if not book_codes_and_names_nationalized:
-                    repo_components = last_segment.split("_")
-                    if dcs_mirror_git_username in url:
-                        repo_components = update_repo_components(repo_components)
+                    if (
+                        len(repo_components) == 2
+                        and repo_components[-1] in usfm_resource_types
+                    ):
+                        # If repo URL has two components in last segment of URL then it likely has a language scoped manifest file.
+                        # If it has a language scoped file then that file provides all book names. Unfortunately sometimes
+                        # the book names that it contains are not the same as the book names
+                        # used in a STET input document, e.g., stet_pt-br.docx. We are more likely to get a book name that matches
+                        # the book names used in a STET input doc if we get the book names from the frontmatter
+                        # of the USFM file for each book (for a repo that has two components in last segment of the URL, e.g., ceb_ulb).
+                        book_codes_and_names_nationalized = []
+                        usfm_files = parsing.find_usfm_files(resource_filepath)
+                        for usfm_file in usfm_files:
+                            usfm_file_components = (
+                                Path(usfm_file).stem.lower().split("-")
+                            )
+                            book_code = usfm_file_components[1]
+                            resource_type = repo_components[1]
+                            content = read_file(usfm_file) if usfm_file else ""
+                            frontmatter, chapters_ = parsing.split_usfm_by_chapters(
+                                lang_code, resource_type, book_code, content
+                            )
+                            national_book_name = parsing.maybe_national_book_name(
+                                frontmatter
+                            )
+                            book_codes_and_names_nationalized.append(
+                                (book_code, national_book_name)
+                            )
+                        break
+                if not book_codes_and_names_nationalized or (
+                    book_codes_and_names_nationalized
+                    and len(
+                        [
+                            (ietf, name)
+                            for ietf, name in book_codes_and_names_nationalized
+                            if name == ""
+                        ]
+                    )
+                    > 0
+                ):  # One or more book names are empty. Sometimes a manifest doesn't provide all book names
                     if len(repo_components) > 2:
                         book_code = repo_components[1]
                         if book_code in book_names:
@@ -813,7 +853,17 @@ def book_codes_for_lang(
     except:
         pass
     # Keep book codes unique and sorted by canonical bible book order
-    if not book_codes_and_names_nationalized:
+    if not book_codes_and_names_nationalized or (
+        book_codes_and_names_nationalized
+        and len(
+            [
+                (ietf, name)
+                for ietf, name in book_codes_and_names_nationalized
+                if name == ""
+            ]
+        )
+        > 0
+    ):
         unique_values = []
         seen_values = set()
         book_codes_and_names.extend(book_codes_and_names2)
@@ -827,7 +877,11 @@ def book_codes_for_lang(
             key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
         )
     else:
-        book_codes_sorted = book_codes_and_names_nationalized
+        book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
+        book_codes_sorted = sorted(
+            book_codes_and_names_nationalized,
+            key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+        )
     # logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
@@ -848,13 +902,22 @@ def load_manifest(file_path: str) -> str:
         return file.read()
 
 
-class Book(TypedDict):
+class YamlManifestBook(TypedDict):
     title: str
     identifier: str
 
 
+class JsonManifestBook(TypedDict):
+    name: str
+    id: str
+
+
 class Data(TypedDict):
-    projects: list[Book]
+    projects: list[YamlManifestBook]
+
+
+class JsonManifestData(TypedDict):
+    project: JsonManifestBook
 
 
 def book_codes_and_names_from_manifest(
@@ -884,8 +947,9 @@ def book_codes_and_names_from_manifest(
                 manifest_candidates = glob(
                     manifest_glob_alt_fmt_str.format(resource_dir, "json")
                 )
-    logger.debug("manifest_candidates: %s", manifest_candidates)
+    # logger.debug("manifest_candidates: %s", manifest_candidates)
     if manifest_candidates:
+        # logger.debug("len(manifest_candidates): %s", len(manifest_candidates))
         candidate = manifest_candidates[0]
         suffix = str(Path(candidate).suffix)
         book_codes_and_names: list[tuple[str, str]] = []
@@ -897,16 +961,14 @@ def book_codes_and_names_from_manifest(
             book_codes_and_names = [
                 (book["identifier"], book["title"]) for book in data["projects"]
             ]
-        # TODO Heart languages often have .json manifest files
-        # and they often have a file per verse span, not per book.
-        # elif suffix == "json":
-        #     contents = orjson.loads(load_manifest(candidate))
-        #     # TODO Get nationalized book names
-        #     for book_info in contents["projects"]:
-        #         logger.debug("book_info: %s", book_info)
-        #         book_codes_and_names.append(
-        #             (book_info["identifier"], book_info["title"])
-        #         )
+        # Heart languages often have .json manifest files
+        # per book and not per language.
+        elif suffix == ".json":
+            json_data: JsonManifestData = json.loads(manifest_data)
+            logger.debug("json_data: %s", json_data)
+            project: JsonManifestBook = json_data["project"]
+            book_codes_and_names = [(project["id"], project["name"])]
+            # logger.debug("book_codes_and_names from json: %s", book_codes_and_names)
     return book_codes_and_names
 
 
@@ -938,6 +1000,9 @@ def book_codes_for_lang_from_usfm_only(
             url = repo_info["repo_url"]
             if language_info["ietf_code"] == lang_code:
                 last_segment = get_last_segment(url, lang_code)
+                repo_components = last_segment.split("_")
+                if dcs_mirror_git_username in url:
+                    repo_components = update_repo_components(repo_components)
                 if [
                     usfm_resource_type
                     for usfm_resource_type in usfm_resource_types
@@ -945,10 +1010,49 @@ def book_codes_for_lang_from_usfm_only(
                 ]:
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
                     clone_git_repo(url, resource_filepath)
-                    book_codes_and_names_nationalized = (
+                    book_codes_and_names_nationalized.extend(
                         book_codes_and_names_from_manifest(resource_filepath)
                     )
-                if not book_codes_and_names_nationalized:
+                    if (
+                        len(repo_components) == 2
+                        and repo_components[-1] in usfm_resource_types
+                    ):
+                        # If repo URL has two components in last segment of URL then it likely has a language scoped manifest file.
+                        # If it has a language scoped file then that file provides all book names. Unfortunately sometimes
+                        # the book names that it contains are not the same as the book names
+                        # used in a STET input document, e.g., stet_pt-br.docx. We are more likely to get a book name that matches
+                        # the book names used in a STET input doc if we get the book names from the frontmatter
+                        # of the USFM file for each book (for a repo that has two components in last segment of the URL, e.g., ceb_ulb).
+                        book_codes_and_names_nationalized = []
+                        usfm_files = parsing.find_usfm_files(resource_filepath)
+                        for usfm_file in usfm_files:
+                            usfm_file_components = (
+                                Path(usfm_file).stem.lower().split("-")
+                            )
+                            book_code = usfm_file_components[1]
+                            resource_type = repo_components[1]
+                            content = read_file(usfm_file) if usfm_file else ""
+                            frontmatter, chapters_ = parsing.split_usfm_by_chapters(
+                                lang_code, resource_type, book_code, content
+                            )
+                            national_book_name = parsing.maybe_national_book_name(
+                                frontmatter
+                            )
+                            book_codes_and_names_nationalized.append(
+                                (book_code, national_book_name)
+                            )
+                        break
+                if not book_codes_and_names_nationalized or (
+                    book_codes_and_names_nationalized
+                    and len(
+                        [
+                            (ietf, name)
+                            for ietf, name in book_codes_and_names_nationalized
+                            if name == ""
+                        ]
+                    )
+                    > 0
+                ):  # Sometimes a manifest doesn't provide all book names
                     repo_components = last_segment.split("_")
                     if dcs_mirror_git_username in url:
                         repo_components = update_repo_components(repo_components)
@@ -978,7 +1082,17 @@ def book_codes_for_lang_from_usfm_only(
     except:
         pass
     # Keep book codes unique and sorted by canonical bible book order
-    if not book_codes_and_names_nationalized:
+    if not book_codes_and_names_nationalized or (
+        book_codes_and_names_nationalized
+        and len(
+            [
+                (ietf, name)
+                for ietf, name in book_codes_and_names_nationalized
+                if name == ""
+            ]
+        )
+        > 0
+    ):  # Sometimes a manifest doesn't provide all book names
         unique_values = []
         seen_values = set()
         book_codes_and_names.extend(book_codes_and_names2)
@@ -992,8 +1106,12 @@ def book_codes_for_lang_from_usfm_only(
             key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
         )
     else:
-        book_codes_sorted = book_codes_and_names_nationalized
-    # logger.debug("book_codes_sorted: %s", book_codes_sorted)
+        book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
+        book_codes_sorted = sorted(
+            book_codes_and_names_nationalized,
+            key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+        )
+    logger.debug("book_codes_sorted: %s", book_codes_sorted)
     return book_codes_sorted
 
 

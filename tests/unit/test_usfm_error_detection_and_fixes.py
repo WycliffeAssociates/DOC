@@ -377,20 +377,17 @@ Pengajar Ti Pelesu
     # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_usfm(self) -> None:
+        lang_code = "iba-x-ibanempran"
+        resource_type = "reg"
+        book_code = "jud"
         self.assertEqual(
             fix_usfm(
                 r"""
 9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” 10Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
         """,
-                ResourceLookupDto(
-                    lang_code="iba-x-ibanempran",
-                    lang_name="foo",
-                    resource_type="reg",
-                    resource_type_name="Bible",
-                    book_code="jud",
-                    lang_direction=LangDirEnum.LTR,
-                    url="bar",
-                ),
+                lang_code,
+                resource_type,
+                book_code,
             ),
             r"""
 \v 9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” \v 10 Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. \v 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.

@@ -1052,7 +1052,7 @@ def book_codes_for_lang_from_usfm_only(
                         ]
                     )
                     > 0
-                ):  # Sometimes a manifest doesn't provide all book names
+                ):  # At least one book name was missing, let's try another approach
                     repo_components = last_segment.split("_")
                     if dcs_mirror_git_username in url:
                         repo_components = update_repo_components(repo_components)

@@ -64,7 +64,7 @@
 
     getChaptersInBooks()
       .then((chaptersInBooks_) => {
-        chapters = { ...chaptersInBooks_ } // Ensure reactivity with [...blah]
+        chapters = { ...chaptersInBooks_ } // Ensure reactivity with {...blah}
       })
       .catch((err) => console.error(err))
   })

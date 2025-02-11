@@ -6,7 +6,7 @@ jobs:
   #build and publish image
   Build-API-Image:
     name: Build API image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: FranzDiebold/github-env-vars-action@v2
@@ -22,7 +22,7 @@ jobs:
 
   Build-Frontend-Image:
     name: Build Frontend image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - uses: FranzDiebold/github-env-vars-action@v2
@@ -37,7 +37,7 @@ jobs:
 
   Test-API-Image:
     name: Test API image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: Build-API-Image
     steps:
       - uses: actions/checkout@v3
@@ -59,7 +59,7 @@ jobs:
 
   Test-Frontend-Image:
     name: Test Frontend image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [Build-API-Image, Build-Frontend-Image]
     steps:
       - uses: actions/checkout@v3
@@ -97,7 +97,7 @@ jobs:
 
   Push-Images:
     name: Push images if this is a branch
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [Test-API-Image, Test-Frontend-Image]
     if: ${{ contains(fromJson('["push"]'), github.event_name) }}
     steps:
@@ -156,7 +156,7 @@ jobs:
     name: Develop deploy on successful develop build
     needs: [Push-Images]
     if: ${{ github.ref_name == 'doc-dev.walink.org' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     environment: doc-dev.walink.org
     steps:
       - name: Configure 1Password Service Account

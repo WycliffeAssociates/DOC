@@ -20,18 +20,20 @@ def get_verse_text(
                         passage_ref_dto.chapter_num,
                         str(idx),
                     )
-                    verse_text.append(
-                        f'<span class="verse"><sup class="versemarker">{str(idx)}</sup>{verse_text__}</span>'
-                    )
+                    if verse_text__:
+                        verse_text.append(
+                            f'<span class="verse"><sup class="versemarker">{str(idx)}</sup>{verse_text__}</span>'
+                        )
             else:
                 verse_text__ = lookup_verse_text(
                     selected_usfm_book,
                     passage_ref_dto.chapter_num,
                     verse_,
                 )
-                verse_text.append(
-                    f'<span class="verse"><sup class="versemarker">{verse_}</sup>{verse_text__}</span>'
-                )
+                if verse_text__:
+                    verse_text.append(
+                        f'<span class="verse"><sup class="versemarker">{verse_}</sup>{verse_text__}</span>'
+                    )
     elif "-" in passage_ref_dto.verse_reference:
         verse_range_components = passage_ref_dto.verse_reference.split("-")
         lower_verse = int(verse_range_components[0])
@@ -42,16 +44,18 @@ def get_verse_text(
                 passage_ref_dto.chapter_num,
                 str(idx),
             )
-            verse_text.append(
-                f'<span class="verse"><sup class="versemarker">{str(idx)}</sup>{verse_text_}</span>'
-            )
+            if verse_text:
+                verse_text.append(
+                    f'<span class="verse"><sup class="versemarker">{str(idx)}</sup>{verse_text_}</span>'
+                )
     else:
         verse_text___ = lookup_verse_text(
             selected_usfm_book,
             passage_ref_dto.chapter_num,
             passage_ref_dto.verse_reference.strip(),
         )
-        verse_text.append(
-            f'<span class="verse"><sup class="versemarker">{passage_ref_dto.verse_reference.strip()}</sup>{verse_text___}</span>'
-        )
+        if verse_text___:
+            verse_text.append(
+                f'<span class="verse"><sup class="versemarker">{passage_ref_dto.verse_reference.strip()}</sup>{verse_text___}</span>'
+            )
     return "".join(verse_text)

@@ -774,12 +774,7 @@ def book_codes_for_lang(
                         len(repo_components) == 2
                         and repo_components[-1] in usfm_resource_types
                     ):
-                        # If repo URL has two components in last segment of URL then it likely has a language scoped manifest file.
-                        # If it has a language scoped file then that file provides all book names. Unfortunately sometimes
-                        # the book names that it contains are not the same as the book names
-                        # used in a STET input document, e.g., stet_pt-br.docx. We are more likely to get a book name that matches
-                        # the book names used in a STET input doc if we get the book names from the frontmatter
-                        # of the USFM file for each book (for a repo that has two components in last segment of the URL, e.g., ceb_ulb).
+                        # Prefer getting book names from USFM frontmatter for book when possible
                         book_codes_and_names_nationalized = []
                         usfm_files = parsing.find_usfm_files(resource_filepath)
                         for usfm_file in usfm_files:
@@ -1016,13 +1011,7 @@ def book_codes_for_lang_from_usfm_only(
                     if (
                         len(repo_components) == 2
                         and repo_components[-1] in usfm_resource_types
-                    ):
-                        # If repo URL has two components in last segment of URL then it likely has a language scoped manifest file.
-                        # If it has a language scoped file then that file provides all book names. Unfortunately sometimes
-                        # the book names that it contains are not the same as the book names
-                        # used in a STET input document, e.g., stet_pt-br.docx. We are more likely to get a book name that matches
-                        # the book names used in a STET input doc if we get the book names from the frontmatter
-                        # of the USFM file for each book (for a repo that has two components in last segment of the URL, e.g., ceb_ulb).
+                    ):  # Prefer getting book names from USFM frontmatter for book when possible
                         book_codes_and_names_nationalized = []
                         usfm_files = parsing.find_usfm_files(resource_filepath)
                         for usfm_file in usfm_files:

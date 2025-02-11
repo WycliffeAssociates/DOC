@@ -15,19 +15,10 @@
       $gatewayCodeAndNamesStore = $gatewayCodeAndNamesStore.filter(
         (item) => getCode(item) != getCode(langCodeAndName)
       )
-      // TODO
-      // $langCodesStore = $langCodesStore.filter(
-      //   (item: string) => langCodeAndName && item != getCode(langCodeAndName)
-      // )
     }
     if (langCodeAndName && $langCodeAndNameStore && langCodeAndName === $langCodeAndNameStore) {
       $langCodeAndNameStore = ''
     }
-    // if (langCodeAndName && $lang1CodeAndNameStore && langCodeAndName === $lang1CodeAndNameStore) {
-    //   $lang1CodeAndNameStore = ''
-    // }
-    // TODO
-    // $langCountStore = $langCodesStore.length
   }
 
   function uncheckHeartLanguage(langCodeAndName: string) {
@@ -35,17 +26,10 @@
       $heartCodeAndNamesStore = $heartCodeAndNamesStore.filter(
         (item) => getCode(item) != getCode(langCodeAndName)
       )
-      // TODO
-      // $langCodesStore = $langCodesStore.filter((item: string) => item != getCode(langCodeAndName))
     }
     if (langCodeAndName && $langCodeAndNameStore && langCodeAndName === $langCodeAndNameStore) {
       $langCodeAndNameStore = ''
     }
-    // if (langCodeAndName && $lang1CodeAndNameStore && langCodeAndName === $lang1CodeAndNameStore) {
-    //   $lang1CodeAndNameStore = ''
-    // }
-    // TODO
-    // $langCountStore = $langCodesStore.length
   }
 
   function uncheckPassage(id: number) {

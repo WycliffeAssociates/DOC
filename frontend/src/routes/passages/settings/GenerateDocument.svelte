@@ -5,10 +5,6 @@
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import {
-    // docTypeStore,
-    // generatePdfStore,
-    // generateEpubStore,
-    // generateDocxStore,
     emailStore,
     documentRequestKeyStore,
     settingsUpdated
@@ -44,22 +40,21 @@
     // Update some UI-related state
     generatingDocument = true
     $settingsUpdated = false
-    // Create the JSON structure to POST.
     const documentRequest: PassagesDocumentRequest = {
       langCode: getCode($langCodeAndNameStore),
       langName: getName($langCodeAndNameStore),
       passageReferences: $passagesStore,
-      emailAddress: $emailStore,
+      emailAddress: $emailStore
     }
     const documentRequestWithoutIds = omitIdFromPassageReferences(documentRequest)
-    console.log('document request: ', JSON.stringify(toSnakeCase(documentRequestWithoutIds), null, 2))
+    console.log(
+      'document request: ',
+      JSON.stringify(toSnakeCase(documentRequestWithoutIds), null, 2)
+    )
     $errorStore = null
     $documentReadyStore = false
     $documentRequestKeyStore = ''
     let endpointUrl = `${apiRootUrl}/passages/document_docx`
-    // if ($generateDocxStore) {
-    //   endpointUrl = `${apiRootUrl}/documents_docx`
-    // }
     const response = await fetch(endpointUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -123,32 +118,9 @@
     }
   }
 
-  // Reactively set/store document output type flags
-  // $: {
-  //   if ($docTypeStore === 'pdf') {
-  //     $generatePdfStore = true
-  //     $generateEpubStore = false
-  //     $generateDocxStore = false
-  //   } else if ($docTypeStore === 'epub') {
-  //     $generatePdfStore = false
-  //     $generateEpubStore = true
-  //     $generateDocxStore = false
-  //   } else if ($docTypeStore === 'docx') {
-  //     $generatePdfStore = false
-  //     $generateEpubStore = false
-  //     $generateDocxStore = true
-  //   }
-  // }
-
   // Reactively set download URLs of generated documents
-  // let pdfDownloadUrl: string
-  // $: pdfDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.pdf`
-  // let ePubDownloadUrl: string
-  // $: ePubDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.epub`
   let docxDownloadUrl: string
   $: docxDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.docx`
-  // let htmlDownloadUrl: string
-  // $: htmlDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.html`
 
   function viewFromUrl(url: string) {
     console.log(`url: ${url}`)
@@ -211,17 +183,6 @@
           <div class="blue-gradient-bar h-1" style="width: 100%" />
         </div>
         <div class="m-auto"><h3 class="text-xl text-[#82A93F]">Complete!</h3></div>
-        <!-- {#if $generatePdfStore} -->
-        <!--   <div class="m-auto mt-4"> -->
-        <!--     <DownloadButton buttonText="Download PDF" url={pdfDownloadUrl} /> -->
-        <!--   </div> -->
-        <!-- {/if} -->
-        <!-- {#if $generateEpubStore} -->
-        <!--   <div class="m-auto mt-4"> -->
-        <!--     <DownloadButton buttonText="Download ePub" url={ePubDownloadUrl} /> -->
-        <!--   </div> -->
-        <!-- {/if} -->
-        <!-- {#if $generateDocxStore} -->
         <div class="m-auto mt-4">
           <DownloadButton buttonText="Download Docx" url={docxDownloadUrl} />
         </div>
@@ -243,31 +204,6 @@
             highlighted text to the appropriate installed font in Word, then save the Word document.
           </p>
         </div>
-        <!-- {/if} -->
-        <!-- {#if !$generateDocxStore} -->
-        <!--   <div class="mt-4 pb-4"> -->
-        <!--     <button -->
-        <!--       class="gray-gradient hover:gray-gradient-hover w-1/2 rounded-md border-2 border-[#e5e8eb] p-4 text-center" -->
-        <!--       on:click={() => viewFromUrl(htmlDownloadUrl)} -->
-        <!--     > -->
-        <!--       <svg -->
-        <!--         class="m-auto" -->
-        <!--         width="23" -->
-        <!--         height="16" -->
-        <!--         viewBox="0 0 23 16" -->
-        <!--         fill="none" -->
-        <!--         xmlns="http://www.w3.org/2000/svg" -->
-        <!--       > -->
-        <!--         <path -->
-        <!--           d="M11.5 0.5C6.5 0.5 2.23 3.61 0.5 8C2.23 12.39 6.5 15.5 11.5 15.5C16.5 15.5 20.77 12.39 22.5 8C20.77 3.61 16.5 0.5 11.5 0.5ZM11.5 13C8.74 13 6.5 10.76 6.5 8C6.5 5.24 8.74 3 11.5 3C14.26 3 16.5 5.24 16.5 8C16.5 10.76 14.26 13 11.5 13ZM11.5 5C9.84 5 8.5 6.34 8.5 8C8.5 9.66 9.84 11 11.5 11C13.16 11 14.5 9.66 14.5 8C14.5 6.34 13.16 5 11.5 5Z" -->
-        <!--           fill="#1A130B" -->
-        <!--           fill-opacity="0.8" -->
-        <!--         /> -->
-        <!--       </svg> -->
-        <!--       <span class="p-4 text-xl">View HTML Online</span> -->
-        <!--     </button> -->
-        <!--   </div> -->
-        <!-- {/if} -->
       </div>
     {:else}
       <button

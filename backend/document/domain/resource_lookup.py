@@ -988,7 +988,7 @@ def book_codes_for_lang_from_usfm_only(
     ('gen', 'Genesis')
     """
     data = fetch_source_data()
-    book_codes_and_names_nationalized = []
+    book_codes_and_names_nationalized: list[tuple[str, str]] = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
     try:

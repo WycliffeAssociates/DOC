@@ -44,7 +44,7 @@ def get_verse_text(
                 passage_ref_dto.chapter_num,
                 str(idx),
             )
-            if verse_text:
+            if verse_text_:
                 verse_text.append(
                     f'<span class="verse"><sup class="versemarker">{str(idx)}</sup>{verse_text_}</span>'
                 )

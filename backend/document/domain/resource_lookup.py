@@ -1042,9 +1042,6 @@ def book_codes_for_lang_from_usfm_only(
                     )
                     > 0
                 ):  # At least one book name was missing, let's try another approach
-                    repo_components = last_segment.split("_")
-                    if dcs_mirror_git_username in url:
-                        repo_components = update_repo_components(repo_components)
                     if len(repo_components) > 2:
                         book_code = repo_components[1]
                         if book_code in book_names:

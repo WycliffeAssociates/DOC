@@ -1,10 +1,12 @@
 <script lang="ts">
+
+  import type { PassageReferenceDto } from '$lib/passages/models'
   import BibleReferenceSelector from './BibleReferenceSelector.svelte'
   import { onMount } from 'svelte'
   import {
     PUBLIC_BOOK_CODES_FROM_USFM_ONLY_URL,
     PUBLIC_CHAPTERS_IN_BOOKS_URL,
-    PUBLIC_PASSAGES_URL,
+    // PUBLIC_PASSAGES_URL,
     PUBLIC_TAILWIND_SM_MIN_WIDTH
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
@@ -68,6 +70,19 @@
       })
       .catch((err) => console.error(err))
   })
+
+  function removePassage(id: number) {
+    $passagesStore = $passagesStore.filter((item: PassageReferenceDto) => item.id != id)
+  }
+
+  $: if (bookCodesAndNames && bookCodesAndNames.length > 0) {
+
+      for (let passageReferenceDto of $passagesStore) {
+        if (!bookCodesAndNames.map(([bookCode]) => bookCode).includes(passageReferenceDto.bookCode)) {
+          removePassage(passageReferenceDto.id)
+        }
+      }
+  }
 
   let selectedBookCode: string = ''
   let selectedChapter: string = ''

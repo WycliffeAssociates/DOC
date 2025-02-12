@@ -13,7 +13,7 @@
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
-  import { langCodeAndNameStore, langCountStore } from '$lib/passages/stores/LanguageStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
   import { passagesStore, addPassageReference } from '$lib/passages/stores/PassagesStore'
 
   // For use by Mobile UI

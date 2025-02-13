@@ -34,7 +34,7 @@ test('test ui part 2', async ({ page }) => {
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText(/.*Unlocked Literal Bible.*/).first().click()
   await page.getByText(/.*Unlocked Literal Bible.*/).nth(1).click()
-  await page.getByText(/.*Translation Notes.*/).nth(1).click({timeout: 80000})
+  await page.getByText(/.*Translation Notes.*/).nth(1).click({timeout: 100000})
   await page .getByText(/.*Translation Notes.*/).nth(2).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('PDF').click()

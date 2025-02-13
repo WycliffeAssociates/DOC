@@ -3,13 +3,10 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
-import json
-from document.passages.model import PassageReferenceDto
 import subprocess
 import time
 from datetime import datetime
 from os.path import exists, join
-from pathlib import Path
 from typing import Any, Optional, Sequence, cast
 
 from celery import current_task
@@ -46,8 +43,6 @@ from document.domain.model import (
     USFMBook,
 )
 from document.domain.reviewers_guide.model import RGBook
-from document.stet import document_generator as stet_document_generator
-from document.passages import document_generator as passages_document_generator
 from document.utils.docx_util import generate_docx_toc
 from document.utils.file_utils import (
     docx_filepath,
@@ -218,101 +213,6 @@ def generate_document(
                 attachments,
                 document_request_key_,
             )
-    return document_request_key_
-
-
-@worker.app.task
-def generate_stet_docx_document(
-    lang0_code: str,
-    lang1_code: str,
-    email_address: str,
-) -> Json[str]:
-    logger.debug(
-        "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s",
-        lang0_code,
-        lang1_code,
-        email_address,
-    )
-    document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
-    docx_filepath_ = docx_filepath(document_request_key_)
-    if file_needs_update(docx_filepath_):
-        stet_document_generator.generate_docx_document(
-            lang0_code, lang1_code, document_request_key_, docx_filepath_
-        )
-        if should_send_email(email_address):
-            attachments = [
-                Attachment(
-                    filepath=docx_filepath_,
-                    mime_type=(
-                        "application",
-                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    ),
-                )
-            ]
-            current_task.update_state(state="Sending email")
-            send_email_with_attachment(
-                email_address,
-                attachments,
-                document_request_key_,
-            )
-    else:
-        logger.debug("Cache hit for %s", docx_filepath_)
-    return document_request_key_
-
-
-@worker.app.task
-def generate_passages_docx_document(
-    lang_code: str,
-    lang_name: str,
-    passage_reference_dtos_json: str,
-    email_address: str,
-    book_names: dict[str, str] = BOOK_NAMES,
-) -> Json[str]:
-    passage_reference_dtos_list = json.loads(passage_reference_dtos_json)
-    passage_reference_dtos = [
-        PassageReferenceDto(**d) for d in passage_reference_dtos_list
-    ]
-    logger.debug(
-        "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
-        lang_code,
-        passage_reference_dtos,
-        email_address,
-    )
-    translation_table = str.maketrans(":;,-", "____")
-    passages_key = "_".join(
-        [
-            f"{passage_reference.book_code}_{passage_reference.chapter_num}_{passage_reference.verse_reference.translate(translation_table)}"
-            for passage_reference in passage_reference_dtos
-        ]
-    )
-    document_request_key_ = f"{lang_code}_{passages_key}_passages"
-    docx_filepath_ = docx_filepath(document_request_key_)
-    if file_needs_update(docx_filepath_):
-        passages_document_generator.generate_docx_document(
-            lang_code,
-            lang_name,
-            passage_reference_dtos,
-            document_request_key_,
-            docx_filepath_,
-        )
-        if should_send_email(email_address):
-            attachments = [
-                Attachment(
-                    filepath=docx_filepath_,
-                    mime_type=(
-                        "application",
-                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    ),
-                )
-            ]
-            current_task.update_state(state="Sending email")
-            send_email_with_attachment(
-                email_address,
-                attachments,
-                document_request_key_,
-            )
-    else:
-        logger.debug("Cache hit for %s", docx_filepath_)
     return document_request_key_
 
 

@@ -1,11 +1,14 @@
+import json
+import time
 from typing import Mapping, Sequence
 
 from celery import current_task
 from document.config import settings
-from document.domain.parsing import (
-    split_chapter_into_verses,
-    usfm_book_content,
-)
+from document.domain import worker
+from document.domain.bible_books import BOOK_NAMES
+from document.domain.email import send_email_with_attachment, should_send_email
+from document.domain.model import Attachment
+from document.domain.parsing import split_chapter_into_verses, usfm_book_content
 from document.domain.resource_lookup import (
     RESOURCE_TYPE_CODES_AND_NAMES,
     prepare_resource_filepath,
@@ -16,12 +19,14 @@ from document.domain.resource_lookup import (
 from document.passages.docx_utils import add_footer, add_header
 from document.passages.model import PassageDto, PassageReferenceDto
 from document.passages.parser import get_verse_text
+from document.utils.file_utils import docx_filepath, file_needs_update
 from docx import Document  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml import parse_xml
 from docx.shared import Inches  # type: ignore
 from docx.table import _Cell  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
+from pydantic import Json
 
 logger = settings.logger(__name__)
 
@@ -184,3 +189,95 @@ def add_vertical_line(cell: _Cell) -> None:
     </w:tcBorders>
     """
     tc_pr.append(parse_xml(borders_xml))
+
+
+def document_request_key(
+    lang_code: str,
+    passage_reference_dtos: list[PassageReferenceDto],
+    max_filename_len: int = 240,
+    underscore: str = "_",
+    hyphen: str = "-",
+) -> str:
+    """
+    Create and return the document_request_key. The
+    document_request_key uniquely identifies a document request.
+
+    If the document request key is max_filename_len or more characters
+    in length, then switch to using a shorter string that is based on the
+    current time. The reason for this is that the document request key is
+    used as the file name (with suffix appended) and each OS has a limit
+    to how long a file name may be. max_filename_len should make room for
+    the file suffix, e.g., ".docx", to be appended.
+
+    It is really useful to have filenames with semantic meaning and so
+    those are preferred when possible, i.e., when the file name is not
+    too long.
+    """
+
+    translation_table = str.maketrans(":;,-", "____")
+    passages_key = underscore.join(
+        [
+            f"{passage_reference.book_code}_{passage_reference.chapter_num}_{passage_reference.verse_reference.translate(translation_table)}"
+            for passage_reference in passage_reference_dtos
+        ]
+    )
+    document_request_key_ = f"{lang_code}_{passages_key}_passages"
+    if len(document_request_key_) >= max_filename_len:
+        # Likely the generated filename was too long for the OS where this is
+        # running. In that case, use the current time as a document_request_key
+        # value as doing so results in an acceptably short length.
+        timestamp_components = str(time.time()).split(".")
+        return "{}_{}".format(timestamp_components[0], timestamp_components[1])
+    else:
+        # Use the semantic filename which declaratively describes the
+        # document request components.
+        return document_request_key_
+
+
+@worker.app.task
+def generate_passages_docx_document(
+    lang_code: str,
+    lang_name: str,
+    passage_reference_dtos_json: str,
+    email_address: str,
+    book_names: dict[str, str] = BOOK_NAMES,
+) -> Json[str]:
+    passage_reference_dtos_list = json.loads(passage_reference_dtos_json)
+    passage_reference_dtos = [
+        PassageReferenceDto(**d) for d in passage_reference_dtos_list
+    ]
+    logger.debug(
+        "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
+        lang_code,
+        passage_reference_dtos,
+        email_address,
+    )
+    document_request_key_ = document_request_key(lang_code, passage_reference_dtos)
+    docx_filepath_ = docx_filepath(document_request_key_)
+    if file_needs_update(docx_filepath_):
+        generate_docx_document(
+            lang_code,
+            lang_name,
+            passage_reference_dtos,
+            document_request_key_,
+            docx_filepath_,
+        )
+        if should_send_email(email_address):
+            attachments = [
+                Attachment(
+                    filepath=docx_filepath_,
+                    mime_type=(
+                        "application",
+                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    ),
+                )
+            ]
+            current_task.update_state(state="Sending email")
+            send_email_with_attachment(
+                email_address,
+                attachments,
+                document_request_key_,
+            )
+    else:
+        logger.debug("Cache hit for %s", docx_filepath_)
+    return document_request_key_

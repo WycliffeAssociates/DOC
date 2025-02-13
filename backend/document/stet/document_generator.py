@@ -3,6 +3,9 @@ from typing import Mapping, Sequence
 import mistune
 from celery import current_task
 from document.config import settings
+from document.domain import worker
+from document.domain.email import send_email_with_attachment, should_send_email
+from document.domain.model import Attachment
 from document.domain.parsing import (
     lookup_verse_text,
     split_chapter_into_verses,
@@ -27,11 +30,15 @@ from document.stet.docx_utils import (
 from document.stet.model import VerseEntry, WordEntry
 from document.stet.parser import get_word_entry_dtos
 from document.stet.util import extract_chapter_and_beyond
+from document.utils.file_utils import docx_filepath, file_needs_update
 from docx import Document  # type: ignore
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
+from pydantic import Json
+
+logger = settings.logger(__name__)
 
 
 def generate_docx_document(
@@ -296,3 +303,42 @@ def generate_docx(
     doc = add_lined_page_at_end(doc)
     reduce_spacing_around_tables(doc)
     doc.save(docx_filepath)
+
+
+@worker.app.task
+def generate_stet_docx_document(
+    lang0_code: str,
+    lang1_code: str,
+    email_address: str,
+) -> Json[str]:
+    logger.debug(
+        "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s",
+        lang0_code,
+        lang1_code,
+        email_address,
+    )
+    document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
+    docx_filepath_ = docx_filepath(document_request_key_)
+    if file_needs_update(docx_filepath_):
+        generate_docx_document(
+            lang0_code, lang1_code, document_request_key_, docx_filepath_
+        )
+        if should_send_email(email_address):
+            attachments = [
+                Attachment(
+                    filepath=docx_filepath_,
+                    mime_type=(
+                        "application",
+                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    ),
+                )
+            ]
+            current_task.update_state(state="Sending email")
+            send_email_with_attachment(
+                email_address,
+                attachments,
+                document_request_key_,
+            )
+    else:
+        logger.debug("Cache hit for %s", docx_filepath_)
+    return document_request_key_

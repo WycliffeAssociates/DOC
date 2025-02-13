@@ -1,12 +1,10 @@
 import json
-from os import scandir
-from typing import Sequence
 from fastapi import APIRouter
 
 import celery.states
 from celery.result import AsyncResult
 from document.config import settings
-from document.domain import document_generator, resource_lookup
+from document.passages import document_generator
 from document.passages import model
 
 from fastapi import HTTPException, status

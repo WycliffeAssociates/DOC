@@ -240,7 +240,7 @@ def split_usfm_by_chapters(
     check_usfm: bool = settings.CHECK_USFM,
     check_all_books_for_language: bool = settings.CHECK_ALL_BOOKS_FOR_LANGUAGE,
 ) -> tuple[str, list[str]]:
-    """
+    r"""
     Split the USFM text into chapters based on the \c marker
     """
     chapters = re.split(chapter_regex, usfm_text)
@@ -274,7 +274,7 @@ def split_usfm_by_chapters(
 
 
 def ensure_chapter_label(chapter_usfm_text: str) -> str:
-    """
+    r"""
     Modify USFM source to insert a chapter label, \cl, if it does not have one.
     """
     if not re.search(r"\\cl\s+", chapter_usfm_text):
@@ -325,7 +325,7 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
 
 
 def maybe_national_book_name(frontmatter: str) -> str:
-    """
+    r"""
     Rule for obtaining national book name:
 
     In USFM:
@@ -875,12 +875,12 @@ def books(
 def ensure_paragraph_before_verses(
     usfm_file: str,
     verse_content: str,
-    usfm_verse_one_file_regex: str = "^01\..*",
+    usfm_verse_one_file_regex: str = r"^01\..*",
     chapter_marker_not_on_own_line_regex: str = r"^\\c [0-9]+ .*|\n",
     chapter_marker_not_on_own_line_with_match_groups: str = r"(^\\c [0-9]+) (.*|\n)",
     chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
 ) -> str:
-    """
+    r"""
     If verse_content has a USFM chapter marker, \c, that is not on its
     own line (violation of the USFM spec) then repair this and
     additionally add a USFM paragraph marker, \p, so that when the USFM is
@@ -932,10 +932,10 @@ def attempt_to_make_usfm_parseable(
     #     "\id {} Unnamed translation\n".format(resource_lookup_dto.book_code.upper())
     # )
     # logger.info("Adding a USFM \\ide marker which the parser requires.")
-    usfm_content.append("\ide UTF-8\n")
+    usfm_content.append(r"\ide UTF-8\n")
     # logger.info("Adding a USFM \\h marker which the parser requires.")
     usfm_content.append(
-        "\h {}\n".format(bible_book_names[resource_lookup_dto.book_code])
+        r"\h {}\n".format(bible_book_names[resource_lookup_dto.book_code])
     )
     subdirs = [
         file
@@ -971,7 +971,8 @@ def attempt_to_make_usfm_parseable(
                 "Adding a USFM chapter marker for chapter: %s",
                 chapter_marker,
             )
-            chapter_usfm_content.append(f"\n\c {int(chapter_marker)}\n")
+            # Escaping the \c so that mypy doesn't complain
+            chapter_usfm_content.append(f"\n\\c {int(chapter_marker)}\n")
         for usfm_file in chapter_verse_files:
             with open(usfm_file, "r") as fin:
                 # logger.debug("usfm_file: %s", usfm_file)

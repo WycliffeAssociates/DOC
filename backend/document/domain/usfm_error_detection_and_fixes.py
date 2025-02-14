@@ -446,7 +446,7 @@ def replace_vv_with_v(content: str) -> str:
 
 
 def replace_sv_with_s(content: str) -> str:
-    """Replace \s\v, caused by other correcting functions, with \s"""
+    r"""Replace \s\v, caused by other correcting functions, with \s"""
     return re.sub(pattern_matchers["replace_sv_with_s"], "\\s", content)
 
 
@@ -456,7 +456,7 @@ def fix_space_after_section_marker(content: str) -> str:
 
 
 def replace_qv_with_q(content: str) -> str:
-    """Replace \q\v <integer>, caused by other correcting functions, with \q<integer>"""
+    r"""Replace \q\v <integer>, caused by other correcting functions, with \q<integer>"""
     return re.sub(pattern_matchers["replace_qv_with_q"], r"\\q\1", content)
 
 

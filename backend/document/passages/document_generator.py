@@ -18,7 +18,7 @@ from document.domain.resource_lookup import (
 )
 from document.passages.docx_utils import add_footer, add_header
 from document.passages.model import PassageDto, PassageReferenceDto
-from document.passages.parser import get_verse_text
+from document.passages.parser import verse_text_html
 from document.utils.file_utils import docx_filepath, file_needs_update
 from docx import Document  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
@@ -104,14 +104,14 @@ def generate_docx_document(
             and usfm_book_.resource_type_name
             == resource_type_codes_and_names[usfm_resource_type]
         ]
-        verse_text = ""
+        verse_text_html_ = ""
         selected_usfm_book = None
         if selected_usfm_books:
             selected_usfm_book = selected_usfm_books[0]
         if selected_usfm_book:
-            verse_text = get_verse_text(passage_ref_dto, selected_usfm_book)
+            verse_text_html_ = verse_text_html(passage_ref_dto, selected_usfm_book)
         else:
-            verse_text = ""
+            verse_text_html_ = ""
         non_book_name_portion_of_reference = (
             f"{passage_ref_dto.chapter_num}:{passage_ref_dto.verse_reference}"
         )
@@ -122,7 +122,7 @@ def generate_docx_document(
         )
         passage_dto = PassageDto(
             passage_reference=nationalized_reference,
-            passage_text=verse_text,
+            passage_text=verse_text_html_,
         )
         passages.append(passage_dto)
     current_task.update_state(state="Converting to Docx")

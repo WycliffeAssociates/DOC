@@ -3,9 +3,7 @@ from document.domain.parsing import lookup_verse_text
 from document.domain.model import USFMBook
 
 
-def get_verse_text(
-    passage_ref_dto: PassageReferenceDto, selected_usfm_book: USFMBook
-) -> str:
+def verse_text_html(passage_ref_dto: PassageReferenceDto, usfm_book: USFMBook) -> str:
     verse_text = []
     if "," in passage_ref_dto.verse_reference:
         verse_range_components = passage_ref_dto.verse_reference.split(",")
@@ -16,7 +14,7 @@ def get_verse_text(
                 upper_verse_ = int(verse__range_components[1])
                 for idx in range(lower_verse_, upper_verse_ + 1):
                     verse_text__ = lookup_verse_text(
-                        selected_usfm_book,
+                        usfm_book,
                         passage_ref_dto.chapter_num,
                         str(idx),
                     )
@@ -26,7 +24,7 @@ def get_verse_text(
                         )
             else:
                 verse_text__ = lookup_verse_text(
-                    selected_usfm_book,
+                    usfm_book,
                     passage_ref_dto.chapter_num,
                     verse_,
                 )
@@ -40,7 +38,7 @@ def get_verse_text(
         upper_verse = int(verse_range_components[1])
         for idx in range(lower_verse, upper_verse + 1):
             verse_text_ = lookup_verse_text(
-                selected_usfm_book,
+                usfm_book,
                 passage_ref_dto.chapter_num,
                 str(idx),
             )
@@ -50,7 +48,7 @@ def get_verse_text(
                 )
     else:
         verse_text___ = lookup_verse_text(
-            selected_usfm_book,
+            usfm_book,
             passage_ref_dto.chapter_num,
             passage_ref_dto.verse_reference.strip(),
         )

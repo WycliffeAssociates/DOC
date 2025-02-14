@@ -25,7 +25,7 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.domain.reviewers_guide.model import RGBook
+from document.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
 

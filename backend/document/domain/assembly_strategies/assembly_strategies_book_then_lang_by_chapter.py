@@ -26,7 +26,7 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.domain.reviewers_guide.model import RGBook
+from document.reviewers_guide.model import RGBook
 from document.utils.number_utils import is_even
 
 logger = settings.logger(__name__)

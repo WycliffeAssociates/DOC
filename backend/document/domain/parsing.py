@@ -40,8 +40,8 @@ from document.domain.model import (
     USFMChapter,
     VerseRef,
 )
-from document.domain.reviewers_guide.model import RGBook
-from document.domain.reviewers_guide.parser import get_rg_books
+from document.reviewers_guide.model import RGBook
+from document.reviewers_guide.parser import get_rg_books
 from document.domain.usfm_error_detection_and_fixes import (
     RESOURCES_WITH_USFM_DEFECTS,
     fix_usfm,

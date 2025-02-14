@@ -42,7 +42,7 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.domain.reviewers_guide.model import RGBook
+from document.reviewers_guide.model import RGBook
 from document.utils.docx_util import generate_docx_toc
 from document.utils.file_utils import (
     docx_filepath,

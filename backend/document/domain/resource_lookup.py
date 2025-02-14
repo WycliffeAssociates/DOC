@@ -26,7 +26,7 @@ from document.domain.model import (
     ResourceLookupDto,
 )
 from document.domain import parsing
-from document.domain.reviewers_guide.parser import (
+from document.reviewers_guide.parser import (
     find_bible_references,
     parse_bible_reference,
 )

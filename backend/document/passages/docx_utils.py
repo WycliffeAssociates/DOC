@@ -3,7 +3,7 @@ from typing import Optional
 
 from docx import Document  # type: ignore
 from docx.document import Document as DocxDocument  # type: ignore
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT  # type: ignore
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
 from docx.shared import Pt, RGBColor  # type: ignore

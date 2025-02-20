@@ -210,7 +210,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("pip", "reg", "rom"),
     ("pip", "reg", "mat"),
     ("pse-x-riauasli", "reg", "luk"),
-    ("rmn-x-yerliroman", "reg", "mat"),
+    # ("rmn-x-yerliroman", "reg", "mat"), # Feb 20, 2025: This language seems to not be served by data API. More investigation needed.
     # ("rmp", "ulb", "jas"),  # failed to fix; repo is cloned and source looks good other than duplicate \c markers, but we handle those (BUG?)
     ("ruc", "reg", "jhn"),
     ("ruc", "reg", "1ti"),

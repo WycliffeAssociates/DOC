@@ -57,7 +57,6 @@
               return otBooks.some((item) => item === element[0])
             })
             .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-
           // If otBookStore has contents, then assume we are coming
           // back here from the user clicking to edit their book
           // selections in the wizard basket, so we want to eliminate
@@ -67,7 +66,6 @@
               return otBookCodes.some((element) => element === item)
             })
           }
-
           // Filter set of all book codes into new testament
           // book codes.
           ntBookCodes = bookCodesAndNames
@@ -75,7 +73,6 @@
               return !otBooks.some((item) => item === element[0])
             })
             .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-
           // If ntBookStore has contents, then assume we are coming
           // back here from the user clicking to edit their book
           // selections in the wizard basket, so we want to eliminate
@@ -201,7 +198,10 @@
   $: console.log(`$otBookStore.length: ${$otBookStore.length}`)
   $: console.log(`$ntBookStore.length: ${$ntBookStore.length}`)
   $: {
-    if (($otBookStore.length > 0 && $ntBookStore.length === 0) || (otBookCodes && ntBookCodes && ntBookCodes.length === 0 && otBookCodes.length > 0)) {
+    if (
+      ($otBookStore.length > 0 && $ntBookStore.length === 0) ||
+      (otBookCodes && ntBookCodes && ntBookCodes.length === 0 && otBookCodes.length > 0)
+    ) {
       showOldTestament = true
     }
   }

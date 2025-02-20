@@ -1,0 +1,11 @@
+from fastapi.testclient import TestClient
+import pytest
+from document.config import settings
+from document.entrypoints.app import app
+
+
+@pytest.mark.focus
+def test_chapters_in_books() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.get("/chapters_in_books")
+        assert response.status_code == 200

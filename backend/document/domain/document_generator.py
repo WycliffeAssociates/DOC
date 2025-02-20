@@ -7,7 +7,6 @@ import subprocess
 import time
 from datetime import datetime
 from os.path import exists, join
-from pathlib import Path
 from typing import Any, Optional, Sequence, cast
 
 from celery import current_task
@@ -43,8 +42,7 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.domain.reviewers_guide.model import RGBook
-from document.stet import document_generator as stet_document_generator
+from document.reviewers_guide.model import RGBook
 from document.utils.docx_util import generate_docx_toc
 from document.utils.file_utils import (
     docx_filepath,
@@ -215,45 +213,6 @@ def generate_document(
                 attachments,
                 document_request_key_,
             )
-    return document_request_key_
-
-
-@worker.app.task
-def generate_stet_docx_document(
-    lang0_code: str,
-    lang1_code: str,
-    email_address: str,
-) -> Json[str]:
-    logger.debug(
-        "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s",
-        lang0_code,
-        lang1_code,
-        email_address,
-    )
-    document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
-    docx_filepath_ = docx_filepath(document_request_key_)
-    if file_needs_update(docx_filepath_):
-        stet_document_generator.generate_docx_document(
-            lang0_code, lang1_code, document_request_key_, docx_filepath_
-        )
-        if should_send_email(email_address):
-            attachments = [
-                Attachment(
-                    filepath=docx_filepath_,
-                    mime_type=(
-                        "application",
-                        "vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    ),
-                )
-            ]
-            current_task.update_state(state="Sending email")
-            send_email_with_attachment(
-                email_address,
-                attachments,
-                document_request_key_,
-            )
-    else:
-        logger.debug("Cache hit for %s", docx_filepath_)
     return document_request_key_
 
 
@@ -926,7 +885,6 @@ def get_languages_title_page_strings(
                 ", ".join(sorted(lang1_book_names)),
             )
     return lang0_title, lang1_title
-
 
 
 if __name__ == "__main__":

@@ -1,22 +1,30 @@
 """This module provides the FastAPI API definition."""
 
-import os
+from os import makedirs
+from os.path import join, exists
 import shutil
 
 from document.config import settings
 from document.domain import exceptions
 from document.entrypoints.routes import router as doc_router
 from document.entrypoints.stet.routes import router as stet_router
+from document.entrypoints.passages.routes import router as passages_router
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-ASSETS_DOWNLOAD_DIR = "/app/assets_download"
-BACKUP_DIR = "/app/"
-EN_RG_DIR = os.path.join(ASSETS_DOWNLOAD_DIR, "en_rg")
-DOCX_FILE_SRC = os.path.join(BACKUP_DIR, "en_rg_nt_survey.docx")
-DOCX_FILE_DEST = os.path.join(EN_RG_DIR, "en_rg_nt_survey.docx")
+# Docker container paths
+DOCKER_BASE_DIR = "/app"
+DOCKER_ASSETS_DOWNLOAD_DIR = join(DOCKER_BASE_DIR, settings.RESOURCE_ASSETS_DIR)
+DOCKER_EN_RG_DIR = join(DOCKER_ASSETS_DOWNLOAD_DIR, "en_rg")
+DOCKER_DOCX_FILE_SRC = join(DOCKER_BASE_DIR, "en_rg_nt_survey.docx")
+DOCKER_DOCX_FILE_DEST = join(DOCKER_EN_RG_DIR, "en_rg_nt_survey.docx")
+# Local filesystem paths
+LOCAL_ASSETS_DOWNLOAD_DIR = settings.RESOURCE_ASSETS_DIR
+LOCAL_EN_RG_DIR = join(LOCAL_ASSETS_DOWNLOAD_DIR, "en_rg")
+LOCAL_DOCX_FILE_SRC = "en_rg_nt_survey.docx"
+LOCAL_DOCX_FILE_DEST = join(LOCAL_EN_RG_DIR, "en_rg_nt_survey.docx")
 
 app = FastAPI()
 
@@ -83,11 +91,14 @@ async def initialize_assets() -> None:
     Ensures the en_rg directory and the .docx file exist in the assets_download volume.
     """
     try:
-        # Create the en_rg directory if it doesn't exist
-        os.makedirs(EN_RG_DIR, exist_ok=True)
-        # Copy the .docx file if it doesn't already exist
-        if not os.path.exists(DOCX_FILE_DEST):
-            shutil.copy(DOCX_FILE_SRC, DOCX_FILE_DEST)
+        if exists(DOCKER_BASE_DIR):  # Executing inside Docker container
+            makedirs(DOCKER_EN_RG_DIR, exist_ok=True)
+            if not exists(DOCKER_DOCX_FILE_DEST):
+                shutil.copy(DOCKER_DOCX_FILE_SRC, DOCKER_DOCX_FILE_DEST)
+        elif exists(LOCAL_ASSETS_DOWNLOAD_DIR):  # Executing outside Docker container
+            makedirs(LOCAL_EN_RG_DIR, exist_ok=True)
+            if not exists(LOCAL_DOCX_FILE_DEST):
+                shutil.copy(LOCAL_DOCX_FILE_SRC, LOCAL_DOCX_FILE_DEST)
         print("Assets initialized successfully.")
     except Exception as e:
         print(f"Error initializing assets: {e}")
@@ -95,3 +106,4 @@ async def initialize_assets() -> None:
 
 app.include_router(doc_router)
 app.include_router(stet_router)
+app.include_router(passages_router)

@@ -7,7 +7,11 @@ broker_url = os.environ.get("CELERY_BROKER_URL", "redis://")
 result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://")
 
 # List of modules to import when the Celery worker starts.
-imports = ("document.domain.document_generator",)
+imports = (
+    "document.domain.document_generator",
+    "document.passages.document_generator",
+    "document.stet.document_generator",
+)
 
 
 # task_annotations = {"document.domain.document_generator.main": {"rate_limit": "10/s"}}

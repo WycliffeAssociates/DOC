@@ -40,8 +40,8 @@ from document.domain.model import (
     USFMChapter,
     VerseRef,
 )
-from document.domain.reviewers_guide.model import RGBook
-from document.domain.reviewers_guide.parser import get_rg_books
+from document.reviewers_guide.model import RGBook
+from document.reviewers_guide.parser import get_rg_books
 from document.domain.usfm_error_detection_and_fixes import (
     RESOURCES_WITH_USFM_DEFECTS,
     fix_usfm,
@@ -229,7 +229,9 @@ def remove_links(html: str) -> str:
 
 
 def split_usfm_by_chapters(
-    resource_lookup_dto: ResourceLookupDto,
+    lang_code: str,
+    resource_type: str,
+    book_code: str,
     usfm_text: str,
     chapter_regex: str = r"\\c\s+\d+",
     resources_with_usfm_defects: Sequence[
@@ -238,7 +240,7 @@ def split_usfm_by_chapters(
     check_usfm: bool = settings.CHECK_USFM,
     check_all_books_for_language: bool = settings.CHECK_ALL_BOOKS_FOR_LANGUAGE,
 ) -> tuple[str, list[str]]:
-    """
+    r"""
     Split the USFM text into chapters based on the \c marker
     """
     chapters = re.split(chapter_regex, usfm_text)
@@ -250,13 +252,13 @@ def split_usfm_by_chapters(
         Determine if a chapter needs fixing based on configuration.
         """
         if check_all_books_for_language:
-            return resource_lookup_dto.lang_code in [
+            return lang_code in [
                 resource[0] for resource in resources_with_usfm_defects
             ]
         return (
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         ) in resources_with_usfm_defects
 
     updated_chapters = []
@@ -264,13 +266,15 @@ def split_usfm_by_chapters(
         stripped_chapter = chapter.lstrip()
         if stripped_chapter:
             if check_usfm and needs_fixing():
-                stripped_chapter = fix_usfm(stripped_chapter, resource_lookup_dto)
+                stripped_chapter = fix_usfm(
+                    stripped_chapter, lang_code, resource_type, book_code
+                )
             updated_chapters.append(marker + stripped_chapter)
     return frontmatter, updated_chapters
 
 
 def ensure_chapter_label(chapter_usfm_text: str) -> str:
-    """
+    r"""
     Modify USFM source to insert a chapter label, \cl, if it does not have one.
     """
     if not re.search(r"\\cl\s+", chapter_usfm_text):
@@ -321,7 +325,7 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
 
 
 def maybe_national_book_name(frontmatter: str) -> str:
-    """
+    r"""
     Rule for obtaining national book name:
 
     In USFM:
@@ -363,7 +367,12 @@ def usfm_book_content(
     content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
     content = read_file(content_file) if content_file else ""
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
-    frontmatter, chapters_ = split_usfm_by_chapters(resource_lookup_dto, content)
+    frontmatter, chapters_ = split_usfm_by_chapters(
+        resource_lookup_dto.lang_code,
+        resource_lookup_dto.resource_type,
+        resource_lookup_dto.book_code,
+        content,
+    )
     national_book_name = maybe_national_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
     for chapter in updated_chapters:
@@ -371,7 +380,6 @@ def usfm_book_content(
         chapter_html_content = usfm_chapter_html(
             chapter, resource_lookup_dto, chapter_num
         )
-        # TODO This function could be called in usfm_error_detection_and_fixes module instead
         cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
             chapter_html_content
         )
@@ -867,12 +875,12 @@ def books(
 def ensure_paragraph_before_verses(
     usfm_file: str,
     verse_content: str,
-    usfm_verse_one_file_regex: str = "^01\..*",
+    usfm_verse_one_file_regex: str = r"^01\..*",
     chapter_marker_not_on_own_line_regex: str = r"^\\c [0-9]+ .*|\n",
     chapter_marker_not_on_own_line_with_match_groups: str = r"(^\\c [0-9]+) (.*|\n)",
     chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
 ) -> str:
-    """
+    r"""
     If verse_content has a USFM chapter marker, \c, that is not on its
     own line (violation of the USFM spec) then repair this and
     additionally add a USFM paragraph marker, \p, so that when the USFM is
@@ -924,10 +932,10 @@ def attempt_to_make_usfm_parseable(
     #     "\id {} Unnamed translation\n".format(resource_lookup_dto.book_code.upper())
     # )
     # logger.info("Adding a USFM \\ide marker which the parser requires.")
-    usfm_content.append("\ide UTF-8\n")
+    usfm_content.append(r"\ide UTF-8\n")
     # logger.info("Adding a USFM \\h marker which the parser requires.")
     usfm_content.append(
-        "\h {}\n".format(bible_book_names[resource_lookup_dto.book_code])
+        r"\h {}\n".format(bible_book_names[resource_lookup_dto.book_code])
     )
     subdirs = [
         file
@@ -963,7 +971,8 @@ def attempt_to_make_usfm_parseable(
                 "Adding a USFM chapter marker for chapter: %s",
                 chapter_marker,
             )
-            chapter_usfm_content.append(f"\n\c {int(chapter_marker)}\n")
+            # Escaping the \c so that mypy doesn't complain
+            chapter_usfm_content.append(f"\n\\c {int(chapter_marker)}\n")
         for usfm_file in chapter_verse_files:
             with open(usfm_file, "r") as fin:
                 # logger.debug("usfm_file: %s", usfm_file)
@@ -988,7 +997,7 @@ def attempt_to_make_usfm_parseable(
     return filename
 
 
-# Used by STET
+# Used by STET and RG_PASSAGES
 def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> str:
     if chapter_num in usfm_book.chapters:
         chapter = usfm_book.chapters[chapter_num]
@@ -1006,7 +1015,7 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
     return ""
 
 
-# Used by STET
+# Used by STET and RG_PASSAGES
 def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # Sample HTML content with multiple verse elements
     # html_content = '''

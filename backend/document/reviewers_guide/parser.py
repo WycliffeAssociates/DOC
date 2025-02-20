@@ -6,7 +6,7 @@ from typing import Optional
 from docx import Document  # type: ignore
 from document.domain.bible_books import BOOK_NAMES
 from document.domain.model import LangDirEnum
-from document.domain.reviewers_guide.model import (
+from document.reviewers_guide.model import (
     RGBook,
     RGChapter,
     Part1Item,

@@ -7,8 +7,8 @@ from typing import Optional, Sequence
 
 from document.config import settings
 from document.domain.model import BCBook, LangDirEnum, TNBook, TQBook, USFMBook
-from document.domain.reviewers_guide.model import RGBook
-from document.domain.reviewers_guide.render_to_html import render_chapter
+from document.reviewers_guide.model import RGBook
+from document.reviewers_guide.render_to_html import render_chapter
 
 logger = settings.logger(__name__)
 

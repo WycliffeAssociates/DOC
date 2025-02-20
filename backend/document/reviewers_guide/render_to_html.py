@@ -1,7 +1,7 @@
 """Functions to render RGBook and its constituent parts to HTML"""
 
 from document.config import settings
-from document.domain.reviewers_guide.model import (
+from document.reviewers_guide.model import (
     BibleReference,
     ParsedText,
     Part1Item,

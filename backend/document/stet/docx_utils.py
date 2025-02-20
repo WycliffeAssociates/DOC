@@ -109,10 +109,15 @@ def add_checkbox_to_cell(cell: _Cell) -> None:
             tc.append(checkbox)
 
 
-def add_header(doc: Document, source_lang_code: str, target_lang_code: str) -> Document:
+def add_header(
+    doc: Document,
+    source_lang_code: str,
+    target_lang_code: str,
+    header_text: str = "Spiritual Terms Evaluation Tool",
+) -> Document:
     """
     Add a header with:
-    - 'Spiritual Terms Evaluation Tool' left.
+    - header_text left.
     - 'source_lang_code/target_lang_code' aligned to the right.
     """
     section = doc.sections[0]
@@ -120,7 +125,7 @@ def add_header(doc: Document, source_lang_code: str, target_lang_code: str) -> D
     header_paragraph = header.add_paragraph()
     header_paragraph.style.font.size = Pt(12)  # Optional: Adjust font size
     # Add the "Spiritual Terms Evaluation Tool" text with grey color
-    run1 = header_paragraph.add_run("Spiritual Terms Evaluation Tool")
+    run1 = header_paragraph.add_run(header_text)
     run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
     # Add a tab and the "EN/FR" text with grey color
     header_paragraph.add_run("\t")  # Add a tab for alignment

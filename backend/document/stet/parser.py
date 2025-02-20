@@ -2,6 +2,7 @@ import re
 
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
+from document.domain.resource_lookup import book_codes_for_lang_from_usfm_only
 from document.stet.model import VerseReferenceDto, WordEntryDto
 from document.stet.util import is_valid_int
 from docx import Document  # type: ignore
@@ -55,11 +56,32 @@ def get_word_entry_dtos(
                 if match:
                     # Extract references
                     book_name = match.group(1)
+                    # NOTE We expect a book name to be in nationalized
+                    # form according to the language of the source document (as indicated by
+                    # the source document's filename,
+                    # stet_[ietf_code].docx), but failing that we will look it up in English
+                    # just in case the translators haven't nationalized the book names in
+                    # the source document.
+                    #
+                    # Get book names for the language that has been
+                    # requested. Have those available and check them first.
+                    book_codes_and_names = book_codes_for_lang_from_usfm_only(
+                        lang0_code
+                    )
                     book_codes = [
                         book_code
-                        for book_code, book_name_ in book_names.items()
+                        for book_code, book_name_ in book_codes_and_names
                         if book_name_ == book_name
                     ]
+                    # If the names don't lookup in the nationalized
+                    # language then try to use English just in case
+                    # that was used instead.
+                    if not book_codes:
+                        book_codes = [
+                            book_code
+                            for book_code, book_name_ in book_names.items()
+                            if book_name_ == book_name
+                        ]
                     book_code = book_codes[0] if book_codes else None
                     if book_code:
                         book_codes_.append(book_code)

@@ -119,6 +119,24 @@ async def book_codes_for_lang(lang_code: str) -> Sequence[tuple[str, str]]:
     return resource_lookup.book_codes_for_lang(lang_code)
 
 
+@router.get("/book_codes_for_lang_from_usfm_only/{lang_code}")
+async def book_codes_for_lang_from_usfm_only(
+    lang_code: str,
+) -> Sequence[tuple[str, str]]:
+    """Return list of all available resource codes."""
+    return resource_lookup.book_codes_for_lang_from_usfm_only(lang_code)
+
+
+@router.get("/chapters_in_books")
+async def chapters_in_books() -> dict[str, list[int]]:
+    return resource_lookup.chapters_in_books()
+
+
+# @router.get("/chapters_in_book/{book_code}")
+# async def chapters_in_book(book_code: str) -> list[int]:
+#     return resource_lookup.chapters_in_book(book_code)
+
+
 @router.get("/health/status")
 async def health_status() -> tuple[dict[str, str], int]:
     """Ping-able server endpoint."""

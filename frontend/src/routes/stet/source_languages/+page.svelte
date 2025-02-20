@@ -15,8 +15,6 @@
     lang0CodeAndNameStore,
     lang1CodeAndNameStore,
     langCodesStore,
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore,
     langCountStore
   } from '$lib/stet/stores/LanguagesStore'
   import { getCode, getName } from '$lib/stet/utils'

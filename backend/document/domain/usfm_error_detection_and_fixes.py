@@ -446,7 +446,7 @@ def replace_vv_with_v(content: str) -> str:
 
 
 def replace_sv_with_s(content: str) -> str:
-    """Replace \s\v, caused by other correcting functions, with \s"""
+    r"""Replace \s\v, caused by other correcting functions, with \s"""
     return re.sub(pattern_matchers["replace_sv_with_s"], "\\s", content)
 
 
@@ -456,11 +456,16 @@ def fix_space_after_section_marker(content: str) -> str:
 
 
 def replace_qv_with_q(content: str) -> str:
-    """Replace \q\v <integer>, caused by other correcting functions, with \q<integer>"""
+    r"""Replace \q\v <integer>, caused by other correcting functions, with \q<integer>"""
     return re.sub(pattern_matchers["replace_qv_with_q"], r"\\q\1", content)
 
 
-def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
+def fix_usfm(
+    usfm_content: str,
+    lang_code: str,
+    resource_type: str,
+    book_code: str,
+) -> str:
     """
     Detect and correct many USFM structural issues in USFM source.
     """
@@ -493,9 +498,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = fix_dot_after_verse_number(corrected_usfm_content)
     if match := compiled_patterns["fix_verse_marker_without_v"].search(
@@ -510,9 +515,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = fix_verse_marker_without_v(corrected_usfm_content)
     if match := compiled_patterns["fix_missing_space_before_number"].search(
@@ -527,9 +532,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = fix_missing_space_before_number(corrected_usfm_content)
     if match := compiled_patterns["fix_missing_space_after_number"].search(
@@ -544,9 +549,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = fix_missing_space_after_number(corrected_usfm_content)
     if match := compiled_patterns["fix_missing_space_before_verse_marker"].search(
@@ -561,9 +566,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = fix_missing_space_before_verse_marker(
             corrected_usfm_content
@@ -580,9 +585,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = fix_standalone_verse_numbers(corrected_usfm_content)
     if match := compiled_patterns["replace_n_with_v"].search(corrected_usfm_content):
@@ -595,9 +600,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = replace_n_with_v(corrected_usfm_content)
     if match := compiled_patterns["replace_vv_with_v"].search(corrected_usfm_content):
@@ -610,9 +615,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = replace_vv_with_v(corrected_usfm_content)
     if match := compiled_patterns["replace_sv_with_s"].search(corrected_usfm_content):
@@ -625,9 +630,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = replace_sv_with_s(corrected_usfm_content)
     if match := compiled_patterns["fix_space_after_section_marker"].search(
@@ -642,9 +647,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = fix_space_after_section_marker(corrected_usfm_content)
     if match := compiled_patterns["replace_qv_with_q"].search(corrected_usfm_content):
@@ -657,9 +662,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = replace_qv_with_q(corrected_usfm_content)
     if match := compiled_patterns["replace_cc_with_c"].search(corrected_usfm_content):
@@ -672,9 +677,9 @@ def fix_usfm(usfm_content: str, resource_lookup_dto: ResourceLookupDto) -> str:
                     len(corrected_usfm_content), match.end() + 5
                 )
             ],
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+            lang_code,
+            resource_type,
+            book_code,
         )
         corrected_usfm_content = replace_cc_with_c(corrected_usfm_content)
     return corrected_usfm_content

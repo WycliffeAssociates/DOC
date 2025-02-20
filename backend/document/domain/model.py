@@ -127,6 +127,18 @@ class ResourceRequest(BaseModel):
     book_code: str
 
 
+class PassageRequest(BaseModel):
+    """
+    This class is used to encode a request for a bible passage.
+    """
+
+    lang_code: str
+    resource_type: str
+    book_code: str
+    chapter_num: int
+    verse_ref: str
+
+
 @final
 class DocumentRequestSourceEnum(str, Enum):
     """

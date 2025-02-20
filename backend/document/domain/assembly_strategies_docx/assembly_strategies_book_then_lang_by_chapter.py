@@ -27,7 +27,7 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.domain.reviewers_guide.model import RGBook
+from document.reviewers_guide.model import RGBook
 from docx import Document  # type: ignore
 from docxcompose.composer import Composer  # type: ignore
 

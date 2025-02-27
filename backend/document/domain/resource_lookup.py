@@ -31,6 +31,7 @@ from document.reviewers_guide.parser import (
     parse_bible_reference,
 )
 from document.utils.file_utils import file_needs_update, make_dir, read_file
+from document.utils.text_utils import normalize_national_book_name
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -745,7 +746,7 @@ def book_codes_for_lang(
     ('gen', 'Genesis')
     """
     data = fetch_source_data()
-    book_codes_and_names_nationalized = []
+    book_codes_and_names_nationalized: list[tuple[str, str]] = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
     try:
@@ -767,9 +768,6 @@ def book_codes_for_lang(
                 ]:
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
                     clone_git_repo(url, resource_filepath)
-                    book_codes_and_names_nationalized.extend(
-                        book_codes_and_names_from_manifest(resource_filepath)
-                    )
                     if (
                         len(repo_components) == 2
                         and repo_components[-1] in usfm_resource_types
@@ -794,6 +792,44 @@ def book_codes_for_lang(
                                 (book_code, national_book_name)
                             )
                         break
+                    if (
+                        len(repo_components) > 2
+                        and repo_components[-1] in usfm_resource_types
+                    ):
+                        book_name_file = f"{resource_filepath}/front/title.txt"
+                        if exists(book_name_file):
+                            with open(book_name_file, "r") as fin:
+                                book_name = fin.read()
+                                national_book_name = normalize_national_book_name(
+                                    book_name
+                                )
+                                book_code = repo_components[1]
+                                book_codes_and_names_nationalized.append(
+                                    (book_code, national_book_name)
+                                )
+                # NOTE The following commented out code would work, but
+                # json manifest's sometimes have book names that do
+                # not align with the book names found in USFM and are
+                # sometimes not the most commonly used book names. Therefore,
+                # it is often better to not use the manifest book names.
+                # # Didn't get book codes and names from USFM, so now
+                # # let's try to get it from manifest
+                # if not book_codes_and_names_nationalized or (
+                #     book_codes_and_names_nationalized
+                #     and len(
+                #         [
+                #             (ietf, name)
+                #             for ietf, name in book_codes_and_names_nationalized
+                #             if name == ""
+                #         ]
+                #     )
+                #     > 0
+                # ):  # One or more book names are empty.
+                #     book_codes_and_names_nationalized.extend(
+                #         book_codes_and_names_from_manifest(resource_filepath)
+                #     )
+                # NOTE Didn't find book names in USFM, so get them
+                # from the USFM or other resource (TN, TQ) file paths
                 if not book_codes_and_names_nationalized or (
                     book_codes_and_names_nationalized
                     and len(
@@ -804,7 +840,7 @@ def book_codes_for_lang(
                         ]
                     )
                     > 0
-                ):  # One or more book names are empty. Sometimes a manifest doesn't provide all book names
+                ):  # One or more book names are empty.
                     if len(repo_components) > 2:
                         book_code = repo_components[1]
                         if book_code in book_names:
@@ -1031,6 +1067,21 @@ def book_codes_for_lang_from_usfm_only(
                                 (book_code, national_book_name)
                             )
                         break
+                    if (
+                        len(repo_components) > 2
+                        and repo_components[-1] in usfm_resource_types
+                    ):
+                        book_name_file = f"{resource_filepath}/front/title.txt"
+                        if exists(book_name_file):
+                            with open(book_name_file, "r") as fin:
+                                book_name = fin.read()
+                                national_book_name = normalize_national_book_name(
+                                    book_name
+                                )
+                                book_code = repo_components[1]
+                                book_codes_and_names_nationalized.append(
+                                    (book_code, national_book_name)
+                                )
                 if not book_codes_and_names_nationalized or (
                     book_codes_and_names_nationalized
                     and len(

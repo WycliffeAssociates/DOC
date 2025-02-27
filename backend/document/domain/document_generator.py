@@ -167,7 +167,7 @@ def generate_document(
         if usfm_books:
             content = check_content_for_issues(content)
         content = create_title_page_and_wrap_in_template(
-            content, document_request, found_resource_lookup_dtos
+            content, document_request, found_resource_lookup_dtos, usfm_books
         )
         write_html_content_to_file(
             content,
@@ -306,7 +306,9 @@ def generate_docx_document(
         #
         # Construct sensical phrases to display for title1 and title2 on first
         # page of Word document.
-        title1, title2 = get_languages_title_page_strings(found_resource_lookup_dtos)
+        title1, title2 = get_languages_title_page_strings(
+            found_resource_lookup_dtos, usfm_books
+        )
         current_task.update_state(state="Converting to Docx")
         convert_html_to_docx(
             html_filepath_,
@@ -525,8 +527,11 @@ def create_title_page_and_wrap_in_template(
     content: str,
     document_request: DocumentRequest,
     found_resource_lookup_dtos: Sequence[ResourceLookupDto],
+    usfm_books: Sequence[USFMBook],
 ) -> str:
-    title1, title2 = get_languages_title_page_strings(found_resource_lookup_dtos)
+    title1, title2 = get_languages_title_page_strings(
+        found_resource_lookup_dtos, usfm_books
+    )
     title3 = "Formatted for Translators"
     header = document_html_header(
         document_request.assembly_layout_kind,
@@ -829,6 +834,7 @@ def check_content_for_issues(
 
 def get_languages_title_page_strings(
     resource_lookup_dtos: Sequence[ResourceLookupDto],
+    usfm_books: Sequence[USFMBook],
 ) -> tuple[str, str]:
     """
     Return a list of tuples with the following form:
@@ -850,40 +856,71 @@ def get_languages_title_page_strings(
     ]
     lang0_book_names = []
     lang0_resource_type_names = []
-    for lang0_dto in language0_resource_lookup_dtos:
-        book_name = BOOK_NAMES[lang0_dto.book_code]
-        if book_name and book_name not in lang0_book_names:
-            lang0_book_names.append(book_name)
-        if lang0_dto.resource_type_name not in lang0_resource_type_names:
-            lang0_resource_type_names.append(lang0_dto.resource_type_name)
     lang0_title = ""
-    if language0_resource_lookup_dtos:
+    lang1_title = ""
+    lang1_book_names = []
+    lang1_resource_type_names = []
+    if usfm_books:
+        if (
+            usfm_books[0].national_book_name
+            and usfm_books[0].national_book_name not in lang0_book_names
+        ):
+            lang0_book_names.append(usfm_books[0].national_book_name)
+        if usfm_books[0].resource_type_name not in lang0_resource_type_names:
+            lang0_resource_type_names.append(usfm_books[0].resource_type_name)
+        lang0_title = "{}: {} for {}".format(
+            usfm_books[0].lang_name,
+            ", ".join(sorted(lang0_resource_type_names)),
+            ", ".join(sorted(lang0_book_names)),
+        )
+    elif language0_resource_lookup_dtos:
+        for lang0_dto in language0_resource_lookup_dtos:
+            book_name = BOOK_NAMES[lang0_dto.book_code]
+            if book_name and book_name not in lang0_book_names:
+                lang0_book_names.append(book_name)
+            if lang0_dto.resource_type_name not in lang0_resource_type_names:
+                lang0_resource_type_names.append(lang0_dto.resource_type_name)
         lang0_title = "{}: {} for {}".format(
             language0_resource_lookup_dtos[0].lang_name,
             ", ".join(sorted(lang0_resource_type_names)),
             ", ".join(sorted(lang0_book_names)),
         )
-    lang1_title = ""
     if len(lang_codes) > 1:
-        language1_resource_lookup_dtos = [
-            resource_lookup_dto
-            for resource_lookup_dto in resource_lookup_dtos
-            if resource_lookup_dto.lang_code == lang_codes[1]
-        ]
-        lang1_book_names = []
-        lang1_resource_type_names = []
-        for lang1_dto in language1_resource_lookup_dtos:
-            book_name = BOOK_NAMES[lang1_dto.book_code]
-            if book_name and book_name not in lang1_book_names:
-                lang1_book_names.append(book_name)
-            if lang1_dto.resource_type_name not in lang1_resource_type_names:
-                lang1_resource_type_names.append(lang1_dto.resource_type_name)
-        if language1_resource_lookup_dtos:
-            lang1_title = "{}: {} for {}".format(
-                language1_resource_lookup_dtos[0].lang_name,
-                ", ".join(sorted(lang1_resource_type_names)),
-                ", ".join(sorted(lang1_book_names)),
-            )
+        if len(usfm_books) > 1:
+            language1_usfm_books = [
+                usfm_book
+                for usfm_book in usfm_books
+                if usfm_book.lang_code == lang_codes[1]
+            ]
+            for lang1_usfm_book in language1_usfm_books:
+                book_name = lang1_usfm_book.national_book_name
+                if book_name and book_name not in lang1_book_names:
+                    lang1_book_names.append(book_name)
+                if lang1_usfm_book.resource_type_name not in lang1_resource_type_names:
+                    lang1_resource_type_names.append(lang1_usfm_book.resource_type_name)
+                lang1_title = "{}: {} for {}".format(
+                    language1_usfm_books[0].lang_name,
+                    ", ".join(sorted(lang1_resource_type_names)),
+                    ", ".join(sorted(lang1_book_names)),
+                )
+        else:
+            language1_resource_lookup_dtos = [
+                resource_lookup_dto
+                for resource_lookup_dto in resource_lookup_dtos
+                if resource_lookup_dto.lang_code == lang_codes[1]
+            ]
+            for lang1_dto in language1_resource_lookup_dtos:
+                book_name = BOOK_NAMES[lang1_dto.book_code]
+                if book_name and book_name not in lang1_book_names:
+                    lang1_book_names.append(book_name)
+                if lang1_dto.resource_type_name not in lang1_resource_type_names:
+                    lang1_resource_type_names.append(lang1_dto.resource_type_name)
+            if language1_resource_lookup_dtos:
+                lang1_title = "{}: {} for {}".format(
+                    language1_resource_lookup_dtos[0].lang_name,
+                    ", ".join(sorted(lang1_resource_type_names)),
+                    ", ".join(sorted(lang1_book_names)),
+                )
     return lang0_title, lang1_title
 
 

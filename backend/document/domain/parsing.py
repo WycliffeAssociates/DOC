@@ -54,6 +54,7 @@ from document.utils.tw_utils import (
     translation_words_dict,
     tw_resource_dir,
 )
+from document.utils.text_utils import normalize_national_book_name
 
 logger = settings.logger(__name__)
 
@@ -186,8 +187,9 @@ def usfm_asset_file(
             usfm_files, resource_lookup_dto.book_code
         )
     if filtered_usfm_files:
+        logger.debug("filtered_usfm_files: %s", filtered_usfm_files)
         # A USFM git repo can have each USFM chapter in a separate directory and
-        # each verse in a separate file in that directory. We concatenate the
+        # each verse span in a separate file in that directory. We concatenate the
         # book's USFM files into one USFM file.
         if len(filtered_usfm_files) > 1:
             return attempt_to_make_usfm_parseable(resource_dir, resource_lookup_dto)
@@ -234,6 +236,7 @@ def split_usfm_by_chapters(
     book_code: str,
     usfm_text: str,
     chapter_regex: str = r"\\c\s+\d+",
+    chapter_label_regex: str = r"\\cl\s+\S+\s+\d+",
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
@@ -243,9 +246,16 @@ def split_usfm_by_chapters(
     r"""
     Split the USFM text into chapters based on the \c marker
     """
-    chapters = re.split(chapter_regex, usfm_text)
-    chapter_markers = re.findall(chapter_regex, usfm_text)
+    chapter_markers = re.findall(chapter_label_regex, usfm_text)
+    chapters = []
+    if chapter_markers:
+        chapters = re.split(chapter_label_regex, usfm_text)
+    else:
+        chapter_markers = re.findall(chapter_regex, usfm_text)
+        chapters = re.split(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
+
+    logger.debug("chapter_markers: %s", chapter_markers)
 
     def needs_fixing() -> bool:
         """
@@ -263,6 +273,7 @@ def split_usfm_by_chapters(
 
     updated_chapters = []
     for marker, chapter in zip(chapter_markers, chapters):
+        logger.debug("chapter marker: %s", marker)
         stripped_chapter = chapter.lstrip()
         if stripped_chapter:
             if check_usfm and needs_fixing():
@@ -277,8 +288,9 @@ def ensure_chapter_label(chapter_usfm_text: str) -> str:
     r"""
     Modify USFM source to insert a chapter label, \cl, if it does not have one.
     """
-    if not re.search(r"\\cl\s+", chapter_usfm_text):
+    if not re.search(r"\\cl\s+\S+\s+\d+", chapter_usfm_text):
         if match := re.search(r"\\c\s+(\d+)", chapter_usfm_text):
+            logger.debug(r"\c was found")
             chapter_num = match.group(1)
             updated_chapter_usfm_text = re.sub(
                 r"(\\c\s+\d+)", rf"\1\\cl Chapter {chapter_num}\n", chapter_usfm_text
@@ -287,14 +299,23 @@ def ensure_chapter_label(chapter_usfm_text: str) -> str:
     return chapter_usfm_text
 
 
-def get_chapter_num(chapter_usfm_text: str) -> int:
+def get_chapter_num(
+    chapter_usfm_text: str,
+    idx: int,
+    chapter_regex: str = r"\\c\s+(\d+)",
+    chapter_label_regex: str = r"\\cl\s+\S+(\d+)",
+) -> int:
     """Get the chapter number from the USFM chapter source text."""
-    if match := re.search(r"\\c\s+(\d+)", chapter_usfm_text):
+    if match := re.search(chapter_label_regex, chapter_usfm_text):
         chapter_num = match.group(1)
         return int(chapter_num)
-    raise MissingChapterMarkerError(
-        message=f"Missing chapter number for chapter text: {chapter_usfm_text}"
-    )
+    elif match := re.search(chapter_regex, chapter_usfm_text):
+        chapter_num = match.group(1)
+        return int(chapter_num)
+    return idx
+    # raise MissingChapterMarkerError(
+    #     message=f"Missing chapter number for chapter text: {chapter_usfm_text}"
+    # )
 
 
 def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str:
@@ -351,7 +372,8 @@ def maybe_national_book_name(frontmatter: str) -> str:
         or frontmatter_data.get("toc2")
         or ""
     )
-    return national_book_name.strip()
+    national_book_name = normalize_national_book_name(national_book_name)
+    return national_book_name
 
 
 def usfm_book_content(
@@ -375,8 +397,12 @@ def usfm_book_content(
     )
     national_book_name = maybe_national_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
-    for chapter in updated_chapters:
-        chapter_num = get_chapter_num(chapter)
+    for idx, chapter in enumerate(updated_chapters):
+        chapter_num = get_chapter_num(chapter, idx)
+        logger.debug("chapter[0:30]: %s", chapter[0:30])
+        if re.search(r"\\cl\s+\S+\s+\d+", chapter):
+            logger.debug(r"Detected \cl, so removing \c")
+            chapter = re.sub(r"\\c\s+\d+", "", chapter)
         chapter_html_content = usfm_chapter_html(
             chapter, resource_lookup_dto, chapter_num
         )
@@ -932,11 +958,23 @@ def attempt_to_make_usfm_parseable(
     #     "\id {} Unnamed translation\n".format(resource_lookup_dto.book_code.upper())
     # )
     # logger.info("Adding a USFM \\ide marker which the parser requires.")
-    usfm_content.append(r"\ide UTF-8\n")
+    usfm_content.append(r"\ide UTF-8" + "\n")
     # logger.info("Adding a USFM \\h marker which the parser requires.")
-    usfm_content.append(
-        r"\h {}\n".format(bible_book_names[resource_lookup_dto.book_code])
-    )
+    # Get the book name from the repo/front/title.txt instead and
+    # only use the following if that fails
+    book_name_file = f"{resource_dir}/front/title.txt"
+    if exists(book_name_file):
+        logger.debug(
+            "book_name_file: %s exists, getting book name from it", book_name_file
+        )
+        with open(book_name_file, "r") as fin:
+            book_name = fin.read()
+            national_book_name = normalize_national_book_name(book_name)
+            usfm_content.append(rf"\h {national_book_name}" + "\n")
+    else:
+        usfm_content.append(
+            rf"\h {bible_book_names[resource_lookup_dto.book_code]}" + "\n"
+        )
     subdirs = [
         file
         for file in scandir(resource_dir)
@@ -956,23 +994,35 @@ def attempt_to_make_usfm_parseable(
                 and (file.name.endswith(".usfm") or file.name.endswith(".txt"))
             ]
         )
+        chapter_word = ""
         if chapter_verse_files:
+            chapter_word_file = f"{chapter_dir.path}/title.txt"
+            logger.debug("chapter_word_file: %s", chapter_word_file)
+            if exists(chapter_word_file):
+                with open(chapter_word_file, "r") as fin:
+                    chapter_word = fin.read()
+                    chapter_word = chapter_word.strip()
+                    logger.debug("chapter_word: %s", chapter_word)
+                    chapter_usfm_content.append("\n" + rf"\cl {chapter_word} " + "\n")
             try:
-                chapter_marker = int(str(chapter_dir.name))
+                chapter_num = int(str(chapter_dir.name))
             except ValueError:
                 logger.debug(
                     "%s is not a valid chapter number, assigning -999 as chapter marker",
                     str(chapter_dir.name),
                 )
-                chapter_marker = (
+                chapter_num = (
                     -999
                 )  # The chapter number in source text was not a parseable integer, so we use this as a sentinal and parseable integer
-            logger.debug(
-                "Adding a USFM chapter marker for chapter: %s",
-                chapter_marker,
-            )
-            # Escaping the \c so that mypy doesn't complain
-            chapter_usfm_content.append(f"\n\\c {int(chapter_marker)}\n")
+            if not chapter_word:
+                logger.info(
+                    r"chapter_word was found, so we are NOT adding \c since \cl was already added"
+                )
+                logger.debug(
+                    "Adding a USFM chapter number for chapter: %s",
+                    chapter_num,
+                )
+                chapter_usfm_content.append("\n" + rf"\c {int(chapter_num)} " + "\n")
         for usfm_file in chapter_verse_files:
             with open(usfm_file, "r") as fin:
                 # logger.debug("usfm_file: %s", usfm_file)
@@ -981,8 +1031,6 @@ def attempt_to_make_usfm_parseable(
                 chapter_usfm_content.append(verse_content)
                 chapter_usfm_content.append("\n")
         usfm_content.extend(chapter_usfm_content)
-    # Write the concatenated USFM content to a
-    # non-clobberable filename.
     filename = join(
         resource_dir,
         "{}_{}_{}.usfm".format(

@@ -152,7 +152,9 @@
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
       {#if !bookCodesAndNames || bookCodesAndNames.length === 0}
         <div class="ml-4">
-          <ProgressIndicator />
+          <ProgressIndicator
+            labelString="Analyzing books available for language chosen, please be patient..."
+          />
         </div>
       {:else}
         <BibleReferenceSelector

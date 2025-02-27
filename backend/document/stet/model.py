@@ -18,6 +18,7 @@ class WordEntry:
     strongs_numbers: str = ""
     definition: str = ""
     verses: list[VerseEntry] = field(default_factory=list)
+    bolded_phrases: list[str] = field(default_factory=list)
 
 
 @final
@@ -39,6 +40,7 @@ class WordEntryDto:
     strongs_numbers: str = ""
     definition: str = ""
     verse_ref_dtos: list[VerseReferenceDto] = field(default_factory=list)
+    bolded_phrases: list[str] = field(default_factory=list)
 
 
 @final

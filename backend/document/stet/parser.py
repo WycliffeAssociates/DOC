@@ -24,7 +24,7 @@ def get_word_entry_dtos(
         for row in table.rows:
             # Create entry item
             word_entry_dto = WordEntryDto()
-            # Extract data from word field
+            # Extract word from 1st column
             match = re.match(r"(.*)(\n)?(.*)?", row.cells[0].text)
             if not match:
                 raise ValueError(f"Couldn't parse word: {row.cells[0].text}")
@@ -34,6 +34,7 @@ def get_word_entry_dtos(
             word_entry_dto.strongs_numbers = raw_strongs.strip()
             definition = ""
             previous_paragraph_style_name = ""
+            # Get definition from 2nd column
             for paragraph in row.cells[1].paragraphs:
                 text = paragraph.text.strip()
                 if previous_paragraph_style_name not in (paragraph.style.name, ""):
@@ -46,7 +47,7 @@ def get_word_entry_dtos(
                         definition += f"{paragraph.text.strip()}\n"
                 previous_paragraph_style_name = paragraph.style.name
             word_entry_dto.definition = definition
-            # process verse list
+            # Get verse references from 3rd column
             for reference in row.cells[2].text.split("\n"):
                 reference_ = reference.strip()
                 match = re.match(r"^(.*) (\d+):([0-9,\- ]+)\s?(\(.*\))?$", reference_)
@@ -56,14 +57,16 @@ def get_word_entry_dtos(
                 if match:
                     # Extract references
                     book_name = match.group(1)
+                    # Some languages, e.g., bem, have a \n in the book name
+                    book_name = book_name.replace("\n", "")
                     # NOTE We expect a book name to be in nationalized
                     # form according to the language of the source document (as indicated by
                     # the source document's filename,
                     # stet_[ietf_code].docx), but failing that we will look it up in English
                     # just in case the translators haven't nationalized the book names in
-                    # the source document.
+                    # the source document or its manifest.
                     #
-                    # Get book names for the language that has been
+                    # Get book codes and names for the language that has been
                     # requested. Have those available and check them first.
                     book_codes_and_names = book_codes_for_lang_from_usfm_only(
                         lang0_code
@@ -122,5 +125,8 @@ def get_word_entry_dtos(
                         verse_refs=valid_verse_refs,
                     )
                     word_entry_dto.verse_ref_dtos.append(verse_reference_dto)
+            # If 4th column exists, get bolded words from it
+            if 3 in row.cells and row.cells[3].text:
+                word_entry_dto.bolded_phrases = row.cells[3].text.split(",")
             word_entry_dtos.append(word_entry_dto)
     return word_entry_dtos, list(set(book_codes_))

@@ -147,7 +147,9 @@ def add_header(
     return doc
 
 
-def add_highlighted_html_to_docx(html: str, paragraph: Paragraph, keyword: str) -> None:
+def add_highlighted_html_to_docx_for_word(
+    html: str, paragraph: Paragraph, keyword: str
+) -> None:
     """
     Convert HTML to DOCX and highlight occurrences of a keyword in bold.
     :param html: The HTML string to convert.
@@ -178,6 +180,48 @@ def add_highlighted_html_to_docx(html: str, paragraph: Paragraph, keyword: str) 
         # Add the remaining text
         if start < len(text):
             paragraph.add_run(text[start:])
+
+
+def add_highlighted_html_to_docx_for_words(
+    html: str, paragraph: Paragraph, keywords: list[str]
+) -> None:
+    """
+    Convert HTML to DOCX and highlight occurrences of keywords in bold.
+    :param html: The HTML string to convert.
+    :param paragraph: The DOCX paragraph where the content will be added.
+    :param keywords: The list of keywords to highlight in bold.
+    """
+    # Use HtmlToDocx to convert the HTML to a temporary document
+    html_to_docx = HtmlToDocx()
+    temp_doc = Document()
+    html_to_docx.add_html_to_document(html, temp_doc)
+    # Convert keywords to lowercase for case-insensitive matching
+    keywords_lower = {kw.lower(): kw for kw in keywords}
+    # Parse through all paragraphs in the temporary document
+    for temp_paragraph in temp_doc.paragraphs:
+        text = temp_paragraph.text.strip()
+        start = 0
+        while start < len(text):
+            # Find the next occurrence of any keyword
+            next_idx, found_keyword = min(
+                (
+                    (text.lower().find(kw, start), kw)
+                    for kw in keywords_lower
+                    if text.lower().find(kw, start) != -1
+                ),
+                default=(-1, None),
+                key=lambda x: x[0],
+            )
+            if next_idx == -1 or found_keyword is None:
+                paragraph.add_run(text[start:])
+                break
+            # Add text before the keyword
+            if next_idx > start:
+                paragraph.add_run(text[start:next_idx])
+            # Add the bold keyword
+            bold_run = paragraph.add_run(text[next_idx : next_idx + len(found_keyword)])
+            bold_run.bold = True
+            start = next_idx + len(found_keyword)
 
 
 def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:

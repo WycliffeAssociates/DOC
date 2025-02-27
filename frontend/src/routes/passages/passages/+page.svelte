@@ -1,5 +1,4 @@
 <script lang="ts">
-
   import type { PassageReferenceDto } from '$lib/passages/models'
   import BibleReferenceSelector from './BibleReferenceSelector.svelte'
   import { onMount } from 'svelte'
@@ -76,12 +75,11 @@
   }
 
   $: if (bookCodesAndNames && bookCodesAndNames.length > 0) {
-
-      for (let passageReferenceDto of $passagesStore) {
-        if (!bookCodesAndNames.map(([bookCode]) => bookCode).includes(passageReferenceDto.bookCode)) {
-          removePassage(passageReferenceDto.id)
-        }
+    for (let passageReferenceDto of $passagesStore) {
+      if (!bookCodesAndNames.map(([bookCode]) => bookCode).includes(passageReferenceDto.bookCode)) {
+        removePassage(passageReferenceDto.id)
       }
+    }
   }
 
   let selectedBookCode: string = ''

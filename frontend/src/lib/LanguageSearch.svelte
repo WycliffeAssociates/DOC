@@ -1,7 +1,6 @@
 <script lang="ts">
   import Modal from '$lib/Modal.svelte'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
-  import { getCode, getName } from '$lib/utils'
   import { langCountStore } from '$lib/stores/LanguagesStore'
 
   export let langCodeNameAndTypes: Array<[string, string, boolean]>

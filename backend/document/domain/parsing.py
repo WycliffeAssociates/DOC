@@ -54,7 +54,10 @@ from document.utils.tw_utils import (
     translation_words_dict,
     tw_resource_dir,
 )
-from document.utils.text_utils import normalize_national_book_name
+from document.utils.text_utils import (
+    chapter_label_sans_numeric_part,
+    normalize_localized_book_name,
+)
 
 logger = settings.logger(__name__)
 
@@ -63,6 +66,10 @@ H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
 # fmt: off
 BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
 # fmt: on
+
+CHAPTER_LABEL_REGEX = r"\\cl\s+.*"
+CHAPTER_REGEX = r"\\c\s+\d+"
+CHAPTER_CAPTURE_REGEX = r"\\c\s+(\d+)"
 
 
 def find_usfm_files(
@@ -235,8 +242,8 @@ def split_usfm_by_chapters(
     resource_type: str,
     book_code: str,
     usfm_text: str,
-    chapter_regex: str = r"\\c\s+\d+",
-    chapter_label_regex: str = r"\\cl\s+\S+\s+\d+",
+    chapter_regex: str = CHAPTER_REGEX,
+    chapter_label_regex: str = CHAPTER_LABEL_REGEX,
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
@@ -280,20 +287,28 @@ def split_usfm_by_chapters(
                 stripped_chapter = fix_usfm(
                     stripped_chapter, lang_code, resource_type, book_code
                 )
-            updated_chapters.append(marker + stripped_chapter)
+                updated_chapter = marker + "\n" + stripped_chapter
+                logger.debug("updated_chapter[0:40]: %s", updated_chapter[0:40])
+            updated_chapters.append(marker + "\n" + stripped_chapter)
     return frontmatter, updated_chapters
 
 
-def ensure_chapter_label(chapter_usfm_text: str) -> str:
+def ensure_chapter_label(
+    chapter_usfm_text: str,
+    chapter_label_regex: str = CHAPTER_LABEL_REGEX,
+    chapter_regex: str = CHAPTER_CAPTURE_REGEX,
+) -> str:
     r"""
     Modify USFM source to insert a chapter label, \cl, if it does not have one.
     """
-    if not re.search(r"\\cl\s+\S+\s+\d+", chapter_usfm_text):
-        if match := re.search(r"\\c\s+(\d+)", chapter_usfm_text):
+    if not re.search(chapter_label_regex, chapter_usfm_text):
+        if match := re.search(chapter_regex, chapter_usfm_text):
             logger.debug(r"\c was found")
             chapter_num = match.group(1)
             updated_chapter_usfm_text = re.sub(
-                r"(\\c\s+\d+)", rf"\1\\cl Chapter {chapter_num}\n", chapter_usfm_text
+                r"(\\c\s+\d+)",
+                r"\1" + "\n" + rf" \\cl Chapter {chapter_num} " + "\n",
+                chapter_usfm_text,
             )
             return updated_chapter_usfm_text
     return chapter_usfm_text
@@ -302,14 +317,13 @@ def ensure_chapter_label(chapter_usfm_text: str) -> str:
 def get_chapter_num(
     chapter_usfm_text: str,
     idx: int,
-    chapter_regex: str = r"\\c\s+(\d+)",
-    chapter_label_regex: str = r"\\cl\s+\S+(\d+)",
+    chapter_regex: str = CHAPTER_CAPTURE_REGEX,
 ) -> int:
     """Get the chapter number from the USFM chapter source text."""
-    if match := re.search(chapter_label_regex, chapter_usfm_text):
-        chapter_num = match.group(1)
-        return int(chapter_num)
-    elif match := re.search(chapter_regex, chapter_usfm_text):
+    # if match := re.search(chapter_label_regex, chapter_usfm_text):
+    #     chapter_num = match.group(1)
+    #     return int(chapter_num)
+    if match := re.search(chapter_regex, chapter_usfm_text):
         chapter_num = match.group(1)
         return int(chapter_num)
     return idx
@@ -345,9 +359,9 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
     return extracted_data
 
 
-def maybe_national_book_name(frontmatter: str) -> str:
+def maybe_localized_book_name(frontmatter: str) -> str:
     r"""
-    Rule for obtaining national book name:
+    Rule for obtaining localized book name:
 
     In USFM:
 
@@ -365,15 +379,15 @@ def maybe_national_book_name(frontmatter: str) -> str:
     """
     # logger.debug("frontmatter: %s", frontmatter)
     frontmatter_data = extract_usfm_frontmatter(frontmatter)
-    national_book_name = (
+    localized_book_name = (
         frontmatter_data.get("h")
         or frontmatter_data.get("mt")
         or frontmatter_data.get("toc1")
         or frontmatter_data.get("toc2")
         or ""
     )
-    national_book_name = normalize_national_book_name(national_book_name)
-    return national_book_name
+    localized_book_name = normalize_localized_book_name(localized_book_name)
+    return localized_book_name
 
 
 def usfm_book_content(
@@ -395,14 +409,15 @@ def usfm_book_content(
         resource_lookup_dto.book_code,
         content,
     )
-    national_book_name = maybe_national_book_name(frontmatter)
+    localized_book_name = maybe_localized_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
     for idx, chapter in enumerate(updated_chapters):
         chapter_num = get_chapter_num(chapter, idx)
         logger.debug("chapter[0:30]: %s", chapter[0:30])
         if re.search(r"\\cl\s+\S+\s+\d+", chapter):
             logger.debug(r"Detected \cl, so removing \c")
-            chapter = re.sub(r"\\c\s+\d+", "", chapter)
+            # chapter = re.sub(r"\\c\s+\d+", "", chapter)
+            logger.debug("updated chapter[0:30]: %s", chapter[0:30])
         chapter_html_content = usfm_chapter_html(
             chapter, resource_lookup_dto, chapter_num
         )
@@ -420,8 +435,8 @@ def usfm_book_content(
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
         national_book_name=(
-            national_book_name
-            if national_book_name
+            localized_book_name
+            if localized_book_name
             else BOOK_NAMES[resource_lookup_dto.book_code]
         ),
         resource_type_name=resource_lookup_dto.resource_type_name,
@@ -943,6 +958,8 @@ def attempt_to_make_usfm_parseable(
     resource_dir: str,
     resource_lookup_dto: ResourceLookupDto,
     bible_book_names: Mapping[str, str] = BOOK_NAMES,
+    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
+    use_localized_chapter_label: bool = settings.USE_LOCALIZED_CHAPTER_LABEL,
 ) -> str:
     """
     Attempt to assemble and construct parseable USFM content for USFM
@@ -963,14 +980,15 @@ def attempt_to_make_usfm_parseable(
     # Get the book name from the repo/front/title.txt instead and
     # only use the following if that fails
     book_name_file = f"{resource_dir}/front/title.txt"
-    if exists(book_name_file):
+    localized_book_name = ""
+    if use_localized_book_name and exists(book_name_file):
         logger.debug(
             "book_name_file: %s exists, getting book name from it", book_name_file
         )
         with open(book_name_file, "r") as fin:
             book_name = fin.read()
-            national_book_name = normalize_national_book_name(book_name)
-            usfm_content.append(rf"\h {national_book_name}" + "\n")
+            localized_book_name = normalize_localized_book_name(book_name)
+            usfm_content.append(rf"\h {localized_book_name}" + "\n")
     else:
         usfm_content.append(
             rf"\h {bible_book_names[resource_lookup_dto.book_code]}" + "\n"
@@ -996,14 +1014,21 @@ def attempt_to_make_usfm_parseable(
         )
         chapter_word = ""
         if chapter_verse_files:
-            chapter_word_file = f"{chapter_dir.path}/title.txt"
-            logger.debug("chapter_word_file: %s", chapter_word_file)
-            if exists(chapter_word_file):
-                with open(chapter_word_file, "r") as fin:
-                    chapter_word = fin.read()
-                    chapter_word = chapter_word.strip()
-                    logger.debug("chapter_word: %s", chapter_word)
-                    chapter_usfm_content.append("\n" + rf"\cl {chapter_word} " + "\n")
+            if use_localized_chapter_label:
+                chapter_word_file = f"{chapter_dir.path}/title.txt"
+                logger.debug("chapter_word_file: %s", chapter_word_file)
+                if exists(chapter_word_file):
+                    with open(chapter_word_file, "r") as fin:
+                        chapter_word = fin.read()
+                        chapter_word = chapter_word.strip()
+                        logger.debug("chapter_word: %s", chapter_word)
+                        chapter_word = chapter_label_sans_numeric_part(chapter_word)
+                        logger.debug(
+                            "chapter_label_sans_numeric_part: %s", chapter_word
+                        )
+                        chapter_usfm_content.append(
+                            "\n" + rf"\cl {chapter_word} " + "\n"
+                        )
             try:
                 chapter_num = int(str(chapter_dir.name))
             except ValueError:
@@ -1014,15 +1039,15 @@ def attempt_to_make_usfm_parseable(
                 chapter_num = (
                     -999
                 )  # The chapter number in source text was not a parseable integer, so we use this as a sentinal and parseable integer
-            if not chapter_word:
-                logger.info(
-                    r"chapter_word was found, so we are NOT adding \c since \cl was already added"
-                )
-                logger.debug(
-                    "Adding a USFM chapter number for chapter: %s",
-                    chapter_num,
-                )
-                chapter_usfm_content.append("\n" + rf"\c {int(chapter_num)} " + "\n")
+            # if not chapter_word:
+            # logger.info(
+            #     r"chapter_word was found, so we are NOT adding \c since \cl was already added"
+            # )
+            logger.debug(
+                "Adding a USFM chapter number for chapter: %s",
+                chapter_num,
+            )
+            chapter_usfm_content.append("\n" + rf"\c {chapter_num} " + "\n")
         for usfm_file in chapter_verse_files:
             with open(usfm_file, "r") as fin:
                 # logger.debug("usfm_file: %s", usfm_file)

@@ -1,4 +1,5 @@
 """This module provides configuration values used by the application."""
+
 import logging
 from logging import config as lc
 from typing import Sequence, final
@@ -38,6 +39,8 @@ class Settings(BaseSettings):
     SHOW_TN_BOOK_INTRO: bool = True
 
     CHECK_USFM: bool
+    USE_LOCALIZED_BOOK_NAME: bool
+    USE_LOCALIZED_CHAPTER_LABEL: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
     def logger(self, name: str) -> logging.Logger:

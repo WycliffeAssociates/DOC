@@ -2,17 +2,21 @@ import re
 from typing import Sequence
 
 from document.config import settings
-from document.domain.model import ResourceLookupDto
 
 logger = settings.logger(__name__)
 
 # Resources known to have USFM defects found through automatic
-# randomized testing and subsequent manual investigation. Where possible
-# we handle these defects on the fly. As an aside: When we find one
-# defective USFM resource for a language then the language might have
-# others.
+# randomized testing and subsequent manual investigation. As an aside:
+# When we find one defective USFM resource for a language then the
+# language might have others. In keeping with that fact one can set
+# the value of settings.CHECK_ALL_BOOKS_FOR_LANGUAGE in .env file.
+# This list is also used in tests and in that context
+# settings.CHECK_ALL_BOOKS_FOR_LANGUAGE is not checked but each
+# resource listed below is tested and nothing more.
 RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("aaz-x-amarasibarat", "reg", "2pe"),
+    ("ach-SS-acholi", "reg", "gal"),
+    ("adh", "reg", "1th"),
     ("aec", "reg", "mat"),
     ("ahm", "reg", "php"),
     ("ahm", "reg", "php"),

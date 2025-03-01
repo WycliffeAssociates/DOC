@@ -31,7 +31,7 @@ from document.reviewers_guide.parser import (
     parse_bible_reference,
 )
 from document.utils.file_utils import file_needs_update, make_dir, read_file
-from document.utils.text_utils import normalize_national_book_name
+from document.utils.text_utils import normalize_localized_book_name
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -394,14 +394,14 @@ def lang_codes_and_names(
             english_name = (
                 language["english_name"] if "english_name" in language else ""
             )
-            national_name = language["national_name"]
+            localized_name = language["national_name"]
             is_gateway = ietf_code in gateway_languages_
             # if ietf_code not in lang_code_filter_list:
-            if english_name in national_name:
-                values.append((ietf_code, national_name, is_gateway))
+            if english_name in localized_name:
+                values.append((ietf_code, localized_name, is_gateway))
             else:
                 values.append(
-                    (ietf_code, f"{national_name} ({english_name})", is_gateway)
+                    (ietf_code, f"{localized_name} ({english_name})", is_gateway)
                 )
     except:
         logger.exception("Failed due to the following exception.")
@@ -737,6 +737,7 @@ def book_codes_for_lang(
     book_names: Mapping[str, str] = BOOK_NAMES,
     dcs_mirror_git_username: str = "DCS-Mirror",
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
@@ -746,7 +747,7 @@ def book_codes_for_lang(
     ('gen', 'Genesis')
     """
     data = fetch_source_data()
-    book_codes_and_names_nationalized: list[tuple[str, str]] = []
+    book_codes_and_names_localized: list[tuple[str, str]] = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
     try:
@@ -773,7 +774,7 @@ def book_codes_for_lang(
                         and repo_components[-1] in usfm_resource_types
                     ):
                         # Prefer getting book names from USFM frontmatter for book when possible
-                        book_codes_and_names_nationalized = []
+                        book_codes_and_names_localized = []
                         usfm_files = parsing.find_usfm_files(resource_filepath)
                         for usfm_file in usfm_files:
                             usfm_file_components = (
@@ -785,27 +786,28 @@ def book_codes_for_lang(
                             frontmatter, chapters_ = parsing.split_usfm_by_chapters(
                                 lang_code, resource_type, book_code, content
                             )
-                            national_book_name = parsing.maybe_national_book_name(
+                            localized_book_name = parsing.maybe_localized_book_name(
                                 frontmatter
                             )
-                            book_codes_and_names_nationalized.append(
-                                (book_code, national_book_name)
+                            book_codes_and_names_localized.append(
+                                (book_code, localized_book_name)
                             )
                         break
                     if (
-                        len(repo_components) > 2
+                        use_localized_book_name
+                        and len(repo_components) > 2
                         and repo_components[-1] in usfm_resource_types
                     ):
                         book_name_file = f"{resource_filepath}/front/title.txt"
                         if exists(book_name_file):
                             with open(book_name_file, "r") as fin:
                                 book_name = fin.read()
-                                national_book_name = normalize_national_book_name(
+                                localized_book_name = normalize_localized_book_name(
                                     book_name
                                 )
                                 book_code = repo_components[1]
-                                book_codes_and_names_nationalized.append(
-                                    (book_code, national_book_name)
+                                book_codes_and_names_localized.append(
+                                    (book_code, localized_book_name)
                                 )
                 # NOTE The following commented out code would work, but
                 # json manifest's sometimes have book names that do
@@ -814,28 +816,28 @@ def book_codes_for_lang(
                 # it is often better to not use the manifest book names.
                 # # Didn't get book codes and names from USFM, so now
                 # # let's try to get it from manifest
-                # if not book_codes_and_names_nationalized or (
-                #     book_codes_and_names_nationalized
+                # if not book_codes_and_names_localized or (
+                #     book_codes_and_names_localized
                 #     and len(
                 #         [
                 #             (ietf, name)
-                #             for ietf, name in book_codes_and_names_nationalized
+                #             for ietf, name in book_codes_and_names_localized
                 #             if name == ""
                 #         ]
                 #     )
                 #     > 0
                 # ):  # One or more book names are empty.
-                #     book_codes_and_names_nationalized.extend(
+                #     book_codes_and_names_localized.extend(
                 #         book_codes_and_names_from_manifest(resource_filepath)
                 #     )
                 # NOTE Didn't find book names in USFM, so get them
                 # from the USFM or other resource (TN, TQ) file paths
-                if not book_codes_and_names_nationalized or (
-                    book_codes_and_names_nationalized
+                if not book_codes_and_names_localized or (
+                    book_codes_and_names_localized
                     and len(
                         [
                             (ietf, name)
-                            for ietf, name in book_codes_and_names_nationalized
+                            for ietf, name in book_codes_and_names_localized
                             if name == ""
                         ]
                     )
@@ -884,12 +886,12 @@ def book_codes_for_lang(
     except:
         pass
     # Keep book codes unique and sorted by canonical bible book order
-    if not book_codes_and_names_nationalized or (
-        book_codes_and_names_nationalized
+    if not book_codes_and_names_localized or (
+        book_codes_and_names_localized
         and len(
             [
                 (ietf, name)
-                for ietf, name in book_codes_and_names_nationalized
+                for ietf, name in book_codes_and_names_localized
                 if name == ""
             ]
         )
@@ -910,7 +912,7 @@ def book_codes_for_lang(
     else:
         book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
         book_codes_sorted = sorted(
-            book_codes_and_names_nationalized,
+            book_codes_and_names_localized,
             key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
         )
     # logger.debug("book_codes_sorted: %s", book_codes_sorted)
@@ -984,7 +986,7 @@ def book_codes_and_names_from_manifest(
         candidate = manifest_candidates[0]
         suffix = str(Path(candidate).suffix)
         book_codes_and_names: list[tuple[str, str]] = []
-        # Get nationalized book names
+        # Get localized book names
         manifest_data = load_manifest(candidate)
         # logger.debug("manifest_data: %s", manifest_data)
         if suffix == ".yaml":
@@ -1010,6 +1012,7 @@ def book_codes_for_lang_from_usfm_only(
     book_names: Mapping[str, str] = BOOK_NAMES,
     dcs_mirror_git_username: str = "DCS-Mirror",
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from document.domain import resource_lookup
@@ -1019,7 +1022,7 @@ def book_codes_for_lang_from_usfm_only(
     ('gen', 'Genesis')
     """
     data = fetch_source_data()
-    book_codes_and_names_nationalized: list[tuple[str, str]] = []
+    book_codes_and_names_localized: list[tuple[str, str]] = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
     try:
@@ -1041,14 +1044,11 @@ def book_codes_for_lang_from_usfm_only(
                 ]:
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
                     clone_git_repo(url, resource_filepath)
-                    book_codes_and_names_nationalized.extend(
-                        book_codes_and_names_from_manifest(resource_filepath)
-                    )
                     if (
                         len(repo_components) == 2
                         and repo_components[-1] in usfm_resource_types
                     ):  # Prefer getting book names from USFM frontmatter for book when possible
-                        book_codes_and_names_nationalized = []
+                        book_codes_and_names_localized = []
                         usfm_files = parsing.find_usfm_files(resource_filepath)
                         for usfm_file in usfm_files:
                             usfm_file_components = (
@@ -1060,34 +1060,56 @@ def book_codes_for_lang_from_usfm_only(
                             frontmatter, chapters_ = parsing.split_usfm_by_chapters(
                                 lang_code, resource_type, book_code, content
                             )
-                            national_book_name = parsing.maybe_national_book_name(
+                            localized_book_name = parsing.maybe_localized_book_name(
                                 frontmatter
                             )
-                            book_codes_and_names_nationalized.append(
-                                (book_code, national_book_name)
+                            book_codes_and_names_localized.append(
+                                (book_code, localized_book_name)
                             )
                         break
                     if (
-                        len(repo_components) > 2
+                        use_localized_book_name
+                        and len(repo_components) > 2
                         and repo_components[-1] in usfm_resource_types
                     ):
                         book_name_file = f"{resource_filepath}/front/title.txt"
                         if exists(book_name_file):
                             with open(book_name_file, "r") as fin:
                                 book_name = fin.read()
-                                national_book_name = normalize_national_book_name(
+                                localized_book_name = normalize_localized_book_name(
                                     book_name
                                 )
                                 book_code = repo_components[1]
-                                book_codes_and_names_nationalized.append(
-                                    (book_code, national_book_name)
+                                book_codes_and_names_localized.append(
+                                    (book_code, localized_book_name)
                                 )
-                if not book_codes_and_names_nationalized or (
-                    book_codes_and_names_nationalized
+                # NOTE The following commented out code would work, but
+                # json manifest's sometimes have book names that do
+                # not align with the book names found in USFM and are
+                # sometimes not the most commonly used book names. Therefore,
+                # it is often better to not use the manifest book names.
+                # # Didn't get book codes and names from USFM, so now
+                # # let's try to get it from manifest
+                # if not book_codes_and_names_localized or (
+                #     book_codes_and_names_localized
+                #     and len(
+                #         [
+                #             (ietf, name)
+                #             for ietf, name in book_codes_and_names_localized
+                #             if name == ""
+                #         ]
+                #     )
+                #     > 0
+                # ):  # One or more book names are empty.
+                #     book_codes_and_names_localized.extend(
+                #         book_codes_and_names_from_manifest(resource_filepath)
+                #     )
+                if not book_codes_and_names_localized or (
+                    book_codes_and_names_localized
                     and len(
                         [
                             (ietf, name)
-                            for ietf, name in book_codes_and_names_nationalized
+                            for ietf, name in book_codes_and_names_localized
                             if name == ""
                         ]
                     )
@@ -1118,13 +1140,12 @@ def book_codes_for_lang_from_usfm_only(
                                     )
     except:
         pass
-    # Keep book codes unique and sorted by canonical bible book order
-    if not book_codes_and_names_nationalized or (
-        book_codes_and_names_nationalized
+    if not book_codes_and_names_localized or (
+        book_codes_and_names_localized
         and len(
             [
                 (ietf, name)
-                for ietf, name in book_codes_and_names_nationalized
+                for ietf, name in book_codes_and_names_localized
                 if name == ""
             ]
         )
@@ -1145,7 +1166,7 @@ def book_codes_for_lang_from_usfm_only(
     else:
         book_id_map = dict((id, pos) for pos, id in enumerate(book_names.keys()))
         book_codes_sorted = sorted(
-            book_codes_and_names_nationalized,
+            book_codes_and_names_localized,
             key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
         )
     logger.debug("book_codes_sorted: %s", book_codes_sorted)

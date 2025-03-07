@@ -15,6 +15,7 @@ logger = settings.logger(__name__)
 # resource listed below is tested and nothing more.
 RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("aaz-x-amarasibarat", "reg", "2pe"),
+    ("abu", "reg", "php"),
     ("ach-SS-acholi", "reg", "gal"),
     ("adh", "reg", "1th"),
     ("aec", "reg", "mat"),

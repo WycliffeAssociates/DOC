@@ -6,7 +6,7 @@ validation and JSON serialization.
 """
 
 from enum import Enum
-from typing import Any, NamedTuple, Optional, Sequence, final
+from typing import Any, NamedTuple, Optional, Sequence, TypedDict, final
 
 from document.config import settings
 from document.domain.bible_books import BOOK_NAMES
@@ -491,3 +491,24 @@ class Attachment(NamedTuple):
 
     filepath: str
     mime_type: tuple[str, str]
+
+
+# Models for manifest files and data:
+
+
+class YamlManifestBook(TypedDict):
+    title: str
+    identifier: str
+
+
+class JsonManifestBook(TypedDict):
+    name: str
+    id: str
+
+
+class Data(TypedDict):
+    projects: list[YamlManifestBook]
+
+
+class JsonManifestData(TypedDict):
+    project: JsonManifestBook

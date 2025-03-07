@@ -12,7 +12,7 @@ from glob import glob
 from os import scandir
 from os.path import exists, isdir, join
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence, TypedDict
+from typing import Any, Mapping, Optional, Sequence
 from urllib.parse import urlparse
 
 import requests
@@ -22,19 +22,15 @@ from document.domain import parsing
 from document.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
 from document.domain.model import (
     NON_USFM_RESOURCE_TYPES,
+    Data,
+    JsonManifestBook,
+    JsonManifestData,
     LangDirEnum,
     ResourceLookupDto,
-    Data,
-    JsonManifestData,
-    JsonManifestBook,
-    YamlManifestBook,
 )
-from document.domain import parsing
-from document.reviewers_guide.parser import (
-    find_bible_references,
-    parse_bible_reference,
-)
+from document.reviewers_guide.parser import find_bible_references, parse_bible_reference
 from document.utils.file_utils import file_needs_update, make_dir, read_file
+from document.utils.list_utils import unique_tuples
 from document.utils.text_utils import normalize_localized_book_name
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
@@ -409,12 +405,7 @@ def lang_codes_and_names(
                 )
     except:
         logger.exception("Failed due to the following exception.")
-    unique_values = []
-    seen_values = set()
-    for value in values:
-        if value[0] not in seen_values:
-            unique_values.append(value)
-            seen_values.add(value[0])
+    unique_values = unique_tuples(values)
     return sorted(unique_values, key=lambda value: value[1])
 
 
@@ -516,12 +507,7 @@ def resource_types(
                         )
     except:
         pass
-    unique_values = []
-    seen_values = set()
-    for value in resource_types:
-        if value[0] not in seen_values:
-            unique_values.append(value)
-            seen_values.add(value[0])
+    unique_values = unique_tuples(resource_types)
     return sorted(unique_values, key=lambda value: value[1])
 
 
@@ -869,28 +855,19 @@ def get_book_codes_for_lang(
     except:
         pass
     # Keep book codes unique and sorted by canonical bible book order
+    unique_values = []
     if not book_codes_and_names_localized or any(
         name == "" for _, name in book_codes_and_names_localized
     ):
-        unique_values = []
-        seen_values = set()
         book_codes_and_names.extend(book_codes_and_names2)
-        for value in book_codes_and_names:
-            if value[0] not in seen_values:
-                unique_values.append(value)
-                seen_values.add(value[0])
-        book_id_map = {id: pos for pos, id in enumerate(book_names.keys())}
-        book_codes_sorted = sorted(
-            unique_values,
-            key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
-        )
+        unique_values = unique_tuples(book_codes_and_names)
     else:
-        book_id_map = {id: pos for pos, id in enumerate(book_names.keys())}
-        book_codes_sorted = sorted(
-            book_codes_and_names_localized,
-            key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
-        )
-    return book_codes_sorted
+        unique_values = unique_tuples(book_codes_and_names_localized)
+    book_id_map = {id: pos for pos, id in enumerate(book_names.keys())}
+    return sorted(
+        unique_values,
+        key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+    )
 
 
 @lru_cache(maxsize=100)

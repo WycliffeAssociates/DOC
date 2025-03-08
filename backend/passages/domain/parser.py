@@ -1,6 +1,6 @@
-from document.passages.model import PassageReferenceDto
-from document.domain.parsing import lookup_verse_text
-from document.domain.model import USFMBook
+from passages.domain.model import PassageReferenceDto
+from doc.domain.parsing import lookup_verse_text
+from doc.domain.model import USFMBook
 
 
 def verse_text_html(passage_ref_dto: PassageReferenceDto, usfm_book: USFMBook) -> str:

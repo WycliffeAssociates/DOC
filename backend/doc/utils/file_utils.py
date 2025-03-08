@@ -14,7 +14,7 @@ from typing import Any, Optional, Union
 from urllib.request import urlopen
 
 import yaml
-from document.config import settings
+from doc.config import settings
 
 logger = settings.logger(__name__)
 

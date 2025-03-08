@@ -19,12 +19,12 @@ using the 'randomized' pytest marker.
 
 import pytest
 import random
-from document.config import settings
-from document.domain import exceptions
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.domain import exceptions
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from document.domain import model, resource_lookup
+from doc.domain import model, resource_lookup
 from tests.shared.utils import (
     check_finished_document_with_body_success,
     check_finished_document_with_verses_success,

@@ -2,12 +2,16 @@
 This module tests languages which were found through automatic randomized testing and subsequent manual investigation to have certain potentially fixable, on the fly, USFM defects that prevent them from being parsed.
 """
 
-
 from typing import Sequence
 import pytest
-from document.config import settings
-from document.domain import model, exceptions, resource_lookup, usfm_error_detection_and_fixes
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.domain import (
+    model,
+    exceptions,
+    resource_lookup,
+    usfm_error_detection_and_fixes,
+)
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 
 from tests.shared.utils import check_finished_document_with_verses_success

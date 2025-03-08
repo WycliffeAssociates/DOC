@@ -8,7 +8,7 @@ in the HTML and thus in the PDF.
 import glob
 import re
 
-from document.config import settings
+from doc.config import settings
 from termcolor import colored
 
 logger = settings.logger(__name__)

@@ -8,9 +8,9 @@ validation and JSON serialization.
 from enum import Enum
 from typing import Any, NamedTuple, Optional, Sequence, TypedDict, final
 
-from document.config import settings
-from document.domain.bible_books import BOOK_NAMES
-from document.utils.number_utils import is_even
+from doc.config import settings
+from doc.domain.bible_books import BOOK_NAMES
+from doc.utils.number_utils import is_even
 from pydantic import BaseModel, EmailStr
 from pydantic.functional_validators import model_validator
 

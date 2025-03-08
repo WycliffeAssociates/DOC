@@ -17,10 +17,10 @@ from urllib.parse import urlparse
 
 import requests
 import yaml
-from document.config import settings
-from document.domain import parsing
-from document.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
-from document.domain.model import (
+from doc.config import settings
+from doc.domain import parsing
+from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
+from doc.domain.model import (
     NON_USFM_RESOURCE_TYPES,
     Data,
     JsonManifestBook,
@@ -28,10 +28,10 @@ from document.domain.model import (
     LangDirEnum,
     ResourceLookupDto,
 )
-from document.reviewers_guide.parser import find_bible_references, parse_bible_reference
-from document.utils.file_utils import file_needs_update, make_dir, read_file
-from document.utils.list_utils import unique_tuples
-from document.utils.text_utils import normalize_localized_book_name
+from doc.reviewers_guide.parser import find_bible_references, parse_bible_reference
+from doc.utils.file_utils import file_needs_update, make_dir, read_file
+from doc.utils.list_utils import unique_tuples
+from doc.utils.text_utils import normalize_localized_book_name
 from fastapi import HTTPException, status
 from pydantic import HttpUrl
 
@@ -175,7 +175,7 @@ def fetch_source_data(
     Obtain the source data, by downloading it from json_file_url, and
     then reifying it into its JSON object form.
 
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
     >>> result["git_repo"][0]
@@ -206,7 +206,7 @@ def download_data(
     """
     Downloads data from a GraphQL API and saves it to a JSON file.
 
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.download_data("assets_download/resources.json");() # doctest: +ELLIPSIS
     (...)
     >>> result["git_repo"][0]
@@ -272,7 +272,7 @@ def fetch_gateway_languages(
     data_api_url: HttpUrl = settings.DATA_API_URL,
 ) -> Any:
     """
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_gateway_languages("assets_download/gateway_languages.json");() # doctest: +ELLIPSIS
     (...)
     >>> result["language"][0]
@@ -329,7 +329,7 @@ def get_gateway_languages(
     use_hardcoded_gateway_language_values is True in which case just
     return the hardcoded list of gateway languages.
 
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.get_gateway_languages();() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
@@ -372,7 +372,7 @@ def lang_codes_and_names(
     gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
 ) -> Sequence[tuple[str, str, bool]]:
     """
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.lang_codes_and_names();() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
@@ -421,7 +421,7 @@ def resource_types(
     docx_file_path: str = "en_rg_nt_survey.docx",
 ) -> Sequence[tuple[str, str]]:
     """
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> lang_code = "pt-br"
     >>> books = resource_lookup.book_codes_for_lang(lang_code)
     >>> ();result = resource_lookup.resource_types(lang_code, "".join([book[0] for book in books]));() # doctest: +ELLIPSIS
@@ -520,7 +520,7 @@ def usfm_resource_types_and_book_tuples(
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 ) -> Sequence[tuple[str, str]]:
     """
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> lang_code = "ruc"
     >>> ();books = resource_lookup.book_codes_for_lang(lang_code);() # doctest: +ELLIPSIS
     (...)
@@ -574,7 +574,7 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     Given two language codes, return the intersection of resource
     codes between the two languages.
 
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> # Hack to ignore logging output: https://stackoverflow.com/a/33400983/3034580
     >>> ();data = resource_lookup.shared_book_codes("pt-br", "es-419");() # doctest: +ELLIPSIS
     (...)
@@ -880,7 +880,7 @@ def book_codes_for_lang(
     use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> Sequence[tuple[str, str]]:
     """
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
@@ -907,7 +907,7 @@ def book_codes_for_lang_from_usfm_only(
     use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> Sequence[tuple[str, str]]:
     """
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
@@ -1002,7 +1002,7 @@ def resource_lookup_dto(
     resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> Optional[ResourceLookupDto]:
     """
-    >>> from document.domain import resource_lookup
+    >>> from doc.domain import resource_lookup
     >>> ();data = resource_lookup.resource_lookup_dto("pt-br", "ulb", "mat");() # doctest: +ELLIPSIS
     (...)
     >>> data

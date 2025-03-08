@@ -5,9 +5,9 @@ Tests for assembly strategy book-then-language
 import os
 import re
 import pytest
-from document.config import settings
-from document.domain import model
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.domain import model
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 
 from tests.shared.utils import (
@@ -15,6 +15,7 @@ from tests.shared.utils import (
     check_finished_document_with_verses_success,
     check_finished_document_without_verses_success,
     check_result,
+    is_within_distance,
 )
 
 logger = settings.logger(__name__)
@@ -5206,29 +5207,6 @@ def test_en_ulb_gal_es_419_ulb_gal_book_language_order_1c_by_chapter_check_blo_a
                 " no de hombres",
                 350,
             ), "Two phrases should be near each other, within the specified distance, otherwise book then lang algo is not being used when it should be"
-
-
-def is_within_distance(text: str, substr1: str, substr2: str, distance: int) -> bool:
-    """
-    Check if substr2 is within a certain distance of substr1 in the given text.
-
-    :param text: The text to search.
-    :param substr1: The first substring to find.
-    :param substr2: The second substring to find.
-    :param distance: The maximum distance allowed between substr1 and substr2.
-    :return: True if substr2 is within the distance of substr1, otherwise False.
-    """
-    index1 = text.find(substr1)
-    index2 = text.find(substr2)
-    logger.debug("index1: %s, index2: %s", index1, index2)
-
-    # If either substring is not found, return False
-    if index1 == -1 or index2 == -1:
-        return False
-
-    # Check if the distance between substr1 and substr2 is within the given distance
-    logger.debug("distance: %s", abs(index1 - index2))
-    return abs(index1 - index2) <= distance
 
 
 if __name__ == "__main__":

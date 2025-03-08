@@ -1,12 +1,12 @@
 import pytest
-from document.config import settings
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 from tests.shared.utils import (
     check_finished_document_with_verses_success,
     check_finished_document_without_verses_success,
 )
-from document.domain import model
+from doc.domain import model
 
 
 def test_en_ulb_tit_en_tn_tit_language_book_order_1c_by_chapter() -> None:
@@ -131,7 +131,9 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c_c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
+def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -171,7 +173,9 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_cha
         check_finished_document_with_verses_success(response)
 
 
-def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -211,7 +215,9 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_c
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -261,7 +267,9 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -313,7 +321,9 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -380,7 +390,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_ti
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -447,7 +459,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_ti
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -499,7 +513,9 @@ def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -551,7 +567,9 @@ def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -618,7 +636,9 @@ def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_s
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -683,7 +703,9 @@ def test_en_tn_col_en_tq_col_en_tw_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_s
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -733,7 +755,9 @@ def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_bo
         check_finished_document_without_verses_success(response)
 
 
-def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -785,7 +809,9 @@ def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_bo
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -827,7 +853,9 @@ def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_bo
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -899,7 +927,9 @@ def test_en_tw_col_sw_tw_col_sw_tw_tit_language_book_order_1c_by_chapter() -> No
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -941,7 +971,9 @@ def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_bo
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> None:
+def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_sw_tn_tit_sw_tq_tit_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1187,7 +1219,9 @@ def test_en_ulb_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_c_by_chapter() 
 
 # data api does not provide udb for gu
 @pytest.mark.skip
-def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_by_chapter() -> None:
+def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1234,7 +1268,9 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
 
 # data api doesn't provide udb for gu
 @pytest.mark.skip
-def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
+def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1282,7 +1318,9 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1330,7 +1368,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1378,7 +1418,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1421,7 +1463,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_cha
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1464,7 +1508,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_c_by_c
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1507,7 +1553,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_cha
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 @pytest.mark.skip
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1765,7 +1813,9 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
 
 # gu language does not provide udb
 @pytest.mark.skip
-def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chapter() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1807,7 +1857,9 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chap
 
 # gu language does not provide udb
 @pytest.mark.skip
-def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c_by_chapter() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2179,7 +2231,9 @@ def test_tl_udb_gen_language_book_order_1c_c_by_chapter() -> None:
 # Content team don't want udb used so now that it is configured out of
 # the usfm resource types, this test fails.
 # @pytest.mark.skip
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     """Demonstrate listing unfound resources, in this case fr-udb-rev"""
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -2225,7 +2279,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> (
+    None
+):
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2274,7 +2330,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter() -> (
+    None
+):
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2318,7 +2376,9 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_cha
         check_finished_document_with_verses_success(response)
 
 
-def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> None:
+def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     """
     Demonstrate two USFM resources, French, and use of a special
     USFM resource: f10.
@@ -2442,7 +2502,9 @@ def test_fr_ulb_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_c_by_chapter() -
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2504,7 +2566,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_e
 
 # en tq is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_c_by_chapter() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2570,7 +2634,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_e
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_by_chapter() -> None:
+def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2614,7 +2680,9 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_by_chapter()
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c_by_chapter() -> None:
+def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2658,7 +2726,9 @@ def test_kbt_reg_2co_ajg_reg_2co_pmm_reg_mrk_language_book_order_1c_c_by_chapter
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c_by_chapter() -> None:
+def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -2702,7 +2772,9 @@ def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c
 # expecting. This can be and was diagnosed by consulting the celery flower
 # dashboard for the task generated by this test.
 @pytest.mark.skip
-def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c_c_by_chapter() -> None:
+def test_kbt_reg_2co_ajg_x_adjtalagbe_reg_2co_pmm_reg_mrk_language_book_order_1c_c_by_chapter() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",

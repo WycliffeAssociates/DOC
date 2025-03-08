@@ -8,9 +8,9 @@ result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://")
 
 # List of modules to import when the Celery worker starts.
 imports = (
-    "document.domain.document_generator",
-    "document.passages.document_generator",
-    "document.stet.document_generator",
+    "doc.domain.document_generator",
+    "passages.domain.document_generator",
+    "stet.domain.document_generator",
 )
 
 

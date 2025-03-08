@@ -4,9 +4,9 @@ import os
 import re
 
 import pytest
-from document.config import settings
-from document.domain import model
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.domain import model
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 
 from tests.shared.utils import (
@@ -442,7 +442,9 @@ def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c() -
 # More than two languages are no longer allowed as we enforce that in the DocumentRequest class via pydnatic validation.
 # pt-br ulb is no longer provided by the data API
 @pytest.mark.skip
-def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c_c() -> None:
+def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c_c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -493,7 +495,9 @@ def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c_c()
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -570,7 +574,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -645,7 +651,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-def test_en_ulb_col_en_tn_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_ulb_col_en_tn_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tw_tit_language_book_order_1c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -710,7 +718,9 @@ def test_en_ulb_col_en_tn_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_ti
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-def test_en_ulb_col_en_tn_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_col_en_tn_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tw_tit_language_book_order_1c_c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -790,7 +800,9 @@ def test_en_ulb_col_en_tn_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tw_col_sw_ulb_ti
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language_book_order_1c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -849,7 +861,9 @@ def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language_book_order_1c_c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -911,7 +925,9 @@ def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -988,7 +1004,9 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_ti
 
 # tq has been retired for en
 # @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1070,7 +1088,9 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_ti
 
 # cuv is not provided by data api
 @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> None:
+def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1136,7 +1156,9 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_ti
 
 # cuv is not provided by data api
 # @pytest.mark.skip
-def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> None:
+def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -1693,6 +1715,7 @@ def test_en_ulb_1jn_en_ulb_3jn_language_book_order_with_no_email_1c() -> None:
             assert (
                 "1 John</h2>" in body_content and "3 John</h2>" in body_content
             ), "Document should have had both 1 John and 3 John in it, but it didn't"
+
 
 @pytest.mark.focus
 def test_en_tn_mat_with_book_intro() -> None:

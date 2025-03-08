@@ -3,23 +3,23 @@ import time
 from typing import Mapping, Sequence
 
 from celery import current_task
-from document.config import settings
-from document.domain import worker
-from document.domain.bible_books import BOOK_NAMES
-from document.domain.email import send_email_with_attachment, should_send_email
-from document.domain.model import Attachment
-from document.domain.parsing import split_chapter_into_verses, usfm_book_content
-from document.domain.resource_lookup import (
+from doc.config import settings
+from doc.domain import worker
+from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.email import send_email_with_attachment, should_send_email
+from doc.domain.model import Attachment
+from doc.domain.parsing import split_chapter_into_verses, usfm_book_content
+from doc.domain.resource_lookup import (
     RESOURCE_TYPE_CODES_AND_NAMES,
     prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
     resource_types,
 )
-from document.passages.docx_utils import add_footer, add_header
-from document.passages.model import PassageDto, PassageReferenceDto
-from document.passages.parser import verse_text_html
-from document.utils.file_utils import docx_filepath, file_needs_update
+from passages.utils.docx_utils import add_footer, add_header
+from passages.domain.model import PassageDto, PassageReferenceDto
+from passages.domain.parser import verse_text_html
+from doc.utils.file_utils import docx_filepath, file_needs_update
 from docx import Document  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
 from docx.oxml import parse_xml
@@ -45,7 +45,7 @@ def generate_docx_document(
     """
     Generate the scriptural terms evaluation document.
 
-    >>> from document.passages import generate_docx_document
+    >>> from passages.domain.document_generator import generate_docx_document
     >>> generate_docx_document("en", list[PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="3-6"), PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="9-10"), PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="15")])
     """
     book_codes = [

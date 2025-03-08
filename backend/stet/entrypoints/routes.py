@@ -4,10 +4,9 @@ from fastapi import APIRouter
 
 import celery.states
 from celery.result import AsyncResult
-from document.config import settings
-from document.stet import document_generator
-from document.domain import resource_lookup
-from document.stet import model
+from doc.config import settings
+from stet.domain import document_generator, model
+from doc.domain import resource_lookup
 
 from fastapi import HTTPException, status
 

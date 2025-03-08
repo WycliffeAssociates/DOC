@@ -1,5 +1,5 @@
-from document.config import settings
-from document.domain import model, resource_lookup
+from doc.config import settings
+from doc.domain import model, resource_lookup
 
 
 def test_lookup_successes() -> None:

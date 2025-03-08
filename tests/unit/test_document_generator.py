@@ -1,6 +1,6 @@
 import re
 
-from document.domain import document_generator, model
+from doc.domain import document_generator, model
 
 
 def test_document_request_key_too_long_for_semantic_result() -> None:

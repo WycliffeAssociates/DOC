@@ -2,9 +2,9 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 from tests.shared.utils import check_result
-from document.entrypoints.app import app
-from document.config import settings
-from document.passages.model import PassageReferenceDto
+from doc.entrypoints.app import app
+from doc.config import settings
+from passages.domain.model import PassageReferenceDto
 
 
 # passage_references JSON is not correct, skipping for now as this is

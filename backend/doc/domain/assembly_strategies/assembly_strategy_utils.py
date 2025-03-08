@@ -5,10 +5,10 @@ Utility functions used by assembly_strategies.
 from re import search, sub
 from typing import Optional, Sequence
 
-from document.config import settings
-from document.domain.model import BCBook, LangDirEnum, TNBook, TQBook, USFMBook
-from document.reviewers_guide.model import RGBook
-from document.reviewers_guide.render_to_html import render_chapter
+from doc.config import settings
+from doc.domain.model import BCBook, LangDirEnum, TNBook, TQBook, USFMBook
+from doc.reviewers_guide.model import RGBook
+from doc.reviewers_guide.render_to_html import render_chapter
 
 logger = settings.logger(__name__)
 

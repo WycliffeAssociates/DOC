@@ -12,13 +12,13 @@ from pathlib import Path
 from typing import Mapping, Optional, Sequence
 
 import mistune
-from document.config import settings
-from document.domain.assembly_strategies.assembly_strategy_utils import (
+from doc.config import settings
+from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
-from document.domain.bible_books import BOOK_NAMES
-from document.domain.exceptions import MissingChapterMarkerError
-from document.domain.model import (
+from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.exceptions import MissingChapterMarkerError
+from doc.domain.model import (
     BC_RESOURCE_TYPE,
     EN_TN_CONDENSED_RESOURCE_TYPE,
     RG_RESOURCE_TYPE,
@@ -40,21 +40,21 @@ from document.domain.model import (
     USFMChapter,
     VerseRef,
 )
-from document.reviewers_guide.model import RGBook
-from document.reviewers_guide.parser import get_rg_books
-from document.domain.usfm_error_detection_and_fixes import (
+from doc.reviewers_guide.model import RGBook
+from doc.reviewers_guide.parser import get_rg_books
+from doc.domain.usfm_error_detection_and_fixes import (
     RESOURCES_WITH_USFM_DEFECTS,
     fix_usfm,
 )
-from document.markdown_transforms import markdown_transformer
-from document.utils.file_utils import read_file
-from document.utils.tw_utils import (
+from doc.markdown_transforms import markdown_transformer
+from doc.utils.file_utils import read_file
+from doc.utils.tw_utils import (
     localized_translation_word,
     translation_word_filepaths,
     translation_words_dict,
     tw_resource_dir,
 )
-from document.utils.text_utils import (
+from doc.utils.text_utils import (
     chapter_label_sans_numeric_part,
     normalize_localized_book_name,
 )

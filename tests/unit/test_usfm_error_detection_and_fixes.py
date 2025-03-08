@@ -1,7 +1,6 @@
 import pytest
 import unittest
-from document.domain.model import ResourceLookupDto, LangDirEnum
-from document.domain.usfm_error_detection_and_fixes import (
+from doc.domain.usfm_error_detection_and_fixes import (
     remove_null_bytes_and_control_characters,
     fix_dot_after_verse_number,
     fix_usfm,

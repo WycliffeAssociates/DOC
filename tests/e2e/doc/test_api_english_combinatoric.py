@@ -18,11 +18,11 @@ using the 'randomized' pytest marker.
 """
 
 import pytest
-from document.config import settings
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from document.domain import model
+from doc.domain import model
 
 
 @pytest.mark.english_randomized

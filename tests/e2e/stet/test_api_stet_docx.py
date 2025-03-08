@@ -1,9 +1,13 @@
 import os
 import pytest
 from fastapi.testclient import TestClient
-from tests.shared.utils import check_result, document_contains_substring, AcceptedSuffixes
-from document.entrypoints.app import app
-from document.config import settings
+from tests.shared.utils import (
+    check_result,
+    document_contains_substring,
+    AcceptedSuffixes,
+)
+from doc.entrypoints.app import app
+from doc.config import settings
 from docx import Document  # type: ignore
 
 
@@ -51,6 +55,7 @@ def test_en_ln_stet_docx() -> None:
         )
         check_result(response, suffix="docx")
 
+
 @pytest.mark.stet
 @pytest.mark.docx
 def test_en_ln_stet_docx_contents() -> None:
@@ -64,7 +69,9 @@ def test_en_ln_stet_docx_contents() -> None:
             },
         )
         # Check that all of Luke 1:49 is present in result
-        substring = "For the Mighty One has done great things for me,and his name is holy."
+        substring = (
+            "For the Mighty One has done great things for me,and his name is holy."
+        )
         suffix: AcceptedSuffixes = "docx"
         finished_document_request_key = check_result(response, suffix=suffix)
         finished_document_path = os.path.join(

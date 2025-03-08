@@ -2,7 +2,7 @@
 Utility functions used by assembly_strategies.
 """
 
-from document.config import settings
+from doc.config import settings
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docx.enum.text import WD_BREAK  # type: ignore

@@ -1,9 +1,9 @@
 import pytest
-from document.config import settings
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 from tests.shared.utils import check_result
-from document.domain import model
+from doc.domain import model
 
 
 @pytest.mark.docx
@@ -69,7 +69,9 @@ def test_sw_ulb_col_sw_tn_col_language_book_order_1c_by_chapter_docx() -> None:
 
 
 @pytest.mark.docx
-def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -110,7 +112,9 @@ def test_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_cha
 
 
 @pytest.mark.docx
-def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -152,74 +156,6 @@ def test_en_ulb_col_en_tn_col_sw_ulb_col_sw_tn_col_sw_ulb_tit_sw_tn_tit_language
                     {
                         "lang_code": "sw",
                         "resource_type": "tn",
-                        "book_code": "tit",
-                    },
-                ],
-            },
-        )
-        check_result(response, suffix="docx")
-
-
-# en tq is not provided by data api
-# @pytest.mark.skip
-@pytest.mark.docx
-def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter_docx() -> None:
-    with TestClient(app=app, base_url=settings.api_test_url()) as client:
-        response = client.post(
-            "/documents_docx",
-            json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
-                "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
-                "generate_pdf": False,
-                "generate_epub": False,
-                "generate_docx": True,
-                "resource_requests": [
-                    {
-                        "lang_code": "en",
-                        "resource_type": "ulb",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tn",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "en",
-                        "resource_type": "tq",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "ulb",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tn",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tq",
-                        "book_code": "col",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "ulb",
-                        "book_code": "tit",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tn",
-                        "book_code": "tit",
-                    },
-                    {
-                        "lang_code": "sw",
-                        "resource_type": "tq",
                         "book_code": "tit",
                     },
                 ],
@@ -231,7 +167,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_ti
 # en tq is not provided by data api
 # @pytest.mark.skip
 @pytest.mark.docx
-def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -252,6 +190,11 @@ def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language
                     },
                     {
                         "lang_code": "en",
+                        "resource_type": "tn",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
                         "resource_type": "tq",
                         "book_code": "col",
                     },
@@ -262,12 +205,22 @@ def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language
                     },
                     {
                         "lang_code": "sw",
+                        "resource_type": "tn",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
                         "resource_type": "tq",
                         "book_code": "col",
                     },
                     {
                         "lang_code": "sw",
                         "resource_type": "ulb",
+                        "book_code": "tit",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "tn",
                         "book_code": "tit",
                     },
                     {
@@ -284,7 +237,64 @@ def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language
 # en tq is not provided by data api
 # @pytest.mark.skip
 @pytest.mark.docx
-def test_en_tn_col_en_tq_col_en_tw_col_en_tq_tit_en_tw_tit_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_ulb_col_en_tq_col_sw_ulb_col_sw_tq_col_sw_ulb_tit_sw_tq_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents_docx",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
+                "layout_for_print": False,
+                "chunk_size": model.ChunkSizeEnum.CHAPTER,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": True,
+                "resource_requests": [
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "tq",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "tq",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "ulb",
+                        "book_code": "tit",
+                    },
+                    {
+                        "lang_code": "sw",
+                        "resource_type": "tq",
+                        "book_code": "tit",
+                    },
+                ],
+            },
+        )
+        check_result(response, suffix="docx")
+
+
+# en tq is not provided by data api
+# @pytest.mark.skip
+@pytest.mark.docx
+def test_en_tn_col_en_tq_col_en_tw_col_en_tq_tit_en_tw_tit_sw_tn_col_sw_tq_col_sw_tw_col_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -365,7 +375,9 @@ def test_en_tn_col_en_tq_col_en_tw_col_en_tq_tit_en_tw_tit_sw_tn_col_sw_tq_col_s
 
 
 @pytest.mark.docx
-def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -418,7 +430,9 @@ def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_bo
 # en tq is not provided by data api
 # @pytest.mark.skip
 @pytest.mark.docx
-def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_tq_col_en_tw_col_sw_tq_col_sw_tw_col_sw_tq_tit_sw_tw_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -492,7 +506,9 @@ def test_en_tw_col_sw_tw_col_language_book_order_1c_by_chapter_docx() -> None:
 # en tq is not provided by data api
 # @pytest.mark.skip
 @pytest.mark.docx
-def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_tn_col_en_tq_col_sw_tn_col_sw_tq_col_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -574,7 +590,9 @@ def test_en_tn_col_sw_tn_col_sw_tn_tit_language_book_order_1c_by_chapter_docx() 
 
 
 @pytest.mark.docx
-def test_en_ulb_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_ulb_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -612,7 +630,9 @@ def test_en_ulb_col_sw_ulb_col_sw_ulb_tit_language_book_order_1c_by_chapter_docx
 # data api does not provide udb for gu
 @pytest.mark.skip
 @pytest.mark.docx
-def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_by_chapter_docx() -> None:
+def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -661,7 +681,9 @@ def test_gu_ulb_mrk_gu_tn_mrk_gu_tq_mrk_gu_tw_mrk_gu_udb_mrk_language_book_order
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -705,7 +727,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_cha
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -749,7 +773,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_tw_mrk_mr_udb_mrk_language_book_order_1c_by_cha
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> None:
+def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -788,7 +814,9 @@ def test_mr_ulb_mrk_mr_tn_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx(
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> None:
+def test_mr_ulb_mrk_mr_tq_mrk_mr_udb_mrk_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -860,7 +888,9 @@ def test_tl_ulb_gen_tl_udb_gen_language_book_order_1c_by_chapter_docx() -> None:
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chapter_docx() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -904,7 +934,9 @@ def test_gu_tn_mat_gu_tq_mat_gu_tw_mat_gu_udb_mat_language_book_order_1c_by_chap
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_by_chapter_docx() -> None:
+def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -943,7 +975,9 @@ def test_gu_tn_mat_gu_tq_mat_gu_udb_mat_language_book_order_1c_by_chapter_docx()
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter_docx() -> None:
+def test_tl_tn_gen_tl_tw_gen_tl_udb_gen_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -1077,7 +1111,9 @@ def test_tl_udb_gen_language_book_order_1c_by_chapter_docx() -> None:
 # the usfm resource types, this test fails.
 @pytest.mark.skip
 @pytest.mark.docx
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_by_chapter_docx() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -1123,7 +1159,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_udb_rev_language_book_order
 
 
 @pytest.mark.docx
-def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter_docx() -> None:
+def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -1169,7 +1207,9 @@ def test_fr_ulb_rev_fr_tn_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order
 
 
 @pytest.mark.docx
-def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter_docx() -> None:
+def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -1210,7 +1250,9 @@ def test_fr_ulb_rev_fr_tq_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_cha
 
 
 @pytest.mark.docx
-def test_fr_ulb_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter_docx() -> None:
+def test_fr_ulb_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -1248,7 +1290,9 @@ def test_fr_ulb_rev_fr_tw_rev_fr_f10_rev_language_book_order_1c_by_chapter_docx(
 # en tq is not provided by data api
 # @pytest.mark.skip
 @pytest.mark.docx
-def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_by_chapter_docx() -> None:
+def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_es_419_tq_col_es_419_tw_col_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",
@@ -1311,7 +1355,9 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_es_419_ulb_col_es_419_tn_col_e
 # id ayt not yet supported in new version of system that uses data api
 # @pytest.mark.skip
 @pytest.mark.docx
-def test_id_ayt_tit_id_tn_tit_id_tq_tit_id_tw_tit_language_book_order_1c_by_chapter_docx() -> None:
+def test_id_ayt_tit_id_tn_tit_id_tq_tit_id_tw_tit_language_book_order_1c_by_chapter_docx() -> (
+    None
+):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents_docx",

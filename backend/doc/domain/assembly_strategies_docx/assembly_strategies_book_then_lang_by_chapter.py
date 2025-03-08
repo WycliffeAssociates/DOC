@@ -1,7 +1,7 @@
 from typing import Mapping, Sequence
 
-from document.config import settings
-from document.domain.assembly_strategies.assembly_strategy_utils import (
+from doc.config import settings
+from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_book_intro_headings,
     bc_book_intro,
     chapter_commentary,
@@ -10,14 +10,14 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     tn_chapter_verses,
     tq_chapter_verses,
 )
-from document.domain.assembly_strategies_docx.assembly_strategy_utils import (
+from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
     add_one_column_section,
     add_page_break,
     add_two_column_section,
     create_docx_subdoc,
 )
-from document.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
-from document.domain.model import (
+from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
+from doc.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
     ChunkSizeEnum,
@@ -27,7 +27,7 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.reviewers_guide.model import RGBook
+from doc.reviewers_guide.model import RGBook
 from docx import Document  # type: ignore
 from docxcompose.composer import Composer  # type: ignore
 

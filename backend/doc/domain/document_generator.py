@@ -10,24 +10,24 @@ from os.path import exists, join
 from typing import Any, Optional, Sequence, cast
 
 from celery import current_task
-from document.config import settings
-from document.domain import parsing, resource_lookup, worker
-from document.domain.assembly_strategies.assembly_strategies_book_then_lang_by_chapter import (
+from doc.config import settings
+from doc.domain import parsing, resource_lookup, worker
+from doc.domain.assembly_strategies.assembly_strategies_book_then_lang_by_chapter import (
     assemble_content_by_book_then_lang,
 )
-from document.domain.assembly_strategies.assembly_strategies_lang_then_book_by_chapter import (
+from doc.domain.assembly_strategies.assembly_strategies_lang_then_book_by_chapter import (
     assemble_content_by_lang_then_book,
 )
-from document.domain.assembly_strategies_docx import (
+from doc.domain.assembly_strategies_docx import (
     assembly_strategies_book_then_lang_by_chapter as book_then_lang,
 )
-from document.domain.assembly_strategies_docx import (
+from doc.domain.assembly_strategies_docx import (
     assembly_strategies_lang_then_book_by_chapter as lang_then_book,
 )
-from document.domain.assembly_strategies_docx.assembly_strategy_utils import add_hr
-from document.domain.bible_books import BOOK_NAMES
-from document.domain.email import send_email_with_attachment, should_send_email
-from document.domain.model import (
+from doc.domain.assembly_strategies_docx.assembly_strategy_utils import add_hr
+from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.email import send_email_with_attachment, should_send_email
+from doc.domain.model import (
     AssemblyLayoutEnum,
     AssemblyStrategyEnum,
     Attachment,
@@ -42,9 +42,9 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.reviewers_guide.model import RGBook
-from document.utils.docx_util import generate_docx_toc
-from document.utils.file_utils import (
+from doc.reviewers_guide.model import RGBook
+from doc.utils.docx_util import generate_docx_toc
+from doc.utils.file_utils import (
     docx_filepath,
     epub_filepath,
     file_needs_update,
@@ -52,8 +52,8 @@ from document.utils.file_utils import (
     pdf_filepath,
     write_file,
 )
-from document.utils.template_env import env
-from document.utils.tw_utils import (
+from doc.utils.template_env import env
+from doc.utils.tw_utils import (
     contains_tw,
     filter_unique_by_lang_code,
     translation_words_section,
@@ -78,7 +78,7 @@ def generate_document(
 ) -> Json[Any]:
     """
     This is the main entry point for this module for non-docx generation.
-    >>> from document.domain import document_generator
+    >>> from doc.domain import document_generator
     >>> document_request_json = '{"email_address":null,"assembly_strategy_kind":"lbo","assembly_layout_kind":"1c","layout_for_print":false,"resource_requests":[{"lang_code":"es-419","resource_type":"ulb","book_code":"mat"}],"generate_pdf":true,"generate_epub":false,"generate_docx":false,"chunk_size":"chapter","limit_words":false,"include_tn_book_intros":false,"document_request_source":"ui"}'
     >>> document_generator.generate_document(document_request_json)
     """
@@ -382,7 +382,7 @@ def document_request_key(
             assembly_strategy_kind.value,
             assembly_layout_kind.value,
             chunk_size.value,
-            "ltwt" if limit_words else "ltwf",
+            "lwt" if limit_words else "lwf",
         )
     else:
         document_request_key = "{}_{}_{}_{}".format(
@@ -841,7 +841,7 @@ def get_languages_title_page_strings(
     [(lang_name, [book_code1, book_code2, ...]), ...]
     E.g.,
     [("English", ["mat", "mrk"]), ("français (French)", ["mat", "mrk"])]
-    >>> from document.domain import document_generator, model
+    >>> from doc.domain import document_generator, model
     >>> # resource_lookup_dtos=[model.ResourceLookupDto(lang_code="en", lang_name="English", resource_type="ulb-wa", resource_type_name="Scripture", book_code="mat", source="usfm"), model.ResourceLookupDto(lang_code="fr", lang_name="français (French)", resource_type="ulb", resource_type_name="Translation Notes", book_code="mat", source="usfm")]
     >>> # resource_lookup_dtos
     >>> #document_generator.get_languages_title_page_strings(resource_lookup_dtos)
@@ -926,7 +926,7 @@ def get_languages_title_page_strings(
 
 if __name__ == "__main__":
     # To run the doctests in the this module, in the root of the project do:
-    # FROM_EMAIL_ADDRESS=... python backend/document/domain/resource_lookup.py
+    # FROM_EMAIL_ADDRESS=... python backend/doc/domain/resource_lookup.py
     # See https://docs.python.org/3/library/doctest.html
     # for more details.
     import doctest

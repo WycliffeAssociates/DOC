@@ -1,9 +1,9 @@
-from document.utils.template_env import env
+from doc.utils.template_env import env
 import smtplib
 from os.path import basename, exists, join
 from typing import Optional
-from document.config import settings
-from document.domain.model import (
+from doc.config import settings
+from doc.domain.model import (
     AssemblyLayoutEnum,
     AssemblyStrategyEnum,
     Attachment,

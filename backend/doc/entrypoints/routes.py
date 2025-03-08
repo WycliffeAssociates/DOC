@@ -3,8 +3,8 @@ from fastapi import APIRouter
 
 import celery.states
 from celery.result import AsyncResult
-from document.config import settings
-from document.domain import document_generator, model, resource_lookup
+from doc.config import settings
+from doc.domain import document_generator, model, resource_lookup
 
 from fastapi import HTTPException, status
 
@@ -28,7 +28,9 @@ async def generate_document(document_request: model.DocumentRequest) -> JSONResp
         )
     except HTTPException as exc:
         raise exc
-    except Exception as exc:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
+    except (
+        Exception
+    ) as exc:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
         logger.exception(
             "There was an error while attempting to fulfill the document "
             "request. Likely reason is the following exception:"
@@ -57,7 +59,9 @@ async def generate_docx_document(
         )
     except HTTPException as exc:
         raise exc
-    except Exception as exc:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
+    except (
+        Exception
+    ) as exc:  # catch any exceptions we weren't expecting, handlers handle the ones we do expect.
         logger.exception(
             "There was an error while attempting to fulfill the document "
             "request. Likely reason is the following exception:"

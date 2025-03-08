@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import NamedTuple, Optional, final
 from pprint import pformat
-from document.domain.model import ChapterNum, LangDirEnum
+from doc.domain.model import ChapterNum, LangDirEnum
 
 
 @final

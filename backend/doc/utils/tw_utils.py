@@ -10,9 +10,9 @@ import time
 from glob import glob
 from typing import Optional, Sequence
 
-from document.config import settings
-from document.domain import parsing, resource_lookup
-from document.domain.model import ResourceRequest, TWBook, TWNameContentPair, USFMBook
+from doc.config import settings
+from doc.domain import parsing, resource_lookup
+from doc.domain.model import ResourceRequest, TWBook, TWNameContentPair, USFMBook
 
 logger = settings.logger(__name__)
 

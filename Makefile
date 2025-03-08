@@ -157,12 +157,14 @@ test-randomized:
 # complains about usfm_tools not being available or typed.
 .PHONY: mypy
 mypy: checkvenv
-	mypy --strict --install-types --non-interactive backend/document/**/*.py
+	mypy --strict --install-types --non-interactive backend/doc/**/*.py
+	mypy --strict --install-types --non-interactive backend/stet/**/*.py
+	mypy --strict --install-types --non-interactive backend/passages/**/*.py
 	mypy --strict --install-types --non-interactive tests/**/*.py
 
 .PHONY: mypyc
 mypyc:
-	cd backend && mypyc --strict --install-types --non-interactive --verbose document/domain/assembly_strategies.py document/domain/parsing.py document/domain/resource_lookup.py # document/domain/document_generator.py
+	cd backend && mypyc --strict --install-types --non-interactive --verbose doc/domain/assembly_strategies.py doc/domain/parsing.py doc/domain/resource_lookup.py # doc/domain/document_generator.py
 
 
 .PHONY: clean-mypyc-artifacts
@@ -173,28 +175,38 @@ clean-mypyc-artifacts:
 # https://radon.readthedocs.io/en/latest/commandline.html
 .PHONY: radon-cyclomatic-complexity
 radon-cyclomatic-complexity: checkvenv
-	radon cc backend/document/**/*.py
+	radon cc backend/doc/**/*.py
+	radon cc backend/stet/**/*.py
+	radon cc backend/passages/**/*.py
 
 .PHONY: radon-raw-stats
 radon-raw-stats: checkvenv
-	radon raw backend/document/**/*.py
+	radon raw backend/doc/**/*.py
+	radon raw backend/stet/**/*.py
+	radon raw backend/passages/**/*.py
 
 .PHONY: radon-maintainability-index
 radon-maintainability-index: checkvenv
-	radon mi backend/document/**/*.py
+	radon mi backend/doc/**/*.py
+	radon mi backend/stet/**/*.py
+	radon mi backend/passages/**/*.py
 
 .PHONY: radon-halstead-complexity
 radon-halstead-complexity: checkvenv
-	radon hal backend/document/**/*.py
+	radon hal backend/doc/**/*.py
+	radon hal backend/stet/**/*.py
+	radon hal backend/passages/**/*.py
 
 .PHONY: vulture-dead-code
 vulture-dead-code: checkvenv
-	vulture backend/document/ --min-confidence 100
+	vulture backend/doc/ --min-confidence 100
+	vulture backend/stet/ --min-confidence 100
+	vulture backend/passages/ --min-confidence 100
 	vulture tests/ --min-confidence 100
 
 .PHONY: generate-class-diagrams
 generate-class-diagrams:
-	pyreverse backend/document
+	pyreverse backend
 	dot -Tpng classes.dot -o docs/classes.png
 
 .PHONY: all
@@ -206,12 +218,12 @@ all-plus-linting: mypy down build up test
 # Run a local Uvicorn server outside Docker
 .PHONY: local-server
 local-server: checkvenv
-	PUBLIC_DOC_VERSION=$(doc_version) PUBLIC_DOC_BUILD_TIMESTAMP=$(todays_date) PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator DATA_API_URL=https://api.bibleineverylanguage.org/v1/graphql PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 uvicorn document.entrypoints.app:app --reload --host "0.0.0.0" --port "5005" --app-dir "./backend/"
+	PUBLIC_DOC_VERSION=$(doc_version) PUBLIC_DOC_BUILD_TIMESTAMP=$(todays_date) PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator DATA_API_URL=https://api.bibleineverylanguage.org/v1/graphql PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 uvicorn doc.entrypoints.app:app --reload --host "0.0.0.0" --port "5005" --app-dir "./backend/"
 
 # Run a local Gunicorn server outside Docker
 .PHONY: local-gunicorn-server
 local-gunicorn-server: checkvenv
-	exec gunicorn --name DOC --worker-class uvicorn.workers.UvicornWorker --conf ./backend/gunicorn.conf.py --pythonpath ./backend  document.entrypoints.app:app
+	exec gunicorn --name DOC --worker-class uvicorn.workers.UvicornWorker --conf ./backend/gunicorn.conf.py --pythonpath ./backend  doc.entrypoints.app:app
 
 .PHONY: local-update-deps-base
 local-update-deps-base: pyupgrade
@@ -269,7 +281,7 @@ local-repeat-randomized-tests: local-prepare-for-tests
 
 .PHONY: local-run-celery
 local-run-celery:
-	celery -A document.domain.worker.app worker --loglevel=DEBUG -E
+	celery -A doc.domain.worker.app worker --loglevel=DEBUG -E
 
 
 .PHONY: local-run-flower

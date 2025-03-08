@@ -1,10 +1,10 @@
 import re
 
-from document.config import settings
-from document.domain.bible_books import BOOK_NAMES
-from document.domain.resource_lookup import book_codes_for_lang_from_usfm_only
-from document.stet.model import VerseReferenceDto, WordEntryDto
-from document.stet.util import is_valid_int
+from doc.config import settings
+from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.resource_lookup import book_codes_for_lang_from_usfm_only
+from stet.domain.model import VerseReferenceDto, WordEntryDto
+from stet.utils.util import is_valid_int
 from docx import Document  # type: ignore
 
 logger = settings.logger(__name__)

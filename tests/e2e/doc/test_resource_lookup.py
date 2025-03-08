@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 import pytest
-from document.config import settings
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.entrypoints.app import app
 
 
 @pytest.mark.focus

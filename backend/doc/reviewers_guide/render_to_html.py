@@ -1,14 +1,14 @@
 """Functions to render RGBook and its constituent parts to HTML"""
 
-from document.config import settings
-from document.reviewers_guide.model import (
+from doc.config import settings
+from doc.reviewers_guide.model import (
     BibleReference,
     ParsedText,
     Part1Item,
     Part2Item,
     RGChapter,
 )
-from document.utils.template_env import env
+from doc.utils.template_env import env
 
 
 def render_part1_item(item: Part1Item) -> str:

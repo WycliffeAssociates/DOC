@@ -1,7 +1,7 @@
 from typing import Mapping, Sequence
 
-from document.config import settings
-from document.domain.assembly_strategies.assembly_strategy_utils import (
+from doc.config import settings
+from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_book_intro_headings,
     bc_book_intro,
     chapter_commentary,
@@ -17,8 +17,8 @@ from document.domain.assembly_strategies.assembly_strategy_utils import (
     tq_language_direction_html,
     usfm_language_direction_html,
 )
-from document.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
-from document.domain.model import (
+from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
+from doc.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
     TNBook,
@@ -26,8 +26,8 @@ from document.domain.model import (
     TWBook,
     USFMBook,
 )
-from document.reviewers_guide.model import RGBook
-from document.utils.number_utils import is_even
+from doc.reviewers_guide.model import RGBook
+from doc.utils.number_utils import is_even
 
 logger = settings.logger(__name__)
 

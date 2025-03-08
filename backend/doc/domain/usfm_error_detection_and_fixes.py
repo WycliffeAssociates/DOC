@@ -1,7 +1,7 @@
 import re
 from typing import Sequence
 
-from document.config import settings
+from doc.config import settings
 
 logger = settings.logger(__name__)
 

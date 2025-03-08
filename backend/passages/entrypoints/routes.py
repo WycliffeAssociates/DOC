@@ -3,9 +3,9 @@ from fastapi import APIRouter
 
 import celery.states
 from celery.result import AsyncResult
-from document.config import settings
-from document.passages import document_generator
-from document.passages import model
+from doc.config import settings
+from passages.domain import document_generator
+from passages.domain import model
 
 from fastapi import HTTPException, status
 

@@ -2,23 +2,32 @@ from typing import Mapping, Sequence
 
 import mistune
 from celery import current_task
-from document.config import settings
-from document.domain import worker
-from document.domain.email import send_email_with_attachment, should_send_email
-from document.domain.model import Attachment
-from document.domain.parsing import (
+from doc.config import settings
+from doc.domain import worker
+from doc.domain.email import send_email_with_attachment, should_send_email
+from doc.domain.model import Attachment
+from doc.domain.parsing import (
     lookup_verse_text,
     split_chapter_into_verses,
     usfm_book_content,
 )
-from document.domain.resource_lookup import (
+from doc.domain.resource_lookup import (
     RESOURCE_TYPE_CODES_AND_NAMES,
     prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
     resource_types,
 )
-from document.stet.docx_utils import (
+from doc.utils.file_utils import docx_filepath, file_needs_update
+from docx import Document  # type: ignore
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT  # type: ignore
+from docx.oxml import OxmlElement  # type: ignore
+from docx.oxml.ns import qn  # type: ignore
+from htmldocx import HtmlToDocx  # type: ignore
+from pydantic import Json
+from stet.domain.model import VerseEntry, WordEntry
+from stet.domain.parser import get_word_entry_dtos
+from stet.utils.docx_utils import (
     add_footer,
     add_header,
     add_highlighted_html_to_docx_for_word,
@@ -28,16 +37,7 @@ from document.stet.docx_utils import (
     adjust_table_columns,
     reduce_spacing_around_tables,
 )
-from document.stet.model import VerseEntry, WordEntry
-from document.stet.parser import get_word_entry_dtos
-from document.stet.util import extract_chapter_and_beyond
-from document.utils.file_utils import docx_filepath, file_needs_update
-from docx import Document  # type: ignore
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT  # type: ignore
-from docx.oxml import OxmlElement  # type: ignore
-from docx.oxml.ns import qn  # type: ignore
-from htmldocx import HtmlToDocx  # type: ignore
-from pydantic import Json
+from stet.utils.util import extract_chapter_and_beyond
 
 logger = settings.logger(__name__)
 
@@ -55,7 +55,7 @@ def generate_docx_document(
     """
     Generate the scriptural terms evaluation document.
 
-    >>> from document.stet import generate_docx_document
+    >>> from stet.domain.document_generator import generate_docx_document
     >>> generate_docx_document()
     """
     word_entries: list[WordEntry] = []

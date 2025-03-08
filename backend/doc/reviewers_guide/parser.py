@@ -2,11 +2,10 @@ from pprint import pprint
 from collections import defaultdict
 import re
 
-from typing import Optional
 from docx import Document  # type: ignore
-from document.domain.bible_books import BOOK_NAMES
-from document.domain.model import LangDirEnum
-from document.reviewers_guide.model import (
+from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.model import LangDirEnum
+from doc.reviewers_guide.model import (
     RGBook,
     RGChapter,
     Part1Item,

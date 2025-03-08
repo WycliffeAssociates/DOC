@@ -1,8 +1,8 @@
-from document.config import settings
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.domain import model
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from document.domain import model
 from tests.shared.utils import check_finished_document_with_verses_success
 
 logger = settings.logger(__name__)

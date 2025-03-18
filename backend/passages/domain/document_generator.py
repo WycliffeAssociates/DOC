@@ -6,7 +6,7 @@ from celery import current_task
 from doc.config import settings
 from doc.domain import worker
 from doc.domain.bible_books import BOOK_NAMES
-from doc.domain.email import send_email_with_attachment, should_send_email
+from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment
 from doc.domain.parsing import split_chapter_into_verses, usfm_book_content
 from doc.domain.resource_lookup import (

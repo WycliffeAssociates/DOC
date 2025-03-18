@@ -26,7 +26,7 @@ from doc.domain.assembly_strategies_docx import (
 )
 from doc.domain.assembly_strategies_docx.assembly_strategy_utils import add_hr
 from doc.domain.bible_books import BOOK_NAMES
-from doc.domain.email import send_email_with_attachment, should_send_email
+from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import (
     AssemblyLayoutEnum,
     AssemblyStrategyEnum,

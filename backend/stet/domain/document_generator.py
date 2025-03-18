@@ -4,7 +4,7 @@ import mistune
 from celery import current_task
 from doc.config import settings
 from doc.domain import worker
-from doc.domain.email import send_email_with_attachment, should_send_email
+from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment
 from doc.domain.parsing import (
     lookup_verse_text,

@@ -149,7 +149,7 @@ def convert_usfm_chapter_to_html(
     and render it into HTML and store on disk.
     """
     content_file = write_usfm_content_to_file(content, resource_filepath_sans_suffix)
-    logger.debug("About to convert USFM to HTML")
+    logger.info("About to convert USFM to HTML")
     dll_path = "/app/USFMParserDriver/bin/Release/net8.0/USFMParserDriver.dll"
     if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
         logger.info("dotnet cli not found!")
@@ -159,16 +159,14 @@ def convert_usfm_chapter_to_html(
         # print_directory_contents("/app/USFMParserDriver")
         raise Exception("dotnet parser executable not found!")
     if not exists(content_file):
-        logger.debug(
-            "dotnet parser expects %s to exist, but it does not!", content_file
-        )
+        logger.info("dotnet parser expects %s to exist, but it does not!", content_file)
     command = [
         f"{getenv('DOTNET_ROOT')}/dotnet",
         dll_path,
         f"/app/{content_file}",
         f"/app/{resource_filepath_sans_suffix}.html",
     ]
-    logger.debug("dotnet command: %s", " ".join(command))
+    logger.info("dotnet command: %s", " ".join(command))
     subprocess.run(
         command,
         check=True,
@@ -215,7 +213,7 @@ def usfm_chapter_html(
     t0 = time.time()
     convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
     t1 = time.time()
-    logger.debug(
+    logger.info(
         "Time to convert USFM to HTML for %s-%s-%s: %s",
         resource_lookup_dto.lang_code,
         resource_lookup_dto.resource_type,
@@ -280,15 +278,15 @@ def split_usfm_by_chapters(
 
     updated_chapters = []
     for marker, chapter in zip(chapter_markers, chapters):
-        logger.debug("chapter marker: %s", marker)
         stripped_chapter = chapter.lstrip()
+        # logger.debug("stripped_chapter[0:60]: %s", stripped_chapter[0:60])
         if stripped_chapter:
             if check_usfm and needs_fixing():
                 stripped_chapter = fix_usfm(
                     stripped_chapter, lang_code, resource_type, book_code
                 )
-                updated_chapter = marker + "\n" + stripped_chapter
-                logger.debug("updated_chapter[0:40]: %s", updated_chapter[0:40])
+                # updated_chapter = marker + "\n" + stripped_chapter
+                # logger.debug("updated_chapter[0:60]: %s", updated_chapter[0:60])
             updated_chapters.append(marker + "\n" + stripped_chapter)
     return frontmatter, updated_chapters
 
@@ -303,7 +301,6 @@ def ensure_chapter_label(
     """
     if not re.search(chapter_label_regex, chapter_usfm_text):
         if match := re.search(chapter_regex, chapter_usfm_text):
-            logger.debug(r"\c was found")
             chapter_num = match.group(1)
             updated_chapter_usfm_text = re.sub(
                 r"(\\c\s+\d+)",
@@ -412,12 +409,8 @@ def usfm_book_content(
     localized_book_name = maybe_localized_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
     for idx, chapter in enumerate(updated_chapters):
+        # logger.debug("chapter[0:60]: %s", chapter[0:60])
         chapter_num = get_chapter_num(chapter, idx)
-        logger.debug("chapter[0:30]: %s", chapter[0:30])
-        if re.search(r"\\cl\s+\S+\s+\d+", chapter):
-            logger.debug(r"Detected \cl, so removing \c")
-            # chapter = re.sub(r"\\c\s+\d+", "", chapter)
-            logger.debug("updated chapter[0:30]: %s", chapter[0:30])
         chapter_html_content = usfm_chapter_html(
             chapter, resource_lookup_dto, chapter_num
         )
@@ -1016,16 +1009,11 @@ def attempt_to_make_usfm_parseable(
         if chapter_verse_files:
             if use_localized_chapter_label:
                 chapter_word_file = f"{chapter_dir.path}/title.txt"
-                logger.debug("chapter_word_file: %s", chapter_word_file)
                 if exists(chapter_word_file):
                     with open(chapter_word_file, "r") as fin:
                         chapter_word = fin.read()
                         chapter_word = chapter_word.strip()
-                        logger.debug("chapter_word: %s", chapter_word)
                         chapter_word = chapter_label_sans_numeric_part(chapter_word)
-                        logger.debug(
-                            "chapter_label_sans_numeric_part: %s", chapter_word
-                        )
                         chapter_usfm_content.append(
                             "\n" + rf"\cl {chapter_word} " + "\n"
                         )
@@ -1043,7 +1031,7 @@ def attempt_to_make_usfm_parseable(
             # logger.info(
             #     r"chapter_word was found, so we are NOT adding \c since \cl was already added"
             # )
-            logger.debug(
+            logger.info(
                 "Adding a USFM chapter number for chapter: %s",
                 chapter_num,
             )
@@ -1064,7 +1052,7 @@ def attempt_to_make_usfm_parseable(
             resource_lookup_dto.book_code,
         ),
     )
-    logger.debug("About to write filename: %s", filename)
+    logger.info("About to write filename: %s", filename)
     with open(filename, "w") as fout:
         fout.write("".join(usfm_content))
     return filename
@@ -1076,7 +1064,7 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
         chapter = usfm_book.chapters[chapter_num]
         if chapter.verses:
             verse = chapter.verses[verse_ref] if verse_ref in chapter.verses else ""
-            logger.debug(
+            logger.info(
                 "book_code: %s, chapter_num: %s, verse_num: %s, verse: %s",
                 usfm_book.book_code,
                 chapter_num,

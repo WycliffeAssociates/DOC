@@ -82,10 +82,7 @@ def generate_document(
     >>> document_request_json = '{"email_address":null,"assembly_strategy_kind":"lbo","assembly_layout_kind":"1c","layout_for_print":false,"resource_requests":[{"lang_code":"es-419","resource_type":"ulb","book_code":"mat"}],"generate_pdf":true,"generate_epub":false,"generate_docx":false,"chunk_size":"chapter","limit_words":false,"include_tn_book_intros":false,"document_request_source":"ui"}'
     >>> document_generator.generate_document(document_request_json)
     """
-    logger.debug(
-        "document_request_json: %s",
-        document_request_json,
-    )
+    logger.info("document_request_json: %s", document_request_json)
     current_task.update_state(state="Receiving request")
     document_request = DocumentRequest.parse_raw(document_request_json)
     document_request.assembly_layout_kind = select_assembly_layout_kind(
@@ -138,7 +135,7 @@ def generate_document(
         for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
             resource_lookup.provision_asset_files(dto.url, resource_dir)
         t1 = time.time()
-        logger.debug(
+        logger.info(
             "Time to provision asset files (acquire and write to disk): %s", t1 - t0
         )
         current_task.update_state(state="Parsing asset files")
@@ -151,7 +148,7 @@ def generate_document(
             document_request.layout_for_print,
         )
         t1 = time.time()
-        logger.debug("Time to parse all resource content: %s", t1 - t0)
+        logger.info("Time to parse all resource content: %s", t1 - t0)
         current_task.update_state(state="Assembling content")
         content = assemble_content(
             document_request_key_,
@@ -174,7 +171,7 @@ def generate_document(
             html_filepath_,
         )
     else:
-        logger.debug("Cache hit for %s", html_filepath_)
+        logger.info("Cache hit for %s", html_filepath_)
     # Immediately return pre-built PDF if the document has previously been
     # generated and is fresh enough.
     if document_request.generate_pdf and file_needs_update(pdf_filepath_):
@@ -225,7 +222,7 @@ def generate_docx_document(
     This is the alternative entry point for Docx document creation only.
     """
     document_request = DocumentRequest.parse_raw(document_request_json)
-    logger.debug(
+    logger.info(
         "document_request: %s",
         document_request,
     )
@@ -274,7 +271,7 @@ def generate_docx_document(
         for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
             resource_lookup.provision_asset_files(dto.url, resource_dir)
         t1 = time.time()
-        logger.debug(
+        logger.info(
             "Time to provision asset files (acquire and write to disk): %s", t1 - t0
         )
         current_task.update_state(state="Parsing asset files")
@@ -287,7 +284,7 @@ def generate_docx_document(
             document_request.layout_for_print,
         )
         t1 = time.time()
-        logger.debug("Time to parse all resource content: %s", t1 - t0)
+        logger.info("Time to parse all resource content: %s", t1 - t0)
         current_task.update_state(state="Assembling content")
         composer = assemble_docx_content(
             document_request_key_,
@@ -335,7 +332,7 @@ def generate_docx_document(
                 document_request_key_,
             )
     else:
-        logger.debug("Cache hit for %s", docx_filepath_)
+        logger.info("Cache hit for %s", docx_filepath_)
     return document_request_key_
 
 
@@ -502,7 +499,7 @@ def assemble_content(
             )
         )
     t1 = time.time()
-    logger.debug("Time for interleaving document: %s", t1 - t0)
+    logger.info("Time for interleaving document: %s", t1 - t0)
     t0 = time.time()
     # Add the translation words definition section for each language requested.
     unique_lang_codes = set()
@@ -519,7 +516,7 @@ def assemble_content(
                 ),
             )
     t1 = time.time()
-    logger.debug("Time for add TW content to document: %s", t1 - t0)
+    logger.info("Time for add TW content to document: %s", t1 - t0)
     return content
 
 
@@ -589,7 +586,7 @@ def assemble_docx_content(
             document_request.chunk_size,
         )
     t1 = time.time()
-    logger.debug("Time for interleaving document: %s", t1 - t0)
+    logger.info("Time for interleaving document: %s", t1 - t0)
     tw_subdocs = []
     if tw_books:
         html_to_docx = HtmlToDocx()
@@ -610,7 +607,7 @@ def assemble_docx_content(
                 add_hr(p)
                 tw_subdocs.append(tw_subdoc)
         t1 = time.time()
-        logger.debug("Time for adding TW content to document: %s", t1 - t0)
+        logger.info("Time for adding TW content to document: %s", t1 - t0)
     # Now add any TW subdocs to the composer
     if composer:
         for tw_subdoc_ in tw_subdocs:
@@ -650,14 +647,14 @@ def convert_html_to_pdf(
         html_filepath,
         pdf_filepath,
     ]
-    logger.debug("Generate PDF command: %s", " ".join(command))
+    logger.info("Generate PDF command: %s", " ".join(command))
     subprocess.run(
         command,
         check=True,
         text=True,
     )
     t1 = time.time()
-    logger.debug("Time for converting HTML to PDF: %s", t1 - t0)
+    logger.info("Time for converting HTML to PDF: %s", t1 - t0)
 
 
 # HTML to ePub converters:
@@ -677,11 +674,11 @@ def convert_html_to_epub(
         epub_filepath,
         "--no-default-epub-cover",
     ]
-    logger.debug("Generate ePub command: %s", " ".join(command))
+    logger.info("Generate ePub command: %s", " ".join(command))
     t0 = time.time()
     subprocess.run(command, check=True, text=True)
     t1 = time.time()
-    logger.debug("Time for converting HTML to ePub: %s", t1 - t0)
+    logger.info("Time for converting HTML to ePub: %s", t1 - t0)
 
 
 def convert_html_to_docx(
@@ -722,7 +719,7 @@ def convert_html_to_docx(
     master.append(composer.doc)
     master.save(docx_filepath)
     t1 = time.time()
-    logger.debug("Time for converting HTML to Docx: %s", t1 - t0)
+    logger.info("Time for converting HTML to Docx: %s", t1 - t0)
 
 
 def cover_filepath(
@@ -796,7 +793,7 @@ def write_html_content_to_file(
     """
     Write HTML content to file.
     """
-    logger.debug("About to write HTML to %s", output_filename)
+    logger.info("About to write HTML to %s", output_filename)
     # Write the HTML file to disk.
     write_file(
         output_filename,
@@ -823,7 +820,7 @@ def check_content_for_issues(
             "About to modify content to include message notifying user of problem with USFM source text format..."
         )
         updated_content = "NOTE: There are issues with the requested underlying scripture USFM text that make it unusable by this system until translators fix the issue for the language(s), book(s), and resource(s) combination you have requested."
-        logger.debug(
+        logger.info(
             "Due to potential issues with the source content, here is the HTML content for you to inspect: %s",
             content,
         )

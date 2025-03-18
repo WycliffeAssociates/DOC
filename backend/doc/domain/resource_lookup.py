@@ -184,7 +184,7 @@ def fetch_source_data(
     json_file_path = join(assets_dir, json_file_name)
     data = None
     if file_needs_update(json_file_path):
-        logger.debug("About to download %s...", json_file_name)
+        logger.info("About to download %s...", json_file_name)
         try:
             data = download_data(json_file_path)
             # logger.debug("data: %s", data)
@@ -192,7 +192,7 @@ def fetch_source_data(
             logger.exception("Caught exception: ")
     else:
         if exists(json_file_path):
-            logger.debug("json_file_path, %s exists", json_file_path)
+            logger.info("json_file_path, %s exists", json_file_path)
             content = read_file(json_file_path)
             # logger.debug("json data: %s", content)
             data = json.loads(content)
@@ -241,7 +241,7 @@ query MyQuery {
             json.dump(data, file, indent=4)
 
     def fetch_cached_data() -> Any:
-        logger.debug("About to fetch cached data API results from %s", jsonfile_path)
+        logger.info("About to fetch cached data API results from %s", jsonfile_path)
         content = _read_file(jsonfile_path)
         return json.loads(content)
 
@@ -250,20 +250,20 @@ query MyQuery {
         if response.status_code == 200:
             data_payload = response.json().get("data", {})
             if "git_repo" in data_payload:
-                logger.debug("Writing json data to: %s", jsonfile_path)
+                logger.info("Writing json data to: %s", jsonfile_path)
                 _write_json_to_file(jsonfile_path, data_payload)
                 return data_payload
             else:
-                logger.debug("Invalid payload structure, using cached data.")
+                logger.info("Invalid payload structure, using cached data.")
                 return fetch_cached_data()
         else:
-            logger.debug(
+            logger.info(
                 "Failed to get data from data API, graphql API might be down..."
             )
             return fetch_cached_data()
     except requests.RequestException as e:
         logger.exception("Request failed: %s", e)
-        logger.debug("Failed to get data from data API, API might be down...")
+        logger.info("Failed to get data from data API, API might be down...")
         return fetch_cached_data()
 
 
@@ -296,7 +296,7 @@ query MyQuery {
         response = requests.post(str(data_api_url), json=payload)
         if response.status_code == 200:
             data = response.json()
-            logger.debug("Writing json data to: %s", jsonfile_path)
+            logger.info("Writing json data to: %s", jsonfile_path)
             # Filter out empty gateway_languages entries
             with open(jsonfile_path, "w") as fp:
                 fp.write(str(json.dumps(data["data"])))
@@ -309,7 +309,7 @@ query MyQuery {
             }
             return filtered_data
         else:
-            logger.debug(
+            logger.info(
                 "Failed to get data from data API, graphql API might be down..."
             )
             response.raise_for_status()
@@ -341,7 +341,7 @@ def get_gateway_languages(
     json_file_path = join(working_dir, json_file_name)
     data = None
     if file_needs_update(json_file_path):
-        logger.debug("About to download %s...", json_file_name)
+        logger.info("About to download %s...", json_file_name)
         try:
             data = fetch_gateway_languages(json_file_path)
             # logger.debug("data: %s", data)
@@ -349,7 +349,7 @@ def get_gateway_languages(
             logger.exception("Caught exception: ")
     else:
         if exists(json_file_path):
-            logger.debug("json_file_path, %s, does exist", json_file_path)
+            logger.info("json_file_path, %s, does exist", json_file_path)
             content = read_file(json_file_path)
             # logger.debug("json data: %s", content)
             data = json.loads(content)
@@ -449,7 +449,7 @@ def resource_types(
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
                     if last_segment[-4:] != "docx":
                         clone_git_repo(url, resource_filepath)
-                    logger.debug("resource_filepath: %s", resource_filepath)
+                    # logger.debug("resource_filepath: %s", resource_filepath)
                     # Check repo on disk to see if at least one of the books
                     # chosen by the user is there
                     book_assets = []
@@ -498,7 +498,7 @@ def resource_types(
                     # choosable resource type. Also, TW resource is language specific and
                     # not book specific so it can be added here if the user chose it.
                     if book_assets or resource_type == "tw":
-                        logger.debug("About to add resource type: %s", resource_type)
+                        logger.info("About to add resource type: %s", resource_type)
                         resource_types.append(
                             (
                                 resource_type,
@@ -552,14 +552,14 @@ def usfm_resource_types_and_book_tuples(
                             lang_direction=LangDirEnum.LTR,
                             book_code=book_code,
                         )
-                        logger.debug("dto: %s", dto)
+                        # logger.debug("dto: %s", dto)
                         resource_filepath = prepare_resource_filepath(dto)
                         provision_asset_files(dto.url, resource_filepath)
                         content_file = parsing.usfm_asset_file(
                             dto,
                             resource_filepath,
                         )
-                        logger.debug("content_file: %s", content_file)
+                        # logger.debug("content_file: %s", content_file)
                         if content_file:
                             resource_type_and_book_tuples.add(
                                 (resource_type, book_code)
@@ -764,6 +764,7 @@ def get_book_codes_for_lang(
                             book_code = usfm_file_components[1]
                             resource_type = repo_components[1]
                             content = read_file(usfm_file) if usfm_file else ""
+                            logger.debug("usfm_file: %s", usfm_file)
                             frontmatter, _ = parsing.split_usfm_by_chapters(
                                 lang_code, resource_type, book_code, content
                             )
@@ -1084,7 +1085,7 @@ def resource_lookup_dto(
                             resource_lookup_dto
                         )
     except:
-        logger.debug(
+        logger.info(
             "Problem creating ResourceLookupDto instance for %s, %s, %s, likely a data problem",
             lang_code,
             resource_type,
@@ -1144,17 +1145,15 @@ def clone_git_repo(
         )
     else:
         command = "git clone --depth=1 '{}' '{}'".format(url, resource_filepath)
-    if isdir(resource_filepath):
-        logger.info("No need to clone repo as it already exists: %s", resource_filepath)
-    else:
-        logger.debug("Attempting to clone into %s ...", resource_filepath)
+    if not isdir(resource_filepath):
+        logger.info("Attempting to clone into %s ...", resource_filepath)
         try:
             subprocess.call(command, shell=True)
-            logger.debug("git command: %s", command)
-            logger.debug("git clone succeeded.")
+            logger.info("git command: %s", command)
+            logger.info("git clone succeeded.")
         except subprocess.SubprocessError:
-            logger.debug("git command: %s", command)
-            logger.debug("git clone failed!")
+            logger.info("git command: %s", command)
+            logger.info("git clone failed!")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="git clone failed",

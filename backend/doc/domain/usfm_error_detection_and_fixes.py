@@ -342,7 +342,7 @@ def fix_missing_space_before_number(content: str) -> str:
             and character_before_before_number.isdigit()
             and match.group(1).isdigit()
         ):
-            logger.debug(
+            logger.info(
                 "Actually, it wasn't missing a space before number after all upon further checking"
             )
             return content
@@ -413,9 +413,11 @@ def fix_standalone_verse_numbers(content: str) -> str:
         logger.debug("context_for_standalone_verse: %s", context_for_standalone_verse)
         # Extract all standalone numbers
         matches = [int(m.group()) for m in re.finditer(r"\b\d+\b", content)]
+        # logger.debug("standalone number matches: %s", matches)
         is_ascending = all(
             earlier < later for earlier, later in zip(matches, matches[1:])
         )
+        # logger.debug("is_ascending: %s", is_ascending)
         num_matches = len(matches)
         if (
             not re.compile(r"""\\v \d+""").search(context_for_standalone_verse)
@@ -427,7 +429,7 @@ def fix_standalone_verse_numbers(content: str) -> str:
                 content,
             )
         else:
-            logger.debug(
+            logger.info(
                 "Actually, we can't be certain it was a standalone verse number after all upon further checking"
             )
     return content
@@ -474,9 +476,8 @@ def fix_usfm(
     """
     Detect and correct many USFM structural issues in USFM source.
     """
-    logger.debug("usfm_content: %s", usfm_content)
+    logger.debug("Possibly defective USFM content: %s", usfm_content)
     corrected_usfm_content: str = usfm_content
-
     # NOTE This is called in a different place now, leaving commented out fo now.
     # if compiled_patterns["remove_null_bytes_and_control_characters"].search(
     #     corrected_usfm_content

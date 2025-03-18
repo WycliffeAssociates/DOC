@@ -411,8 +411,10 @@ def fix_standalone_verse_numbers(content: str) -> str:
         end_index = min(len(content), match.end() + length_of_context)
         context_for_standalone_verse = content[start_index:end_index]
         logger.debug("context_for_standalone_verse: %s", context_for_standalone_verse)
-        # Extract all standalone numbers
-        matches = [int(m.group()) for m in re.finditer(r"\b\d+\b", content)]
+        # Extract all standalone numbers (likely verse numbers) from
+        # content but skip the first part, 6 characters, of content
+        # which could contain a chapter marker and its value.
+        matches = [int(m.group()) for m in re.finditer(r"\b\d+\b", content[7:])]
         # logger.debug("standalone number matches: %s", matches)
         is_ascending = all(
             earlier < later for earlier, later in zip(matches, matches[1:])

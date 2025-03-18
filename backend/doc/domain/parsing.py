@@ -1053,7 +1053,7 @@ def attempt_to_make_usfm_parseable(
     return filename
 
 
-# Used by STET and RG_PASSAGES
+# Used by STET and PASSAGES apps
 def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> str:
     if chapter_num in usfm_book.chapters:
         chapter = usfm_book.chapters[chapter_num]

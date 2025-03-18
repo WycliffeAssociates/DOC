@@ -39,8 +39,7 @@ def parse_bible_reference(
             verse_ref=verse_ref,
         )
         return bible_reference
-    else:
-        # if len(bible_reference_components) == 2:
+    else:  # if len(bible_reference_components) == 2:
         book_name = bible_reference_components[0]
         book_code = get_book_code(book_name)
         chapter = bible_reference_components[1].split(":")[0]

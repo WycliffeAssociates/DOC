@@ -751,7 +751,6 @@ def select_assembly_layout_kind(
     DocumentRequest's validator. If we hadn't then we wouldn't be able
     to make the assumptions this function makes.
     """
-
     # The assembly_layout_kind does not get set by the UI, so if it is set
     # now that means that the request is coming from a client other than the UI.
     # In either case validation of the DocumentRequest instance will have
@@ -836,91 +835,59 @@ def get_languages_title_page_strings(
     resource_lookup_dtos: Sequence[ResourceLookupDto],
     usfm_books: Sequence[USFMBook],
 ) -> tuple[str, str]:
-    """
-    Return a list of tuples with the following form:
-    [(lang_name, [book_code1, book_code2, ...]), ...]
-    E.g.,
-    [("English", ["mat", "mrk"]), ("français (French)", ["mat", "mrk"])]
-    >>> from doc.domain import document_generator, model
-    >>> # resource_lookup_dtos=[model.ResourceLookupDto(lang_code="en", lang_name="English", resource_type="ulb-wa", resource_type_name="Scripture", book_code="mat", source="usfm"), model.ResourceLookupDto(lang_code="fr", lang_name="français (French)", resource_type="ulb", resource_type_name="Translation Notes", book_code="mat", source="usfm")]
-    >>> # resource_lookup_dtos
-    >>> #document_generator.get_languages_title_page_strings(resource_lookup_dtos)
-    """
     lang_codes = list(
         {resource_lookup_dto.lang_code for resource_lookup_dto in resource_lookup_dtos}
     )
-    language0_resource_lookup_dtos = [
-        resource_lookup_dto
-        for resource_lookup_dto in resource_lookup_dtos
-        if resource_lookup_dto.lang_code == lang_codes[0]
-    ]
-    lang0_book_names = []
-    lang0_resource_type_names = []
-    lang0_title = ""
-    lang1_title = ""
-    lang1_book_names = []
-    lang1_resource_type_names = []
+    lang0_book_names = set()
+    lang0_resource_type_names = set()
+    lang1_book_names = set()
+    lang1_resource_type_names = set()
+    lang0_title, lang1_title = "", ""
     if usfm_books:
-        if (
-            usfm_books[0].national_book_name
-            and usfm_books[0].national_book_name not in lang0_book_names
-        ):
-            lang0_book_names.append(usfm_books[0].national_book_name)
-        if usfm_books[0].resource_type_name not in lang0_resource_type_names:
-            lang0_resource_type_names.append(usfm_books[0].resource_type_name)
-        lang0_title = "{}: {} for {}".format(
-            usfm_books[0].lang_name,
-            ", ".join(sorted(lang0_resource_type_names)),
-            ", ".join(sorted(lang0_book_names)),
-        )
-    elif language0_resource_lookup_dtos:
-        for lang0_dto in language0_resource_lookup_dtos:
-            book_name = BOOK_NAMES[lang0_dto.book_code]
-            if book_name and book_name not in lang0_book_names:
-                lang0_book_names.append(book_name)
-            if lang0_dto.resource_type_name not in lang0_resource_type_names:
-                lang0_resource_type_names.append(lang0_dto.resource_type_name)
-        lang0_title = "{}: {} for {}".format(
-            language0_resource_lookup_dtos[0].lang_name,
-            ", ".join(sorted(lang0_resource_type_names)),
-            ", ".join(sorted(lang0_book_names)),
-        )
+        lang0_books = [
+            usfm_book
+            for usfm_book in usfm_books
+            if usfm_book.lang_code == lang_codes[0]
+        ]
+        for book in lang0_books:
+            if book.national_book_name:
+                lang0_book_names.add(book.national_book_name)
+            lang0_resource_type_names.add(book.resource_type_name)
+        lang0_title = f"{lang0_books[0].lang_name}: {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
+    else:
+        language0_resource_lookup_dtos = [
+            resource_lookup_dto
+            for resource_lookup_dto in resource_lookup_dtos
+            if resource_lookup_dto.lang_code == lang_codes[0]
+        ]
+        for dto in language0_resource_lookup_dtos:
+            lang0_book_names.add(BOOK_NAMES[dto.book_code])
+            lang0_resource_type_names.add(dto.resource_type_name)
+        if language0_resource_lookup_dtos:
+            lang0_title = f"{language0_resource_lookup_dtos[0].lang_name}: {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
     if len(lang_codes) > 1:
-        if len(usfm_books) > 1:
-            language1_usfm_books = [
-                usfm_book
-                for usfm_book in usfm_books
-                if usfm_book.lang_code == lang_codes[1]
-            ]
-            for lang1_usfm_book in language1_usfm_books:
-                book_name = lang1_usfm_book.national_book_name
-                if book_name and book_name not in lang1_book_names:
-                    lang1_book_names.append(book_name)
-                if lang1_usfm_book.resource_type_name not in lang1_resource_type_names:
-                    lang1_resource_type_names.append(lang1_usfm_book.resource_type_name)
-                lang1_title = "{}: {} for {}".format(
-                    language1_usfm_books[0].lang_name,
-                    ", ".join(sorted(lang1_resource_type_names)),
-                    ", ".join(sorted(lang1_book_names)),
-                )
+        lang1_books = [
+            usfm_book
+            for usfm_book in usfm_books
+            if usfm_book.lang_code == lang_codes[1]
+        ]
+        for book in lang1_books:
+            if book.national_book_name:
+                lang1_book_names.add(book.national_book_name)
+            lang1_resource_type_names.add(book.resource_type_name)
+        if lang1_books:
+            lang1_title = f"{lang1_books[0].lang_name}: {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
         else:
             language1_resource_lookup_dtos = [
                 resource_lookup_dto
                 for resource_lookup_dto in resource_lookup_dtos
                 if resource_lookup_dto.lang_code == lang_codes[1]
             ]
-            for lang1_dto in language1_resource_lookup_dtos:
-                book_name = BOOK_NAMES[lang1_dto.book_code]
-                if book_name and book_name not in lang1_book_names:
-                    lang1_book_names.append(book_name)
-                if lang1_dto.resource_type_name not in lang1_resource_type_names:
-                    lang1_resource_type_names.append(lang1_dto.resource_type_name)
+            for dto in language1_resource_lookup_dtos:
+                lang1_book_names.add(BOOK_NAMES[dto.book_code])
+                lang1_resource_type_names.add(dto.resource_type_name)
             if language1_resource_lookup_dtos:
-                lang1_title = "{}: {} for {}".format(
-                    language1_resource_lookup_dtos[0].lang_name,
-                    ", ".join(sorted(lang1_resource_type_names)),
-                    ", ".join(sorted(lang1_book_names)),
-                )
+                lang1_title = f"{language1_resource_lookup_dtos[0].lang_name}: {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
     return lang0_title, lang1_title
 
 

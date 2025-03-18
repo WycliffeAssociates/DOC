@@ -35,7 +35,7 @@ def test_lookup_successes() -> None:
             assert resource_lookup_dto.url
 
 
-# NOTE This fails because zh doesn't use ulb for its USFM resource
+# NOTE This fails, on purpose, because zh doesn't use ulb for its USFM resource
 # type but 'cuv' instead, i.e., zh ulb is a special case.
 def test_lookup_failures() -> None:
     assembly_strategy_kind: model.AssemblyStrategyEnum = (

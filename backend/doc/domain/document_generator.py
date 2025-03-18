@@ -166,21 +166,14 @@ def generate_document(
         content = create_title_page_and_wrap_in_template(
             content, document_request, found_resource_lookup_dtos, usfm_books
         )
-        write_html_content_to_file(
-            content,
-            html_filepath_,
-        )
+        write_html_content_to_file(content, html_filepath_)
     else:
         logger.info("Cache hit for %s", html_filepath_)
     # Immediately return pre-built PDF if the document has previously been
     # generated and is fresh enough.
     if document_request.generate_pdf and file_needs_update(pdf_filepath_):
         current_task.update_state(state="Converting to PDF")
-        convert_html_to_pdf(
-            html_filepath_,
-            pdf_filepath_,
-            document_request_key_,
-        )
+        convert_html_to_pdf(html_filepath_, pdf_filepath_, document_request_key_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(filepath=pdf_filepath_, mime_type=("application", "pdf"))
@@ -193,11 +186,7 @@ def generate_document(
             )
     if document_request.generate_epub and file_needs_update(epub_filepath_):
         current_task.update_state(state="Converting to ePub")
-        convert_html_to_epub(
-            html_filepath_,
-            epub_filepath_,
-            document_request_key_,
-        )
+        convert_html_to_epub(html_filepath_, epub_filepath_, document_request_key_)
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(

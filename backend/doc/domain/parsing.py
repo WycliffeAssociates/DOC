@@ -254,7 +254,6 @@ def split_usfm_by_chapters(
         chapter_markers = re.findall(chapter_regex, usfm_text)
         chapters = re.split(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
-
     logger.debug("chapter_markers: %s", chapter_markers)
 
     def needs_fixing() -> bool:

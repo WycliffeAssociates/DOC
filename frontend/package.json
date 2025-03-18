@@ -45,5 +45,6 @@
     "@sveltejs/adapter-node": "^5.2.0",
     "daisyui": "^4.7.2",
     "logrocket": "^7.0.0"
+    "zod": "^3.24.2"
   }
 }

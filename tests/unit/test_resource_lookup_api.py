@@ -64,3 +64,8 @@ def test_lookup_failures() -> None:
         )
         if resource_lookup_dto:
             assert not resource_lookup_dto.url
+
+
+def test_nt_survey_rg_passages() -> None:
+    bible_references = resource_lookup.nt_survey_rg_passages()
+    assert bible_references

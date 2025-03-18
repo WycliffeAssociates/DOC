@@ -5,6 +5,7 @@ import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
 from doc.domain import document_generator, model, resource_lookup
+from doc.reviewers_guide.model import BibleReference
 
 from fastapi import HTTPException, status
 
@@ -134,6 +135,15 @@ async def book_codes_for_lang_from_usfm_only(
 @router.get("/chapters_in_books")
 async def chapters_in_books() -> dict[str, list[int]]:
     return resource_lookup.chapters_in_books()
+
+
+@router.get("/nt_survey_rg_passages")
+async def nt_survey_rg_passages() -> Sequence[BibleReference]:
+    """
+    Return list of reified NT Survey Reviewer's Guide passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.nt_survey_rg_passages()
+    return bible_references
 
 
 # @router.get("/chapters_in_book/{book_code}")

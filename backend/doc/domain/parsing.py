@@ -40,23 +40,23 @@ from doc.domain.model import (
     USFMChapter,
     VerseRef,
 )
-from doc.reviewers_guide.model import RGBook
-from doc.reviewers_guide.parser import get_rg_books
 from doc.domain.usfm_error_detection_and_fixes import (
     RESOURCES_WITH_USFM_DEFECTS,
     fix_usfm,
 )
 from doc.markdown_transforms import markdown_transformer
+from doc.reviewers_guide.model import RGBook
+from doc.reviewers_guide.parser import get_rg_books
 from doc.utils.file_utils import read_file
+from doc.utils.text_utils import (
+    chapter_label_sans_numeric_part,
+    normalize_localized_book_name,
+)
 from doc.utils.tw_utils import (
     localized_translation_word,
     translation_word_filepaths,
     translation_words_dict,
     tw_resource_dir,
-)
-from doc.utils.text_utils import (
-    chapter_label_sans_numeric_part,
-    normalize_localized_book_name,
 )
 
 logger = settings.logger(__name__)

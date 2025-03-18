@@ -184,7 +184,7 @@ def fetch_source_data(
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
     >>> result["git_repo"][0]
-    {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
+    {'repo_url': 'https://content.bibletranslationtools.org/bahasatech.indotengah/adn_1jn_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Adang', 'ietf_code': 'adn', 'national_name': 'Adang', 'direction': 'ltr'}}}
     """
     json_file_path = join(assets_dir, json_file_name)
     data = None
@@ -215,7 +215,7 @@ def download_data(
     >>> ();result = resource_lookup.download_data("assets_download/resources.json");() # doctest: +ELLIPSIS
     (...)
     >>> result["git_repo"][0]
-    {'repo_url': 'https://content.bibletranslationtools.org/klero/ach-SS-acholi_tit_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Acholi', 'ietf_code': 'ach-SS-acholi', 'national_name': 'Acholi', 'direction': 'ltr'}}}
+    {'repo_url': 'https://content.bibletranslationtools.org/bahasatech.indotengah/adn_1jn_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Adang', 'ietf_code': 'adn', 'national_name': 'Adang', 'direction': 'ltr'}}}
     """
     graphql_query = """
 query MyQuery {
@@ -381,7 +381,7 @@ def lang_codes_and_names(
     >>> ();result = resource_lookup.lang_codes_and_names();() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
-    ('abz', 'Abui', False)
+    ('cdi', ': Chodri (: Chaudhari)', False)
     """
     gateway_languages_ = get_gateway_languages()
     if not gateway_languages_:
@@ -531,8 +531,8 @@ def usfm_resource_types_and_book_tuples(
     (...)
     >>> ();tuples = resource_lookup.usfm_resource_types_and_book_tuples(lang_code, ",".join([book[0] for book in books]));() # doctest: +ELLIPSIS
     (...)
-    >>> tuples
-    [('reg', 'tit'), ('reg', '2ti'), ('reg', 'php'), ('reg', 'rom'), ('reg', 'gal'), ('reg', '1ti'), ('reg', '1th'), ('reg', 'act'), ('reg', '1co'), ('reg', '2th'), ('reg', '2co'), ('reg', 'col'), ('reg', 'eph'), ('reg', 'jhn'), ('reg', 'luk'), ('reg', 'mat'), ('reg', 'mrk')]
+    >>> sorted(tuples, key=lambda value: value[1])
+    [('reg', '1co'), ('reg', '1jn'), ('reg', '1pe'), ('reg', '1th'), ('reg', '1ti'), ('reg', '2co'), ('reg', '2jn'), ('reg', '2pe'), ('reg', '2th'), ('reg', '2ti'), ('reg', '3jn'), ('reg', 'act'), ('reg', 'col'), ('reg', 'eph'), ('reg', 'gal'), ('reg', 'heb'), ('reg', 'jas'), ('reg', 'jhn'), ('reg', 'jud'), ('reg', 'luk'), ('reg', 'mat'), ('reg', 'mrk'), ('reg', 'phm'), ('reg', 'php'), ('reg', 'rev'), ('reg', 'rom'), ('reg', 'tit')]
     """
     book_codes = book_codes_str.split(",")
     data = fetch_source_data()
@@ -584,7 +584,8 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     >>> ();data = resource_lookup.shared_book_codes("pt-br", "es-419");() # doctest: +ELLIPSIS
     (...)
     >>> list(data)
-    [('gen', 'Genesis'), ('exo', 'Exodus'), ('lev', 'Leviticus'), ('num', 'Numbers'), ('deu', 'Deuteronomy'), ('jos', 'Joshua'), ('jdg', 'Judges'), ('rut', 'Ruth'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Kings'), ('2ki', '2 Kings'), ('1ch', '1 Chronicles'), ('2ch', '2 Chronicles'), ('ezr', 'Ezra'), ('neh', 'Nehemiah'), ('est', 'Esther'), ('job', 'Job'), ('psa', 'Psalms'), ('pro', 'Proverbs'), ('ecc', 'Ecclesiastes'), ('sng', 'Song of Solomon'), ('isa', 'Isaiah'), ('jer', 'Jeremiah'), ('lam', 'Lamentations'), ('ezk', 'Ezekiel'), ('dan', 'Daniel'), ('hos', 'Hosea'), ('jol', 'Joel'), ('amo', 'Amos'), ('oba', 'Obadiah'), ('jon', 'Jonah'), ('mic', 'Micah'), ('nam', 'Nahum'), ('hab', 'Habakkuk'), ('zep', 'Zephaniah'), ('hag', 'Haggai'), ('zec', 'Zechariah'), ('mal', 'Malachi'), ('mat', 'Matthew'), ('mrk', 'Mark'), ('luk', 'Luke'), ('jhn', 'John'), ('act', 'Acts'), ('rom', 'Romans'), ('1co', '1 Corinthians'), ('2co', '2 Corinthians'), ('gal', 'Galatians'), ('eph', 'Ephesians'), ('php', 'Philippians'), ('col', 'Colossians'), ('1th', '1 Thessalonians'), ('2th', '2 Thessalonians'), ('1ti', '1 Timothy'), ('2ti', '2 Timothy'), ('tit', 'Titus'), ('phm', 'Philemon'), ('heb', 'Hebrews'), ('jas', 'James'), ('1pe', '1 Peter'), ('2pe', '2 Peter'), ('1jn', '1 John'), ('2jn', '2 John'), ('3jn', '3 John'), ('jud', 'Jude'), ('rev', 'Revelation')]
+    [('gen', 'Gênesis'), ('exo', 'Êxodo'), ('lev', 'Levítico'), ('num', 'Números'), ('deu', 'Deuteronômio'), ('jos', 'Josué'), ('jdg', 'Juízes'), ('rut', 'Rute'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reis'), ('2ki', '2 Reis'), ('1ch', '1 Crônicas'), ('2ch', '2 Crônicas'), ('ezr', 'Esdras'), ('neh', 'Neemias'), ('est', 'Ester'), ('job', 'Jó'), ('psa', 'Salmos'), ('pro', 'Provérbios'), ('ecc', 'Eclesiastes'), ('sng', 'Cantares'), ('isa', 'Isaías'), ('jer', 'Jeremias'), ('lam', 'Lamentações'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseias'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Obadias'), ('jon', 'Jonas'), ('mic', 'Miqueias'), ('nam', 'Naum'), ('hab', 'Habacuque'), ('zep', 'Sofonias'), ('hag', 'Ageu'), ('zec', 'Zacarias'), ('mal', 'Malaquias'), ('mat', 'Mateus'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'João'), ('act', 'Atos'), ('rom', 'Romanos'), ('1co', '1 Coríntios'), ('2co', '2 Coríntios'), ('gal', 'Gálatas'), ('eph', 'Efésios'), ('php', 'Filipenses'), ('col', 'Colossenses'), ('1th', '1 Tessalonicenses'), ('2th', '2 Tessalonicenses'), ('1ti', '1 Timóteo'), ('2ti', '2 Timóteo'), ('tit', 'Tito'), ('phm', 'Filemom'), ('heb', 'Hebreus'), ('jas', 'Tiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 João'), ('2jn', '2 João'), ('3jn', '3 João'), ('jud', 'Judas'), ('rev', 'Apocalipse')]
+
     """
     lang0_book_codes = book_codes_for_lang(lang0_code)
     lang1_book_codes = book_codes_for_lang(lang1_code)
@@ -894,7 +895,7 @@ def book_codes_for_lang(
     >>> ();result = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
-    ('gen', 'Genesis')
+    ('gen', 'Gênesis')
     """
     return get_book_codes_for_lang(
         lang_code,
@@ -921,7 +922,7 @@ def book_codes_for_lang_from_usfm_only(
     >>> ();result = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
-    ('gen', 'Genesis')
+    ('gen', 'Gênesis')
     """
     return get_book_codes_for_lang(
         lang_code,

@@ -74,8 +74,8 @@ logger = settings.logger(__name__)
 # )
 @worker.app.task
 def generate_document(
-    document_request_json: Json[Any], output_dir: str = settings.DOCUMENT_OUTPUT_DIR
-) -> Json[Any]:
+    document_request_json: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+) -> str:
     """
     This is the main entry point for this module for non-docx generation.
     >>> from doc.domain import document_generator

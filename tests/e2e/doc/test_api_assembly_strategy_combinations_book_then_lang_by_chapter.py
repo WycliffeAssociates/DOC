@@ -5159,7 +5159,6 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_book_language_o
         check_finished_document_with_verses_success(response)
 
 
-@pytest.mark.focus
 def test_en_ulb_gal_es_419_ulb_gal_book_language_order_1c_by_chapter_check_blo_algo_used() -> (
     None
 ):

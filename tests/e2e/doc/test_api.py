@@ -1717,7 +1717,6 @@ def test_en_ulb_1jn_en_ulb_3jn_language_book_order_with_no_email_1c() -> None:
             ), "Document should have had both 1 John and 3 John in it, but it didn't"
 
 
-@pytest.mark.focus
 def test_en_tn_mat_with_book_intro() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

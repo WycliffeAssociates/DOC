@@ -1,26 +1,26 @@
 """Models for reviewer's guide"""
 
-from dataclasses import dataclass
-from typing import NamedTuple, Optional, final
+from typing import Optional, final
 from pprint import pformat
 from doc.domain.model import ChapterNum, LangDirEnum
+from pydantic import BaseModel
 
 
 @final
-class Part1Item(NamedTuple):
+class Part1Item(BaseModel):
     text: str
     reference: str
 
 
 @final
-class Part2Item(NamedTuple):
+class Part2Item(BaseModel):
     reference: str
     question: str
     answer: str
 
 
 @final
-class BibleReference(NamedTuple):
+class BibleReference(BaseModel):
     book_code: str
     book_name: str
     chapter: int
@@ -28,8 +28,7 @@ class BibleReference(NamedTuple):
 
 
 @final
-@dataclass
-class ParsedText:
+class ParsedText(BaseModel):
     bible_reference: BibleReference
     background: Optional[str]
     directive: str
@@ -41,12 +40,12 @@ class ParsedText:
 
 
 @final
-class RGChapter(NamedTuple):
+class RGChapter(BaseModel):
     content: ParsedText
 
 
 @final
-class RGBook(NamedTuple):
+class RGBook(BaseModel):
     lang_code: str
     lang_name: str
     book_code: str

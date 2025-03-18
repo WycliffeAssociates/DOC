@@ -881,11 +881,10 @@ def books(
             )
             bc_books.append(bc_book)
         elif resource_lookup_dto.resource_type == rg_resource_type:
-            logger.debug(
-                "About to get_rg_books from: %s", f"{resource_dir}/{docx_file_path}"
-            )
+            path = join(resource_dir, docx_file_path)
+            logger.debug("About to get_rg_books from: %s", path)
             rg_books = get_rg_books(
-                f"{resource_dir}/{docx_file_path}",
+                path,
                 resource_lookup_dto.lang_code,
                 resource_lookup_dto.lang_name,
                 resource_lookup_dto.resource_type_name,

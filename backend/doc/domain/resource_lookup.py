@@ -766,7 +766,11 @@ def get_book_codes_for_lang(
                             content = read_file(usfm_file) if usfm_file else ""
                             logger.debug("usfm_file: %s", usfm_file)
                             frontmatter, _ = parsing.split_usfm_by_chapters(
-                                lang_code, resource_type, book_code, content
+                                lang_code,
+                                resource_type,
+                                book_code,
+                                content,
+                                "-" in usfm_file,  # USFM file per book has hyphen in it
                             )
                             localized_book_name = parsing.maybe_localized_book_name(
                                 frontmatter

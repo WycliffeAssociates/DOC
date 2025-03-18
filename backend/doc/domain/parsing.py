@@ -235,6 +235,7 @@ def split_usfm_by_chapters(
     resource_type: str,
     book_code: str,
     usfm_text: str,
+    single_file_per_book: bool,
     chapter_regex: str = CHAPTER_REGEX,
     chapter_label_regex: str = CHAPTER_LABEL_REGEX,
     resources_with_usfm_defects: Sequence[
@@ -246,7 +247,9 @@ def split_usfm_by_chapters(
     r"""
     Split the USFM text into chapters based on the \c marker
     """
-    chapter_markers = re.findall(chapter_label_regex, usfm_text)
+    chapter_markers = []
+    if not single_file_per_book:
+        chapter_markers = re.findall(chapter_label_regex, usfm_text)
     chapters = []
     if chapter_markers:
         chapters = re.split(chapter_label_regex, usfm_text)
@@ -399,6 +402,9 @@ def usfm_book_content(
         resource_lookup_dto.resource_type,
         resource_lookup_dto.book_code,
         content,
+        (
+            "-" in content_file if content_file else False
+        ),  # USFM file per book has hyphen in it
     )
     localized_book_name = maybe_localized_book_name(frontmatter)
     updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]

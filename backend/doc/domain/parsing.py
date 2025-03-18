@@ -128,14 +128,9 @@ def print_directory_contents(directory: str) -> None:
     Useful for debugging layout on Github Action virtual machine
     """
     for root, dirs, files in walk(directory):
-        # Print the current directory path
         logger.debug("Directory: %s", root)
-
-        # Print all files in the current directory
         for file in files:
             logger.debug("  File: %s", file)
-
-        # Print all subdirectories in the current directory
         for dir in dirs:
             logger.debug("  Subdirectory: %s", dir)
 

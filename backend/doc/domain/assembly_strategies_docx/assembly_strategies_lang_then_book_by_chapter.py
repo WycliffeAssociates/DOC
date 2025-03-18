@@ -294,9 +294,6 @@ def assemble_usfm_by_book(
                 )
                 composer.append(subdoc)
                 add_one_column_section(doc)
-                # TODO Is this necessary? I see two hr after RG
-                # p = doc.add_paragraph()
-                # add_hr(p)
             # TODO Get feedback on whether we should allow a user to select a primary _and_
             # a secondary USFM resource. If we want to limit the user to only one USFM per
             # document then we would want to control that in the UI and maybe also at the API

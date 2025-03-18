@@ -1,24 +1,9 @@
 from doc.utils.template_env import env
 import smtplib
-from os.path import basename, exists, join
+from os.path import basename
 from typing import Optional
 from doc.config import settings
-from doc.domain.model import (
-    AssemblyLayoutEnum,
-    AssemblyStrategyEnum,
-    Attachment,
-    BCBook,
-    ChunkSizeEnum,
-    DocumentRequest,
-    DocumentRequestSourceEnum,
-    ResourceLookupDto,
-    ResourceRequest,
-    TNBook,
-    TQBook,
-    TWBook,
-    TWNameContentPair,
-    USFMBook,
-)
+from doc.domain.model import Attachment
 from email.encoders import encode_base64
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart

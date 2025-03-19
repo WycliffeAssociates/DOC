@@ -1104,6 +1104,10 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
             verse_number_ = verse_number.group(1)
             # Remove versemarker
             verse_text = re.sub(r'<sup class="versemarker">.*?</sup>', "", verse_span)
+            # Remove footnotes numbers
+            verse_text = re.sub(
+                r'<sup id=".*?" class="caller">.*?</sup>', "", verse_text
+            )
             # Add to the dictionary with verse number as the key and verse text as the value
             verse_dict[verse_number_] = verse_text
     return verse_dict

@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Optional
 
@@ -160,24 +161,24 @@ def add_highlighted_html_to_docx_for_word(
     html_to_docx = HtmlToDocx()
     temp_doc = Document()
     html_to_docx.add_html_to_document(html, temp_doc)
-    keyword_lower = keyword.lower()
+    # Create a case-insensitive regex pattern for word-boundary matching
+    keyword_pattern = rf"\b{re.escape(keyword)}\b"
+    regex = re.compile(keyword_pattern, re.IGNORECASE)
     # Parse through all paragraphs in the temporary document
     for temp_paragraph in temp_doc.paragraphs:
-        text = temp_paragraph.text.strip()
+        text = temp_paragraph.text
         start = 0
-        while True:
-            # Case-insensitive search for the keyword
-            start_idx = text.lower().find(keyword_lower, start)
-            if start_idx == -1:
-                break
-            # Add text before the keyword
-            if start_idx > start:
-                paragraph.add_run(text[start:start_idx])
-            # Add the bold keyword
-            bold_run = paragraph.add_run(text[start_idx : start_idx + len(keyword)])
+        # Iterate over matches in the text
+        for match in regex.finditer(text):
+            # Add text before the match
+            if match.start() > start:
+                paragraph.add_run(text[start : match.start()])
+            # Add the bolded keyword with original casing
+            bold_run = paragraph.add_run(text[match.start() : match.end()])
             bold_run.bold = True
-            start = start_idx + len(keyword)
-        # Add the remaining text
+            # Move start position forward
+            start = match.end()
+        # Add any remaining text after the last match
         if start < len(text):
             paragraph.add_run(text[start:])
 
@@ -195,33 +196,26 @@ def add_highlighted_html_to_docx_for_words(
     html_to_docx = HtmlToDocx()
     temp_doc = Document()
     html_to_docx.add_html_to_document(html, temp_doc)
-    # Convert keywords to lowercase for case-insensitive matching
-    keywords_lower = {kw.lower(): kw for kw in keywords}
+    # Create a case-insensitive regex pattern for word-boundary matching
+    keyword_pattern = r"\b(" + "|".join(re.escape(kw) for kw in keywords) + r")\b"
+    regex = re.compile(keyword_pattern, re.IGNORECASE)
     # Parse through all paragraphs in the temporary document
     for temp_paragraph in temp_doc.paragraphs:
-        text = temp_paragraph.text.strip()
+        text = temp_paragraph.text
         start = 0
-        while start < len(text):
-            # Find the next occurrence of any keyword
-            next_idx, found_keyword = min(
-                (
-                    (text.lower().find(kw, start), kw)
-                    for kw in keywords_lower
-                    if text.lower().find(kw, start) != -1
-                ),
-                default=(-1, None),
-                key=lambda x: x[0],
-            )
-            if next_idx == -1 or found_keyword is None:
-                paragraph.add_run(text[start:])
-                break
-            # Add text before the keyword
-            if next_idx > start:
-                paragraph.add_run(text[start:next_idx])
-            # Add the bold keyword
-            bold_run = paragraph.add_run(text[next_idx : next_idx + len(found_keyword)])
+        # Iterate over matches in the text
+        for match in regex.finditer(text):
+            # Add text before the match
+            if match.start() > start:
+                paragraph.add_run(text[start : match.start()])
+            # Add the bolded keyword with original casing
+            bold_run = paragraph.add_run(text[match.start() : match.end()])
             bold_run.bold = True
-            start = next_idx + len(found_keyword)
+            # Move start position forward
+            start = match.end()
+        # Add any remaining text after the last match
+        if start < len(text):
+            paragraph.add_run(text[start:])
 
 
 def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:

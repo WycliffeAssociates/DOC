@@ -478,7 +478,7 @@ def fix_usfm(
     """
     Detect and correct many USFM structural issues in USFM source.
     """
-    logger.debug("Possibly defective USFM content: %s", usfm_content)
+    # logger.debug("Possibly defective USFM content: %s", usfm_content)
     corrected_usfm_content: str = usfm_content
     # NOTE This is called in a different place now, leaving commented out fo now.
     # if compiled_patterns["remove_null_bytes_and_control_characters"].search(

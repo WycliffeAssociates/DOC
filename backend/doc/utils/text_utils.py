@@ -28,6 +28,7 @@ def normalize_localized_book_name(localized_book_name: str) -> str:
 
 def chapter_label_sans_numeric_part(s: str) -> str:
     parts = s.rsplit(maxsplit=1)
+    logger.debug("chapter label parts: %s", parts)
     if len(parts) > 1 and parts[-1].isdigit():
         result = parts[0]
     else:

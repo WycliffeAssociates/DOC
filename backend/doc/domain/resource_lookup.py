@@ -503,7 +503,7 @@ def resource_types(
                     # choosable resource type. Also, TW resource is language specific and
                     # not book specific so it can be added here if the user chose it.
                     if book_assets or resource_type == "tw":
-                        logger.info("About to add resource type: %s", resource_type)
+                        # logger.info("About to add resource type: %s", resource_type)
                         resource_types.append(
                             (
                                 resource_type,

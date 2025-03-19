@@ -1019,7 +1019,7 @@ def attempt_to_make_usfm_parseable(
             try:
                 chapter_num = int(str(chapter_dir.name))
             except ValueError:
-                logger.debug(
+                logger.info(
                     "%s is not a valid chapter number, assigning -999 as chapter marker",
                     str(chapter_dir.name),
                 )

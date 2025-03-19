@@ -203,13 +203,13 @@ def generate_docx_document(
             non_book_name_portion_of_target_reference = extract_chapter_and_beyond(
                 verse_ref_dto.target_reference
             )
-            nationalized_source_reference = (
+            localized_source_reference = (
                 f"{source_selected_usfm_book.national_book_name} {non_book_name_portion_of_source_reference}"
                 if source_selected_usfm_book
                 and non_book_name_portion_of_source_reference
                 else verse_ref_dto.source_reference
             )
-            nationalized_target_reference = (
+            localized_target_reference = (
                 f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
                 if target_selected_usfm_book
                 and non_book_name_portion_of_target_reference
@@ -217,9 +217,9 @@ def generate_docx_document(
             )
             word_entry.verses.append(
                 VerseEntry(
-                    source_reference=nationalized_source_reference,
+                    source_reference=localized_source_reference,
                     source_text=source_verse_text,
-                    target_reference=nationalized_target_reference,
+                    target_reference=localized_target_reference,
                     target_text=target_verse_text,
                 )
             )

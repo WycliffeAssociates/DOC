@@ -167,7 +167,9 @@ def parse_text(text: str, raw_bible_reference: str) -> ParsedText:
                 part_2 = []
                 part2_directive = get_first_sentence(section)
                 qa_pattern = re.compile(
-                    r"\[((?:\d+:\d+(?:-\d+)?(?:, \d+)*))\]\s+(.*?)\?(.*?)(?=\s*\[\d+:\d+(?:-\d+)?(?:, \d+)*\])"
+                    r"\[((?:\d+:\d+(?:-\d+)?(?:, \d+)*))\]\s+([^\?\n]*)\?([^\[\n]*)"
+                    r"(?=\s*\[\d+:\d+(?:-\d+)?(?:, \d+)*\])",
+                    re.DOTALL,
                 )
                 questions_answers = qa_pattern.findall(
                     section.removeprefix(part2_directive)

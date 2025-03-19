@@ -81,5 +81,5 @@ def test_en_ln_stet_docx_contents() -> None:
         doc = Document(finished_document_path)
         assert document_contains_substring(doc, substring)
         # Luke 1:48
-        substring = "For he has lookedat the low condition of his female servant.For see, from now on all generations will call me blessed."
+        substring = "For he has looked at the low condition of his female servant.For see, from now on all generations will call me blessed."
         assert document_contains_substring(doc, substring)

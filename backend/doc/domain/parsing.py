@@ -1108,6 +1108,13 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
             verse_text = re.sub(
                 r'<sup id=".*?" class="caller">.*?</sup>', "", verse_text
             )
+            # Fix spacing issue when div class="poetry-*" type divs
+            # are used, e.g., yielding 'heartsas' for Hebrews 3:8
+            verse_text = re.sub(
+                r'<div class="poetry-1">(.*?)</div>',
+                r" \1",
+                verse_text,
+            )
             # Add to the dictionary with verse number as the key and verse text as the value
             verse_dict[verse_number_] = verse_text
     return verse_dict

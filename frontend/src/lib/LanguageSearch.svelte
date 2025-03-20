@@ -5,10 +5,13 @@
 
   export let langCodeNameAndTypes: Array<[string, string, boolean]>
   export let showGatewayLanguages: boolean
+  export let userInteracted: boolean
   export let gatewaySearchTerm: string
   export let showFilterMenu: boolean
   export let showWizardBasketModal: boolean
   export let heartSearchTerm: string
+  export let selectGatewayTab:  () => void
+  export let selectHeartTab: () => void
 </script>
 
 <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
@@ -32,14 +35,14 @@
           <button
             class="h-10 w-36 rounded-l-md border-x-2 border-b-2
                     border-t-2 border-[#015ad9] bg-[#015ad9] text-xl font-medium leading-tight text-white transition duration-150 ease-in-out hover:bg-[#015ad9] focus:bg-[#015ad9] focus:outline-none focus:ring-0 active:bg-[#015ad9]"
-            on:click={() => (showGatewayLanguages = true)}
+            on:click={selectGatewayTab}
           >
             Gateway
           </button>
           <button
             class="h-10 w-36 rounded-r-md border-b-2 border-r-2
                     border-t-2 border-[#015ad9] bg-white text-xl font-medium leading-tight text-[#33445C] transition duration-150 ease-in-out hover:bg-white focus:bg-white focus:outline-none focus:ring-0 active:bg-white"
-            on:click={() => (showGatewayLanguages = false)}
+            on:click={selectHeartTab}
           >
             Heart
           </button>
@@ -156,14 +159,14 @@
           <button
             class="h-10 w-36 rounded-l-md border-x-2 border-b-2
                     border-t-2 border-[#015ad9] bg-white text-xl font-medium leading-tight text-[#33445c] transition duration-150 ease-in-out hover:bg-white focus:bg-white focus:outline-none focus:ring-0 active:bg-white"
-            on:click={() => (showGatewayLanguages = true)}
+            on:click={selectGatewayTab}
           >
             Gateway
           </button>
           <button
             class="h-10 w-36 rounded-r-md border-b-2
                     border-r-2 border-t-2 border-[#015ad9] bg-[#015ad9] text-xl font-medium leading-tight text-white transition duration-150 ease-in-out hover:bg-[#015ad9] focus:bg-[#015ad9] focus:outline-none focus:ring-0 active:bg-[#feeed8]"
-            on:click={() => (showGatewayLanguages = false)}
+            on:click={selectHeartTab}
           >
             Heart
           </button>

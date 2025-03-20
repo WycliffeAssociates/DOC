@@ -111,3 +111,27 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 20000 })
 })
+
+
+test('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await page.goto('http://localhost:8001/languages')
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByText('Adhola').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Thesalonika').click()
+  await page.getByRole('link', { name: 'Languages' }).click()
+  await page.getByRole('button', { name: 'Gateway' }).click()
+  await page.getByText('Cebuano').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Mga taga tesalonica').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Unlocked Literal Bible').click()
+  await page.getByLabel('Bible', { exact: true }).check()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('PDF').click()
+  await page.getByText('Interleave content by chapter').click()
+  await page.getByRole('button', { name: 'Generate File' }).click()
+})
+
+

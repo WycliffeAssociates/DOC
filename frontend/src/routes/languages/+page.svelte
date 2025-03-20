@@ -25,12 +25,28 @@
   import { assemblyStrategyKindStore } from '$lib/stores/SettingsStore'
 
   let showGatewayLanguages = true
+  // Track if the user manually changed the tab:
+  let userInteracted = false
+
+  const selectGatewayTab = () => {
+    userInteracted = true
+    showGatewayLanguages = true
+  }
+
+  const selectHeartTab = () => {
+    userInteracted = true
+    showGatewayLanguages = false
+  }
   // If user has previously chosen (during this session, i.e., prior
   // to browser reload) any heart languages and no gateway languages then default to
   // showing the heart languages, otherwise the default stands of
   // showing the gateway languages.
   $: {
-    if ($heartCodeAndNamesStore.length > 0 && $gatewayCodeAndNamesStore.length === 0) {
+    if (
+      !userInteracted &&
+      $heartCodeAndNamesStore.length > 0 &&
+      $gatewayCodeAndNamesStore.length === 0
+    ) {
       showGatewayLanguages = false
     }
   }
@@ -185,7 +201,6 @@
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
-  let maxLanguages: number = PUBLIC_MAX_LANGUAGES as unknown as number
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
@@ -202,10 +217,13 @@
     <LanguageSearch
       {langCodeNameAndTypes}
       bind:showGatewayLanguages
+      bind:userInteracted
       bind:gatewaySearchTerm
       bind:showFilterMenu
       bind:showWizardBasketModal
       bind:heartSearchTerm
+      {selectGatewayTab}
+      {selectHeartTab}
     />
     {#if gatewayCodesAndNames && gatewayCodesAndNames.length > 0 && heartCodesAndNames && heartCodesAndNames.length > 0}
       {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
@@ -218,7 +236,7 @@
         />
       {:else}
         <DesktopLanguageDisplay
-          {showGatewayLanguages}
+          bind:showGatewayLanguages
           {gatewayCodesAndNames}
           {heartCodesAndNames}
           {filteredHeartCodeAndNames}

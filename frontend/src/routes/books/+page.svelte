@@ -208,7 +208,7 @@
   let showFilterMenu = false
   let showWizardBasketModal = false
 
-  let windowWidth: number
+  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number

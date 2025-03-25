@@ -363,26 +363,15 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = "{}_{}_{}_{}_{}".format(
-            resource_request_keys,
-            assembly_strategy_kind.value,
-            assembly_layout_kind.value,
-            chunk_size.value,
-            "lwt" if limit_words else "lwf",
-        )
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"lwt" if limit_words else "lwf"}'
     else:
-        document_request_key = "{}_{}_{}_{}".format(
-            resource_request_keys,
-            assembly_strategy_kind.value,
-            assembly_layout_kind.value,
-            chunk_size.value,
-        )
+        document_request_key = f"{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}"
     if len(document_request_key) >= max_filename_len:
         # Likely the generated filename was too long for the OS where this is
         # running. In that case, use the current time as a document_request_key
         # value as doing so results in an acceptably short length.
         timestamp_components = str(time.time()).split(".")
-        return "{}_{}".format(timestamp_components[0], timestamp_components[1])
+        return f"{timestamp_components[0]}_{timestamp_components[1]}"
     else:
         # Use the semantic filename which declaratively describes the
         # document request components.
@@ -408,7 +397,7 @@ def enclose_html_content(
     Write the enclosing HTML header and footer elements around the
     HTML body content for the document.
     """
-    return "{}{}{}".format(document_html_header, content, document_html_footer)
+    return f"{document_html_header}{content}{document_html_footer}"
 
 
 def document_html_header(
@@ -495,15 +484,7 @@ def assemble_content(
     for tw_book in tw_books:
         if tw_book.lang_code not in unique_lang_codes:
             unique_lang_codes.add(tw_book.lang_code)
-            content = "{}{}<hr/>".format(
-                content,
-                translation_words_section(
-                    tw_book,
-                    usfm_books,
-                    document_request.limit_words,
-                    document_request.resource_requests,
-                ),
-            )
+            content = f"{content}{translation_words_section(tw_book, usfm_books, document_request.limit_words, document_request.resource_requests)}<hr/>"
     t1 = time.time()
     logger.info("Time for add TW content to document: %s", t1 - t0)
     return content
@@ -715,7 +696,7 @@ def cover_filepath(
     document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
 ) -> str:
     """Given document_request_key, return the HTML cover output file path."""
-    return join(output_dir, "{}_cover.html".format(document_request_key))
+    return join(output_dir, f"{document_request_key}_cover.html")
 
 
 def select_assembly_layout_kind(
@@ -839,7 +820,8 @@ def get_languages_title_page_strings(
             if book.national_book_name:
                 lang0_book_names.add(book.national_book_name)
             lang0_resource_type_names.add(book.resource_type_name)
-        lang0_title = f"{lang0_books[0].lang_name}: {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
+        if lang0_books:
+            lang0_title = f"{lang0_books[0].lang_name}: {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
     else:
         language0_resource_lookup_dtos = [
             resource_lookup_dto

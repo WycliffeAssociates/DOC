@@ -1045,10 +1045,10 @@ def attempt_to_make_usfm_parseable(
         usfm_content.extend(chapter_usfm_content)
     filename = join(
         resource_dir,
-        "{}_{}_{}.usfm".format(
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
+        (
+            f"{resource_lookup_dto.lang_code}_"
+            f"{resource_lookup_dto.resource_type}_"
+            f"{resource_lookup_dto.book_code}.usfm"
         ),
     )
     logger.info("About to write filename: %s", filename)

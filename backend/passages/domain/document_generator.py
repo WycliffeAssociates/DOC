@@ -227,7 +227,7 @@ def document_request_key(
         # running. In that case, use the current time as a document_request_key
         # value as doing so results in an acceptably short length.
         timestamp_components = str(time.time()).split(".")
-        return "{}_{}".format(timestamp_components[0], timestamp_components[1])
+        return f"{timestamp_components[0]}_{timestamp_components[1]}"
     else:
         # Use the semantic filename which declaratively describes the
         # document request components.

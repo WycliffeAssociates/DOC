@@ -27,6 +27,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("aoa", "reg", "luk"),
     ("ayn", "reg", "jud"),
     ("bds", "reg", "phm"),
+    ("bem", "reg", "mat"),
     ("bem-x-kabenmushi", "reg", "zec"),
     ("bem-x-kabenmushi", "reg", "2sa"),
     ("bem-x-kabenmushi", "reg", "mat"),

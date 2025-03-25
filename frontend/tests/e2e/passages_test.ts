@@ -23,7 +23,7 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test.skip('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
+test.skip('test _', async ({ page }) => {
   await page.goto('http://localhost:8001/passages')
   await page.goto('http://localhost:8001/passages/language')
   await page.getByRole('button', { name: 'Heart' }).click()

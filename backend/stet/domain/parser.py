@@ -27,9 +27,9 @@ def get_word_entry_dtos(
             # Extract word from 1st column
             match = re.match(r"(.*)(\n)?(.*)?", row.cells[0].text)
             if not match:
-                raise ValueError(f"Couldn't parse word: {row.cells[0].text}")
-            word = match.group(1)
-            word_entry_dto.word = word
+                raise ValueError(f"Couldn't parse word(s): {row.cells[0].text}")
+            words = match.group(1)
+            word_entry_dto.words = [word.strip() for word in words.split(",")]
             raw_strongs = match.group(3)
             word_entry_dto.strongs_numbers = raw_strongs.strip()
             definition = ""
@@ -126,7 +126,9 @@ def get_word_entry_dtos(
                     )
                     word_entry_dto.verse_ref_dtos.append(verse_reference_dto)
             # If 4th column exists, get bolded words from it
-            if 3 in row.cells and row.cells[3].text:
-                word_entry_dto.bolded_phrases = row.cells[3].text.split(",")
+            if len(row.cells) > 3 and row.cells[3].text:
+                word_entry_dto.bolded_phrases = [
+                    keyword.strip() for keyword in row.cells[3].text.split(",")
+                ]
             word_entry_dtos.append(word_entry_dto)
     return word_entry_dtos, list(set(book_codes_))

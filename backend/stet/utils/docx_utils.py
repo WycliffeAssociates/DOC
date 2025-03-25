@@ -148,39 +148,6 @@ def add_header(
     return doc
 
 
-def add_highlighted_html_to_docx_for_word(
-    html: str, paragraph: Paragraph, keyword: str
-) -> None:
-    """
-    Convert HTML to DOCX and highlight occurrences of a keyword in bold.
-    :param html: The HTML string to convert.
-    :param paragraph: The DOCX paragraph where the content will be added.
-    :param keyword: The keyword to highlight in bold.
-    """
-    # Use HtmlToDocx to convert the HTML to a temporary document
-    html_to_docx = HtmlToDocx()
-    temp_doc = Document()
-    html_to_docx.add_html_to_document(html, temp_doc)
-    # Create a case-insensitive regex pattern for word-boundary matching
-    keyword_pattern = rf"\b{re.escape(keyword)}\b"
-    regex = re.compile(keyword_pattern, re.IGNORECASE)
-    # Parse through all paragraphs in the temporary document
-    for temp_paragraph in temp_doc.paragraphs:
-        text = temp_paragraph.text
-        start = 0
-        # Iterate over matches in the text
-        for match in regex.finditer(text):
-            # Add text before the match
-            if match.start() > start:
-                paragraph.add_run(text[start : match.start()])
-            # Add the bolded keyword with original casing
-            bold_run = paragraph.add_run(text[match.start() : match.end()])
-            bold_run.bold = True
-            # Move start position forward
-            start = match.end()
-        # Add any remaining text after the last match
-        if start < len(text):
-            paragraph.add_run(text[start:])
 
 
 def add_highlighted_html_to_docx_for_words(

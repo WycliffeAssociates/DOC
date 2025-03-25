@@ -30,7 +30,6 @@ from stet.domain.parser import get_word_entry_dtos
 from stet.utils.docx_utils import (
     add_footer,
     add_header,
-    add_highlighted_html_to_docx_for_word,
     add_highlighted_html_to_docx_for_words,
     add_lined_page_at_end,
     add_plain_html_to_docx,
@@ -152,7 +151,8 @@ def generate_docx_document(
         source_verse_text = ""
         target_verse_text = ""
         word_entry = WordEntry()
-        word_entry.word = word_entry_dto.word
+        word_entry.words = word_entry_dto.words
+        word_entry.bolded_phrases = word_entry_dto.bolded_phrases
         word_entry.strongs_numbers = word_entry_dto.strongs_numbers
         word_entry.definition = mistune.markdown(word_entry_dto.definition)
         for verse_ref_dto in word_entry_dto.verse_ref_dtos:
@@ -244,9 +244,9 @@ def generate_docx(
     for word_entry in word_entries:
         # Add the word heading
         heading: str = (
-            f"{word_entry.word} ({word_entry.strongs_numbers})"
+            f"{','.join(word_entry.words)} ({word_entry.strongs_numbers})"
             if word_entry.strongs_numbers
-            else word_entry.word
+            else "".join(word_entry.words)
         )
         doc.add_heading(heading, level=1)
         # Convert the HTML definition to DOCX content
@@ -279,13 +279,13 @@ def generate_docx(
             # Process HTML content in source_text and highlight keyword
             source_paragraph = row_cells[0].paragraphs[0]
             source_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
-            if word_entry.bolded_phrases:
+            if len(word_entry.bolded_phrases) > 0:
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.bolded_phrases
                 )
             else:  # Bolded phrases in 3rd column were not provided
-                add_highlighted_html_to_docx_for_word(
-                    verse.source_text, source_paragraph, word_entry.word
+                add_highlighted_html_to_docx_for_words(
+                    verse.source_text, source_paragraph, word_entry.words
                 )
             # Add target_text with wider line spacing
             target_paragraph = row_cells[1].paragraphs[0]
@@ -296,7 +296,6 @@ def generate_docx(
             checkbox_paragraph = checkbox_cell.paragraphs[0]
             checkbox_paragraph.text = "\u2610"
             checkbox_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            # Set vertical alignment to center using XML
             tc = checkbox_cell._tc  # Access the XML element of the table cell
             tcPr = tc.get_or_add_tcPr()  # Get or add the cell properties
             vAlign = OxmlElement("w:vAlign")  # Create the vertical alignment element

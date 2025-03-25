@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     CHECK_USFM: bool
     USE_LOCALIZED_BOOK_NAME: bool
     USE_LOCALIZED_CHAPTER_LABEL: bool
+    USE_CHAPTER_LABELS: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
     def logger(self, name: str) -> logging.Logger:

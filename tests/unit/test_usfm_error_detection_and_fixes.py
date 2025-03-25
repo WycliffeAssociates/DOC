@@ -355,7 +355,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # FIXME This fails because test_missing_space_after_number0 fails
     # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers17(self) -> None:
@@ -372,7 +371,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # FIXME Fails because of issue with fix_missing_space_after_number
     # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_usfm(self) -> None:

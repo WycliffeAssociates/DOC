@@ -1574,6 +1574,7 @@ def test_nyk_x_nyanehumbe_reg_1pe_lbo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+@pytest.mark.focus
 def test_bjz_reg_eph_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1598,6 +1599,7 @@ def test_bjz_reg_eph_lbo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+@pytest.mark.focus
 def test_bys_reg_col_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1620,6 +1622,96 @@ def test_bys_reg_col_lbo_1c_chapter() -> None:
             },
         )
         check_finished_document_with_verses_success(response, suffix="pdf")
+
+
+@pytest.mark.focus
+def test_en_ulb_col_bys_reg_col_blo_1c_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": False,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "bys",
+                        "resource_type": "reg",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response, suffix="pdf")
+
+
+@pytest.mark.focus
+def test_en_ulb_col_bjz_reg_col_blo_1c_chapter() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": False,
+                "generate_pdf": True,
+                "generate_epub": False,
+                "generate_docx": False,
+                "resource_requests": [
+                    {
+                        "lang_code": "bjz",
+                        "resource_type": "reg",
+                        "book_code": "col",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "col",
+                    },
+                ],
+            },
+        )
+        check_finished_document_with_verses_success(response, suffix="pdf")
+
+
+@pytest.mark.focus
+def test_en_ulb_eph_bys_reg_eph_blo_1c_chapter_docx() -> None:
+    with TestClient(app=app, base_url=settings.api_test_url()) as client:
+        response = client.post(
+            "/documents_docx",
+            json={
+                "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_layout_kind": None,
+                "layout_for_print": False,
+                "generate_pdf": False,
+                "generate_epub": False,
+                "generate_docx": True,
+                "resource_requests": [
+                    {
+                        "lang_code": "bys",
+                        "resource_type": "reg",
+                        "book_code": "eph",
+                    },
+                    {
+                        "lang_code": "en",
+                        "resource_type": "ulb",
+                        "book_code": "eph",
+                    },
+                ],
+            },
+        )
+        check_result(response, suffix="docx")
 
 
 @pytest.mark.docx

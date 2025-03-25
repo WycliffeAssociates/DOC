@@ -14,7 +14,7 @@ class VerseEntry(NamedTuple):
 @final
 @dataclass
 class WordEntry:
-    word: str = ""
+    words: list[str] = field(default_factory=list)
     strongs_numbers: str = ""
     definition: str = ""
     verses: list[VerseEntry] = field(default_factory=list)
@@ -30,13 +30,13 @@ class VerseReferenceDto(NamedTuple):
     chapter_num: int
     source_reference: str
     target_reference: str
-    verse_refs: list[str]  # = field(default_factory=list)
+    verse_refs: list[str]
 
 
 @final
 @dataclass
 class WordEntryDto:
-    word: str = ""
+    words: list[str] = field(default_factory=list)
     strongs_numbers: str = ""
     definition: str = ""
     verse_ref_dtos: list[VerseReferenceDto] = field(default_factory=list)

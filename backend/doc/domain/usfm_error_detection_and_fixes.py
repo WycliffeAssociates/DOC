@@ -449,7 +449,7 @@ def replace_cc_with_c(content: str) -> str:
     """
     Replace two consecutive chapter markers with whitespace or newline between them with only one chapter marker
     """
-    return re.sub(pattern_matchers["replace_cc_with_c"], r"\1", content)
+    return re.sub(pattern_matchers["replace_cc_with_c"], r"\1" + "\n", content)
 
 
 def replace_vv_with_v(content: str) -> str:

@@ -771,7 +771,7 @@ def get_book_codes_for_lang(
                             resource_type = repo_components[1]
                             content = read_file(usfm_file) if usfm_file else ""
                             logger.debug("usfm_file: %s", usfm_file)
-                            frontmatter, _ = parsing.split_usfm_by_chapters(
+                            frontmatter, _, _ = parsing.split_usfm_by_chapters(
                                 lang_code,
                                 resource_type,
                                 book_code,

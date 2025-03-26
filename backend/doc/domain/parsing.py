@@ -245,9 +245,9 @@ def split_usfm_by_chapters(
     ] = RESOURCES_WITH_USFM_DEFECTS,
     check_usfm: bool = settings.CHECK_USFM,
     check_all_books_for_language: bool = settings.CHECK_ALL_BOOKS_FOR_LANGUAGE,
-) -> tuple[str, list[str]]:
+) -> tuple[str, list[str], list[str]]:
     r"""
-    Split the USFM text into chapters based on the \c marker
+    Split the USFM text into chapters
     """
     chapter_markers = []
     chapters = []
@@ -287,7 +287,7 @@ def split_usfm_by_chapters(
                 # updated_chapter = marker + "\n" + stripped_chapter
                 # logger.debug("updated_chapter[0:60]: %s", updated_chapter[0:60])
             updated_chapters.append(marker + "\n" + stripped_chapter)
-    return frontmatter, updated_chapters
+    return frontmatter, chapter_markers, updated_chapters
 
 
 def ensure_chapter_label(
@@ -303,10 +303,11 @@ def ensure_chapter_label(
         if re.search(chapter_regex, chapter_usfm_text):
             updated_chapter_usfm_text = re.sub(
                 r"(\\c\s+\d+)",
-                "\n" + rf" \\cl Chapter {chapter_num} " + "\n" + r"\1",
+                "\n" + rf" \\cl Chapter {chapter_num} " + "\n" + r"\1" + "\n",
                 chapter_usfm_text,
             )
             return updated_chapter_usfm_text
+    logger.debug("chapter label already existed, didn't add one...")
     return chapter_usfm_text
 
 
@@ -420,7 +421,7 @@ def usfm_book_content(
     if not use_chapter_labels:
         content = ensure_no_chapter_labels(content)
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
-    frontmatter, chapters_usfm = split_usfm_by_chapters(
+    frontmatter, chapter_markers, chapters_usfm = split_usfm_by_chapters(
         resource_lookup_dto.lang_code,
         resource_lookup_dto.resource_type,
         resource_lookup_dto.book_code,
@@ -433,14 +434,13 @@ def usfm_book_content(
         ),  # USFM file per book has hyphen in it
     )
     localized_book_name = maybe_localized_book_name(frontmatter)
-    # updated_chapters = [ensure_chapter_label(chapter) for chapter in chapters_]
-    # for idx, chapter in enumerate(updated_chapters):
-    for idx, chapter_usfm in enumerate(chapters_usfm):
-        # logger.debug("chapter[0:60]: %s", chapter[0:60])
-        # chapter_num = get_chapter_num(chapter, idx)
+    for chapter_marker, chapter_usfm in zip(chapter_markers, chapters_usfm):
+        logger.debug("chapter_usfm[0:60]: %s", chapter_usfm[0:60])
+        # chapter_usfm = chapter_marker + "\n" + chapter_usfm
         chapter_num = get_chapter_num(chapter_usfm)
         if use_chapter_labels:
             chapter_usfm = ensure_chapter_label(chapter_usfm, chapter_num)
+            logger.debug("updated chapter_usfm[0:60]: %s", chapter_usfm[0:60])
         chapter_html_content = usfm_chapter_html(
             chapter_usfm, resource_lookup_dto, chapter_num
         )
@@ -989,7 +989,9 @@ def get_book_name(
             with open(title_path, encoding="utf-8") as f:
                 return normalize_localized_book_name(f.read())
         except FileNotFoundError:
-            logger.debug("Localized book name not found, using default.")
+            logger.debug(
+                "Localized book name not found, using English book name instead."
+            )
     return bible_book_names[resource_lookup_dto.book_code]
 
 
@@ -1007,10 +1009,6 @@ def assemble_chapter_usfm(
             str(chapter_dir.name),
         )
         chapter_num = -1  # use this as a sentinal
-    logger.info(
-        "Adding a USFM chapter number for chapter: %s",
-        chapter_num,
-    )
     if use_chapter_labels:
         if use_localized_chapter_label:
             chapter_word_file = join(chapter_dir.path, "title.txt")
@@ -1019,9 +1017,10 @@ def assemble_chapter_usfm(
                     chapter_word = fin.read()
                     chapter_word = chapter_word.strip()
                     chapter_word = chapter_label_sans_numeric_part(chapter_word)
-                    chapter_usfm_content.append(
-                        "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
-                    )
+                    # logger.debug("chapter_label_sans_numeric_part: %s", chapter_word)
+                    chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
+                    logger.debug("chapter_label: %s", chapter_label)
+                    chapter_usfm_content.append(chapter_label)
             except FileNotFoundError:
                 pass  # No file containing chapter label
                 # TODO There could be a branch here wherein we wanted to use localized
@@ -1031,6 +1030,10 @@ def assemble_chapter_usfm(
                 # found.
         else:
             chapter_usfm_content.append("\n" + rf"\cl Chapter {chapter_num}" + "\n")
+    logger.info(
+        "Adding a USFM chapter marker for chapter: %s",
+        chapter_num,
+    )
     chapter_usfm_content.append("\n" + rf"\c {chapter_num} " + "\n")
     chapter_verse_files = sorted(
         [

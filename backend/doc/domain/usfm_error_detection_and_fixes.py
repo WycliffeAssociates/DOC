@@ -20,6 +20,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("adh", "reg", "1th"),
     ("adn", "reg", "mat"),
     ("aec", "reg", "mat"),
+    ("agd-x-namel", "reg", "2th"),
     ("ahm", "reg", "php"),
     ("ahm", "reg", "php"),
     ("ajg-x-adjtalagbe", "reg", "mat"),

@@ -290,17 +290,15 @@ def split_usfm_by_chapters(
 def ensure_chapter_label(
     chapter_usfm_text: str,
     chapter_num: int,
-    # chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
-    # chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
+    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
+    chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
 ) -> str:
     r"""
     Modify USFM source to insert an English chapter label if it does not have one.
     Ensure that the chapter label includes the chapter number.
     """
-    # if not re.search(chapter_label_regex, chapter_usfm_text):
-    if not re.search(r"\\cl\s+[^\n]+", chapter_usfm_text):
-        # if re.search(chapter_regex, chapter_usfm_text):
-        if re.search(r"\\c\s+\d+", chapter_usfm_text):
+    if not re.search(chapter_label_regex, chapter_usfm_text):
+        if re.search(chapter_regex, chapter_usfm_text):
             chapter_usfm_text = re.sub(
                 r"(\\c\s+\d+)",
                 "\n" + r"\1" + "\n" + r"\\cl Chapter " + f"{chapter_num}" + "\n",

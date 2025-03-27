@@ -10,7 +10,7 @@ def normalize_spaces(text: str) -> str:
 
 def normalize_localized_book_name(localized_book_name: str) -> str:
     # Deal with irregularities in localized book names, e.g., bem: 1timote
-    if localized_book_name[0] in [
+    if localized_book_name and localized_book_name[0] in [
         "1",
         "2",
         "3",
@@ -34,4 +34,14 @@ def chapter_label_sans_numeric_part(s: str) -> str:
     else:
         result = s
     # logger.debug("chapter label: %s", result)
+    return result
+
+
+def chapter_label_numeric_part(s: str) -> int:
+    parts = s.rsplit(maxsplit=1)
+    # logger.debug("chapter label parts: %s", parts)
+    if len(parts) > 1 and parts[-1].isdigit():
+        result = int(parts[-1])
+    else:
+        result = -1  # Sentinel
     return result

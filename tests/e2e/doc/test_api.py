@@ -1549,7 +1549,7 @@ def test_or_tn_mat_lbo_1c_chapter() -> None:
 
 
 # This language is no longer returned by the data API in the list of available languages.
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_nyk_x_nyanehumbe_reg_1pe_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1574,7 +1574,7 @@ def test_nyk_x_nyanehumbe_reg_1pe_lbo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-@pytest.mark.focus
+# @pytest.mark.focus
 def test_bjz_reg_eph_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1599,7 +1599,7 @@ def test_bjz_reg_eph_lbo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-@pytest.mark.focus
+# @pytest.mark.focus
 def test_bys_reg_col_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1624,7 +1624,7 @@ def test_bys_reg_col_lbo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-@pytest.mark.focus
+# @pytest.mark.focus
 def test_en_ulb_col_bys_reg_col_blo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1654,7 +1654,7 @@ def test_en_ulb_col_bys_reg_col_blo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-@pytest.mark.focus
+# @pytest.mark.focus
 def test_en_ulb_col_bjz_reg_col_blo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1684,7 +1684,7 @@ def test_en_ulb_col_bjz_reg_col_blo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-@pytest.mark.focus
+# @pytest.mark.focus
 def test_en_ulb_eph_bys_reg_eph_blo_1c_chapter_docx() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

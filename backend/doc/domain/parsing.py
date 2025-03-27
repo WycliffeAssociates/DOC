@@ -49,6 +49,7 @@ from doc.reviewers_guide.model import RGBook
 from doc.reviewers_guide.parser import get_rg_books
 from doc.utils.file_utils import read_file
 from doc.utils.text_utils import (
+    chapter_label_numeric_part,
     chapter_label_sans_numeric_part,
     normalize_localized_book_name,
 )
@@ -69,9 +70,10 @@ BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/Wycliff
 
 
 # CHAPTER_LABEL_REGEX = r"\\cl\s+.*"
-CHAPTER_LABEL_REGEX = r"\\cl\s+[^\n]+"
-CHAPTER_REGEX = r"\\c\s+\d+"
-CHAPTER_CAPTURE_REGEX = r"\\c\s+(\d+)"
+CHAPTER_LABEL_REGEX = re.compile(r"\\cl\s+[^\n]+")
+CHAPTER_REGEX = re.compile(r"\\c\s+\d+")
+CHAPTER_CAPTURE_REGEX = re.compile(r"(\\c\s+\d+)")
+CHAPTER_CAPTURE_REGEX2 = re.compile(r"\\c\s+(\d+)")
 
 
 def find_usfm_files(
@@ -238,8 +240,8 @@ def split_usfm_by_chapters(
     book_code: str,
     usfm_text: str,
     split_by_chapter_label: bool,
-    chapter_regex: str = CHAPTER_REGEX,
-    chapter_label_regex: str = CHAPTER_LABEL_REGEX,
+    chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
+    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
@@ -293,27 +295,52 @@ def split_usfm_by_chapters(
 def ensure_chapter_label(
     chapter_usfm_text: str,
     chapter_num: int,
-    chapter_label_regex: str = CHAPTER_LABEL_REGEX,
-    chapter_regex: str = CHAPTER_CAPTURE_REGEX,
+    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
+    chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
 ) -> str:
     r"""
-    Modify USFM source to insert a chapter label, \cl Chapter <chapter_num>, if it does not have one.
+    Modify USFM source to insert an English chapter label, if it does not have one.
     """
     if not re.search(chapter_label_regex, chapter_usfm_text):
         if re.search(chapter_regex, chapter_usfm_text):
             updated_chapter_usfm_text = re.sub(
                 r"(\\c\s+\d+)",
-                "\n" + rf" \\cl Chapter {chapter_num} " + "\n" + r"\1" + "\n",
+                "\n" + r"\\cl Chapter" + "\n" + r"\1" + "\n",
                 chapter_usfm_text,
             )
             return updated_chapter_usfm_text
-    logger.debug("chapter label already existed, didn't add one...")
+    logger.debug("chapter label already existed, didn't add one")
     return chapter_usfm_text
+
+
+# def ensure_chapter_label(
+#     chapter_usfm_text: str,
+#     chapter_num: int,
+#     chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
+#     chapter_capture_regex: re.Pattern[str] = CHAPTER_CAPTURE_REGEX,
+# ) -> str:
+#     r"""
+#     Modify USFM source to insert a chapter label, \cl Chapter <chapter_num>, if it does not have one.
+#     Ensures consistent newline formatting.
+#     """
+#     if not re.search(chapter_label_regex, chapter_usfm_text):
+#         match = re.search(chapter_capture_regex, chapter_usfm_text)
+#         if match:
+#             chapter_marker = match.group(1)
+#             updated_text = re.sub(
+#                 # chapter_capture_regex,
+#                 r"(\\c\s+\d+)",
+#                 rf"\n\n\cl Chapter\n{chapter_marker}\n",
+#                 chapter_usfm_text,
+#             )
+#             return updated_text.strip("\n")  # Ensures no extra newlines at start or end
+#     logger.debug("chapter label already existed, didn't add one")
+#     return chapter_usfm_text
 
 
 def ensure_no_chapter_labels(
     chapter_usfm_text: str,
-    chapter_label_regex: str = CHAPTER_LABEL_REGEX,
+    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
 ) -> str:
     r"""
     Modify USFM source to remove all chapter labels, \cl.
@@ -330,21 +357,13 @@ def ensure_no_chapter_labels(
 
 def get_chapter_num(
     chapter_usfm_text: str,
-    # idx: int,
-    chapter_regex: str = CHAPTER_CAPTURE_REGEX,
+    chapter_regex: re.Pattern[str] = CHAPTER_CAPTURE_REGEX2,
 ) -> int:
     """Get the chapter number from the USFM chapter source text."""
-    # if match := re.search(chapter_label_regex, chapter_usfm_text):
-    #     chapter_num = match.group(1)
-    #     return int(chapter_num)
     if match := re.search(chapter_regex, chapter_usfm_text):
         chapter_num = match.group(1)
         return int(chapter_num)
-    # return idx
     return -1  # return sentinal
-    # raise MissingChapterMarkerError(
-    #     message=f"Missing chapter number for chapter text: {chapter_usfm_text}"
-    # )
 
 
 def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str:
@@ -405,6 +424,52 @@ def maybe_localized_book_name(frontmatter: str) -> str:
     return localized_book_name
 
 
+# def ensure_chapter_marker(
+#     chapter_usfm_text: str,
+#     chapter_num: int,
+#     chapter_regex: str = CHAPTER_CAPTURE_REGEX,
+# ) -> str:
+#     r"""
+#     Modify USFM source to insert a chapter marker, \c <chapter_num>, if it does not have one.
+#     """
+#     if not re.search(chapter_regex, chapter_usfm_text):
+#         logger.debug("chapter marker is missing, adding one...")
+#         updated_chapter_usfm_text = re.sub(
+#             r"(\\cl\s+[^\n]+)",
+#             r"\1" + "\n" + rf" \\c {chapter_num}" + "\n" + chapter_usfm_text,
+#             chapter_usfm_text,
+#         )
+#         return updated_chapter_usfm_text
+#     logger.debug("chapter marker already existed, didn't add one")
+#     return chapter_usfm_text
+
+# CHAPTER_CAPTURE_REGEX = r"(?m)^\\c\s+\d+"
+
+
+def ensure_chapter_marker(
+    chapter_usfm_text: str,
+    chapter_num: int,
+    chapter_regex: re.Pattern[str] = CHAPTER_CAPTURE_REGEX,
+) -> str:
+    r"""
+    Modify USFM source to insert a chapter marker, \c <chapter_num>, if it does not have one.
+    """
+    if re.search(chapter_regex, chapter_usfm_text):
+        logger.debug("chapter marker already existed, didn't add one")
+        return chapter_usfm_text
+    logger.debug("chapter marker is missing, adding one...")
+    # Try inserting after \cl, if present
+    if match := re.search(r"\\cl\s+[^\n]+", chapter_usfm_text):
+        insert_pos = match.end()
+        return (
+            chapter_usfm_text[:insert_pos]
+            + f"\n\\c {chapter_num}\n"
+            + chapter_usfm_text[insert_pos:]
+        )
+    # Otherwise, insert at the beginning
+    return f"\\c {chapter_num}\n" + chapter_usfm_text
+
+
 def usfm_book_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
@@ -438,9 +503,13 @@ def usfm_book_content(
         logger.debug("chapter_usfm[0:60]: %s", chapter_usfm[0:60])
         # chapter_usfm = chapter_marker + "\n" + chapter_usfm
         chapter_num = get_chapter_num(chapter_usfm)
+        if chapter_num == -1:
+            chapter_num = chapter_label_numeric_part(chapter_usfm)
+        logger.debug("chapter_num: %s", chapter_num)
         if use_chapter_labels:
             chapter_usfm = ensure_chapter_label(chapter_usfm, chapter_num)
-            logger.debug("updated chapter_usfm[0:60]: %s", chapter_usfm[0:60])
+        chapter_usfm = ensure_chapter_marker(chapter_usfm, chapter_num)
+        logger.debug("updated chapter_usfm[0:60]: %s", chapter_usfm[0:60])
         chapter_html_content = usfm_chapter_html(
             chapter_usfm, resource_lookup_dto, chapter_num
         )
@@ -941,7 +1010,8 @@ def ensure_paragraph_before_verses(
     usfm_verse_one_file_regex: str = r"^01\..*",
     chapter_marker_not_on_own_line_regex: str = r"^\\c [0-9]+ .*|\n",
     chapter_marker_not_on_own_line_with_match_groups: str = r"(^\\c [0-9]+) (.*|\n)",
-    chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
+    # chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
+    chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\n\2\n",
 ) -> str:
     r"""
     If verse_content has a USFM chapter marker, \c, that is not on its
@@ -1018,7 +1088,8 @@ def assemble_chapter_usfm(
                     chapter_word = chapter_word.strip()
                     chapter_word = chapter_label_sans_numeric_part(chapter_word)
                     # logger.debug("chapter_label_sans_numeric_part: %s", chapter_word)
-                    chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
+                    # chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
+                    chapter_label = "\n" + rf"\cl {chapter_word}" + "\n"
                     logger.debug("chapter_label: %s", chapter_label)
                     chapter_usfm_content.append(chapter_label)
             except FileNotFoundError:
@@ -1029,12 +1100,13 @@ def assemble_chapter_usfm(
                 # chapter label if we requested a localized one and it could not be
                 # found.
         else:
-            chapter_usfm_content.append("\n" + rf"\cl Chapter {chapter_num}" + "\n")
+            # chapter_usfm_content.append("\n" + rf"\cl Chapter" + f"{chapter_num}" + "\n")
+            chapter_usfm_content.append("\n" + r"\cl Chapter" + "\n")
     logger.info(
         "Adding a USFM chapter marker for chapter: %s",
         chapter_num,
     )
-    chapter_usfm_content.append("\n" + rf"\c {chapter_num} " + "\n")
+    chapter_usfm_content.append("\n" + rf"\c {chapter_num}" + "\n")
     chapter_verse_files = sorted(
         [
             file.path
@@ -1049,8 +1121,13 @@ def assemble_chapter_usfm(
         with open(usfm_file, "r") as fin:
             # logger.debug("usfm_file: %s", usfm_file)
             verse_content = fin.read()
-            # TODO This next line should maybe only happen if docx is requested
-            # verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
+            # NOTE Area of interest
+            # Some languages put a chapter marker in front of verse 1 in the verse
+            # file which covers a verse span which includes verse 1 . Since we
+            # ensure chapter markers ourselves when assembling multiple verse files
+            # into a chapter this ends up creating a duplicate chapter marker.
+            verse_content = re.sub(r"^\\c\s+\d+", "", verse_content)
+            verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
             chapter_usfm_content.append(verse_content)
             chapter_usfm_content.append("\n")
     return chapter_usfm_content

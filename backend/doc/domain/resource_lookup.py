@@ -777,7 +777,6 @@ def get_book_codes_for_lang(
                                 resource_type,
                                 book_code,
                                 content,
-                                "-" in usfm_file,  # USFM file per book has hyphen in it
                             )
                             localized_book_name = parsing.maybe_localized_book_name(
                                 frontmatter

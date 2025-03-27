@@ -71,6 +71,7 @@ BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/Wycliff
 
 # CHAPTER_LABEL_REGEX = r"\\cl\s+.*"
 CHAPTER_LABEL_REGEX = re.compile(r"\\cl\s+[^\n]+")
+CHAPTER_LABEL_REGEX2 = re.compile(r"\\cl\s+(.+)")
 CHAPTER_REGEX = re.compile(r"\\c\s+\d+")
 CHAPTER_CAPTURE_REGEX = re.compile(r"(\\c\s+\d+)")
 CHAPTER_CAPTURE_REGEX2 = re.compile(r"\\c\s+(\d+)")
@@ -239,9 +240,8 @@ def split_usfm_by_chapters(
     resource_type: str,
     book_code: str,
     usfm_text: str,
-    split_by_chapter_label: bool,
     chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
-    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
+    # chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
@@ -253,13 +253,8 @@ def split_usfm_by_chapters(
     """
     chapter_markers = []
     chapters = []
-    if split_by_chapter_label:
-        chapter_markers = re.findall(chapter_label_regex, usfm_text)
-    if chapter_markers:
-        chapters = re.split(chapter_label_regex, usfm_text)
-    else:
-        chapter_markers = re.findall(chapter_regex, usfm_text)
-        chapters = re.split(chapter_regex, usfm_text)
+    chapter_markers = re.findall(chapter_regex, usfm_text)
+    chapters = re.split(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
     logger.debug("chapter_markers: %s", chapter_markers)
 
@@ -295,21 +290,38 @@ def split_usfm_by_chapters(
 def ensure_chapter_label(
     chapter_usfm_text: str,
     chapter_num: int,
-    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
-    chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
+    # chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
+    # chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
 ) -> str:
     r"""
-    Modify USFM source to insert an English chapter label, if it does not have one.
+    Modify USFM source to insert an English chapter label if it does not have one.
+    Ensure that the chapter label includes the chapter number.
     """
-    if not re.search(chapter_label_regex, chapter_usfm_text):
-        if re.search(chapter_regex, chapter_usfm_text):
-            updated_chapter_usfm_text = re.sub(
+    # if not re.search(chapter_label_regex, chapter_usfm_text):
+    if not re.search(r"\\cl\s+[^\n]+", chapter_usfm_text):
+        # if re.search(chapter_regex, chapter_usfm_text):
+        if re.search(r"\\c\s+\d+", chapter_usfm_text):
+            chapter_usfm_text = re.sub(
                 r"(\\c\s+\d+)",
-                "\n" + r"\\cl Chapter" + "\n" + r"\1" + "\n",
+                "\n" + r"\1" + "\n" + r"\\cl Chapter " + f"{chapter_num}" + "\n",
                 chapter_usfm_text,
             )
-            return updated_chapter_usfm_text
-    logger.debug("chapter label already existed, didn't add one")
+            return chapter_usfm_text
+    # Ensure chapter label contains the chapter number
+    match = re.search(r"\\cl\s+(.+)", chapter_usfm_text)
+    if match:
+        label_text = match.group(1)
+        if str(chapter_num) not in label_text:
+            updated_label = f"{label_text} {chapter_num}"
+            chapter_usfm_text = re.sub(
+                r"\\cl\s+(.+)",  # <--- FIXED
+                rf"\\cl {updated_label}",
+                chapter_usfm_text,
+            )
+            return chapter_usfm_text
+    logger.debug(
+        "Chapter label already existed and contained the chapter number, didn't modify it"
+    )
     return chapter_usfm_text
 
 
@@ -458,9 +470,9 @@ def ensure_chapter_marker(
         logger.debug("chapter marker already existed, didn't add one")
         return chapter_usfm_text
     logger.debug("chapter marker is missing, adding one...")
-    # Try inserting after \cl, if present
+    # Try inserting before \cl, if present
     if match := re.search(r"\\cl\s+[^\n]+", chapter_usfm_text):
-        insert_pos = match.end()
+        insert_pos = match.start()
         return (
             chapter_usfm_text[:insert_pos]
             + f"\n\\c {chapter_num}\n"
@@ -491,12 +503,6 @@ def usfm_book_content(
         resource_lookup_dto.resource_type,
         resource_lookup_dto.book_code,
         content,
-        (
-            # TODO A single file USFM, i.e., not assembled, might not have chapter labels. We shouldn't always assume that it does.
-            "-" in content_file
-            if content_file and use_chapter_labels
-            else False
-        ),  # USFM file per book has hyphen in it
     )
     localized_book_name = maybe_localized_book_name(frontmatter)
     for chapter_marker, chapter_usfm in zip(chapter_markers, chapters_usfm):
@@ -1079,6 +1085,7 @@ def assemble_chapter_usfm(
             str(chapter_dir.name),
         )
         chapter_num = -1  # use this as a sentinal
+    chapter_usfm_content.append("\n" + rf"\c {chapter_num}" + "\n")
     if use_chapter_labels:
         if use_localized_chapter_label:
             chapter_word_file = join(chapter_dir.path, "title.txt")
@@ -1106,7 +1113,6 @@ def assemble_chapter_usfm(
         "Adding a USFM chapter marker for chapter: %s",
         chapter_num,
     )
-    chapter_usfm_content.append("\n" + rf"\c {chapter_num}" + "\n")
     chapter_verse_files = sorted(
         [
             file.path

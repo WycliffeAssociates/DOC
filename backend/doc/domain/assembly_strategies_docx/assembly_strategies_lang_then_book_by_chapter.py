@@ -220,6 +220,7 @@ def assemble_usfm_by_book(
         # fmt: off
         is_rtl = usfm_book and usfm_book.lang_direction == LangDirEnum.RTL
         # fmt: on
+        # Add book name
         subdoc = create_docx_subdoc(
             fmt_str.format(usfm_book.national_book_name),
             usfm_book.lang_code,

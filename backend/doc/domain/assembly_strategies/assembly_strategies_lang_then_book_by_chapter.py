@@ -191,6 +191,7 @@ def assemble_usfm_by_book(
     content.append(tn_book_intro(tn_book))
     content.append(bc_book_intro(bc_book))
     if usfm_book:
+        # Add book name
         content.append(fmt_str.format(usfm_book.national_book_name))
         for (
             chapter_num,

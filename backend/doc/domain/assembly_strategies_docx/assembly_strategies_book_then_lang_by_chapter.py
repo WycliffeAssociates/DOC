@@ -33,6 +33,8 @@ from docxcompose.composer import Composer  # type: ignore
 
 logger = settings.logger(__name__)
 
+BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+
 
 def assemble_content_by_book_then_lang(
     usfm_books: Sequence[USFMBook],
@@ -141,6 +143,7 @@ def assemble_usfm_by_chapter(
     rg_books: Sequence[RGBook],
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
+    fmt_str: str = BOOK_NAME_FMT_STR,
 ) -> Composer:
     """
     Construct the Docx wherein at least one USFM resource exists, one column
@@ -169,7 +172,6 @@ def assemble_usfm_by_chapter(
     rg_books = sorted(rg_books, key=rg_sort_key)
     doc = Document()
     composer = Composer(doc)
-
     if show_tn_book_intro:
         for tn_book in tn_books:
             if tn_book.book_intro:
@@ -216,9 +218,13 @@ def assemble_usfm_by_chapter(
                 for usfm_book in usfm_books
                 if usfm_book.book_code == book_code
             ]:
-                # TODO
+                add_one_column_section(doc)
                 # Add the book title, e.g., 1 Peter
-                # content.append(fmt_str.format(usfm_book.national_book_name))
+                subdoc = create_docx_subdoc(
+                    fmt_str.format(usfm_book.national_book_name),
+                    usfm_book.lang_code,
+                )
+                composer.append(subdoc)
                 if chapter_num in usfm_book.chapters:
                     # Add the interleaved USFM chapters
                     add_one_column_section(doc)

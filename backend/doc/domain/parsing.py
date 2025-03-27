@@ -325,31 +325,6 @@ def ensure_chapter_label(
     return chapter_usfm_text
 
 
-# def ensure_chapter_label(
-#     chapter_usfm_text: str,
-#     chapter_num: int,
-#     chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
-#     chapter_capture_regex: re.Pattern[str] = CHAPTER_CAPTURE_REGEX,
-# ) -> str:
-#     r"""
-#     Modify USFM source to insert a chapter label, \cl Chapter <chapter_num>, if it does not have one.
-#     Ensures consistent newline formatting.
-#     """
-#     if not re.search(chapter_label_regex, chapter_usfm_text):
-#         match = re.search(chapter_capture_regex, chapter_usfm_text)
-#         if match:
-#             chapter_marker = match.group(1)
-#             updated_text = re.sub(
-#                 # chapter_capture_regex,
-#                 r"(\\c\s+\d+)",
-#                 rf"\n\n\cl Chapter\n{chapter_marker}\n",
-#                 chapter_usfm_text,
-#             )
-#             return updated_text.strip("\n")  # Ensures no extra newlines at start or end
-#     logger.debug("chapter label already existed, didn't add one")
-#     return chapter_usfm_text
-
-
 def ensure_no_chapter_labels(
     chapter_usfm_text: str,
     chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
@@ -434,28 +409,6 @@ def maybe_localized_book_name(frontmatter: str) -> str:
     )
     localized_book_name = normalize_localized_book_name(localized_book_name)
     return localized_book_name
-
-
-# def ensure_chapter_marker(
-#     chapter_usfm_text: str,
-#     chapter_num: int,
-#     chapter_regex: str = CHAPTER_CAPTURE_REGEX,
-# ) -> str:
-#     r"""
-#     Modify USFM source to insert a chapter marker, \c <chapter_num>, if it does not have one.
-#     """
-#     if not re.search(chapter_regex, chapter_usfm_text):
-#         logger.debug("chapter marker is missing, adding one...")
-#         updated_chapter_usfm_text = re.sub(
-#             r"(\\cl\s+[^\n]+)",
-#             r"\1" + "\n" + rf" \\c {chapter_num}" + "\n" + chapter_usfm_text,
-#             chapter_usfm_text,
-#         )
-#         return updated_chapter_usfm_text
-#     logger.debug("chapter marker already existed, didn't add one")
-#     return chapter_usfm_text
-
-# CHAPTER_CAPTURE_REGEX = r"(?m)^\\c\s+\d+"
 
 
 def ensure_chapter_marker(

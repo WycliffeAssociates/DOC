@@ -18,7 +18,7 @@ from urllib.parse import urlparse
 import requests
 import yaml
 from doc.config import settings
-from doc.domain import parsing
+from doc.domain import parsing, worker
 from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
 from doc.domain.model import (
     NON_USFM_RESOURCE_TYPES,
@@ -415,6 +415,7 @@ def lang_codes_and_names(
 
 
 @lru_cache(maxsize=100)
+@worker.app.task
 def resource_types(
     lang_code: str,
     book_codes_str: str,
@@ -882,6 +883,7 @@ def get_book_codes_for_lang(
 
 
 @lru_cache(maxsize=100)
+@worker.app.task
 def book_codes_for_lang(
     lang_code: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
@@ -909,6 +911,7 @@ def book_codes_for_lang(
 
 
 @lru_cache(maxsize=100)
+@worker.app.task
 def book_codes_for_lang_from_usfm_only(
     lang_code: str,
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,

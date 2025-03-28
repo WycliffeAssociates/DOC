@@ -310,7 +310,7 @@ def ensure_chapter_label(
     if match:
         label_text = match.group(1)
         if str(chapter_num) not in label_text:
-            updated_label = f"{label_text} {chapter_num}"
+            updated_label = f"{re.escape(label_text)} {chapter_num}"
             chapter_usfm_text = re.sub(
                 r"\\cl\s+(.+)",
                 rf"\\cl {updated_label}",

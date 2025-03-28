@@ -142,7 +142,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("kod", "reg", "phm"),
     ("kqi", "reg", "2th"),
     ("kqi", "reg", "2ti"),
-    ("kqi", "reg", "mrk"),
+    # ("kqi", "reg", "mrk"), # book not available from data api anymore
     ("kqi", "reg", "heb"),
     ("kqi", "reg", "1pe"),
     ("kqi", "reg", "tit"),

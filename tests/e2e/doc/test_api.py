@@ -1549,7 +1549,7 @@ def test_or_tn_mat_lbo_1c_chapter() -> None:
 
 
 # This language is no longer returned by the data API in the list of available languages.
-# @pytest.mark.skip
+@pytest.mark.skip
 def test_nyk_x_nyanehumbe_reg_1pe_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

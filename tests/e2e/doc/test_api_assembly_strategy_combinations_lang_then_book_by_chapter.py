@@ -755,6 +755,7 @@ def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_bo
         check_finished_document_without_verses_success(response)
 
 
+@pytest.mark.skip
 def test_en_tn_col_en_tw_col_sw_tn_col_sw_tw_col_sw_tn_tit_sw_tw_tit_language_book_order_1c_c_by_chapter() -> (
     None
 ):

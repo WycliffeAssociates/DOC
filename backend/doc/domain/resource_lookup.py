@@ -6,10 +6,11 @@ assets.
 
 import json
 import re
+import shutil
 import subprocess
 from functools import lru_cache
 from glob import glob
-from os import scandir
+from os import listdir, scandir
 from os.path import exists, isdir, join
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
@@ -434,13 +435,14 @@ def resource_types(
     (...)
     >>> result
     [('blv', 'Portuguese Bíblia Livre'), ('tw', 'Translation Words'), ('ulb', 'Unlocked Literal Bible')]
+    Fetches and processes available resource types for the given language and book codes.
     """
     book_codes = book_codes_str.split(",")
     if book_codes and book_codes[0] == "all":
-        # Add all OT and NT books
         book_codes = list(book_names.keys())
     data = fetch_source_data()
     resource_types = []
+    repo_clone_list = []  # Collect URLs and file paths for batch cloning
     try:
         repos_info = data["git_repo"]
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
@@ -453,68 +455,115 @@ def resource_types(
                     url = repo_info["repo_url"]
                     last_segment = get_last_segment(url, lang_code)
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    if last_segment[-4:] != "docx":
-                        clone_git_repo(url, resource_filepath)
-                    # logger.debug("resource_filepath: %s", resource_filepath)
-                    # Check repo on disk to see if at least one of the books
-                    # chosen by the user is there
-                    book_assets = []
-                    if resource_type in ["tq", "tn", "tn-condensed"]:
-                        book_assets = [
-                            file.name
-                            for file in scandir(resource_filepath)
-                            if file.is_dir()
-                            and not file.name.startswith(".")
-                            and file.name.lower() in book_codes
-                        ]
-                    elif resource_type == "bc":
-                        book_assets = [
-                            file.name
-                            for file in scandir(resource_filepath)
-                            if file.is_dir()
-                            and not file.name.startswith(".")
-                            and re.search(bc_book_asset_pattern, file.name)
-                            and file.name.split("-")[1].lower() in book_codes
-                        ]
-                    elif resource_type in usfm_resource_types:
-                        book_assets = parsing.find_usfm_files(resource_filepath)
-                    elif resource_type == "rg":
-                        between_texts, bible_reference_strs = find_bible_references(
-                            f"{resource_filepath}/{docx_file_path}"
-                        )
-                        bible_references = [
-                            parse_bible_reference(bible_reference)
-                            for bible_reference in bible_reference_strs
-                        ]
-                        book_codes_ = [
-                            bible_reference.book_code
-                            for bible_reference in bible_references
-                            if bible_reference
-                        ]
-                        # Here book assets is really book codes, but this will work with our conditional below
-                        book_assets = [
-                            book_code
-                            for book_code in book_codes
-                            if book_code in book_codes_
-                        ]
-                    # Checking if at least one of the books chosen by the user in the prior
-                    # user step is included in the repo. For example, the user may have
-                    # chosen an Old Testament book and there is no English bible commentary
-                    # for OT books so in that case we should not show the user 'bc' as a
-                    # choosable resource type. Also, TW resource is language specific and
-                    # not book specific so it can be added here if the user chose it.
-                    if book_assets or resource_type == "tw":
-                        # logger.info("About to add resource type: %s", resource_type)
-                        resource_types.append(
-                            (
-                                resource_type,
-                                resource_type_codes_and_names[resource_type],
-                            )
-                        )
+                    repo_clone_list.append((url, resource_filepath))
+        repo_clone_list = list(set(repo_clone_list))
+        # Separate repos that need to be cloned from en_rg
+        repos_to_clone = [
+            (url, path) for url, path in repo_clone_list if "en_rg" not in path
+        ]
+        # Perform batch cloning only on filtered list
+        batch_clone_git_repos(repos_to_clone)
+        # Process cloned repositories
+        for url, resource_filepath in repo_clone_list:
+            resource_type = next(
+                (
+                    repo_info["content"]["resource_type"]
+                    for repo_info in augmented_repos_info
+                    if repo_info["repo_url"] == url
+                ),
+                None,
+            )
+            # logger.debug("resource_type: %s, url: %s", resource_type, url)
+            if not resource_type:
+                continue
+            # Determine book assets
+            book_assets = []
+            if resource_type in ["tq", "tn", "tn-condensed"]:
+                book_assets = [
+                    file.name
+                    for file in scandir(resource_filepath)
+                    if file.is_dir()
+                    and not file.name.startswith(".")
+                    and file.name.lower() in book_codes
+                ]
+            elif resource_type == "bc":
+                book_assets = [
+                    file.name
+                    for file in scandir(resource_filepath)
+                    if file.is_dir()
+                    and not file.name.startswith(".")
+                    and re.search(bc_book_asset_pattern, file.name)
+                    and file.name.split("-")[1].lower() in book_codes
+                ]
+            elif resource_type in usfm_resource_types:
+                book_assets = parsing.find_usfm_files(resource_filepath)
+            elif resource_type == "rg":
+                between_texts, bible_reference_strs = find_bible_references(
+                    f"{resource_filepath}/{docx_file_path}"
+                )
+                bible_references = [
+                    parse_bible_reference(bible_reference)
+                    for bible_reference in bible_reference_strs
+                ]
+                book_codes_ = {
+                    bible_reference.book_code
+                    for bible_reference in bible_references
+                    if bible_reference
+                }
+                book_assets = [
+                    book_code for book_code in book_codes if book_code in book_codes_
+                ]
+            # Check if at least one selected book exists in the repo
+            if book_assets or resource_type == "tw":
+                resource_types.append(
+                    (
+                        resource_type,
+                        resource_type_codes_and_names[resource_type],
+                    )
+                )
     except:
         pass
     unique_values = unique_tuples(resource_types)
     return sorted(unique_values, key=lambda value: value[1])
+
+
+def batch_clone_git_repos(repos: list[tuple[str, str]]) -> None:
+    """
+    Clones multiple git repositories in a single batch operation.
+    - If a repository already exists and is fully cloned, it is skipped.
+    - If a repository exists but is a partial clone (corrupt or missing key files), it is removed first.
+    - The 'en_rg' directory is preserved and never deleted or cloned.
+    """
+    clone_commands = []
+    for url, resource_filepath in repos:
+        if isdir(resource_filepath):
+            git_dir = join(resource_filepath, ".git")
+            if isdir(git_dir):
+                # Check for key Git files
+                if all(
+                    exists(join(git_dir, filename))
+                    for filename in ["config", "HEAD", "objects"]
+                ):
+                    # Check if working directory has files
+                    if any(scandir(resource_filepath)):
+                        logger.info(
+                            f"Skipping clone: {resource_filepath} already exists and is a full repo."
+                        )
+                        continue  # ✅ Fully cloned, use cached version
+                logger.warning(
+                    f"Removing incomplete or corrupt repository: {resource_filepath}"
+                )
+            else:
+                logger.warning(f"Removing non-repo directory: {resource_filepath}")
+            shutil.rmtree(resource_filepath)
+        clone_command = f"git clone --depth=1 '{url}' '{resource_filepath}' || true"
+        clone_commands.append(clone_command)
+    if clone_commands:
+        full_command = " && ".join(clone_commands)
+        try:
+            subprocess.call(full_command, shell=True)
+        except subprocess.SubprocessError:
+            logger.error("Batch git clone failed!")
 
 
 # Used by some tests
@@ -560,10 +609,16 @@ def usfm_resource_types_and_book_tuples(
                         )
                         # logger.debug("dto: %s", dto)
                         resource_filepath = prepare_resource_filepath(dto)
-                        provision_asset_files(dto.url, resource_filepath)
+                        # TODO file_needs_update might not be the best approach here since it isn't a
+                        # file but a directory. Might just need to check if it exists. Checking
+                        # isn't strictly necessary, but it is just that creating a subprocess to
+                        # git clone is slow and ineffecient.
+                        if file_needs_update(resource_filepath):
+                            provision_asset_files(dto.url, resource_filepath)
                         content_file = parsing.usfm_asset_file(
                             dto,
                             resource_filepath,
+                            False,
                         )
                         # logger.debug("content_file: %s", content_file)
                         if content_file:
@@ -651,9 +706,9 @@ def update_repo_components(
 
 def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
     """
-    DOC needs to support en/tn_condensed, id/ayt, id/tq, and id/tw
-    none of which are supplied by the data API so we augment the data
-    returned from the data API to include them here.
+    DOC needs to support some resources which are not supplied by the
+    data API so we augment the data returned from the data API to include
+    them here.
     """
     # The data API only provides id_tn repo for id, we have to
     # add the other repos for id that are available for DOC's use.
@@ -740,6 +795,7 @@ def get_book_codes_for_lang(
     book_codes_and_names_localized: list[tuple[str, str]] = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
+    repo_clone_list = []  # Collect URLs and file paths for batch cloning
     try:
         repos_info = data["git_repo"]
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
@@ -757,115 +813,92 @@ def get_book_codes_for_lang(
                     for usfm_resource_type in usfm_resource_types
                 ):
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    clone_git_repo(url, resource_filepath)
-                    if (
-                        len(repo_components) == 2
-                        and repo_components[-1] in usfm_resource_types
-                    ):
-                        book_codes_and_names_localized = []
-                        usfm_files = parsing.find_usfm_files(resource_filepath)
-                        for usfm_file in usfm_files:
-                            usfm_file_components = (
-                                Path(usfm_file).stem.lower().split("-")
+                    repo_clone_list.append((url, resource_filepath))
+        repo_clone_list = list(set(repo_clone_list))
+        repos_to_clone = [
+            (url, path) for url, path in repo_clone_list if "en_rg" not in path
+        ]
+        # Perform batch cloning
+        batch_clone_git_repos(repos_to_clone)
+        # Process cloned repositories
+        for url, resource_filepath in repo_clone_list:
+            repo_info = next(
+                (repo for repo in augmented_repos_info if repo["repo_url"] == url),
+                None,
+            )
+            if not repo_info:
+                continue
+            last_segment = get_last_segment(url, lang_code)
+            repo_components = last_segment.split("_")
+            if len(repo_components) == 2 and repo_components[-1] in usfm_resource_types:
+                book_codes_and_names_localized = []
+                usfm_files = parsing.find_usfm_files(resource_filepath)
+                for usfm_file in usfm_files:
+                    usfm_file_components = Path(usfm_file).stem.lower().split("-")
+                    book_code = usfm_file_components[1]
+                    resource_type = repo_components[1]
+                    content = read_file(usfm_file) if usfm_file else ""
+                    frontmatter, _, _ = parsing.split_usfm_by_chapters(
+                        lang_code, resource_type, book_code, content
+                    )
+                    localized_book_name = parsing.maybe_localized_book_name(frontmatter)
+                    book_codes_and_names_localized.append(
+                        (book_code, localized_book_name)
+                    )
+                break
+            if (
+                use_localized_book_name
+                and len(repo_components) > 2
+                and repo_components[-1] in usfm_resource_types
+            ):
+                book_name_file = f"{resource_filepath}/front/title.txt"
+                if exists(book_name_file):
+                    with open(book_name_file, "r") as fin:
+                        book_name = fin.read()
+                        localized_book_name = normalize_localized_book_name(book_name)
+                        book_code = repo_components[1]
+                        book_codes_and_names_localized.append(
+                            (book_code, localized_book_name)
+                        )
+            if not usfm_only:
+                if not book_codes_and_names_localized or any(
+                    name == "" for _, name in book_codes_and_names_localized
+                ):
+                    if len(repo_components) > 2:
+                        book_code = repo_components[1]
+                        if book_code in book_names:
+                            book_codes_and_names.append(
+                                (book_code, book_names[book_code])
                             )
-                            book_code = usfm_file_components[1]
-                            resource_type = repo_components[1]
-                            content = read_file(usfm_file) if usfm_file else ""
-                            logger.debug("usfm_file: %s", usfm_file)
-                            frontmatter, _, _ = parsing.split_usfm_by_chapters(
-                                lang_code,
-                                resource_type,
-                                book_code,
-                                content,
-                            )
-                            localized_book_name = parsing.maybe_localized_book_name(
-                                frontmatter
-                            )
-                            book_codes_and_names_localized.append(
-                                (book_code, localized_book_name)
-                            )
-                        break
-                    if (
-                        use_localized_book_name
-                        and len(repo_components) > 2
-                        and repo_components[-1] in usfm_resource_types
-                    ):
-                        book_name_file = f"{resource_filepath}/front/title.txt"
-                        if exists(book_name_file):
-                            with open(book_name_file, "r") as fin:
-                                book_name = fin.read()
-                                localized_book_name = normalize_localized_book_name(
-                                    book_name
-                                )
-                                book_code = repo_components[1]
-                                book_codes_and_names_localized.append(
-                                    (book_code, localized_book_name)
-                                )
-                # NOTE The following commented out code works, but
-                # JSON manifest's sometimes have book names that do
-                # not align with the book names found in USFM and are
-                # sometimes not the most commonly used book names. Therefore,
-                # it is often better to not use the manifest-provided book names.
-                # # Didn't get book codes and names from USFM, so now
-                # # let's try to get it from manifest
-                # if not book_codes_and_names_localized or any(
-                #     name == "" for _, name in book_codes_and_names_localized
-                # ):  # One or more book names are empty.
-                #     book_codes_and_names_localized.extend(
-                #         book_codes_and_names_from_manifest(resource_filepath)
-                #     )
-                if not usfm_only:
-                    # NOTE Didn't find book names in USFM, so get them
-                    # from the USFM or other resource (TN, TQ) file paths
-                    if not book_codes_and_names_localized or any(
-                        name == "" for _, name in book_codes_and_names_localized
-                    ):  # One or more book names are empty.
-                        if len(repo_components) > 2:
-                            book_code = repo_components[1]
-                            if book_code in book_names:
-                                book_codes_and_names.append(
-                                    (book_code, book_names[book_code])
-                                )
-                        elif (
-                            len(repo_components) == 2 and not book_codes_and_names
-                        ):  # e.g., amo_reg, id_tn
-                            if not book_codes_and_names2:
-                                resource_filepath = (
-                                    f"{resource_assets_dir}/{last_segment}"
-                                )
-                                clone_git_repo(url, resource_filepath)
-                                if repo_components[-1] in usfm_resource_types:
-                                    usfm_files = parsing.find_usfm_files(
-                                        resource_filepath
+                    elif len(repo_components) == 2 and not book_codes_and_names:
+                        if not book_codes_and_names2:
+                            if repo_components[-1] in usfm_resource_types:
+                                usfm_files = parsing.find_usfm_files(resource_filepath)
+                                for usfm_file in usfm_files:
+                                    book_code = (
+                                        Path(usfm_file).stem.lower().split("-")[1]
                                     )
-                                    for usfm_file in usfm_files:
-                                        book_code = (
-                                            Path(usfm_file).stem.lower().split("-")[1]
+                                    book_codes_and_names2.append(
+                                        (book_code, book_names[book_code])
+                                    )
+                            if not book_codes_and_names2 and repo_components[-1] in [
+                                "tn",
+                                "tq",
+                            ]:
+                                subdirs = [
+                                    file
+                                    for file in scandir(resource_filepath)
+                                    if file.is_dir() and file.name in book_names
+                                ]
+                                for subdir in subdirs:
+                                    book_codes_and_names2.append(
+                                        (
+                                            subdir.name.lower(),
+                                            book_names[subdir.name.lower()],
                                         )
-                                        book_codes_and_names2.append(
-                                            (book_code, book_names[book_code])
-                                        )
-
-                                # If no USFM assets found, look for others
-                                if not book_codes_and_names2:
-                                    # Search for book directories amongst a subset of non-USFM repo assets
-                                    if repo_components[-1] in ["tn", "tq"]:
-                                        subdirs = [
-                                            file
-                                            for file in scandir(resource_filepath)
-                                            if file.is_dir() and file.name in book_names
-                                        ]
-                                        # logger.debug("subdirs (as book codes): %s", subdirs)
-                                        for subdir in subdirs:
-                                            book_codes_and_names2.append(
-                                                (
-                                                    subdir.name.lower(),
-                                                    book_names[subdir.name.lower()],
-                                                )
-                                            )
+                                    )
     except:
         pass
-    # Keep book codes unique and sorted by canonical bible book order
     unique_values = []
     if not book_codes_and_names_localized or any(
         name == "" for _, name in book_codes_and_names_localized
@@ -876,8 +909,7 @@ def get_book_codes_for_lang(
         unique_values = unique_tuples(book_codes_and_names_localized)
     book_id_map = {id: pos for pos, id in enumerate(book_names.keys())}
     return sorted(
-        unique_values,
-        key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
+        unique_values, key=lambda book_code_and_name: book_id_map[book_code_and_name[0]]
     )
 
 
@@ -1125,6 +1157,8 @@ def provision_asset_files(
     url: Optional[str],
     resource_filepath: str,
 ) -> None:
+    # TODO Perhaps we could use file_needs_update here to save
+    # creating a subprocess if we can avoid it
     if url is not None and url[-4:] != "docx":
         clone_git_repo(url, resource_filepath)
     elif url is not None and url[-4:] == "docx":

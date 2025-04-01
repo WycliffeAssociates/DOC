@@ -121,6 +121,7 @@ def generate_docx_document(
                 source_usfm_book = usfm_book_content(
                     lang0_resource_lookup_dto_,
                     lang0_resource_dir,
+                    False,
                 )
                 for chapter_num_, chapter_ in source_usfm_book.chapters.items():
                     source_usfm_book.chapters[chapter_num_].verses = (
@@ -140,6 +141,7 @@ def generate_docx_document(
                 target_usfm_book = usfm_book_content(
                     lang1_resource_lookup_dto_,
                     lang1_resource_dir,
+                    False,
                 )
                 for chapter_num_, chapter_ in target_usfm_book.chapters.items():
                     target_usfm_book.chapters[chapter_num_].verses = (

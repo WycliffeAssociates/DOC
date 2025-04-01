@@ -257,10 +257,7 @@ def fetch_usfm_book_content_units(
     )
     # Initialize found resources from their provisioned assets.
     usfm_book_content_units = [
-        parsing.usfm_book_content(
-            resource_lookup_dto,
-            resource_dir,
-        )
+        parsing.usfm_book_content(resource_lookup_dto, resource_dir, False)  # , False
         for resource_lookup_dto, resource_dir in zip(
             found_usfm_resource_lookup_dtos, resource_dirs
         )

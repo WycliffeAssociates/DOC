@@ -208,7 +208,7 @@
   let showFilterMenu = false
   let showWizardBasketModal = false
 
-  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
@@ -233,7 +233,9 @@
       {#if !otBookCodes || !ntBookCodes}
         <div class="ml-4">
           <ProgressIndicator
-            labelString="Analyzing books available for languages chosen, please be patient..."
+            labelString="Acquiring and analyzing books available for
+                         languages chosen, please be patient as this
+                         can take a few minutes"
           />
         </div>
       {:else}

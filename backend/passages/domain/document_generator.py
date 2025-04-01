@@ -86,6 +86,7 @@ def generate_docx_document(
                 usfm_book = usfm_book_content(
                     resource_lookup_dto_,
                     resource_dir,
+                    False,
                 )
                 for chapter_num_, chapter_ in usfm_book.chapters.items():
                     usfm_book.chapters[chapter_num_].verses = split_chapter_into_verses(

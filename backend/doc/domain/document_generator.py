@@ -96,6 +96,7 @@ def generate_document(
         document_request.assembly_layout_kind,
         document_request.chunk_size,
         document_request.limit_words,
+        document_request.use_chapter_labels,
     )
     html_filepath_ = html_filepath(document_request_key_)
     pdf_filepath_ = pdf_filepath(document_request_key_)
@@ -146,6 +147,7 @@ def generate_document(
             resource_dirs,
             document_request.resource_requests,
             document_request.layout_for_print,
+            document_request.use_chapter_labels,
         )
         t1 = time.time()
         logger.info("Time to parse all resource content: %s", t1 - t0)
@@ -226,6 +228,7 @@ def generate_docx_document(
         document_request.assembly_layout_kind,
         document_request.chunk_size,
         document_request.limit_words,
+        document_request.use_chapter_labels,
     )
     html_filepath_ = html_filepath(document_request_key_)
     docx_filepath_ = docx_filepath(document_request_key_)
@@ -271,6 +274,7 @@ def generate_docx_document(
             resource_dirs,
             document_request.resource_requests,
             document_request.layout_for_print,
+            document_request.use_chapter_labels,
         )
         t1 = time.time()
         logger.info("Time to parse all resource content: %s", t1 - t0)
@@ -331,6 +335,7 @@ def document_request_key(
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
     limit_words: bool,
+    use_chapter_labels: bool,
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -363,9 +368,9 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"lwt" if limit_words else "lwf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}'
     else:
-        document_request_key = f"{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}"
+        document_request_key = f"{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}"
     if len(document_request_key) >= max_filename_len:
         # Likely the generated filename was too long for the OS where this is
         # running. In that case, use the current time as a document_request_key

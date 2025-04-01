@@ -73,12 +73,10 @@ def find_bible_references(
             - The second list contains the Bible references themselves.
     """
     doc = Document(docx_file)
-
     between_texts: list[str] = []
     bible_references: list[str] = []
     current_text: list[str] = []
     inside_bible_reference: bool = False
-
     for paragraph in doc.paragraphs:
         # Check if the paragraph is a potential Bible reference
         paragraph_text = paragraph.text.strip()

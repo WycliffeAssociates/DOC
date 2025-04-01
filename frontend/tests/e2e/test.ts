@@ -135,3 +135,17 @@ test('test that you can select gateway tab after first selecting heart language 
 })
 
 
+
+test('test optional settings', async ({ page }) => {
+  await page.goto('http://localhost:8001/languages')
+  await page.getByText('Bichelamar (Bislama)').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Matiu').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Bible').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('PDF').click()
+  await expect(page.getByRole('main')).toContainText('▶ Show Optional Settings')
+  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+  await expect(page.getByRole('main')).toContainText('Use chapter labels, e.g., \'Chapter 1\' instead of \'1\'')
+})

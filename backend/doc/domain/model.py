@@ -193,6 +193,12 @@ class DocumentRequest(BaseModel):
     # only those that appear in the USFM requested (True), or, include all
     # the TW words available for the language requested (False).
     limit_words: bool = True
+    # Indicate whether to use chapter labels at all. False means only use
+    # chapter number at start of chapter. True means use chapter label plus
+    # chapter number, e.g., Chapter 1. Note that if localize_chapter_labels
+    # is True, then the chapter label will be localized to the language(s)
+    # requested.
+    use_chapter_labels: bool = False
     # Indicate whether TN book intros should be included. Currently,
     # the content team does not want them included.
     include_tn_book_intros: bool = False

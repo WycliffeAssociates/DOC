@@ -6,7 +6,7 @@ import re
 import subprocess
 import time
 from glob import glob
-from os import getenv, scandir, walk, DirEntry
+from os import DirEntry, getenv, scandir, walk
 from os.path import exists, join, split
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
@@ -177,6 +177,7 @@ def convert_usfm_chapter_to_html(
 def usfm_asset_file(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
+    use_chapter_labels: bool,
     usfm_glob_fmt_str: str = "{}**/*.usfm",
     usfm_ending_in_txt_glob_fmt_str: str = "{}**/*.txt",
     usfm_ending_in_txt_in_subdirectory_glob_fmt_str: str = "{}**/**/*.txt",
@@ -197,7 +198,11 @@ def usfm_asset_file(
         # each verse span in a separate file in that directory. We concatenate the
         # book's USFM files into one USFM file.
         if len(filtered_usfm_files) > 1:
-            return combine_usfm_files(resource_dir, resource_lookup_dto)
+            return combine_usfm_files(
+                resource_dir,
+                resource_lookup_dto,
+                use_chapter_labels,
+            )
         else:
             return filtered_usfm_files[0]
     return None
@@ -209,7 +214,16 @@ def usfm_chapter_html(
     chapter_num: int,
     working_dir: str = settings.WORKING_DIR,
 ) -> Optional[str]:
-    resource_filepath_sans_suffix = f"{working_dir}/{resource_lookup_dto.lang_code}_{resource_lookup_dto.resource_type}_{resource_lookup_dto.book_code}_{chapter_num}"
+    resource_filepath_sans_suffix = "_".join(
+        [
+            resource_lookup_dto.lang_code,
+            resource_lookup_dto.resource_type,
+            resource_lookup_dto.book_code,
+            str(chapter_num),
+        ]
+    )
+    resource_filepath_sans_suffix = f"{working_dir}/{resource_filepath_sans_suffix}"
+    html_content_filepath = f"{resource_filepath_sans_suffix}.html"
     t0 = time.time()
     convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
     t1 = time.time()
@@ -220,7 +234,6 @@ def usfm_chapter_html(
         resource_lookup_dto.book_code,
         t1 - t0,
     )
-    html_content_filepath = f"{resource_filepath_sans_suffix}.html"
     if exists(html_content_filepath):
         html_content = read_file(html_content_filepath)
         return html_content
@@ -241,7 +254,6 @@ def split_usfm_by_chapters(
     book_code: str,
     usfm_text: str,
     chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
-    # chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
@@ -256,7 +268,6 @@ def split_usfm_by_chapters(
     chapter_markers = re.findall(chapter_regex, usfm_text)
     chapters = re.split(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
-    logger.debug("chapter_markers: %s", chapter_markers)
 
     def needs_fixing() -> bool:
         """
@@ -436,15 +447,19 @@ def ensure_chapter_marker(
 def usfm_book_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
+    use_chapter_labels: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
-    use_chapter_labels: bool = settings.USE_CHAPTER_LABELS,
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
     HTML content returned into a model.USFMBook data structure for use
     during interleaving with other resource assets.
     """
-    content_file = usfm_asset_file(resource_lookup_dto, resource_dir)
+    content_file = usfm_asset_file(
+        resource_lookup_dto,
+        resource_dir,
+        use_chapter_labels,
+    )
     content = read_file(content_file) if content_file else ""
     if not use_chapter_labels:
         content = ensure_no_chapter_labels(content)
@@ -457,16 +472,13 @@ def usfm_book_content(
     )
     localized_book_name = maybe_localized_book_name(frontmatter)
     for chapter_marker, chapter_usfm in zip(chapter_markers, chapters_usfm):
-        logger.debug("chapter_usfm[0:60]: %s", chapter_usfm[0:60])
         # chapter_usfm = chapter_marker + "\n" + chapter_usfm
         chapter_num = get_chapter_num(chapter_usfm)
         if chapter_num == -1:
             chapter_num = chapter_label_numeric_part(chapter_usfm)
-        logger.debug("chapter_num: %s", chapter_num)
         if use_chapter_labels:
             chapter_usfm = ensure_chapter_label(chapter_usfm, chapter_num)
         chapter_usfm = ensure_chapter_marker(chapter_usfm, chapter_num)
-        logger.debug("updated chapter_usfm[0:60]: %s", chapter_usfm[0:60])
         chapter_html_content = usfm_chapter_html(
             chapter_usfm, resource_lookup_dto, chapter_num
         )
@@ -888,6 +900,7 @@ def books(
     resource_dirs: Sequence[str],
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
+    use_chapter_labels: bool,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     tn_resource_type: str = TN_RESOURCE_TYPE,
     en_tn_condensed_resource_type: str = EN_TN_CONDENSED_RESOURCE_TYPE,
@@ -916,6 +929,7 @@ def books(
             usfm_book = usfm_book_content(
                 resource_lookup_dto,
                 resource_dir,
+                use_chapter_labels,
             )
             usfm_books.append(usfm_book)
         elif (
@@ -1024,8 +1038,7 @@ def get_book_name(
 
 def assemble_chapter_usfm(
     chapter_dir: DirEntry[str],
-    use_chapter_labels: bool = settings.USE_CHAPTER_LABELS,
-    use_localized_chapter_label: bool = settings.USE_LOCALIZED_CHAPTER_LABEL,
+    use_chapter_labels: bool,
 ) -> list[str]:
     chapter_usfm_content = []
     try:
@@ -1038,28 +1051,21 @@ def assemble_chapter_usfm(
         chapter_num = -1  # use this as a sentinal
     chapter_usfm_content.append("\n" + rf"\c {chapter_num}" + "\n")
     if use_chapter_labels:
-        if use_localized_chapter_label:
-            chapter_word_file = join(chapter_dir.path, "title.txt")
-            try:
-                with open(chapter_word_file, "r") as fin:
-                    chapter_word = fin.read()
-                    chapter_word = chapter_word.strip()
-                    chapter_word = chapter_label_sans_numeric_part(chapter_word)
-                    # logger.debug("chapter_label_sans_numeric_part: %s", chapter_word)
-                    # chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
-                    chapter_label = "\n" + rf"\cl {chapter_word}" + "\n"
-                    logger.debug("chapter_label: %s", chapter_label)
-                    chapter_usfm_content.append(chapter_label)
-            except FileNotFoundError:
-                pass  # No file containing chapter label
-                # TODO There could be a branch here wherein we wanted to use localized
-                # chapter label, but it wasn't provided and thus we should provide an
-                # English chapter label. The other option would be to not provide a
-                # chapter label if we requested a localized one and it could not be
-                # found.
-        else:
-            # chapter_usfm_content.append("\n" + rf"\cl Chapter" + f"{chapter_num}" + "\n")
-            chapter_usfm_content.append("\n" + r"\cl Chapter" + "\n")
+        chapter_word_file = join(chapter_dir.path, "title.txt")
+        try:
+            with open(chapter_word_file, "r") as fin:
+                chapter_word = fin.read()
+                chapter_word = chapter_word.strip()
+                chapter_word = chapter_label_sans_numeric_part(chapter_word)
+                # FIXME  Shouldn't this include the chapter num?
+                # chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
+                chapter_label = "\n" + rf"\cl {chapter_word}" + "\n"
+                chapter_usfm_content.append(chapter_label)
+        except FileNotFoundError:
+            pass  # No file containing chapter label
+            # TODO There could be a branch here wherein we wanted to use localized
+            # chapter label, but it wasn't provided and thus we should provide an
+            # English chapter label. NOTE In ensure_chapter_label an English chapter label will be inserted if it is missing
     logger.info(
         "Adding a USFM chapter marker for chapter: %s",
         chapter_num,
@@ -1093,6 +1099,7 @@ def assemble_chapter_usfm(
 def combine_usfm_files(
     resource_dir: str,
     resource_lookup_dto: ResourceLookupDto,
+    use_chapter_labels: bool,
 ) -> str:
     """
     Attempt to assemble and construct parseable USFM content for USFM
@@ -1113,7 +1120,7 @@ def combine_usfm_files(
         and not file.name.startswith(".")
     ]
     for chapter_dir in sorted(subdirs, key=lambda dir_entry: dir_entry.name):
-        chapter_usfm_content = assemble_chapter_usfm(chapter_dir)
+        chapter_usfm_content = assemble_chapter_usfm(chapter_dir, use_chapter_labels)
         usfm_content.extend(chapter_usfm_content)
     filename = join(
         resource_dir,

@@ -429,9 +429,9 @@ def ensure_chapter_marker(
     Modify USFM source to insert a chapter marker, \c <chapter_num>, if it does not have one.
     """
     if re.search(chapter_regex, chapter_usfm_text):
-        logger.debug("chapter marker already existed, didn't add one")
+        logger.debug("Chapter marker already existed, didn't add one")
         return chapter_usfm_text
-    logger.debug("chapter marker is missing, adding one...")
+    logger.debug("Chapter marker is missing, adding one...")
     # Try inserting before \cl, if present
     if match := re.search(r"\\cl\s+[^\n]+", chapter_usfm_text):
         insert_pos = match.start()
@@ -958,7 +958,7 @@ def books(
             bc_books.append(bc_book)
         elif resource_lookup_dto.resource_type == rg_resource_type:
             path = join(resource_dir, docx_file_path)
-            logger.debug("About to get_rg_books from: %s", path)
+            # logger.debug("About to get_rg_books from: %s", path)
             rg_books = get_rg_books(
                 path,
                 resource_lookup_dto.lang_code,

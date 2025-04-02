@@ -1069,7 +1069,7 @@ def resource_lookup_dto(
             if language_info["ietf_code"] == lang_code:
                 last_segment = get_last_segment(url, lang_code)
                 if last_segment[-4:] == "docx":
-                    logger.debug("docx detected, url: %s", url)
+                    # logger.debug("docx detected, url: %s", url)
                     resource_lookup_dto = ResourceLookupDto(
                         lang_code=lang_code,
                         lang_name=language_info["english_name"],
@@ -1149,7 +1149,7 @@ def resource_lookup_dto(
         resource_lookup_dto = more_than_two_component_url_resource_lookup_dtos[0]
     elif two_component_url_resource_lookup_dtos:
         resource_lookup_dto = two_component_url_resource_lookup_dtos[0]
-    logger.debug("resource_lookup_dto: %s", resource_lookup_dto)
+    # logger.debug("resource_lookup_dto: %s", resource_lookup_dto)
     return resource_lookup_dto
 
 
@@ -1270,7 +1270,7 @@ def nt_survey_rg_passages(
     )
     """
     path = join(assets_dir, resource_dir, docx_file_path)
-    logger.debug("path: %s exists: %s", path, exists(path))
+    # logger.debug("path: %s exists: %s", path, exists(path))
     # TODO Check if resource_dir exists and if it doesn't then submit
     # a document request to DOC API to make sure it is cloned.
     # Currently we don't have to do this because at startup we copy

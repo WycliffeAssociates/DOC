@@ -333,13 +333,13 @@ def fix_verse_marker_without_v(content: str) -> str:
 
 def fix_missing_space_before_number(content: str) -> str:
     if match := compiled_patterns["fix_missing_space_before_number"].search(content):
-        logger.debug(
-            "match.group(1): %s",
-            match.group(1),
-        )
+        # logger.debug(
+        #     "match.group(1): %s",
+        #     match.group(1),
+        # )
         character_before_number = content[match.start() - 1]
         character_before_before_number = content[match.start() - 2]
-        logger.debug("character_before_number: %s", character_before_number)
+        # logger.debug("character_before_number: %s", character_before_number)
         if (
             character_before_number.isdigit()
             and match.group(1).isdigit()

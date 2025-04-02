@@ -33,13 +33,13 @@ async def source_lang_codes_and_names(
         and entry.name.startswith("stet_")
         and entry.name.endswith(".docx")
     ]
-    logger.debug("source ietf_codes: %s", ietf_codes)
+    # logger.debug("source ietf_codes: %s", ietf_codes)
     languages = [
         lang_code_and_name
         for lang_code_and_name in resource_lookup.lang_codes_and_names()
         if lang_code_and_name[0] in ietf_codes
     ]
-    logger.debug("source languages: %s", languages)
+    # logger.debug("source languages: %s", languages)
     return languages
 
 
@@ -51,13 +51,13 @@ async def target_lang_codes_and_names(
     Return list of all available language code, name tuples excluding
     the source language chosen: lang0_code.
     """
-    logger.debug("source language: %s", lang0_code)
+    # logger.debug("source language: %s", lang0_code)
     languages = [
         lang_code_and_name
         for lang_code_and_name in resource_lookup.lang_codes_and_names()
         if lang_code_and_name[0] != lang0_code
     ]
-    logger.debug("target languages: %s", languages)
+    # logger.debug("target languages: %s", languages)
     return languages
 
 

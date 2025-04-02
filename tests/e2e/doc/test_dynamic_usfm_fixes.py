@@ -62,10 +62,10 @@ def test_all_usfm_books_for_language(lang_code: str) -> None:
                 ),
             )
         )
-        logger.debug(
-            "usfm_resource_types_and_book_tuples_: %s",
-            usfm_resource_types_and_book_tuples_,
-        )
+        # logger.debug(
+        #     "usfm_resource_types_and_book_tuples_: %s",
+        #     usfm_resource_types_and_book_tuples_,
+        # )
         for usfm_resource_types_and_book_tuple in usfm_resource_types_and_book_tuples_:
             response = client.post(
                 "/documents",

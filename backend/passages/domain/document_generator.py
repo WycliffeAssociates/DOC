@@ -96,7 +96,7 @@ def generate_docx_document(
     current_task.update_state(state="Assembling content")
     passages = []
     for passage_ref_dto in passage_reference_dtos:
-        logger.debug("passage_ref_dto: %s", passage_ref_dto)
+        # logger.debug("passage_ref_dto: %s", passage_ref_dto)
         selected_usfm_books = [
             usfm_book_
             for usfm_book_ in usfm_books
@@ -247,12 +247,12 @@ def generate_passages_docx_document(
     passage_reference_dtos = [
         PassageReferenceDto(**d) for d in passage_reference_dtos_list
     ]
-    logger.debug(
-        "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
-        lang_code,
-        passage_reference_dtos,
-        email_address,
-    )
+    # logger.debug(
+    #     "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
+    #     lang_code,
+    #     passage_reference_dtos,
+    #     email_address,
+    # )
     document_request_key_ = document_request_key(lang_code, passage_reference_dtos)
     docx_filepath_ = docx_filepath(document_request_key_)
     if file_needs_update(docx_filepath_):

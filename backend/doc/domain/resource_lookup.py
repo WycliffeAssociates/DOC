@@ -1157,8 +1157,6 @@ def provision_asset_files(
     url: Optional[str],
     resource_filepath: str,
 ) -> None:
-    # TODO Perhaps we could use file_needs_update here to save
-    # creating a subprocess if we can avoid it
     if url is not None and url[-4:] != "docx":
         clone_git_repo(url, resource_filepath)
     elif url is not None and url[-4:] == "docx":

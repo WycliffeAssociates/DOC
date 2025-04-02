@@ -18,13 +18,7 @@ import {
 // } from '$lib/stores/ResourceTypesStore'
 import { documentReadyStore, errorStore } from '$lib/stet/stores/NotificationStore'
 import {
-  // layoutForPrintStore,
-  // assemblyStrategyKindStore,
-  // generatePdfStore,
-  // generateEpubStore,
-  // generateDocxStore,
-  documentRequestKeyStore
-  // twResourceRequestedStore
+    documentRequestKeyStore
 } from '$lib/stet/stores/SettingsStore'
 
 // const languageBookOrder: string = <string>PUBLIC_LANGUAGE_BOOK_ORDER
@@ -36,7 +30,6 @@ export let targetLangRegExp = new RegExp('.*target_languages.*')
 export let settingsRegExp = new RegExp('.*settings.*')
 
 export function resetStores(storeGroup: StoreGroup) {
-  // TODO
   if (storeGroup === 'source_languages' || storeGroup === 'target_languages') {
     gatewayCodeAndNamesStore.set([])
     heartCodeAndNamesStore.set([])

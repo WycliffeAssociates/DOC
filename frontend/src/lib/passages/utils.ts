@@ -18,7 +18,6 @@ export let passagesRegExp = new RegExp('.*passages/passages.*')
 export let settingsRegExp = new RegExp('.*settings.*')
 
 export function resetStores(storeGroup: StoreGroup) {
-  // TODO
   if (storeGroup === 'language') {
     gatewayCodeAndNamesStore.set([])
     heartCodeAndNamesStore.set([])

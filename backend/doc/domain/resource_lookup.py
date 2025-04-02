@@ -609,10 +609,6 @@ def usfm_resource_types_and_book_tuples(
                         )
                         # logger.debug("dto: %s", dto)
                         resource_filepath = prepare_resource_filepath(dto)
-                        # TODO file_needs_update might not be the best approach here since it isn't a
-                        # file but a directory. Might just need to check if it exists. Checking
-                        # isn't strictly necessary, but it is just that creating a subprocess to
-                        # git clone is slow and ineffecient.
                         if file_needs_update(resource_filepath):
                             provision_asset_files(dto.url, resource_filepath)
                         content_file = parsing.usfm_asset_file(

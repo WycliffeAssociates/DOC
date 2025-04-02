@@ -1061,9 +1061,9 @@ def assemble_chapter_usfm(
                 chapter_usfm_content.append(chapter_label)
         except FileNotFoundError:
             pass  # No file containing chapter label
-            # TODO There could be a branch here wherein we wanted to use localized
-            # chapter label, but it wasn't provided and thus we should provide an
-            # English chapter label. NOTE In ensure_chapter_label an English chapter label will be inserted if it is missing
+            # In ensure_chapter_label an English chapter label will be
+            # inserted if a chapter label is missing and
+            # use_chapter_labels is True
     logger.info(
         "Adding a USFM chapter marker for chapter: %s",
         chapter_num,
@@ -1082,7 +1082,6 @@ def assemble_chapter_usfm(
         with open(usfm_file, "r") as fin:
             # logger.debug("usfm_file: %s", usfm_file)
             verse_content = fin.read()
-            # NOTE Area of interest
             # Some languages put a chapter marker in front of verse 1 in the verse
             # file which covers a verse span which includes verse 1 . Since we
             # ensure chapter markers ourselves when assembling multiple verse files

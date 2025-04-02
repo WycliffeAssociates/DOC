@@ -1057,9 +1057,7 @@ def assemble_chapter_usfm(
                 chapter_word = fin.read()
                 chapter_word = chapter_word.strip()
                 chapter_word = chapter_label_sans_numeric_part(chapter_word)
-                # FIXME  Shouldn't this include the chapter num?
-                # chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
-                chapter_label = "\n" + rf"\cl {chapter_word}" + "\n"
+                chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
                 chapter_usfm_content.append(chapter_label)
         except FileNotFoundError:
             pass  # No file containing chapter label

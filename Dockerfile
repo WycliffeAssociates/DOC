@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.13-slim-bookworm
 
 # Create a non-root user and group
 RUN groupadd -r appgroup && useradd -m -r -g appgroup appuser
@@ -80,7 +80,7 @@ RUN mkdir -p document_output
 # Make the directory where stet source documents are stored
 RUN mkdir -p stet
 
-COPY backend/document/stet/data/stet_*.docx stet/
+COPY backend/stet/data/stet_*.docx stet/
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .
@@ -117,7 +117,9 @@ COPY en_rg_nt_survey.docx .
 ENV PYTHONPATH=/app/backend:/app/tests
 
 # Inside the Python virtual env: install any missing mypy type packages and check types in strict mode.
-RUN mypy --strict --install-types --non-interactive backend/document/**/*.py
+RUN mypy --strict --install-types --non-interactive backend/doc/**/*.py
+RUN mypy --strict --install-types --non-interactive backend/stet/**/*.py
+RUN mypy --strict --install-types --non-interactive backend/passages/**/*.py
 RUN mypy --strict --install-types --non-interactive tests/**/*.py
 
 # Change ownership of app specific directories to the non-root user

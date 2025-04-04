@@ -6,8 +6,8 @@ from typing import Any, Optional, Sequence
 
 import pydantic
 import pytest
-from document.config import settings
-from document.domain import bible_books, exceptions, model, resource_lookup
+from doc.config import settings
+from doc.domain import bible_books, exceptions, model, resource_lookup
 
 logger = settings.logger(__name__)
 
@@ -488,12 +488,14 @@ def random_two_non_english_languages_document_request(
         )
     return model.DocumentRequest(
         email_address=email_address,
-        assembly_strategy_kind=model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
-        if random_non_english_lang_code
-        and random_non_english_lang_code2
-        and random_non_english_lang_code != random_non_english_lang_code2
-        and len(resource_requests) > 1
-        else model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+        assembly_strategy_kind=(
+            model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+            if random_non_english_lang_code
+            and random_non_english_lang_code2
+            and random_non_english_lang_code != random_non_english_lang_code2
+            and len(resource_requests) > 1
+            else model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
+        ),
         assembly_layout_kind=assembly_layout_kind,
         layout_for_print=layout_for_print,
         generate_pdf=generate_pdf,

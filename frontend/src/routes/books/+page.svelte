@@ -208,7 +208,7 @@
   let showFilterMenu = false
   let showWizardBasketModal = false
 
-  let windowWidth: number
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
@@ -232,7 +232,11 @@
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
       {#if !otBookCodes || !ntBookCodes}
         <div class="ml-4">
-          <ProgressIndicator />
+          <ProgressIndicator
+            labelString="Acquiring and analyzing books available for
+                         languages chosen, please be patient as this
+                         can take a few minutes"
+          />
         </div>
       {:else}
         <div class="flex items-center">

@@ -9,9 +9,45 @@
   export let handleChapterChange: (event: Event) => void
   export let handleVerseInput: (event: Event) => void
   export let addPassage: () => void
+  export let addNTSurveyRGPassages: () => Promise<void>
+
+  let loading = false
+
+  async function handleClick() {
+    loading = true
+    try {
+      await addNTSurveyRGPassages()
+    } catch (error) {
+      console.error('Error:', error)
+    } finally {
+      loading = false
+    }
+  }
 </script>
 
 <div class="flex items-center">
+  <!-- Select NT Survey RG passages button -->
+  <div class="flex h-[56px] items-center px-4">
+    <input
+      id="add-nt-survey-passages-checkbox"
+      type="checkbox"
+      class="checkbox-target checkbox-style"
+      on:click={handleClick}
+    />
+    <label for="add-nt-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
+      >Add NT Survey Reviewer's Guide Passages</label
+    >
+  </div>
+  <!-- <button -->
+  <!--   type="button" -->
+  <!--   class="mt-4 ml-2 w-1/2 rounded-md -->
+  <!--         border border-[#E5E8EB] bg-[#F2F3F5] p-4 -->
+  <!--         text-center text-xl text-[#B3B9C2] hover:bg-[#efefef]" -->
+  <!--   on:click={handleClick} -->
+  <!--   disabled={loading} -->
+  <!-- > -->
+  <!--   {loading ? 'Loading...' : 'Add NT Survey RG Passages'} -->
+  <!-- </button> -->
   <!-- Bible Book Dropdown -->
   <div>
     <label for="book" class="block text-sm font-medium text-gray-700">Bible Book</label>

@@ -1,8 +1,6 @@
 import os
-import pytest
 
-from document.domain import parsing, model
-from document.utils.file_utils import read_file
+from doc.domain import parsing
 
 USFM_RESOURCE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),

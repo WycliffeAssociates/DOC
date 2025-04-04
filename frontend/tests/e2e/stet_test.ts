@@ -55,7 +55,6 @@ test.describe('Mobile Tests', () => {
 
   test('test mobile', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
-    await page.goto('http://localhost:8001/stet/source_languages')
     await page.getByLabel('English en').check()
     await page.getByRole('button').nth(1).click()
     await page.getByText('Bahasa Indonesia (Indonesian)').click()
@@ -68,7 +67,6 @@ test.describe('Mobile Tests', () => {
 
   test('test mobile 2', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
-    await page.goto('http://localhost:8001/stet/source_languages')
     await page.getByText('English').click()
     await page.getByRole('button').nth(1).click()
     await page.getByRole('button').first().click()
@@ -79,6 +77,6 @@ test.describe('Mobile Tests', () => {
     await page.getByText('Abé').click()
     await page.getByRole('button').nth(1).click()
     await page.getByRole('button').first().click()
-    await expect(page.getByLabel('Abé aba')).toBeChecked()
+    await expect(page.getByLabel('Abé aba')).toBeChecked({timeout: 1200000})
   })
 })

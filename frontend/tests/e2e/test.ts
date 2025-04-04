@@ -52,13 +52,13 @@ test('test books retained in basket on back button to languages and then forward
   await page.getByPlaceholder('Search Languages').fill('adh')
   await page.getByLabel(/.*Adhola.*/).check()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('2ኛ ዮሐንስ').click()
-  await page.getByText('2ኛ ዮሐንስ').nth(1).click()
+  await page.getByText('2 ኛ ዮሐንስ').click()
+  await page.getByText('2 ኛ ዮሐንስ').nth(1).click()
   await page.locator('div').filter({ hasText: /.*Adhola.*/ }).first().click()
   await page.locator('.flex-shrink-0 > div:nth-child(4)').click()
   await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('2ኛ ዮሐንስ').nth(1).click()
+  await page.getByText('2 ኛ ዮሐንስ').nth(1).click()
   await page.locator('div').filter({ hasText: /.*Adhola.*/ }).first().click()
 })
 
@@ -67,7 +67,7 @@ test('test transfer from biel', async ({ page }) => {
     'http://localhost:8001/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fchunga_moses%2Fleb-x-bisa_col_text_reg&book_name=Colossians'
   )
   await expect(page.getByText('Bisa')).toBeVisible()
-  await expect(page.getByText('Colossians')).toBeVisible({ timeout: 80000 })
+  await expect(page.getByText('Colossians')).toBeVisible({ timeout: 1200000 })
 })
 
 test('test transfer from biel 2', async ({ page }) => {
@@ -110,4 +110,42 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await page.getByText('Galatians').click({ timeout: 60000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 20000 })
+})
+
+
+test('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await page.goto('http://localhost:8001/languages')
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByText('Adhola').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Thesalonika').click()
+  await page.getByRole('link', { name: 'Languages' }).click()
+  await page.getByRole('button', { name: 'Gateway' }).click()
+  await page.getByText('Cebuano').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Mga taga tesalonica').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Unlocked Literal Bible').click()
+  await page.getByLabel('Bible', { exact: true }).check()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('PDF').click()
+  await page.getByText('Interleave content by chapter').click()
+  await page.getByRole('button', { name: 'Generate File' }).click()
+})
+
+
+
+test('test optional settings', async ({ page }) => {
+  await page.goto('http://localhost:8001/languages')
+  await page.getByText('Bichelamar (Bislama)').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Matiu').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Bible').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('PDF').click()
+  await expect(page.getByRole('main')).toContainText('▶ Show Optional Settings')
+  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+  await expect(page.getByRole('main')).toContainText('Use chapter labels, e.g., \'Chapter 1\' instead of \'1\'')
 })

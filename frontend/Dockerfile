@@ -1,4 +1,4 @@
-FROM node:21-bookworm-slim AS build-stage
+FROM node:23-bookworm-slim AS build-stage
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ COPY . .
 RUN npm run check
 RUN npm run build
 
-FROM nginx:1.25-bookworm AS production
+FROM nginx:1.27-bookworm AS production
 
 ARG PUBLIC_DOC_VERSION_ARG
 ARG PUBLIC_DOC_BUILD_TIMESTAMP_ARG

@@ -1,9 +1,9 @@
 import os
 import pytest
 
-from document.domain import model
-from document.markdown_transforms import markdown_transformer
-from document.utils import tw_utils
+from doc.domain import model
+from doc.markdown_transforms import markdown_transformer
+from doc.utils import tw_utils
 
 EN_TW_RESOURCE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),

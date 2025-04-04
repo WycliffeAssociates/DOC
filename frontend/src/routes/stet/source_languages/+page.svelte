@@ -115,11 +115,10 @@
     }
   }
 
-  let windowWidth: number
+  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
-  // let maxLanguages: number = PUBLIC_MAX_LANGUAGES as unknown as number
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />

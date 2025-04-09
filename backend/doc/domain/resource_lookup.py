@@ -648,25 +648,134 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
 
 
 def get_last_segment(url: str, lang_code: str) -> str:
+    """
+    Handle special cases where git repo URL does not follow the expected pattern.
+    Ideally these repos URLs would have their last segment renamed
+    properly, e.g.,
+    'https://content.bibletranslationtools.org/faustin_azaza/faustin_azaza'
+    renamed to
+    'https://content.bibletranslationtools.org/faustin_azaza/zmq_mrk_text_reg',
+    but since we don't have control over that, we handle these anomalies
+    here.
+    """
     parsed_url = urlparse(url)
     path_segments = parsed_url.path.split("/")
     last_segment = path_segments[-1]
-    # Handle special cases where git repo URL was improperly named.
-    # Ideally these repos URLs would have their last segment renamed
-    # properly, e.g.,
-    # 'https://content.bibletranslationtools.org/faustin_azaza/faustin_azaza'
-    # renamed to
-    # 'https://content.bibletranslationtools.org/faustin_azaza/zmq_mrk_text_reg',
-    # but since we don't have control over that, we handle these anomalies
-    # here.
     if lang_code == "zmq" and last_segment == "faustin_azaza":
         last_segment = "zmq_mrk_text_reg"
     elif lang_code == "my" and last_segment == "my_juds":
         last_segment = "my_ulb"
     elif lang_code == "fa" and last_segment == "fa_opv":
         last_segment = "fa_ulb"
+    # This next one is just a special case for the NT Survery Reviewer's Guide
     elif lang_code == "en" and last_segment[-4:] == "docx":
         last_segment = "en_rg"
+    elif last_segment.startswith(
+        "parfait-ayanou_"
+    ):  # aba and abu languages (and maybe others)
+        last_segment = re.sub("parfait-ayanou_", "", last_segment)
+    elif last_segment.startswith("faustin-azaza_"):
+        last_segment = re.sub("faustin-azaza_", "", last_segment)
+    elif last_segment.startswith("azz_athan_"):
+        last_segment = re.sub("azz_athan_", "", last_segment)
+    elif last_segment.startswith("burje_duro_"):
+        last_segment = re.sub("burje_duro_", "", last_segment)
+    elif last_segment.startswith("Dawit-Dessie_"):
+        last_segment = re.sub("Dawit-Dessie_", "", last_segment)
+    elif last_segment.startswith("jdwood_"):
+        last_segment = re.sub("jdwood_", "", last_segment)
+    elif last_segment.startswith("otlaadisa_"):
+        last_segment = re.sub("otlaadisa_", "", last_segment)
+    elif last_segment.startswith("romantts2_"):
+        last_segment = re.sub("romantts2_", "", last_segment)
+    elif lang_code == "ndh" and last_segment.startswith("chindali_"):
+        last_segment = re.sub("chindali_", "", last_segment)
+    elif lang_code == "knx-x-bajanya" and last_segment.startswith("lawadinusah_"):
+        last_segment = re.sub("lawadinusah_", "", last_segment)
+    elif lang_code == "knx-x-bajanya" and last_segment.startswith("bajanya_knx"):
+        last_segment = re.sub(r"^bajanya_", "", last_segment)
+    elif lang_code == "scg-x-dayakkatarak" and last_segment.startswith("yustius_"):
+        last_segment = re.sub(r"^yustius_", "", last_segment)
+    elif lang_code == "iba-x-ketungau" and last_segment.startswith("dayakketungau_"):
+        last_segment = re.sub(r"^dayakketungau_", "", last_segment)
+    elif lang_code == "iba-x-ketungau" and last_segment.startswith("Lawadinusah_"):
+        last_segment = re.sub(r"^Lawadinusah_", "", last_segment)
+    elif last_segment.startswith("Lawadinusah_"):  # lang_code == "xdy-x-mentebah" and
+        last_segment = re.sub(r"^Lawadinusah_", "", last_segment)
+    elif lang_code == "xdy-x-mentebah" and last_segment.startswith("dayakfdkj_"):
+        last_segment = re.sub(r"^dayakfdkj_", "", last_segment)
+    elif lang_code == "sdm-x-pangkalsuka" and last_segment.startswith("dayaksuka_"):
+        last_segment = re.sub(r"^dayaksuka_", "", last_segment)
+    elif lang_code == "xdy-x-dayakpunti" and last_segment.startswith("anselmus_"):
+        last_segment = re.sub(r"^anselmus_", "", last_segment)
+    elif lang_code == "xdy-x-senduruhan" and last_segment.startswith(
+        "dayaksenduruhan_"
+    ):
+        last_segment = re.sub(r"^dayaksenduruhan_", "", last_segment)
+    elif last_segment.startswith("dijim1_"):
+        last_segment = re.sub(r"^dijim1_", "", last_segment)
+    elif last_segment.startswith("nbtt_"):
+        last_segment = re.sub(r"^nbtt_", "", last_segment)
+    elif last_segment.startswith("ezekieldabere_"):
+        last_segment = re.sub(r"^ezekieldabere_", "", last_segment)
+    elif last_segment.startswith("krispy_"):
+        last_segment = re.sub(r"^krispy_", "", last_segment)
+    elif last_segment.startswith("jks222111_"):
+        last_segment = re.sub(r"^jks222111_", "", last_segment)
+    elif last_segment.startswith("mushohe-25nb_63.kum_"):
+        last_segment = re.sub(r"^mushohe-25nb_63.kum_", "", last_segment)
+    elif last_segment.startswith("botsw01_"):
+        last_segment = re.sub(r"^botsw01_", "", last_segment)
+    elif last_segment.startswith("gravy_"):
+        last_segment = re.sub(r"^gravy_", "", last_segment)
+    elif last_segment.startswith("tom-88pn_0003.machinga_"):
+        last_segment = re.sub(r"^tom-88pn_0003.machinga_", "", last_segment)
+    elif last_segment.startswith("jonathan_"):
+        last_segment = re.sub(r"^jonathan_", "", last_segment)
+    elif last_segment.startswith("lversaw_"):
+        last_segment = re.sub(r"^lversaw_", "", last_segment)
+    elif last_segment.startswith("alexandre_brazil_"):
+        last_segment = re.sub(r"^alexandre_brazil_", "", last_segment)
+    elif last_segment.startswith("jathapu_"):
+        last_segment = re.sub(r"^jathapu_", "", last_segment)
+    elif last_segment.startswith("translator09_"):
+        last_segment = re.sub(r"^translator09_", "", last_segment)
+    elif last_segment.startswith("ngamo_"):
+        last_segment = re.sub(r"^ngamo_", "", last_segment)
+    elif last_segment.startswith("danjuma_alfred_h_"):
+        last_segment = re.sub(r"^danjuma_alfred_h_", "", last_segment)
+    elif last_segment.startswith("ngamo1_"):
+        last_segment = re.sub(r"^ngamo1_", "", last_segment)
+    elif last_segment.startswith("bayan_"):
+        last_segment = re.sub(r"^bayan_", "", last_segment)
+    elif last_segment.startswith("oratab01_"):
+        last_segment = re.sub(r"^oratab01_", "", last_segment)
+    elif last_segment.startswith("Jordan_"):
+        last_segment = re.sub(r"^Jordan_", "", last_segment)
+    elif last_segment.startswith("mvccbtt_"):
+        last_segment = re.sub(r"^mvccbtt_", "", last_segment)
+    elif last_segment.startswith("sambadanum_"):
+        last_segment = re.sub(r"^sambadanum_", "", last_segment)
+    elif last_segment.startswith("shyarpa_"):
+        last_segment = re.sub(r"^shyarpa_", "", last_segment)
+    elif last_segment.startswith("mitikiwostky_"):
+        last_segment = re.sub(r"^mitikiwostky_", "", last_segment)
+    elif last_segment.startswith("michael_"):
+        last_segment = re.sub(r"^michael_", "", last_segment)
+    elif last_segment.startswith("timothydanjuma_"):
+        last_segment = re.sub(r"^timothydanjuma_", "", last_segment)
+    elif last_segment.startswith("ukum1_"):
+        last_segment = re.sub(r"^ukum1_", "", last_segment)
+    elif last_segment.startswith("vere3_"):
+        last_segment = re.sub(r"^vere3_", "", last_segment)
+    elif last_segment.startswith("yukuben1_"):
+        last_segment = re.sub(r"^yukuben1_", "", last_segment)
+    elif last_segment.startswith("tersitzewde_"):
+        last_segment = re.sub(r"^tersitzewde_", "", last_segment)
+    elif last_segment.startswith("moufida_"):
+        last_segment = re.sub(r"^moufida_", "", last_segment)
+    elif last_segment.startswith("billburns58_"):
+        last_segment = re.sub(r"^billburns58_", "", last_segment)
     return last_segment
 
 

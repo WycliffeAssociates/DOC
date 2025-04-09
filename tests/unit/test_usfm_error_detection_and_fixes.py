@@ -632,7 +632,6 @@ Pengajar Ti Pelesu
             r"\s5 5Some text.",
         )
 
-    @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_replace_cc_with_c(self) -> None:
         expected_output = r"""

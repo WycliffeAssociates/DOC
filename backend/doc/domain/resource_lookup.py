@@ -383,6 +383,10 @@ def lang_codes_and_names(
     (...)
     >>> result[0]
     ('cdi', ': Chodri (: Chaudhari)', False)
+    >>> heart_lang_codes = [lang_code_and_name[0] for lang_code_and_name in resource_lookup.lang_codes_and_names() if not lang_code_and_name[2]]
+    >>> for heart_lang_code in heart_lang_codes:
+    ...     resource_lookup.book_codes_for_lang(heart_lang_code)
+    ...
     """
     gateway_languages_ = get_gateway_languages()
     if not gateway_languages_:
@@ -636,7 +640,7 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     >>> ();data = resource_lookup.shared_book_codes("pt-br", "es-419");() # doctest: +ELLIPSIS
     (...)
     >>> list(data)
-    [('gen', 'Gênesis'), ('exo', 'Êxodo'), ('lev', 'Levítico'), ('num', 'Números'), ('deu', 'Deuteronômio'), ('jos', 'Josué'), ('jdg', 'Juízes'), ('rut', 'Rute'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reis'), ('2ki', '2 Reis'), ('1ch', '1 Crônicas'), ('2ch', '2 Crônicas'), ('ezr', 'Esdras'), ('neh', 'Neemias'), ('est', 'Ester'), ('job', 'Jó'), ('psa', 'Salmos'), ('pro', 'Provérbios'), ('ecc', 'Eclesiastes'), ('sng', 'Cantares'), ('isa', 'Isaías'), ('jer', 'Jeremias'), ('lam', 'Lamentações'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseias'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Obadias'), ('jon', 'Jonas'), ('mic', 'Miqueias'), ('nam', 'Naum'), ('hab', 'Habacuque'), ('zep', 'Sofonias'), ('hag', 'Ageu'), ('zec', 'Zacarias'), ('mal', 'Malaquias'), ('mat', 'Mateus'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'João'), ('act', 'Atos'), ('rom', 'Romanos'), ('1co', '1 Coríntios'), ('2co', '2 Coríntios'), ('gal', 'Gálatas'), ('eph', 'Efésios'), ('php', 'Filipenses'), ('col', 'Colossenses'), ('1th', '1 Tessalonicenses'), ('2th', '2 Tessalonicenses'), ('1ti', '1 Timóteo'), ('2ti', '2 Timóteo'), ('tit', 'Tito'), ('phm', 'Filemom'), ('heb', 'Hebreus'), ('jas', 'Tiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 João'), ('2jn', '2 João'), ('3jn', '3 João'), ('jud', 'Judas'), ('rev', 'Apocalipse')]
+    [('gen', 'Gênesis'), ('exo', 'Êxodo'), ('lev', 'Levíticos'), ('num', 'Números'), ('deu', 'Deuteronômio'), ('jos', 'Josué'), ('jdg', 'Juízes'), ('rut', 'Rute'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reis'), ('2ki', '2 Reis'), ('1ch', '1 Crônicas'), ('2ch', '2 Crônicas'), ('ezr', 'Esdras'), ('neh', 'Neemias'), ('est', 'Ester'), ('job', 'Jó'), ('psa', 'Salmos'), ('pro', 'Provérbios'), ('ecc', 'Eclesiastes'), ('sng', 'Cantares de salomão'), ('isa', 'Isaías'), ('jer', 'Jeremias'), ('lam', 'Lamentações'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseias'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Obadias'), ('jon', 'Jonas'), ('mic', 'Miqueias'), ('nam', 'Naum'), ('hab', 'Habacuque'), ('zep', 'Sofonias'), ('hag', 'Ageu'), ('zec', 'Zacarias'), ('mal', 'Malaquias'), ('mat', 'Mateus'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'João'), ('act', 'Atos'), ('rom', 'Romanos'), ('1co', '1 Corintios'), ('2co', '2 Coríntios'), ('gal', 'Gálatas'), ('eph', 'Efésios'), ('php', 'Filipenses'), ('col', 'Colossenses'), ('1th', '1 Tessalonicenses'), ('2th', '2 Tessalonicenses'), ('1ti', '1 Timóteo'), ('2ti', '2 Timóteo'), ('tit', 'Tito'), ('phm', 'Filemom'), ('heb', 'Hebreus'), ('jas', 'Tiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 João'), ('2jn', '2 João'), ('3jn', '3 João'), ('jud', 'Judas'), ('rev', 'Apocalipse')]
 
     """
     lang0_book_codes = book_codes_for_lang(lang0_code)

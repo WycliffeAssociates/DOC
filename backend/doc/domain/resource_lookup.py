@@ -780,6 +780,83 @@ def get_last_segment(url: str, lang_code: str) -> str:
         last_segment = re.sub(r"^moufida_", "", last_segment)
     elif last_segment.startswith("billburns58_"):
         last_segment = re.sub(r"^billburns58_", "", last_segment)
+
+    # Incomplete database of repo related issues still yet to be resolved:
+    #
+    # FIXME Cloning into 'assets_download/bji_1pe_text_reg'...
+    # Username for 'https://content.bibletranslationtools.org':
+    # Password for 'https://content.bibletranslationtools.org':
+    # There appears to be an issue with authentication being required for bji_1pe
+    # I emailed Craig about it today, 4/8/25
+    #
+    # FIXME Cloning into 'assets_download/igw-x-sale_tit_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/Bayan/igw-x-sale_tit_text_reg/': The requested URL returned error: 500
+
+    # FIXME fatal: destination path 'assets_download/shr-x-hwindja_2co_text_reg' already exists and is not an empty directory.
+
+    # FIXME Cloning into 'assets_download/isn_mat_text_reg'...
+    # error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+    # fatal: expected 'packfile'
+    # Cloning into 'assets_download/isn_rom_text_reg'...
+    # error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+
+    # FIXME fatal: unable to access 'https://content.bibletranslationtools.org/Elton_cv/kea_ezr_text_ulb/': The requested URL returned error: 500
+    # Cloning into 'assets_download/kea_2co_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/Elton_cv/kea_2co_text_reg/': The requested URL returned error: 500
+    # Cloning into 'assets_download/kea_luk_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/Elton_cv/kea_luk_text_reg/': The requested URL returned error: 500
+    # Cloning into 'assets_download/kea_gal_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/Elton_cv/kea_gal_text_reg/': The requested URL returned error: 500
+    # Cloning into 'assets_download/kea_2pe_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/Elton_cv/kea_2pe_text_reg/': The requested URL returned error: 500
+
+    # FIXME Cloning into 'assets_download/jka_1pe_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/bahasatech.indotengah/jka_1pe_text_reg/': The requested URL returned error: 500
+
+    # FIXME Cloning into 'assets_download/kdp_3jn_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/DCS-Mirror/nbtt_kdp_3jn_text_reg/': The requested URL returned error: 500
+
+    # FIXME Cloning into 'assets_download/kdp_act_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/DCS-Mirror/nbtt_kdp_act_text_reg/': The requested URL returned error: 500
+    # Cloning into 'assets_download/kdp_tit_text_reg'...
+    # error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+    # Cloning into 'assets_download/kdp_2ti_text_reg'...
+    # error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+    # Cloning into 'assets_download/kdp_php_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/DCS-Mirror/nbtt_kdp_php_text_reg/': The requested URL returned error: 500
+
+    # FIXME Cloning into 'assets_download/gqa-x-kabinda_phm_text_ulb'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/nbtt/gqa-x-kabinda_phm_text_ulb/': The requested URL returned error: 500
+    # Cloning into 'assets_download/gqa-x-kabinda_2co_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/nbtt/gqa-x-kabinda_2co_text_reg/': The requested URL returned error: 500
+    # Cloning into 'assets_download/gqa-x-kabinda_gal_text_ulb'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/nbtt/gqa-x-kabinda_gal_text_ulb/': The requested URL returned error: 500
+    # Cloning into 'assets_download/gqa-x-kabinda_tit_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/nbtt/gqa-x-kabinda_tit_text_reg/': The requested URL returned error: 500
+    # Cloning into 'assets_download/gqa-x-kabinda_jud_text_ulb'...
+    # error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+
+    # FIXME Cloning into 'assets_download/kdy_mrk_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/Keijerkeider.Indotimur/kdy_mrk_text_reg/': The requested URL returned error: 500
+    # Cloning into 'assets_download/kdy_2th_text_reg'...
+    # error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+    # Cloning into 'assets_download/kdy_3jn_text_reg'...
+    # error: RPC failed; HTTP 500 curl 22 The requested URL returned error: 500
+    # Cloning into 'assets_download/kdy_col_text_reg'...
+    # fatal: unable to access 'https://content.bibletranslationtools.org/Keijerkeider.Indotimur/kdy_col_text_reg/': The requested URL returned error: 500
+
+    # FIXME Cloning into 'assets_download/kkq-x-kikubere_jhn_text_reg'...
+    # Username for 'https://content.bibletranslationtools.org':
+    # Password for 'https://content.bibletranslationtools.org':
+
+    # FIXME Cloning into 'assets_download/mgv_1jn_text_ulb'...
+    # Username for 'https://content.bibletranslationtools.org':
+    # Password for 'https://content.bibletranslationtools.org':
+
+    # FIXME Cloning into 'assets_download/mgv_1th_text_ulb'...
+    # Username for 'https://content.bibletranslationtools.org':
+    # Password for 'https://content.bibletranslationtools.org':
+
     return last_segment
 
 
@@ -938,6 +1015,7 @@ def get_book_codes_for_lang(
             if not repo_info:
                 continue
             last_segment = get_last_segment(url, lang_code)
+            logger.debug("last_segment: %s", last_segment)
             repo_components = last_segment.split("_")
             if len(repo_components) == 2 and repo_components[-1] in usfm_resource_types:
                 book_codes_and_names_localized = []

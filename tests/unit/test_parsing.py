@@ -4,7 +4,6 @@ import pytest
 from doc.domain.parsing import ensure_chapter_label, ensure_chapter_marker
 
 
-@pytest.mark.focus
 def test_ensure_chapter_marker_unchanged_if_exists() -> None:
     chapter_num = 5
 
@@ -20,7 +19,6 @@ def test_ensure_chapter_marker_unchanged_if_exists() -> None:
     )
 
 
-@pytest.mark.focus
 def test_ensure_chapter_marker_inserted_at_beginning() -> None:
     chapter_num = 5
     # Case 2: No chapter marker, insert at beginning
@@ -40,7 +38,6 @@ def test_ensure_chapter_marker_inserted_at_beginning() -> None:
     assert actual_output == expected_output
 
 
-@pytest.mark.focus
 def test_ensure_chapter_marker_inserted_at_before_chapter_label() -> None:
     chapter_num = 5
     # Case 3: Chapter marker missing, but \cl exists (insert before \cl)
@@ -52,7 +49,6 @@ def test_ensure_chapter_marker_inserted_at_before_chapter_label() -> None:
     assert actual_output == expected_output
 
 
-@pytest.mark.focus
 def test_ensure_chapter_marker_inserted() -> None:
     chapter_num = 5
 
@@ -65,7 +61,6 @@ def test_ensure_chapter_marker_inserted() -> None:
     assert actual_output == expected_output
 
 
-@pytest.mark.focus
 def test_adds_missing_chapter_label() -> None:
     input_text = "\n\\c 1\n\\v 1 In the beginning..."
     expected_output = "\n\n\\c 1\n\\cl Chapter 1\n\n\\v 1 In the beginning..."
@@ -75,14 +70,12 @@ def test_adds_missing_chapter_label() -> None:
     assert actual_output == expected_output
 
 
-@pytest.mark.focus
 def test_keeps_existing_chapter_label() -> None:
     input_text = "\n\\c 1\n\\cl Chapter\n\\v 1 In the beginning..."
     expected_output = "\n\\c 1\n\\cl Chapter 1\n\\v 1 In the beginning..."
     assert ensure_chapter_label(input_text, 1) == expected_output
 
 
-@pytest.mark.focus
 def test_no_chapter_marker() -> None:
     input_text = "\n\\v 1 In the beginning..."
     assert ensure_chapter_label(input_text, 1) == input_text

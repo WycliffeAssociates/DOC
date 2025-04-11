@@ -149,3 +149,19 @@ test('test optional settings', async ({ page }) => {
   await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
   await expect(page.getByRole('main')).toContainText('Use chapter labels, e.g., \'Chapter 1\' instead of \'1\'')
 })
+
+
+test('test aba philemon', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByText('Abé aba').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Philémon').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Bible').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('PDF').click()
+  await page.getByRole('button', { name: 'Generate File' }).click()
+  await expect(page.locator('body')).toContainText('Philémon')
+  await expect(page.locator('body')).toContainText('Bible (aba)')
+})

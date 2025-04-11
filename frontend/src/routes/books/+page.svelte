@@ -16,6 +16,7 @@
   import DesktopBookDisplay from './DesktopBookDisplay.svelte'
   import Modal from '$lib/Modal.svelte'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
+  import { errorStore } from '$lib/stores/NotificationStore'
 
   async function getSharedBookCodesAndNames(
     lang0Code: string,
@@ -109,7 +110,11 @@
           }
         }
       })
-      .catch((err) => console.error(err))
+      .catch((err) => {
+        console.error(err)
+        // Stop progress bar
+        $errorStore = err
+      })
   } else {
     getBookCodesAndNames($langCodesStore[0])
       .then((bookCodesAndNames) => {
@@ -149,7 +154,11 @@
           })
         }
       })
-      .catch((err) => console.error(err))
+      .catch((err) => {
+        console.error(err)
+        // Stop progress bar
+        $errorStore = err
+      })
   }
 
   // Derive and set the count of books for use here and in other
@@ -218,7 +227,6 @@
 <svelte:window bind:innerWidth={windowWidth} />
 
 <WizardBreadcrumb />
-
 <!-- container for "center" div -->
 <div class="flex flex-grow flex-row overflow-y-auto overflow-x-hidden">
   <!-- center -->
@@ -230,7 +238,7 @@
       Select books
     </h3>
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
-      {#if !otBookCodes || !ntBookCodes}
+      {#if !$errorStore && (!otBookCodes || !ntBookCodes)}
         <div class="ml-4">
           <ProgressIndicator
             labelString="Acquiring and analyzing books available for
@@ -499,7 +507,27 @@
       {/if}
     </div>
 
-    {#if $langCountStore > 0}
+    {#if $errorStore}
+      <div class="bg-white">
+        <svg
+          class="m-auto"
+          width="44"
+          height="38"
+          viewBox="0 0 44 38"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M24 24H20V14H24V24ZM24 32H20V28H24V32ZM0 38H44L22 0L0 38Z" fill="#B85659" />
+        </svg>
+        <div class="m-auto"><h3 class="text-center text-[#B85659]">Uh Oh...</h3></div>
+        <div class="m-auto">
+          <p class="text-xl text-[#B3B9C2]">
+            Something went wrong. Please review your selections or contact tech support for
+            assistance.
+          </p>
+        </div>
+      </div>
+    {:else if $langCountStore > 0}
       {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
         <MobileBookDisplay
           {showOldTestament}

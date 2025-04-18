@@ -981,7 +981,7 @@ def get_book_codes_for_lang(
     book_codes_and_names_localized: list[tuple[str, str]] = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
-    repo_clone_list = []  # Collect URLs and file paths for batch cloning
+    repo_clone_list = []
     try:
         repos_info = data["git_repo"]
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)

@@ -59,6 +59,7 @@ def generate_docx_document(
     """
     word_entries: list[WordEntry] = []
     word_entry_dtos, book_codes = get_word_entry_dtos(lang0_code, lang1_code)
+    logger.debug("book_codes from stet input doc: %s", book_codes)
     lang0_resource_types = resource_types(lang0_code, ",".join(book_codes))
     lang0_resource_types_ = [
         lang0_resource_type_tuple[0]

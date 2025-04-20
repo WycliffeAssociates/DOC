@@ -13,6 +13,7 @@ from doc.domain.parsing import (
 )
 from doc.domain.resource_lookup import (
     RESOURCE_TYPE_CODES_AND_NAMES,
+    maybe_correct_book_name,
     prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
@@ -58,14 +59,23 @@ def generate_docx_document(
     >>> generate_docx_document()
     """
     word_entries: list[WordEntry] = []
-    word_entry_dtos, book_codes = get_word_entry_dtos(lang0_code, lang1_code)
-    logger.debug("book_codes from stet input doc: %s", book_codes)
-    lang0_resource_types = resource_types(lang0_code, ",".join(book_codes))
+    word_entry_dtos, book_codes_and_names = get_word_entry_dtos(lang0_code, lang1_code)
+    lang0_resource_types = resource_types(
+        lang0_code,
+        ",".join(
+            [book_code_and_name[0] for book_code_and_name in book_codes_and_names]
+        ),
+    )
     lang0_resource_types_ = [
         lang0_resource_type_tuple[0]
         for lang0_resource_type_tuple in lang0_resource_types
     ]
-    lang1_resource_types = resource_types(lang1_code, ",".join(book_codes))
+    lang1_resource_types = resource_types(
+        lang1_code,
+        ",".join(
+            [book_code_and_name[0] for book_code_and_name in book_codes_and_names]
+        ),
+    )
     lang1_resource_types_ = [
         lang1_resource_type_tuple[0]
         for lang1_resource_type_tuple in lang1_resource_types
@@ -105,7 +115,7 @@ def generate_docx_document(
     if lang0_usfm_resource_type and lang1_usfm_resource_type:
         source_usfm_book = None
         target_usfm_book = None
-        for book_code in book_codes:
+        for book_code, book_name in book_codes_and_names:
             current_task.update_state(state="Locating assets")
             lang0_resource_lookup_dto_ = resource_lookup_dto(
                 lang0_code, lang0_usfm_resource_type, book_code
@@ -181,6 +191,9 @@ def generate_docx_document(
             target_selected_usfm_book = None
             if source_selected_usfm_books:
                 source_selected_usfm_book = source_selected_usfm_books[0]
+                source_selected_usfm_book.national_book_name = maybe_correct_book_name(
+                    lang0_code, source_selected_usfm_book.national_book_name
+                )
             if target_selected_usfm_books:
                 target_selected_usfm_book = target_selected_usfm_books[0]
             for verse_ref in verse_ref_dto.verse_refs:

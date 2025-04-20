@@ -15,10 +15,10 @@ def get_word_entry_dtos(
     lang1_code: str,
     book_names: dict[str, str] = BOOK_NAMES,
     stet_dir: str = settings.STET_DIR,
-) -> tuple[list[WordEntryDto], list[str]]:
+) -> tuple[list[WordEntryDto], list[tuple[str, str]]]:
     # Build data from source doc
     word_entry_dtos: list[WordEntryDto] = []
-    book_codes_: list[str] = []
+    book_codes_and_names__: list[tuple[str, str]] = []
     doc = Document(f"{stet_dir}/stet_{lang0_code}.docx")
     for table in doc.tables:
         for row in table.rows:
@@ -59,35 +59,33 @@ def get_word_entry_dtos(
                     book_name = match.group(1)
                     # Some languages, e.g., bem, have a \n in the book name
                     book_name = book_name.replace("\n", "")
-                    # NOTE We expect a book name to be in nationalized
-                    # form according to the language of the source document (as indicated by
-                    # the source document's filename,
-                    # stet_[ietf_code].docx), but failing that we will look it up in English
-                    # just in case the translators haven't nationalized the book names in
-                    # the source document or its manifest.
-                    #
                     # Get book codes and names for the language that has been
-                    # requested. Have those available and check them first.
+                    # requested from DOC.
                     book_codes_and_names = book_codes_for_lang_from_usfm_only(
                         lang0_code
                     )
-                    book_codes = [
-                        book_code
+                    # We expect this book name to be in localized form according to the
+                    # language of the STET input document (as indicated by the input
+                    # document's filename, stet_[ietf_code].docx).
+                    book_codes_and_names_ = [
+                        (book_code, book_name_)
                         for book_code, book_name_ in book_codes_and_names
-                        if book_name_ == book_name
+                        if book_name_
+                        == book_name  # Check if DOC and STET input doc agree on book name
                     ]
-                    # If the names don't lookup in the nationalized
-                    # language then try to use English just in case
-                    # that was used instead.
-                    if not book_codes:
-                        book_codes = [
-                            book_code
+                    # If the names don't lookup in localized form then try to use English
+                    # just in case that was used instead.
+                    if not book_codes_and_names_:
+                        book_codes_and_names_ = [
+                            (book_code, book_name_)
                             for book_code, book_name_ in book_names.items()
                             if book_name_ == book_name
                         ]
-                    book_code = book_codes[0] if book_codes else None
-                    if book_code:
-                        book_codes_.append(book_code)
+                    book_code_and_name_ = (
+                        book_codes_and_names_[0] if book_codes_and_names_ else None
+                    )
+                    if book_code_and_name_:
+                        book_codes_and_names__.append(book_code_and_name_)
                     chapter_num = int(match.group(2))
                     verses = match.group(3)
                     comment = match.group(4)
@@ -117,7 +115,7 @@ def get_word_entry_dtos(
                     verse_reference_dto = VerseReferenceDto(
                         lang0_code=lang0_code,
                         lang1_code=lang1_code,
-                        book_code=book_code,
+                        book_code=book_code_and_name_[0] if book_code_and_name_ else "",
                         book_name=book_name,
                         chapter_num=chapter_num,
                         source_reference=source_reference,
@@ -131,4 +129,4 @@ def get_word_entry_dtos(
                     keyword.strip() for keyword in row.cells[3].text.split(",")
                 ]
             word_entry_dtos.append(word_entry_dto)
-    return word_entry_dtos, list(set(book_codes_))
+    return word_entry_dtos, list(set(book_codes_and_names__))

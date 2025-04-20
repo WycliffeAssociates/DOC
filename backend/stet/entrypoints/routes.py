@@ -36,7 +36,7 @@ async def source_lang_codes_and_names(
     # logger.debug("source ietf_codes: %s", ietf_codes)
     languages = [
         lang_code_and_name
-        for lang_code_and_name in resource_lookup.lang_codes_and_names()
+        for lang_code_and_name in resource_lookup.lang_codes_and_names_having_usfm()
         if lang_code_and_name[0] in ietf_codes
     ]
     # logger.debug("source languages: %s", languages)
@@ -54,7 +54,7 @@ async def target_lang_codes_and_names(
     # logger.debug("source language: %s", lang0_code)
     languages = [
         lang_code_and_name
-        for lang_code_and_name in resource_lookup.lang_codes_and_names()
+        for lang_code_and_name in resource_lookup.lang_codes_and_names_having_usfm()
         if lang_code_and_name[0] != lang0_code
     ]
     # logger.debug("target languages: %s", languages)

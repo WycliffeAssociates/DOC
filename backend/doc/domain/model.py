@@ -477,7 +477,7 @@ class USFMChapter(BaseModel):
 
 
 @final
-class USFMBook(NamedTuple):
+class USFMBook(BaseModel):
     """A class to hold a book's USFMChapter instances."""
 
     lang_code: str

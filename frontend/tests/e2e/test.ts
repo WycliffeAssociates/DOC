@@ -165,3 +165,11 @@ test('test aba philemon', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Philémon')
   await expect(page.locator('body')).toContainText('Bible (aba)')
 })
+
+test('test that book name correction happened for pt-br, 1co', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await page.getByText('Português Brasileiro (').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByLabel('Coríntios 1co').check()
+  await expect(page.locator('body')).toContainText('1 Coríntios')
+})

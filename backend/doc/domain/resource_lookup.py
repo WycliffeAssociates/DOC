@@ -171,6 +171,22 @@ GATEWAY_LANGUAGES: Sequence[str] = [
     "zlm",
 ]
 
+# The book name in the tuple key is what
+# resource_lookup.get_book_codes_for_lang is returning for lang_code in
+# the tuple key and the associated value is what we would prefer to
+# use.
+BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
+    ("pt-br", "1 Corintios"): "1 Coríntios",
+}
+
+# List of languages which do not have USFM available for any books. We use this
+# to filter these out of STET's list of source and target
+# languages so that the user doesn't have the frustrating experience of
+# selecting a language which might have non-USFM resources available but
+# not USFM so that when their resulting doc is generated no scripture is
+# present. It makes it seem like a bug in STET and is bad UX.
+LANG_CODE_WITH_NO_USFM_FILTER_LIST: list[str] = ["ru"]
+
 
 @lru_cache(maxsize=2)
 def fetch_source_data(
@@ -413,6 +429,53 @@ def lang_codes_and_names(
                 values.append(
                     (ietf_code, f"{localized_name} ({english_name})", is_gateway)
                 )
+    except:
+        logger.exception("Failed due to the following exception.")
+    unique_values = unique_tuples(values)
+    return sorted(unique_values, key=lambda value: value[1])
+
+
+@lru_cache(maxsize=100)
+def lang_codes_and_names_having_usfm(
+    lang_code_filter_list: Sequence[str] = LANG_CODE_WITH_NO_USFM_FILTER_LIST,
+    gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
+) -> Sequence[tuple[str, str, bool]]:
+    """
+    >>> from doc.domain import resource_lookup
+    >>> ();result = resource_lookup.lang_codes_and_names();() # doctest: +ELLIPSIS
+    (...)
+    >>> result[0]
+    ('cdi', ': Chodri (: Chaudhari)', False)
+    >>> heart_lang_codes = [lang_code_and_name[0] for lang_code_and_name in resource_lookup.lang_codes_and_names() if not lang_code_and_name[2]]
+    >>> for heart_lang_code in heart_lang_codes:
+    ...     resource_lookup.book_codes_for_lang(heart_lang_code)
+    ...
+    """
+    gateway_languages_ = get_gateway_languages()
+    if not gateway_languages_:
+        gateway_languages_ = gateway_languages
+    data = fetch_source_data()
+    values = []
+    if data and "git_repo" not in data:
+        raise Exception("Data API is down!")
+    try:
+        repos_info = data["git_repo"]
+        for repo_info in repos_info:
+            language_info = repo_info["content"]
+            language = language_info["language"]
+            ietf_code = language["ietf_code"]
+            english_name = (
+                language["english_name"] if "english_name" in language else ""
+            )
+            localized_name = language["national_name"]
+            is_gateway = ietf_code in gateway_languages_
+            if ietf_code not in lang_code_filter_list:
+                if english_name in localized_name:
+                    values.append((ietf_code, localized_name, is_gateway))
+                else:
+                    values.append(
+                        (ietf_code, f"{localized_name} ({english_name})", is_gateway)
+                    )
     except:
         logger.exception("Failed due to the following exception.")
     unique_values = unique_tuples(values)
@@ -968,6 +1031,22 @@ def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
     return repos_info
 
 
+def maybe_correct_book_name(
+    lang_code: str,
+    book_name: str,
+    book_name_correction_table: dict[tuple[str, str], str] = BOOK_NAME_CORRECTION_TABLE,
+) -> str:
+    """
+    Translate incorrect or undesirable book names to a preferred form.
+    """
+    logger.debug("book_name to lookup: %s", book_name)
+    book_name_ = BOOK_NAME_CORRECTION_TABLE.get((lang_code, book_name), "")
+    logger.debug("result from book_name_correction_table: %s", book_name_)
+    if not book_name_:
+        book_name_ = book_name
+    return book_name_
+
+
 def get_book_codes_for_lang(
     lang_code: str,
     resource_assets_dir: str,
@@ -981,7 +1060,7 @@ def get_book_codes_for_lang(
     book_codes_and_names_localized: list[tuple[str, str]] = []
     book_codes_and_names = []
     book_codes_and_names2: list[tuple[str, str]] = []
-    repo_clone_list = []  # Collect URLs and file paths for batch cloning
+    repo_clone_list = []
     try:
         repos_info = data["git_repo"]
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
@@ -1029,6 +1108,9 @@ def get_book_codes_for_lang(
                         lang_code, resource_type, book_code, content
                     )
                     localized_book_name = parsing.maybe_localized_book_name(frontmatter)
+                    localized_book_name = maybe_correct_book_name(
+                        lang_code, localized_book_name
+                    )
                     book_codes_and_names_localized.append(
                         (book_code, localized_book_name)
                     )
@@ -1042,10 +1124,16 @@ def get_book_codes_for_lang(
                 if exists(book_name_file):
                     with open(book_name_file, "r") as fin:
                         book_name = fin.read()
-                        localized_book_name = normalize_localized_book_name(book_name)
+                        localized_book_name_ = normalize_localized_book_name(book_name)
+                        localized_book_name = maybe_correct_book_name(
+                            lang_code, localized_book_name_
+                        )
                         book_code = repo_components[1]
                         book_codes_and_names_localized.append(
-                            (book_code, localized_book_name)
+                            (
+                                book_code,
+                                localized_book_name,
+                            )
                         )
             if not usfm_only:
                 if not book_codes_and_names_localized or any(

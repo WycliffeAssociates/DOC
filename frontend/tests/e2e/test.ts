@@ -45,22 +45,31 @@ test.skip('test ui part 2', async ({ page }) => {
 test('test books retained in basket on back button to languages and then forward', async ({
   page
 }) => {
-  await page.goto('http://localhost:8001')
-  await page.getByText(/.*Amharic.*/).click()
+  await page.goto('http://localhost:8001/')
+  await page.getByPlaceholder('Search Languages').click()
+  await page.getByPlaceholder('Search Languages').fill('Amh')
+  await page.getByText('አማርኛ (Amharic)').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('2 ኛ ቆሮንቶስ').click()
+  await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Languages').click()
   await page.getByPlaceholder('Search Languages').fill('adh')
-  await page.getByLabel(/.*Adhola.*/).check()
+  await page.getByText('Adhola adh').click()
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByPlaceholder('Search NT books').click()
+  await page.getByPlaceholder('Search NT books').fill('2 ኛ ዮሐንስ')
   await page.getByText('2 ኛ ዮሐንስ').click()
-  await page.getByText('2 ኛ ዮሐንስ').nth(1).click()
-  await page.locator('div').filter({ hasText: /.*Adhola.*/ }).first().click()
-  await page.locator('.flex-shrink-0 > div:nth-child(4)').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.locator('body')).toContainText('Adhola')
+  await page.getByText('Unlocked Literal Bible').click()
+  await page.getByText('Bible', { exact: true }).click()
   await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('2 ኛ ዮሐንስ').nth(1).click()
-  await page.locator('div').filter({ hasText: /.*Adhola.*/ }).first().click()
+  await page.getByPlaceholder('Search NT books').click()
+  await page.getByPlaceholder('Search NT books').fill('2 ኛ ዮሐንስ')
 })
+
 
 test('test transfer from biel', async ({ page }) => {
   await page.goto(
@@ -115,25 +124,24 @@ test('test that reviewers guide is only shown when book is chosen that it includ
 
 test('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
   await page.goto('http://localhost:8001/')
-  await page.goto('http://localhost:8001/languages')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Adhola').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Thesalonika').click()
+  await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Gateway' }).click()
   await page.getByText('Cebuano').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Mga taga tesalonica').click()
+  await page.getByText('Mga taga tesalonica 1th').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Unlocked Literal Bible').click()
-  await page.getByLabel('Bible', { exact: true }).check()
+  await page.getByText('Bible', { exact: true }).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('PDF').click()
   await page.getByText('Interleave content by chapter').click()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
-
 
 
 test('test optional settings', async ({ page }) => {

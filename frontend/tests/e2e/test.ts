@@ -25,7 +25,7 @@ test('test ui part 1', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test.skip('test ui part 2', async ({ page }) => {
+test('test ui part 2', async ({ page }) => {
   await page.goto('http://localhost:8001')
   await page.getByText('English').click()
   await page.getByText('Español Latin America (Latin').click()
@@ -42,7 +42,7 @@ test.skip('test ui part 2', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test.skip('test books retained in basket on back button to languages and then forward', async ({
+test('test books retained in basket on back button to languages and then forward', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/')
@@ -50,7 +50,7 @@ test.skip('test books retained in basket on back button to languages and then fo
   await page.getByPlaceholder('Search Languages').fill('Amh')
   await page.getByText('አማርኛ (Amharic)').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('2 ኛ ቆሮንቶስ').click()
+    await page.getByText('2 ኛ ቆሮንቶስ').click({ timeout: 60000})
   await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Languages').click()
@@ -122,12 +122,12 @@ test('test that reviewers guide is only shown when book is chosen that it includ
 })
 
 
-test.skip('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
+test('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Adhola').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Thesalonika').click()
+  await page.getByText('Thesalonika').click({ timeout: 60000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Gateway' }).click()
@@ -148,7 +148,7 @@ test('test optional settings', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('Bichelamar (Bislama)').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Matiu').click()
+  await page.getByText('Matiu').click({ timeout: 60000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Bible').click()
   await page.getByRole('button', { name: 'Next' }).click()

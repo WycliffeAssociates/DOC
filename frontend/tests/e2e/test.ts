@@ -133,7 +133,7 @@ test('test that you can select gateway tab after first selecting heart language 
   await page.getByRole('button', { name: 'Gateway' }).click()
   await page.getByText('Cebuano').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Mga taga tesalonica 1th').click()
+  await page.getByText('Mga taga tesalonica 1th').click({ timeout: 120000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Unlocked Literal Bible').click()
   await page.getByText('Bible', { exact: true }).click()

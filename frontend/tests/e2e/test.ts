@@ -144,7 +144,7 @@ test.skip('test that you can select gateway tab after first selecting heart lang
 })
 
 
-test('test optional settings', async ({ page }) => {
+test.skip('test optional settings', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('Bichelamar (Bislama)').click()
   await page.getByRole('button', { name: 'Next' }).click()

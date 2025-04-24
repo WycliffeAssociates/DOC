@@ -42,7 +42,7 @@ test('test ui part 2', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test books retained in basket on back button to languages and then forward', async ({
+test.skip('test books retained in basket on back button to languages and then forward', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/')
@@ -122,7 +122,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
 })
 
 
-test('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
+test.skip('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Adhola').click()

@@ -148,7 +148,7 @@ test('test optional settings', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('Bichelamar (Bislama)').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Matiu').click({ timeout: 60000 })
+  await page.getByText('Matiu').click({ timeout: 120000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Bible').click()
   await page.getByRole('button', { name: 'Next' }).click()

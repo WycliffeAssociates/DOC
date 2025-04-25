@@ -59,11 +59,13 @@ def generate_docx_document(
     >>> generate_docx_document()
     """
     word_entries: list[WordEntry] = []
-    word_entry_dtos, book_codes_and_names = get_word_entry_dtos(lang0_code, lang1_code)
+    word_entry_dtos, lang0_book_codes_and_names = get_word_entry_dtos(
+        lang0_code, lang1_code
+    )
     lang0_resource_types = resource_types(
         lang0_code,
         ",".join(
-            [book_code_and_name[0] for book_code_and_name in book_codes_and_names]
+            [book_code_and_name[0] for book_code_and_name in lang0_book_codes_and_names]
         ),
     )
     lang0_resource_types_ = [
@@ -73,7 +75,7 @@ def generate_docx_document(
     lang1_resource_types = resource_types(
         lang1_code,
         ",".join(
-            [book_code_and_name[0] for book_code_and_name in book_codes_and_names]
+            [book_code_and_name[0] for book_code_and_name in lang0_book_codes_and_names]
         ),
     )
     lang1_resource_types_ = [
@@ -115,7 +117,7 @@ def generate_docx_document(
     if lang0_usfm_resource_type and lang1_usfm_resource_type:
         source_usfm_book = None
         target_usfm_book = None
-        for book_code, book_name in book_codes_and_names:
+        for book_code, book_name in lang0_book_codes_and_names:
             current_task.update_state(state="Locating assets")
             lang0_resource_lookup_dto_ = resource_lookup_dto(
                 lang0_code, lang0_usfm_resource_type, book_code
@@ -213,29 +215,11 @@ def generate_docx_document(
                     )
                 else:
                     target_verse_text = ""
-            non_book_name_portion_of_source_reference = extract_chapter_and_beyond(
-                verse_ref_dto.source_reference
-            )
-            non_book_name_portion_of_target_reference = extract_chapter_and_beyond(
-                verse_ref_dto.target_reference
-            )
-            localized_source_reference = (
-                f"{source_selected_usfm_book.national_book_name} {non_book_name_portion_of_source_reference}"
-                if source_selected_usfm_book
-                and non_book_name_portion_of_source_reference
-                else verse_ref_dto.source_reference
-            )
-            localized_target_reference = (
-                f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
-                if target_selected_usfm_book
-                and non_book_name_portion_of_target_reference
-                else verse_ref_dto.target_reference
-            )
             word_entry.verses.append(
                 VerseEntry(
-                    source_reference=localized_source_reference,
+                    source_reference=verse_ref_dto.source_reference,
                     source_text=source_verse_text,
-                    target_reference=localized_target_reference,
+                    target_reference=verse_ref_dto.target_reference,
                     target_text=target_verse_text,
                 )
             )

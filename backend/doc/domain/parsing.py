@@ -1140,9 +1140,10 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
         return ""
     verse = chapter.verses.get(verse_ref, "")
     logger.info(
-        "lang_code: %s, book_code: %s, chapter_num: %s, verse_num: %s, verse: %s",
+        "lang_code: %s, book_code: %s, national_book_name: %s, chapter_num: %s, verse_num: %s, verse: %s",
         usfm_book.lang_code,
         usfm_book.book_code,
+        usfm_book.national_book_name,
         chapter_num,
         verse_ref,
         verse,

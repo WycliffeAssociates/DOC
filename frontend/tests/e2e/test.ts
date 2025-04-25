@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-tests.skip('test ui part 1', async ({ page }) => {
+test.skip('test ui part 1', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Tiếng Việt (Vietnamese)').click()
   await page.getByRole('button', { name: 'Next' }).click()

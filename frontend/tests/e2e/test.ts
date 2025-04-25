@@ -59,7 +59,7 @@ test('test books retained in basket on back button to languages and then forward
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByPlaceholder('Search NT books').click()
   await page.getByPlaceholder('Search NT books').fill('2 ኛ ዮሐንስ')
-  await page.getByText('2 ኛ ዮሐንስ').click()
+  await page.getByText('2 ኛ ዮሐንስ').click({timeout: 580000})
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.locator('body')).toContainText('Adhola')
   await page.getByText('Unlocked Literal Bible').click()

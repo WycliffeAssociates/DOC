@@ -198,6 +198,31 @@ def generate_docx_document(
                 )
             if target_selected_usfm_books:
                 target_selected_usfm_book = target_selected_usfm_books[0]
+                target_selected_usfm_book.national_book_name = maybe_correct_book_name(
+                    lang1_code, target_selected_usfm_book.national_book_name
+                )
+                logger.debug(
+                    "target_usfm_book.national_book_name: %s",
+                    target_selected_usfm_book.national_book_name,
+                )
+            non_book_name_portion_of_source_reference = extract_chapter_and_beyond(
+                verse_ref_dto.source_reference
+            )
+            non_book_name_portion_of_target_reference = extract_chapter_and_beyond(
+                verse_ref_dto.target_reference
+            )
+            localized_source_reference = (
+                f"{source_selected_usfm_book.national_book_name} {non_book_name_portion_of_source_reference}"
+                if source_selected_usfm_book
+                and non_book_name_portion_of_source_reference
+                else verse_ref_dto.source_reference
+            )
+            localized_target_reference = (
+                f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
+                if target_selected_usfm_book
+                and non_book_name_portion_of_target_reference
+                else verse_ref_dto.target_reference
+            )
             for verse_ref in verse_ref_dto.verse_refs:
                 if source_selected_usfm_book:
                     source_verse_text = lookup_verse_text(
@@ -217,9 +242,9 @@ def generate_docx_document(
                     target_verse_text = ""
             word_entry.verses.append(
                 VerseEntry(
-                    source_reference=verse_ref_dto.source_reference,
+                    source_reference=localized_source_reference,
                     source_text=source_verse_text,
-                    target_reference=verse_ref_dto.target_reference,
+                    target_reference=localized_target_reference,
                     target_text=target_verse_text,
                 )
             )

@@ -177,6 +177,7 @@ GATEWAY_LANGUAGES: Sequence[str] = [
 # use.
 BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
     ("pt-br", "1 Corintios"): "1 Coríntios",
+    ("es-419", "I juan"): "1 Juan",
 }
 
 # List of languages which do not have USFM available for any books. We use this

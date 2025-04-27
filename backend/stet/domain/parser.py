@@ -142,4 +142,8 @@ def get_word_entry_dtos(
                     keyword.strip() for keyword in row.cells[3].text.split(",")
                 ]
             word_entry_dtos.append(word_entry_dto)
-    return word_entry_dtos, list(set(lang0_book_codes_and_names__))
+    # Sort word entry dtos by first word in word list
+    sorted_word_entry_dtos = sorted(
+        word_entry_dtos, key=lambda word_entry_dto: word_entry_dto.words[0]
+    )
+    return sorted_word_entry_dtos, list(set(lang0_book_codes_and_names__))

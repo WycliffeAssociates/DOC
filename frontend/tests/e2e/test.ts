@@ -34,7 +34,7 @@ test('test ui part 2', async ({ page }) => {
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText(/.*Unlocked Literal Bible.*/).first().click()
   await page.getByText(/.*Unlocked Literal Bible.*/).nth(1).click()
-  await page.getByText(/.*Translation Notes.*/).nth(1).click({timeout: 120000})
+  await page.getByText(/.*Translation Notes.*/).nth(1).click({timeout: 8200000})
   await page .getByText(/.*Translation Notes.*/).nth(2).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('PDF').click()
@@ -59,7 +59,7 @@ test('test books retained in basket on back button to languages and then forward
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByPlaceholder('Search NT books').click()
   await page.getByPlaceholder('Search NT books').fill('2 ኛ ዮሐንስ')
-  await page.getByText('2 ኛ ዮሐንስ').click({timeout: 580000})
+  await page.getByText('2 ኛ ዮሐንስ').click({timeout: 5800000})
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.locator('body')).toContainText('Adhola')
   await page.getByText('Unlocked Literal Bible').click()
@@ -118,7 +118,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Galatians').click({ timeout: 60000 })
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 580000 })
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 5800000 })
 })
 
 

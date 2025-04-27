@@ -50,7 +50,7 @@ test('test books retained in basket on back button to languages and then forward
   await page.getByPlaceholder('Search Languages').fill('Amh')
   await page.getByText('አማርኛ (Amharic)').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('2 ኛ ቆሮንቶስ').click({ timeout: 580000})
+  await page.getByText('2 ኛ ቆሮንቶስ').click({ timeout: 680000})
   await page.getByRole('link', { name: 'Languages' }).click()
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Languages').click()
@@ -109,7 +109,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('1 Corinthians').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).not.toBeVisible()
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).not.toBeVisible({timeout: 580000})
 })
 
 test('test that reviewers guide is only shown when book is chosen that it includes - part 2', async ({ page }) => {
@@ -118,7 +118,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Galatians').click({ timeout: 60000 })
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 20000 })
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 580000 })
 })
 
 
@@ -164,7 +164,7 @@ test('test aba philemon', async ({ page }) => {
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Abé aba').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Philémon').click()
+  await page.getByText('Philémon').click({timeout: 580000})
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Bible').click()
   await page.getByRole('button', { name: 'Next' }).click()

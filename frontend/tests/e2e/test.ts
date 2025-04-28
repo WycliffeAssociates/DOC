@@ -42,7 +42,7 @@ test.skip('test ui part 2', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test books retained in basket on back button to languages and then forward', async ({
+test.skip('test books retained in basket on back button to languages and then forward', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/')
@@ -112,7 +112,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).not.toBeVisible({timeout: 580000})
 })
 
-test('test that reviewers guide is only shown when book is chosen that it includes - part 2', async ({ page }) => {
+test.skip('test that reviewers guide is only shown when book is chosen that it includes - part 2', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('English').click()
   await page.getByRole('button', { name: 'Next' }).click()

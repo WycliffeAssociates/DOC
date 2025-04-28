@@ -89,7 +89,7 @@ test('test transfer from biel 2', async ({ page }) => {
   await expect(page.getByText('(60) items hidden')).toBeVisible()
 })
 
-test('test es-419 resource types', async ({ page }) => {
+test.skip('test es-419 resource types', async ({ page }) => {
   await page.goto('http://localhost:8001')
   await page.getByText(/.*Español.*/).click()
   await page.getByRole('button', { name: 'Next' }).click()

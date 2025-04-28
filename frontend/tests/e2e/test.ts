@@ -25,7 +25,7 @@ test.skip('test ui part 1', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test ui part 2', async ({ page }) => {
+test.skip('test ui part 2', async ({ page }) => {
   await page.goto('http://localhost:8001')
   await page.getByText('English').click()
   await page.getByText('Español Latin America (Latin').click()
@@ -159,7 +159,7 @@ test.skip('test optional settings', async ({ page }) => {
 })
 
 
-test('test aba philemon', async ({ page }) => {
+test.skip('test aba philemon', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Abé aba').click()

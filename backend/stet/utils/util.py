@@ -11,7 +11,7 @@ def is_valid_int(text: str) -> bool:
 
 
 def extract_chapter_and_beyond(text: str) -> Optional[str]:
-    # Regular expression to match "<chapter_num>:<verse_num> [comment]"
+    # Regular expression to match "<chapter_num>:<verse_num> (comment)"
     match = re.search(r"\d+:\d+(\s*\(\*\*?\))?$", text)
     if match:
         return match.group()

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Mapping, Sequence
 
 import mistune
@@ -28,6 +29,12 @@ from htmldocx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
 from stet.domain.parser import get_word_entry_dtos
+from stet.domain.strings import (
+    LOCALIZED_DATE_FORMAT_STRINGS,
+    TRANSLATED_FOOTER_PHRASES_TABLE,
+    TRANSLATED_HEADER_PHRASES_TABLE,
+    TRANSLATED_TABLE_COLUMN_HEADERS,
+)
 from stet.utils.docx_utils import (
     add_footer,
     add_header,
@@ -59,11 +66,13 @@ def generate_docx_document(
     >>> generate_docx_document()
     """
     word_entries: list[WordEntry] = []
-    word_entry_dtos, book_codes_and_names = get_word_entry_dtos(lang0_code, lang1_code)
+    word_entry_dtos, lang0_book_codes_and_names = get_word_entry_dtos(
+        lang0_code, lang1_code
+    )
     lang0_resource_types = resource_types(
         lang0_code,
         ",".join(
-            [book_code_and_name[0] for book_code_and_name in book_codes_and_names]
+            [book_code_and_name[0] for book_code_and_name in lang0_book_codes_and_names]
         ),
     )
     lang0_resource_types_ = [
@@ -73,7 +82,7 @@ def generate_docx_document(
     lang1_resource_types = resource_types(
         lang1_code,
         ",".join(
-            [book_code_and_name[0] for book_code_and_name in book_codes_and_names]
+            [book_code_and_name[0] for book_code_and_name in lang0_book_codes_and_names]
         ),
     )
     lang1_resource_types_ = [
@@ -115,7 +124,7 @@ def generate_docx_document(
     if lang0_usfm_resource_type and lang1_usfm_resource_type:
         source_usfm_book = None
         target_usfm_book = None
-        for book_code, book_name in book_codes_and_names:
+        for book_code, book_name in lang0_book_codes_and_names:
             current_task.update_state(state="Locating assets")
             lang0_resource_lookup_dto_ = resource_lookup_dto(
                 lang0_code, lang0_usfm_resource_type, book_code
@@ -196,23 +205,13 @@ def generate_docx_document(
                 )
             if target_selected_usfm_books:
                 target_selected_usfm_book = target_selected_usfm_books[0]
-            for verse_ref in verse_ref_dto.verse_refs:
-                if source_selected_usfm_book:
-                    source_verse_text = lookup_verse_text(
-                        source_selected_usfm_book,
-                        verse_ref_dto.chapter_num,
-                        verse_ref.strip(),
-                    )
-                else:
-                    source_verse_text = ""
-                if target_selected_usfm_book:
-                    target_verse_text = lookup_verse_text(
-                        target_selected_usfm_book,
-                        verse_ref_dto.chapter_num,
-                        verse_ref.strip(),
-                    )
-                else:
-                    target_verse_text = ""
+                target_selected_usfm_book.national_book_name = maybe_correct_book_name(
+                    lang1_code, target_selected_usfm_book.national_book_name
+                )
+                logger.debug(
+                    "target_usfm_book.national_book_name: %s",
+                    target_selected_usfm_book.national_book_name,
+                )
             non_book_name_portion_of_source_reference = extract_chapter_and_beyond(
                 verse_ref_dto.source_reference
             )
@@ -231,6 +230,23 @@ def generate_docx_document(
                 and non_book_name_portion_of_target_reference
                 else verse_ref_dto.target_reference
             )
+            for verse_ref in verse_ref_dto.verse_refs:
+                if source_selected_usfm_book:
+                    source_verse_text = lookup_verse_text(
+                        source_selected_usfm_book,
+                        verse_ref_dto.chapter_num,
+                        verse_ref.strip(),
+                    )
+                else:
+                    source_verse_text = ""
+                if target_selected_usfm_book:
+                    target_verse_text = lookup_verse_text(
+                        target_selected_usfm_book,
+                        verse_ref_dto.chapter_num,
+                        verse_ref.strip(),
+                    )
+                else:
+                    target_verse_text = ""
             word_entry.verses.append(
                 VerseEntry(
                     source_reference=localized_source_reference,
@@ -246,7 +262,16 @@ def generate_docx_document(
 
 
 def generate_docx(
-    word_entries: list[WordEntry], docx_filepath: str, lang0_code: str, lang1_code: str
+    word_entries: list[WordEntry],
+    docx_filepath: str,
+    lang0_code: str,
+    lang1_code: str,
+    translated_table_column_headers: dict[
+        str, tuple[str, str, str, str]
+    ] = TRANSLATED_TABLE_COLUMN_HEADERS,
+    translated_footer_phrases_table: dict[str, str] = TRANSLATED_FOOTER_PHRASES_TABLE,
+    localized_date_format_strings: dict[str, str] = LOCALIZED_DATE_FORMAT_STRINGS,
+    translated_header_phrases_table: dict[str, str] = TRANSLATED_HEADER_PHRASES_TABLE,
 ) -> None:
     """
     Generates a DOCX document from a list of word entries and saves it to the given file path.
@@ -273,9 +298,9 @@ def generate_docx(
         table.style = "Table Grid"
         # Set the header of the table and apply bold formatting
         hdr_cells = table.rows[0].cells
-        hdr_cells[0].text = "Source Reference"
-        hdr_cells[1].text = "Target Reference"
-        hdr_cells[2].text = "Status"
+        hdr_cells[0].text = translated_table_column_headers[lang0_code][0]
+        hdr_cells[1].text = translated_table_column_headers[lang0_code][1]
+        hdr_cells[2].text = translated_table_column_headers[lang0_code][2]
         hdr_cells[2].paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         for hdr_cell in hdr_cells:
             hdr_cell.paragraphs[0].runs[0].bold = True
@@ -287,7 +312,11 @@ def generate_docx(
             source_run.bold = True
             target_run = row_cells[1].paragraphs[0].add_run(verse.target_reference)
             target_run.bold = True
-            status_run = row_cells[2].paragraphs[0].add_run("OK")
+            status_run = (
+                row_cells[2]
+                .paragraphs[0]
+                .add_run(translated_table_column_headers[lang0_code][3])
+            )
             status_run.bold = True
             row_cells[2].paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             # Row for texts
@@ -319,8 +348,14 @@ def generate_docx(
             tcPr.append(vAlign)  # Append the vertical alignment to cell properties
         # Adjust column widths to prioritize the first two columns
         adjust_table_columns(table)
-    doc = add_footer(doc)
-    doc = add_header(doc, lang0_code, lang1_code)
+    footer_phrase = translated_footer_phrases_table[lang0_code]
+    current_datetime = datetime.now().strftime(
+        localized_date_format_strings[lang0_code]
+    )
+    date_text = f"{footer_phrase} {current_datetime}"
+    doc = add_footer(doc, date_text)
+    header_phrase = translated_header_phrases_table[lang0_code]
+    doc = add_header(doc, lang0_code, lang1_code, header_phrase)
     doc = add_lined_page_at_end(doc)
     reduce_spacing_around_tables(doc)
     doc.save(docx_filepath)

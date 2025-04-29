@@ -177,6 +177,7 @@ GATEWAY_LANGUAGES: Sequence[str] = [
 # use.
 BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
     ("pt-br", "1 Corintios"): "1 Coríntios",
+    ("es-419", "I juan"): "1 Juan",
 }
 
 # List of languages which do not have USFM available for any books. We use this
@@ -1039,9 +1040,7 @@ def maybe_correct_book_name(
     """
     Translate incorrect or undesirable book names to a preferred form.
     """
-    logger.debug("book_name to lookup: %s", book_name)
     book_name_ = BOOK_NAME_CORRECTION_TABLE.get((lang_code, book_name), "")
-    logger.debug("result from book_name_correction_table: %s", book_name_)
     if not book_name_:
         book_name_ = book_name
     return book_name_

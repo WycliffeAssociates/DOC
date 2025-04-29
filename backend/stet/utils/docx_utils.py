@@ -1,5 +1,4 @@
 import re
-from datetime import datetime
 from typing import Optional
 
 from docx import Document  # type: ignore
@@ -114,7 +113,7 @@ def add_header(
     doc: Document,
     source_lang_code: str,
     target_lang_code: str,
-    header_text: str = "Spiritual Terms Evaluation Tool",
+    header_text: str = "Spiritual Terms Evaluation Tool (STET)",
 ) -> Document:
     """
     Add a header with:
@@ -146,8 +145,6 @@ def add_header(
     )
     header_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
     return doc
-
-
 
 
 def add_highlighted_html_to_docx_for_words(
@@ -288,7 +285,7 @@ def reduce_spacing_around_tables(
             previous_element = element
 
 
-def add_footer(doc: Document) -> Document:
+def add_footer(doc: Document, date_text: str) -> Document:
     """
     Programmatically add page numbers and a date timestamp in the footer.
     Page number will be centered, and the date timestamp will be aligned to the right
@@ -338,8 +335,6 @@ def add_footer(doc: Document) -> Document:
     page_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for page number
     # Add the "Generated on" text
     footer_paragraph.add_run("\t")  # Tab to right position
-    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    date_text = f"Generated on {current_datetime}"
     date_run = footer_paragraph.add_run(date_text)
     date_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for timestamp
     date_run.font.size = Pt(10)  # Optional: Adjust font size for consistency

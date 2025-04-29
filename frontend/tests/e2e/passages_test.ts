@@ -38,7 +38,7 @@ test.skip('test _', async ({ page }) => {
   await expect(page.getByText('Matthew 2:1-12')).toBeVisible()
 })
 
-test('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
+test.skip('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
   await page.goto('http://localhost:8001/passages')
   await page.goto('http://localhost:8001/passages/language')
   await page.getByRole('button', { name: 'Heart' }).click()

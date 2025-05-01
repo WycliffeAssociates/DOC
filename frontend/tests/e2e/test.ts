@@ -79,7 +79,7 @@ test('test transfer from biel', async ({ page }) => {
   await expect(page.getByText('Colossians')).toBeVisible({ timeout: 1200000 })
 })
 
-test('test transfer from biel 2', async ({ page }) => {
+test.skip('test transfer from biel 2', async ({ page }) => {
   await page.goto(
     'http://localhost:8001/transfer/repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb'
   )

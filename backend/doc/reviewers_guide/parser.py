@@ -220,24 +220,7 @@ def create_rgbooks_from_parsed_texts(
     rgbooks: list[RGBook] = []
     for book_code, chapters_dict in books.items():
         chapters = {
-            chapter_num: RGChapter(
-                content=ParsedText(
-                    bible_reference=chapter_texts[0].bible_reference,
-                    background=" ".join(pt.background or "" for pt in chapter_texts),
-                    directive=" ".join(pt.directive or "" for pt in chapter_texts),
-                    part_1=[item for pt in chapter_texts for item in pt.part_1],
-                    part_1_directive=" ".join(
-                        pt.part_1_directive or "" for pt in chapter_texts
-                    ),
-                    part_2=[item for pt in chapter_texts for item in pt.part_2],
-                    part_2_directive=" ".join(
-                        pt.part_2_directive or "" for pt in chapter_texts
-                    ),
-                    comment_section=" ".join(
-                        pt.comment_section or "" for pt in chapter_texts
-                    ),
-                )
-            )
+            chapter_num: RGChapter(content=chapter_texts)
             for chapter_num, chapter_texts in chapters_dict.items()
         }
         rgbook = RGBook(

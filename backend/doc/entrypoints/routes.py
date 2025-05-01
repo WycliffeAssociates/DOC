@@ -137,12 +137,12 @@ async def chapters_in_books() -> dict[str, list[int]]:
     return resource_lookup.chapters_in_books()
 
 
-@router.get("/nt_survey_rg_passages")
-async def nt_survey_rg_passages() -> Sequence[BibleReference]:
+@router.get("/nt_survey_rg_passages/{lang_code}")
+async def nt_survey_rg_passages(lang_code: str) -> Sequence[BibleReference]:
     """
     Return list of reified NT Survey Reviewer's Guide passages as BibleReference instances.
     """
-    bible_references = resource_lookup.nt_survey_rg_passages()
+    bible_references = resource_lookup.nt_survey_rg_passages(lang_code)
     return bible_references
 
 

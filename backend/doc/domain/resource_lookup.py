@@ -1571,6 +1571,17 @@ def nt_survey_rg_passages(
         for chapter in rg_book_chapters
         for pt in chapter.content  # content is now list[ParsedText]
     ]
+    # Localize the book names since they are provided in English from en_rg_nt_survey.docx
+    book_name_map = {
+        book_code_and_name[0]: book_code_and_name[1]
+        for book_code_and_name in book_codes_for_lang_from_usfm_only(lang_code)
+    }
+    for bible_reference in bible_references:
+        maybe_localized_book_name = book_name_map.get(
+            bible_reference.book_code, bible_reference.book_name
+        )
+        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
+        bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
 

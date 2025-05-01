@@ -130,10 +130,11 @@
   }
 
   async function getBibleReferences(
+    langCode: string,
     apiRootUrl = env.PUBLIC_BACKEND_API_URL,
     ntSurveyRgPassagesUrl = <string>PUBLIC_NT_SURVEY_RG_PASSAGES_URL
   ): Promise<Array<BibleReference>> {
-    const url = `${apiRootUrl}${ntSurveyRgPassagesUrl}`
+    const url = `${apiRootUrl}${ntSurveyRgPassagesUrl}/${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
     const bibleReferences: Array<BibleReference> = await response.json()
@@ -146,11 +147,11 @@
 
   export async function addNTSurveyRGPassages() {
     try {
-      const bibleReferences = await getBibleReferences()
-      console.log(`[0]: ${bibleReferences[0]}`)
+      const bibleReferences = await getBibleReferences($langCodeAndNameStore.split(",")[0])
+      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
           addPassageReference(
-            $langCodeAndNameStore[0],
+            $langCodeAndNameStore.split(",")[0],
             bibleRef.book_code,
             bibleRef.book_name,
             Number(bibleRef.chapter),

@@ -41,7 +41,7 @@ class ParsedText(BaseModel):
 
 @final
 class RGChapter(BaseModel):
-    content: ParsedText
+    content: list[ParsedText]
 
 
 @final

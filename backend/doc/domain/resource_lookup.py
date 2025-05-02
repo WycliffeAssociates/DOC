@@ -10,8 +10,8 @@ import shutil
 import subprocess
 from functools import lru_cache
 from glob import glob
-from os import listdir, scandir
-from os.path import exists, isdir, join
+from os import scandir
+from os.path import basename, exists, isdir, join
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 from urllib.parse import urlparse
@@ -595,34 +595,41 @@ def resource_types(
     return sorted(unique_values, key=lambda value: value[1])
 
 
-def batch_clone_git_repos(repos: list[tuple[str, str]]) -> None:
+def batch_clone_git_repos(
+    repos: list[tuple[str, str]],
+    asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
+) -> None:
     """
     Clones multiple git repositories in a single batch operation.
     - If a repository already exists and is fully cloned, it is skipped.
     - If a repository exists but is a partial clone (corrupt or missing key files), it is removed first.
     - The 'en_rg' directory is preserved and never deleted or cloned.
+    - If asset_caching_enabled is False, repositories are always deleted and re-cloned (except 'en_rg').
     """
     clone_commands = []
     for url, resource_filepath in repos:
         if isdir(resource_filepath):
+            if basename(resource_filepath) == "en_rg":
+                logger.info(f"Preserving special directory: {resource_filepath}")
+                continue
             git_dir = join(resource_filepath, ".git")
-            if isdir(git_dir):
-                # Check for key Git files
-                if all(
-                    exists(join(git_dir, filename))
-                    for filename in ["config", "HEAD", "objects"]
-                ):
-                    # Check if working directory has files
-                    if any(scandir(resource_filepath)):
+            if asset_caching_enabled:
+                if isdir(git_dir):
+                    if all(
+                        exists(join(git_dir, filename))
+                        for filename in ["config", "HEAD", "objects"]
+                    ) and any(scandir(resource_filepath)):
                         logger.info(
                             f"Skipping clone: {resource_filepath} already exists and is a full repo."
                         )
-                        continue  # ✅ Fully cloned, use cached version
+                        continue  # ✅ Fully cloned, reuse
                 logger.warning(
                     f"Removing incomplete or corrupt repository: {resource_filepath}"
                 )
             else:
-                logger.warning(f"Removing non-repo directory: {resource_filepath}")
+                logger.info(
+                    f"Asset caching disabled: forcibly removing {resource_filepath}"
+                )
             shutil.rmtree(resource_filepath)
         clone_command = f"git clone --depth=1 '{url}' '{resource_filepath}' || true"
         clone_commands.append(clone_command)
@@ -1187,6 +1194,7 @@ def get_book_codes_for_lang(
     )
 
 
+# TODO Rename to book_codes_and_names_for_lang
 @lru_cache(maxsize=100)
 @worker.app.task
 def book_codes_for_lang(
@@ -1227,7 +1235,7 @@ def book_codes_for_lang_from_usfm_only(
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from doc.domain import resource_lookup
-    >>> ();result = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
+    >>> ();result = resource_lookup.book_codes_for_lang_from_usfm_only("pt-br");() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
     ('gen', 'Gênesis')
@@ -1558,7 +1566,22 @@ def nt_survey_rg_passages(
     rg_book_chapters = [
         chapter for rg_book in rg_books for chapter in rg_book.chapters.values()
     ]
-    bible_references = [chapter.content.bible_reference for chapter in rg_book_chapters]
+    bible_references = [
+        pt.bible_reference
+        for chapter in rg_book_chapters
+        for pt in chapter.content  # content is now list[ParsedText]
+    ]
+    # Localize the book names since they are provided in English from en_rg_nt_survey.docx
+    book_name_map = {
+        book_code_and_name[0]: book_code_and_name[1]
+        for book_code_and_name in book_codes_for_lang_from_usfm_only(lang_code)
+    }
+    for bible_reference in bible_references:
+        maybe_localized_book_name = book_name_map.get(
+            bible_reference.book_code, bible_reference.book_name
+        )
+        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
+        bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
 

@@ -49,4 +49,5 @@ def render_parsed_text(parsed: ParsedText) -> str:
 
 def render_chapter(chapter: RGChapter) -> str:
     template = env.get_template("html/rg_chapter.html")
-    return template.render(parsed_text=render_parsed_text(chapter.content))
+    parsed_texts_html = "".join(render_parsed_text(pt) for pt in chapter.content)
+    return template.render(parsed_texts_html=parsed_texts_html)

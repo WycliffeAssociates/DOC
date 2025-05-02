@@ -82,7 +82,9 @@ class Settings(BaseSettings):
     DOCX_COMPACT_TEMPLATE_PATH: str = "template_compact.docx"
 
     # Indicate if generated documents should be cached.
-    ASSET_CACHING_ENABLED: bool = True
+    # default to False for dev, prod will set via env var
+    ASSET_CACHING_ENABLED: bool = False
+
     # Caching window of time in which asset
     # files on disk are considered fresh rather than re-acquiring (in
     # the case of resource asset files) or re-generating them (in the

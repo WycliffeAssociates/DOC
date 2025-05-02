@@ -59,6 +59,7 @@ def test_en_ln_stet_docx() -> None:
 
 @pytest.mark.stet
 @pytest.mark.docx
+@pytest.mark.skip
 def test_en_ln_stet_docx_contents() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

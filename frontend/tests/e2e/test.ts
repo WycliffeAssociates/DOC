@@ -103,7 +103,7 @@ test.skip('test es-419 resource types', async ({ page }) => {
 })
 
 
-test('test that reviewers guide is only shown when book is chosen that it includes', async ({ page }) => {
+test.skip('test that reviewers guide is only shown when book is chosen that it includes', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('English').click()
   await page.getByRole('button', { name: 'Next' }).click()

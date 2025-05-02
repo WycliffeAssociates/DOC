@@ -18,6 +18,6 @@ LOCALIZED_DATE_FORMAT_STRINGS: dict[str, str] = {
 
 TRANSLATED_TABLE_COLUMN_HEADERS = {
     "en": ("Source Reference", "Target Reference", "Status", "OK"),
-    "es-419": ("Referencia de origen", "Referencia de destino", "Estado", "OK"),
+    "es-419": ("Fuente", "Idioma Materna", "Estado", "OK"),
     "pt-br": ("Referência de Origem", "Referência de Destino", "Status", "OK"),
 }

@@ -204,7 +204,17 @@
                   rounded-lg bg-white p-4 text-xl text-[#66768B]"
         >
           <div>
-            <span>{passage.bookName} {passage.chapterNum}:{passage.verseReference}</span>
+            {#if passage.endChapterNum != null && passage.endChapterNum > 0 && passage.endChapterVerseReference != null}
+              <span
+                >{passage.bookName}
+                {passage.startChapterNum}:{passage.startChapterVerseReference}-{passage.endChapterNum}:{passage.endChapterVerseReference}</span
+              >
+            {:else}
+              <span
+                >{passage.bookName}
+                {passage.startChapterNum}:{passage.startChapterVerseReference}</span
+              >
+            {/if}
           </div>
           <button on:click={() => uncheckPassage(passage.id)}>
             <svg
@@ -229,7 +239,17 @@
                   rounded-lg bg-white p-4 text-xl text-[#66768B]"
         >
           <div>
-            <span>{passage.bookName} {passage.chapterNum}:{passage.verseReference}</span>
+            {#if passage.endChapterNum != null && passage.endChapterNum > 0 && passage.endChapterVerseReference != null}
+              <span
+                >{passage.bookName}
+                {passage.startChapterNum}:{passage.startChapterVerseReference}-{passage.endChapterNum}:{passage.endChapterVerseReference}</span
+              >
+            {:else}
+              <span
+                >{passage.bookName}
+                {passage.startChapterNum}:{passage.startChapterVerseReference}</span
+              >
+            {/if}
           </div>
         </div>
       {/each}

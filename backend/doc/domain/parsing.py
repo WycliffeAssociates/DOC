@@ -1151,7 +1151,7 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
     return verse
 
 
-# Used by STET and RG_PASSAGES
+# Used by STET and PASSAGES apps
 def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # Sample HTML content with multiple verse elements
     # html_content = '''

@@ -135,8 +135,10 @@ class PassageRequest(BaseModel):
     lang_code: str
     resource_type: str
     book_code: str
-    chapter_num: int
-    verse_ref: str
+    start_chapter_num: ChapterNum
+    start_chapter_verse_ref: VerseRef
+    end_chapter_num: Optional[ChapterNum]
+    end_chapter_verse_ref: Optional[VerseRef]
 
 
 @final

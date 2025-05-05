@@ -3,10 +3,12 @@ import { z } from 'zod'
 // export const LangDirEnum = z.enum(['ltr', 'rtl']) // Adjust as needed
 
 export const BibleReferenceSchema = z.object({
-    book_code: z.string(),
-    book_name: z.string(),
-    chapter: z.number(),
-    verse_ref: z.string()
+  book_code: z.string(),
+  book_name: z.string(),
+  start_chapter: z.number(),
+  start_chapter_verse_ref: z.string(),
+  end_chapter: z.number().nullable().optional(),
+  end_chapter_verse_ref: z.string().nullable().optional()
 })
 
 // export const Part1ItemSchema = z.object({

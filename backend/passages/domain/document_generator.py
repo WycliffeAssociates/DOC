@@ -48,23 +48,27 @@ def generate_docx_document(
     >>> from passages.domain.document_generator import generate_docx_document
     >>> generate_docx_document("en", list[PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="3-6"), PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="9-10"), PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="15")])
     """
-    book_codes = [
-        passage_ref_dto.book_code for passage_ref_dto in passage_reference_dtos
-    ]
+    book_codes = list(
+        {passage_ref_dto.book_code for passage_ref_dto in passage_reference_dtos}
+    )
     resource_types_ = resource_types(lang_code, ",".join(book_codes))
-    resource_types_codes = [
-        lang_resource_type_tuple[0] for lang_resource_type_tuple in resource_types_
-    ]
-    usfm_resource_types = [
-        resource_type_
-        for resource_type_ in resource_types_codes
-        if resource_type_ in usfm_resource_types
-    ]
-    ulb_usfm_resource_types = [
-        usfm_resource_type_
-        for usfm_resource_type_ in usfm_resource_types
-        if "ulb" in usfm_resource_type_
-    ]
+    resource_types_codes = list(
+        {lang_resource_type_tuple[0] for lang_resource_type_tuple in resource_types_}
+    )
+    usfm_resource_types = list(
+        {
+            resource_type_
+            for resource_type_ in resource_types_codes
+            if resource_type_ in usfm_resource_types
+        }
+    )
+    ulb_usfm_resource_types = list(
+        {
+            usfm_resource_type_
+            for usfm_resource_type_ in usfm_resource_types
+            if "ulb" in usfm_resource_type_
+        }
+    )
     usfm_books = []
     usfm_resource_type = ""
     if ulb_usfm_resource_types:  # Prefer ulb if available
@@ -96,7 +100,6 @@ def generate_docx_document(
     current_task.update_state(state="Assembling content")
     passages = []
     for passage_ref_dto in passage_reference_dtos:
-        # logger.debug("passage_ref_dto: %s", passage_ref_dto)
         selected_usfm_books = [
             usfm_book_
             for usfm_book_ in usfm_books
@@ -113,13 +116,19 @@ def generate_docx_document(
             verse_text_html_ = verse_text_html(passage_ref_dto, selected_usfm_book)
         else:
             verse_text_html_ = ""
-        non_book_name_portion_of_reference = (
-            f"{passage_ref_dto.chapter_num}:{passage_ref_dto.verse_reference}"
-        )
+        non_book_name_portion_of_reference = ""
+        if (
+            passage_ref_dto.end_chapter_num
+            and passage_ref_dto.end_chapter_num > 0
+            and passage_ref_dto.end_chapter_verse_reference
+        ):
+            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter_num}:{passage_ref_dto.start_chapter_verse_reference}-{passage_ref_dto.end_chapter_num}:{passage_ref_dto.end_chapter_verse_reference}"
+        else:
+            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter_num}:{passage_ref_dto.start_chapter_verse_reference}"
         nationalized_reference = (
             f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
             if selected_usfm_book and non_book_name_portion_of_reference
-            else passage_ref_dto.verse_reference
+            else passage_ref_dto.start_chapter_verse_reference
         )
         passage_dto = PassageDto(
             passage_reference=nationalized_reference,
@@ -218,7 +227,7 @@ def document_request_key(
     translation_table = str.maketrans(":;,-", "____")
     passages_key = underscore.join(
         [
-            f"{passage_reference.book_code}_{passage_reference.chapter_num}_{passage_reference.verse_reference.translate(translation_table)}"
+            f"{passage_reference.book_code}_{passage_reference.start_chapter_num}_{passage_reference.start_chapter_verse_reference.translate(translation_table)}"
             for passage_reference in passage_reference_dtos
         ]
     )

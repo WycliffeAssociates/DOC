@@ -26,8 +26,10 @@ def render_bible_reference(ref: BibleReference) -> str:
     template = env.get_template("html/bible_reference.html")
     return template.render(
         book_name=ref.book_name,
-        chapter=ref.chapter,
-        verse_ref=ref.verse_ref,
+        start_chapter=ref.start_chapter,
+        start_chapter_verse_ref=ref.start_chapter_verse_ref,
+        end_chapter=ref.end_chapter,
+        end_chapter_verse_ref=ref.end_chapter_verse_ref,
     )
 
 

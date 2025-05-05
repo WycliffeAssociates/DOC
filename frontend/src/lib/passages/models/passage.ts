@@ -10,6 +10,8 @@ export type PassageReferenceDto = {
   langCode: string
   bookCode: string
   bookName: string
-  chapterNum: number
-  verseReference: string
+  startChapterNum: number
+  startChapterVerseReference: string
+  endChapterNum?: number | null
+  endChapterVerseReference?: string | null
 }

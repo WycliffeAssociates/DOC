@@ -2,9 +2,10 @@ from pprint import pprint
 from collections import defaultdict
 import re
 
+from doc.config import settings
 from docx import Document  # type: ignore
 from doc.domain.bible_books import BOOK_NAMES
-from doc.domain.model import LangDirEnum
+from doc.domain.model import ChapterNum, LangDirEnum
 from doc.reviewers_guide.model import (
     RGBook,
     RGChapter,
@@ -18,6 +19,8 @@ from doc.reviewers_guide.model import (
 # Pattern for chapter and verse references after Bible books
 CHAPTER_VERSE_PATTERN = re.compile(r"^\d+:\d+(-\d+(:\d+)?)?$")
 
+logger = settings.logger(__name__)
+
 
 def get_book_code(book_name: str) -> str:
     return next(key for key, name in BOOK_NAMES.items() if name == book_name)
@@ -30,27 +33,64 @@ def parse_bible_reference(
     if len(bible_reference_components) == 3:
         book_name = f"{bible_reference_components[0]} {bible_reference_components[1]}"
         book_code = get_book_code(book_name)
-        chapter = bible_reference_components[2].split(":")[0]
-        verse_ref = bible_reference_components[2].split(":")[1]
-        bible_reference = BibleReference(
-            book_code=book_code,
-            book_name=book_name,
-            chapter=int(chapter),
-            verse_ref=verse_ref,
-        )
-        return bible_reference
+        temp_components = bible_reference_components[2].split(":")
+        if len(temp_components) == 3 and "-" in temp_components[1]:
+            start_chapter = temp_components[0]
+            temp_components_ = temp_components[1].split("-")
+            start_chapter_verse_ref = temp_components_[0]
+            end_chapter = temp_components_[1]
+            end_chapter_verse_ref = temp_components[2]
+            bible_reference = BibleReference(
+                book_code=book_code,
+                book_name=book_name,
+                start_chapter=int(start_chapter),
+                start_chapter_verse_ref=start_chapter_verse_ref,
+                end_chapter=int(end_chapter),
+                end_chapter_verse_ref=end_chapter_verse_ref,
+            )
+        # elif len(temp_components) == 2:
+        else:
+            start_chapter = temp_components[0]
+            start_chapter_verse_ref = temp_components[1]
+            bible_reference = BibleReference(
+                book_code=book_code,
+                book_name=book_name,
+                start_chapter=int(start_chapter),
+                start_chapter_verse_ref=start_chapter_verse_ref,
+                end_chapter=None,
+                end_chapter_verse_ref=None,
+            )
     else:  # if len(bible_reference_components) == 2:
         book_name = bible_reference_components[0]
         book_code = get_book_code(book_name)
-        chapter = bible_reference_components[1].split(":")[0]
-        verse_ref = bible_reference_components[1].split(":")[1]
-        bible_reference = BibleReference(
-            book_code=book_code,
-            book_name=book_name,
-            chapter=int(chapter),
-            verse_ref=verse_ref,
-        )
-        return bible_reference
+        temp_components = bible_reference_components[1].split(":")
+        if len(temp_components) == 3 and "-" in temp_components[1]:
+            start_chapter = temp_components[0]
+            temp_components_ = temp_components[1].split("-")
+            start_chapter_verse_ref = temp_components_[0]
+            end_chapter = temp_components_[1]
+            end_chapter_verse_ref = temp_components[2]
+            bible_reference = BibleReference(
+                book_code=book_code,
+                book_name=book_name,
+                start_chapter=int(start_chapter),
+                start_chapter_verse_ref=start_chapter_verse_ref,
+                end_chapter=int(end_chapter),
+                end_chapter_verse_ref=end_chapter_verse_ref,
+            )
+        else:
+            start_chapter = temp_components[0]
+            start_chapter_verse_ref = temp_components[1]
+            bible_reference = BibleReference(
+                book_code=book_code,
+                book_name=book_name,
+                start_chapter=int(start_chapter),
+                start_chapter_verse_ref=start_chapter_verse_ref,
+                end_chapter=None,
+                end_chapter_verse_ref=None,
+            )
+    logger.debug("bible_reference: %s", bible_reference)
+    return bible_reference
 
 
 def find_bible_references(
@@ -209,13 +249,13 @@ def create_rgbooks_from_parsed_texts(
     lang_direction: LangDirEnum,
 ) -> list[RGBook]:
     # Group ParsedText by book_code and then by chapter
-    books: dict[str, dict[int, list[ParsedText]]] = defaultdict(
+    books: dict[str, dict[ChapterNum, list[ParsedText]]] = defaultdict(
         lambda: defaultdict(list)
     )
     for parsed_text in parsed_texts:
         if parsed_text.bible_reference:
             book_code = parsed_text.bible_reference.book_code
-            chapter = parsed_text.bible_reference.chapter
+            chapter = parsed_text.bible_reference.start_chapter
             books[book_code][chapter].append(parsed_text)
     rgbooks: list[RGBook] = []
     for book_code, chapters_dict in books.items():

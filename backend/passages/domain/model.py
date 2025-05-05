@@ -1,3 +1,4 @@
+from doc.domain.model import ChapterNum
 from pydantic import BaseModel, EmailStr
 from typing import Optional, NamedTuple, final
 
@@ -7,8 +8,10 @@ class PassageReferenceDto(BaseModel):
     lang_code: str
     book_code: str
     book_name: str
-    chapter_num: int
-    verse_reference: str
+    start_chapter_num: ChapterNum
+    start_chapter_verse_reference: str
+    end_chapter_num: Optional[ChapterNum]
+    end_chapter_verse_reference: Optional[str]
 
 
 @final

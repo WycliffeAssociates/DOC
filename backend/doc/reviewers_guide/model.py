@@ -23,8 +23,10 @@ class Part2Item(BaseModel):
 class BibleReference(BaseModel):
     book_code: str
     book_name: str
-    chapter: int
-    verse_ref: str
+    start_chapter: ChapterNum
+    start_chapter_verse_ref: str
+    end_chapter: Optional[ChapterNum]
+    end_chapter_verse_ref: Optional[str]
 
 
 @final

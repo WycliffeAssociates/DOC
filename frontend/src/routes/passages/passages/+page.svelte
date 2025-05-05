@@ -119,7 +119,9 @@
         selectedBookCode,
         bookName,
         Number(selectedChapter),
-        verseReference
+        verseReference,
+        null,
+        null
       )
 
       // Reset fields for the next entry
@@ -154,8 +156,10 @@
             $langCodeAndNameStore.split(",")[0],
             bibleRef.book_code,
             bibleRef.book_name,
-            Number(bibleRef.chapter),
-            bibleRef.verse_ref
+            Number(bibleRef.start_chapter),
+            bibleRef.start_chapter_verse_ref,
+            Number(bibleRef.end_chapter),
+            bibleRef.end_chapter_verse_ref
           )
       }
     } catch (error) {

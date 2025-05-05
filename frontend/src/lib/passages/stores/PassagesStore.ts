@@ -8,8 +8,10 @@ export const addPassageReference = (
   langCode: string,
   bookCode: string,
   bookName: string,
-  chapterNum: number,
-  verseReference: string
+  startChapterNum: number,
+  startChapterVerseReference: string,
+  endChapterNum?: number | null,
+  endChapterVerseReference?: string | null
 ) => {
   passagesStore.update((currentPassages) => {
     // Check if the passage already exists
@@ -17,14 +19,14 @@ export const addPassageReference = (
       (p) =>
         p.langCode === langCode &&
         p.bookCode === bookCode &&
-        p.chapterNum === chapterNum &&
-        p.verseReference === verseReference
+        p.startChapterNum === startChapterNum &&
+        p.startChapterVerseReference === startChapterVerseReference &&
+        p.endChapterNum === endChapterNum &&
+        p.endChapterVerseReference === endChapterVerseReference
     )
-
     if (exists) {
       return currentPassages // Return unchanged if passage exists
     }
-
     return [
       ...currentPassages,
       {
@@ -32,8 +34,10 @@ export const addPassageReference = (
         langCode,
         bookCode,
         bookName,
-        chapterNum,
-        verseReference
+        startChapterNum,
+        startChapterVerseReference,
+        endChapterNum,
+        endChapterVerseReference
       }
     ]
   })

@@ -37,7 +37,7 @@ def verse_text_html(
                 )
         end_chapter_lower_verse = 1
         end_chapter_upper_verse = int(passage_ref_dto.end_chapter_verse_reference)
-        for idx in range(end_chapter_lower_verse, end_chapter_upper_verse):
+        for idx in range(end_chapter_lower_verse, end_chapter_upper_verse + 1):
             end_chapter_verse_text = lookup_verse_text(
                 usfm_book,
                 passage_ref_dto.end_chapter_num,

@@ -10,7 +10,7 @@
   export let showFilterMenu: boolean
   export let showWizardBasketModal: boolean
   export let heartSearchTerm: string
-  export let selectGatewayTab:  () => void
+  export let selectGatewayTab: () => void
   export let selectHeartTab: () => void
 </script>
 

@@ -1,5 +1,5 @@
-from document.config import settings
-from document.domain import model, resource_lookup
+from doc.config import settings
+from doc.domain import model, resource_lookup
 
 
 def test_lookup_successes() -> None:
@@ -35,7 +35,7 @@ def test_lookup_successes() -> None:
             assert resource_lookup_dto.url
 
 
-# NOTE This fails because zh doesn't use ulb for its USFM resource
+# NOTE This fails, on purpose, because zh doesn't use ulb for its USFM resource
 # type but 'cuv' instead, i.e., zh ulb is a special case.
 def test_lookup_failures() -> None:
     assembly_strategy_kind: model.AssemblyStrategyEnum = (
@@ -64,3 +64,8 @@ def test_lookup_failures() -> None:
         )
         if resource_lookup_dto:
             assert not resource_lookup_dto.url
+
+
+def test_nt_survey_rg_passages() -> None:
+    bible_references = resource_lookup.nt_survey_rg_passages()
+    assert bible_references

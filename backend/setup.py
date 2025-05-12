@@ -2,6 +2,6 @@ from setuptools import setup
 
 setup(
     name="document",
-    version="0.1",
+    version="1.0",
     packages=["document"],
 )

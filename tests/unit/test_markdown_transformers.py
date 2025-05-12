@@ -1,9 +1,9 @@
 import os
 import pytest
 
-from document.domain import model
-from document.markdown_transforms import markdown_transformer
-from document.utils import tw_utils
+from doc.domain import model
+from doc.markdown_transforms import markdown_transformer
+from doc.utils import tw_utils
 
 EN_TW_RESOURCE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -106,9 +106,7 @@ def test_translation_word_link_alt_gu(datafiles: list[str]) -> None:
     assert expected == source
 
 
-@pytest.mark.datafiles(GU_TW_RESOURCE_DIR)
-def test_translation_note_link_gu(datafiles: list[str]) -> None:
-    tw_resource_dir = str(datafiles)
+def test_translation_note_link_gu() -> None:
     source = """* [ઉત્પત્તિ 4:18-19](rc://gu/tn/help/gen/04/18)
 * [ઉત્પત્તિ 4:23-24](rc://gu/tn/help/gen/04/23)
 * [લૂક 3:36-38](rc://gu/tn/help/luk/03/36)"""

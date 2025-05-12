@@ -55,7 +55,7 @@
     $errorStore = null
     $documentReadyStore = false
     $documentRequestKeyStore = ''
-    let endpointUrl = `${apiRootUrl}/stet/documents_stet_docx`
+    let endpointUrl = `${apiRootUrl}/stet/documents_docx`
     // if ($generateDocxStore) {
     //   endpointUrl = `${apiRootUrl}/documents_docx`
     // }

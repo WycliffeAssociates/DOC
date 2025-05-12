@@ -28,7 +28,7 @@
   // showing the heart languages, otherwise the default stands of
   // showing the gateway languages.
   $: {
-    if ($heartCodeAndNamesStore.length > 0 && $gatewayCodeAndNamesStore.length === 0) {
+    if ($lang1CodeAndNameStore && heartCodesAndNames.includes($lang1CodeAndNameStore)) {
       showGatewayLanguages = false
     }
   }
@@ -74,36 +74,22 @@
     })
     .catch((err) => console.log(err)) // FIXME Trigger toast for error
 
-  let nonEmptyGatewayLanguages: boolean
-  $: nonEmptyGatewayLanguages = $gatewayCodeAndNamesStore.every((item) => item.length > 0)
-
-  let nonEmptyHeartLanguages: boolean
-  $: nonEmptyHeartLanguages = $heartCodeAndNamesStore.every((item) => item.length > 0)
-
-  // Set langCountStore
+  // Set $langCountStore
   $: {
-    if (nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
+    if ($lang0CodeAndNameStore && $lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang0CodeAndNameStore))
+      codes.push(getCode($lang1CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
-    } else if (nonEmptyGatewayLanguages && !nonEmptyHeartLanguages) {
+    } else if ($lang0CodeAndNameStore && !$lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang0CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
-    } else if (!nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
+    } else if (!$lang0CodeAndNameStore && $lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang1CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
     } else {
@@ -136,7 +122,7 @@
     }
   }
 
-  let windowWidth: number
+  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
@@ -467,27 +453,6 @@
   }
   div.radio-target:has(input[type='radio']:checked) {
     background: #e6eefb;
-  }
-  input.show-gateway-radio-button[type='radio']:checked + span {
-    color: #015ad9;
-  }
-  input.show-heart-radio-button[type='radio']:checked + span {
-    color: #015ad9;
-  }
-  input.checkbox-target[type='checkbox']:checked + span {
-    color: #015ad9;
-  }
-  div.target3:has(input[type='checkbox']:checked) + span {
-    color: #015ad9;
-  }
-  div.target2:has(input[type='checkbox']:checked) + div {
-    color: #015ad9;
-  }
-  div.target2:has(input[type='checkbox']:checked) + span {
-    color: #015ad9;
-  }
-  .checkbox-style {
-    @apply h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600;
   }
   .radio-style {
     @apply h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600;

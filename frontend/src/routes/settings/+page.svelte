@@ -13,7 +13,8 @@
     limitTwStore,
     documentRequestKeyStore,
     settingsUpdated,
-    twResourceRequestedStore
+    twResourceRequestedStore,
+    useChapterLabelsStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
   import {
@@ -25,6 +26,8 @@
   import { bookCountStore } from '$lib/stores/BooksStore'
   import GenerateDocument from './GenerateDocument.svelte'
   import LogRocket from 'logrocket'
+
+  let showAdvanced = false // Show optional/advanced settings flag
 
   let chapter: SelectElement = {
     id: 'chapter',
@@ -244,7 +247,25 @@
           </div>
         {/if}
       </div>
-
+      <button
+        class="mb-4 mt-2 w-1/2 rounded-md
+                    border border-[#E5E8EB] bg-[#F2F3F5] p-4
+                    text-center text-xl text-[#B3B9C2] transition hover:bg-[#efefef]"
+        on:click={() => (showAdvanced = !showAdvanced)}
+      >
+        {showAdvanced ? '▼ Hide Optional Settings' : '▶ Show Optional Settings'}
+      </button>
+      {#if showAdvanced}
+        <h3 class="mb-2 mt-2 text-2xl text-[#33445C]">Optional Settings</h3>
+        <div class="ml-4">
+          <div class="mb-2 mt-6 flex">
+            <Switch bind:checked={$useChapterLabelsStore} id="use-chapter-labels" />
+            <span class="ml-2 text-xl text-[#33445C]"
+              >Use chapter labels, e.g., 'Chapter 1' instead of '1'</span
+            >
+          </div>
+        </div>
+      {/if}
       <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Notification</h3>
       <div class="ml-4">
         {#if !$documentReadyStore}

@@ -15,7 +15,8 @@
     emailStore,
     documentRequestKeyStore,
     limitTwStore,
-    settingsUpdated
+    settingsUpdated,
+    useChapterLabelsStore
   } from '$lib/stores/SettingsStore'
   import { taskIdStore, taskStateStore } from '$lib/stores/TaskStore'
   import { getCode, getResourceTypeLangCode, getResourceTypeCode } from '$lib/utils'
@@ -79,7 +80,8 @@
       generate_docx: $generateDocxStore,
       resource_requests: resourceRequests,
       document_request_source: 'ui',
-      limit_words: $limitTwStore
+      limit_words: $limitTwStore,
+      use_chapter_labels: $useChapterLabelsStore
     }
     console.log('document request: ', JSON.stringify(documentRequest, null, 2))
     $errorStore = null
@@ -316,16 +318,18 @@
 
 <style lang="postcss">
   * :global(.gray-gradiant) {
-    background: linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05)),
+    background:
+      linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05)),
       linear-gradient(0deg, rgba(20, 14, 8, 0), rgba(20, 14, 8, 0));
   }
   * :global(.gray-gradient:hover) {
-    background: linear-gradient(0deg, rgba(20, 14, 8, 0.3), rgba(20, 14, 8, 0.3)),
+    background:
+      linear-gradient(0deg, rgba(20, 14, 8, 0.3), rgba(20, 14, 8, 0.3)),
       linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05));
   }
   * :global(.blue-gradient) {
-    background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%),
-      linear-gradient(0deg, #33445c, #33445c);
+    background:
+      linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #33445c, #33445c);
   }
   * :global(.blue-gradient-bar) {
     background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%);

@@ -1,0 +1,5 @@
+{% if start_chapter and start_chapter > 0 and start_chapter_verse_ref %}
+<p><strong>{{book_name}} {{start_chapter}}:{{start_chapter_verse_ref}}-{{end_chapter}}:{{end_chapter_verse_ref}}</strong></p> 
+{% else %}
+<p><strong>{{book_name}} {{start_chapter}}:{{start_chapter_verse_ref}}</strong></p> 
+{% endif %}

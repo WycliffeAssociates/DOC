@@ -4,9 +4,10 @@ import time
 from typing import Literal, Union
 
 import httpx
-from document.config import settings
-from document.entrypoints.app import app
+from doc.config import settings
+from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
+from docx import Document  # type: ignore
 
 logger = settings.logger(__name__)
 
@@ -17,7 +18,6 @@ AcceptedSuffixes = Union[
 
 def check_result(
     response: httpx._models.Response,
-    /,
     suffix: AcceptedSuffixes,
     poll_duration: int = 4,
     status_url_fmt_str: str = "/task_status/{}",
@@ -57,6 +57,27 @@ def check_result(
                 )
             time.sleep(poll_duration)
     return finished_document_request_key
+
+
+def document_contains_substring(
+    doc: Document, substring: str, case_insensitive: bool = False
+) -> bool:
+    if case_insensitive:
+        substring = substring.lower()
+    # Check all paragraphs
+    for paragraph in doc.paragraphs:
+        text = paragraph.text.lower() if case_insensitive else paragraph.text
+        if substring in text:
+            return True
+    # Check all tables
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                text = cell.text.lower() if case_insensitive else cell.text
+                if substring in text:
+                    return True
+    # Substring not found
+    return False
 
 
 def check_finished_document_with_verses_success(
@@ -122,3 +143,26 @@ def check_finished_document_with_body_success(
             r"<body.*?>(\s*\S.*\S\s*|\s*\S\s*)</body>", html, re.DOTALL
         )
         assert body_match, "Body not found in HTML"
+
+
+def is_within_distance(text: str, substr1: str, substr2: str, distance: int) -> bool:
+    """
+    Check if substr2 is within a certain distance of substr1 in the given text.
+
+    :param text: The text to search.
+    :param substr1: The first substring to find.
+    :param substr2: The second substring to find.
+    :param distance: The maximum distance allowed between substr1 and substr2.
+    :return: True if substr2 is within the distance of substr1, otherwise False.
+    """
+    index1 = text.find(substr1)
+    index2 = text.find(substr2)
+    logger.debug("index1: %s, index2: %s", index1, index2)
+
+    # If either substring is not found, return False
+    if index1 == -1 or index2 == -1:
+        return False
+
+    # Check if the distance between substr1 and substr2 is within the given distance
+    logger.debug("distance: %s", abs(index1 - index2))
+    return abs(index1 - index2) <= distance

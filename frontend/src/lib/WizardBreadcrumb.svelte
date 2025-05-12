@@ -12,7 +12,6 @@
     resourceTypeRegExp,
     settingsRegExp
   } from '$lib/utils'
-  import { resetValuesStore } from '$lib/stores/NotificationStore'
   import MobileBreadcrumb from '$lib/MobileBreadcrumb.svelte'
   import DesktopBreadcrumb from '$lib/DesktopBreadcrumb.svelte'
 

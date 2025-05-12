@@ -13,9 +13,8 @@
   import WizardBasket from '$lib/stet/WizardBasket.svelte'
   import {
     lang0CodeAndNameStore,
+    lang1CodeAndNameStore,
     langCodesStore,
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore,
     langCountStore
   } from '$lib/stet/stores/LanguagesStore'
   import { getCode, getName } from '$lib/stet/utils'
@@ -26,7 +25,7 @@
   // showing the heart languages, otherwise the default stands of
   // showing the gateway languages.
   $: {
-    if ($heartCodeAndNamesStore.length > 0 && $gatewayCodeAndNamesStore.length === 0) {
+    if ($lang0CodeAndNameStore && heartCodesAndNames.includes($lang0CodeAndNameStore)) {
       showGatewayLanguages = false
     }
   }
@@ -68,42 +67,29 @@
     })
     .catch((err) => console.log(err))
 
-  let nonEmptyGatewayLanguages: boolean
-  $: nonEmptyGatewayLanguages = $gatewayCodeAndNamesStore.every((item) => item.length > 0)
-
-  let nonEmptyHeartLanguages: boolean
-  $: nonEmptyHeartLanguages = $heartCodeAndNamesStore.every((item) => item.length > 0)
-
   // Set $langCountStore
   $: {
-    if (nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
+    if ($lang0CodeAndNameStore && $lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang0CodeAndNameStore))
+      codes.push(getCode($lang1CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
-    } else if (nonEmptyGatewayLanguages && !nonEmptyHeartLanguages) {
+    } else if ($lang0CodeAndNameStore && !$lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang0CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
-    } else if (!nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
+    } else if (!$lang0CodeAndNameStore && $lang1CodeAndNameStore) {
       let codes = []
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
+      codes.push(getCode($lang1CodeAndNameStore))
       $langCodesStore = codes
       $langCountStore = $langCodesStore.length
     } else {
       $langCountStore = 0
       $langCodesStore = []
       $lang0CodeAndNameStore = ''
+      $lang1CodeAndNameStore = ''
     }
   }
 
@@ -129,11 +115,10 @@
     }
   }
 
-  let windowWidth: number
+  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
-  // let maxLanguages: number = PUBLIC_MAX_LANGUAGES as unknown as number
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />

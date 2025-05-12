@@ -186,7 +186,7 @@ BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
 # selecting a language which might have non-USFM resources available but
 # not USFM so that when their resulting doc is generated no scripture is
 # present. It makes it seem like a bug in STET and is bad UX.
-LANG_CODE_WITH_NO_USFM_FILTER_LIST: list[str] = ["ru"]
+LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
 
 
 @lru_cache(maxsize=2)
@@ -438,7 +438,7 @@ def lang_codes_and_names(
 
 @lru_cache(maxsize=100)
 def lang_codes_and_names_having_usfm(
-    lang_code_filter_list: Sequence[str] = LANG_CODE_WITH_NO_USFM_FILTER_LIST,
+    lang_code_filter_list: Sequence[str] = LANG_CODES_WITH_NO_USFM,
     gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
 ) -> Sequence[tuple[str, str, bool]]:
     """

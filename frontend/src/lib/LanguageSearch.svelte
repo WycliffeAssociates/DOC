@@ -27,7 +27,7 @@
             id="filter-gl-langs"
             type="search"
             bind:value={gatewaySearchTerm}
-            placeholder="Search Languages"
+            placeholder="Search Gateway Languages"
             class="search-style"
           />
         </label>
@@ -152,7 +152,7 @@
             type="search"
             bind:value={heartSearchTerm}
             class="search-style"
-            placeholder="Search Languages"
+            placeholder="Search Heart Languages"
           />
         </label>
         <div class="ml-2 hidden sm:flex" role="group">

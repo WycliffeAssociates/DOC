@@ -8,7 +8,6 @@ import json
 import re
 import shutil
 import subprocess
-from functools import lru_cache
 from glob import glob
 from os import scandir
 from os.path import basename, exists, isdir, join
@@ -193,7 +192,6 @@ BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
 LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
 
 
-@lru_cache(maxsize=2)
 def fetch_source_data(
     json_file_name: str = SOURCE_DATA_JSON_FILENAME,
     assets_dir: str = settings.RESOURCE_ASSETS_DIR,
@@ -303,7 +301,6 @@ query MyQuery {
         return SourceData.model_validate(fetch_cached_data())
 
 
-@lru_cache(maxsize=100)
 def lang_codes_and_names(
     # lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
     gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
@@ -345,7 +342,6 @@ def lang_codes_and_names(
     return sorted(unique_values, key=lambda value: value[1])
 
 
-@lru_cache(maxsize=100)
 def lang_codes_and_names_having_usfm(
     lang_code_filter_list: Sequence[str] = LANG_CODES_WITH_NO_USFM,
     gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
@@ -387,7 +383,6 @@ def lang_codes_and_names_having_usfm(
     return sorted(unique_values, key=lambda value: value[1])
 
 
-@lru_cache(maxsize=100)
 @worker.app.task
 def resource_types(
     lang_code: str,
@@ -550,7 +545,6 @@ def batch_clone_git_repos(
 
 
 # Used by some tests
-@lru_cache(maxsize=100)
 def usfm_resource_types_and_book_tuples(
     lang_code: str,
     book_codes_str: str,
@@ -980,8 +974,6 @@ def get_book_codes_for_lang(
     )
 
 
-# TODO Rename to book_codes_and_names_for_lang
-@lru_cache(maxsize=100)
 @worker.app.task
 def book_codes_for_lang(
     lang_code: str,
@@ -1009,7 +1001,6 @@ def book_codes_for_lang(
     )
 
 
-@lru_cache(maxsize=100)
 @worker.app.task
 def book_codes_for_lang_from_usfm_only(
     lang_code: str,
@@ -1037,7 +1028,6 @@ def book_codes_for_lang_from_usfm_only(
     )
 
 
-@lru_cache(maxsize=100)
 def chapters_in_books(
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS
 ) -> dict[str, list[int]]:
@@ -1105,7 +1095,6 @@ def book_codes_and_names_from_manifest(
     return book_codes_and_names
 
 
-@lru_cache(maxsize=100)
 def resource_lookup_dto(
     lang_code: str,
     resource_type: str,
@@ -1292,7 +1281,6 @@ def download_rg_file(
     #         )
 
 
-@lru_cache(maxsize=100)
 def nt_survey_rg_passages(
     lang_code: str = "en",
     lang_name: str = "English",

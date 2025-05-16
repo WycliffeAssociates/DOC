@@ -11,7 +11,7 @@ from typing import Any, NamedTuple, Optional, Sequence, TypedDict, final
 from doc.config import settings
 from doc.domain.bible_books import BOOK_NAMES
 from doc.utils.number_utils import is_even
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, HttpUrl
 from pydantic.functional_validators import model_validator
 
 # These type aliases give us more self-documenting code, but of course
@@ -212,7 +212,7 @@ class DocumentRequest(BaseModel):
     document_request_source: DocumentRequestSourceEnum = DocumentRequestSourceEnum.TEST
 
     @model_validator(mode="after")
-    def ensure_valid_document_request(self) -> Any:
+    def ensure_valid_document_request(self) -> "DocumentRequest":
         """
         See ValueError messages below for the rules we are enforcing.
         """
@@ -346,7 +346,7 @@ class ResourceLookupDto(NamedTuple):
     resource_type_name: str
     book_code: str
     lang_direction: LangDirEnum
-    url: Optional[str]
+    url: Optional[HttpUrl]
 
 
 @final
@@ -520,3 +520,29 @@ class Data(TypedDict):
 
 class JsonManifestData(TypedDict):
     project: JsonManifestBook
+
+
+# Model the source data returned in fetch_source_data from the data API:
+
+
+class Language(BaseModel):
+    english_name: str
+    ietf_code: str
+    national_name: str
+    direction: LangDirEnum
+
+
+class Content(BaseModel):
+    resource_type: str
+    language: Language
+
+
+class RepoEntry(BaseModel):
+    repo_url: HttpUrl
+    content: Content
+
+
+class SourceData(BaseModel):
+    git_repo: list[RepoEntry]
+
+

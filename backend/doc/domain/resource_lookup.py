@@ -13,7 +13,7 @@ from glob import glob
 from os import scandir
 from os.path import basename, exists, isdir, join
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence
+from typing import Mapping, Optional, Sequence
 from urllib.parse import urlparse
 
 import requests
@@ -23,11 +23,15 @@ from doc.domain import parsing, worker
 from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
 from doc.domain.model import (
     NON_USFM_RESOURCE_TYPES,
+    Content,
     Data,
     JsonManifestBook,
     JsonManifestData,
     LangDirEnum,
+    Language,
+    RepoEntry,
     ResourceLookupDto,
+    SourceData,
 )
 from doc.reviewers_guide.model import BibleReference
 from doc.reviewers_guide.parser import (
@@ -193,7 +197,7 @@ LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
 def fetch_source_data(
     json_file_name: str = SOURCE_DATA_JSON_FILENAME,
     assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-) -> Any:
+) -> Optional[SourceData]:
     """
     Obtain the source data, by downloading it from json_file_url, and
     then reifying it into its JSON object form.
@@ -201,31 +205,39 @@ def fetch_source_data(
     >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
-    >>> result["git_repo"][0]
-    {'repo_url': 'https://content.bibletranslationtools.org/bahasatech.indotengah/adn_1jn_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Adang', 'ietf_code': 'adn', 'national_name': 'Adang', 'direction': 'ltr'}}}
+    >>> result is not None
+    True
+    >>> result.git_repo[0].repo_url
+    'https://content.bibletranslationtools.org/bahasatech.indotengah/adn_1jn_text_reg'
+    >>> result.git_repo[0].content.resource_type
+    'reg'
+    >>> result.git_repo[0].content.language.english_name
+    'Adang'
     """
     json_file_path = join(assets_dir, json_file_name)
-    data = None
     if file_needs_update(json_file_path):
         logger.info("About to download %s...", json_file_name)
         try:
-            data = download_data(json_file_path)
-            # logger.debug("data: %s", data)
+            return download_data(json_file_path)
         except Exception:
-            logger.exception("Caught exception: ")
-    else:
-        if exists(json_file_path):
-            logger.info("json_file_path, %s exists", json_file_path)
-            content = read_file(json_file_path)
-            # logger.debug("json data: %s", content)
-            data = json.loads(content)
-    return data
+            logger.exception("Caught exception while downloading %s", json_file_name)
+            return None
+    logger.info("Reusing cached file: %s", json_file_path)
+    try:
+        content = read_file(json_file_path)
+        parsed = json.loads(content)
+        return SourceData.model_validate(parsed)
+    except Exception:
+        logger.exception(
+            "Caught exception while reading cached file: %s", json_file_path
+        )
+        return None
 
 
 def download_data(
     jsonfile_path: str,
     data_api_url: HttpUrl = settings.DATA_API_URL,
-) -> Any:
+) -> SourceData:
     """
     Downloads data from a GraphQL API and saves it to a JSON file.
 
@@ -259,14 +271,15 @@ query MyQuery {
         with open(file_path, "r") as file:
             return file.read()
 
-    def _write_json_to_file(file_path: str, data: Any) -> None:
+    def _write_json_to_file(file_path: str, data: SourceData) -> None:
         with open(file_path, "w") as file:
             json.dump(data, file, indent=4)
 
-    def fetch_cached_data() -> Any:
+    def fetch_cached_data() -> SourceData:
         logger.info("About to fetch cached data API results from %s", jsonfile_path)
         content = _read_file(jsonfile_path)
-        return json.loads(content)
+        parsed = json.loads(content)
+        return SourceData.model_validate(parsed)
 
     try:
         response = requests.post(str(data_api_url), json=query_json)
@@ -275,118 +288,19 @@ query MyQuery {
             if "git_repo" in data_payload:
                 logger.info("Writing json data to: %s", jsonfile_path)
                 _write_json_to_file(jsonfile_path, data_payload)
-                return data_payload
+                return SourceData.model_validate(data_payload)
             else:
                 logger.info("Invalid payload structure, using cached data.")
-                return fetch_cached_data()
+                return SourceData.model_validate(fetch_cached_data())
         else:
             logger.info(
                 "Failed to get data from data API, graphql API might be down..."
             )
-            return fetch_cached_data()
+            return SourceData.model_validate(fetch_cached_data())
     except requests.RequestException as e:
         logger.exception("Request failed: %s", e)
         logger.info("Failed to get data from data API, API might be down...")
-        return fetch_cached_data()
-
-
-def fetch_gateway_languages(
-    jsonfile_path: str,
-    data_api_url: HttpUrl = settings.DATA_API_URL,
-) -> Any:
-    """
-    >>> from doc.domain import resource_lookup
-    >>> ();result = resource_lookup.fetch_gateway_languages("assets_download/gateway_languages.json");() # doctest: +ELLIPSIS
-    (...)
-    >>> result["language"][0]
-    {'gateway_languages': [{'gateway_language': {'ietf_code': 'es-419', 'national_name': 'Español Latin America', 'english_name': 'Latin American Spanish'}}]}
-    """
-    graphql_query = """
-query MyQuery {
-  language {
-    gateway_languages {
-      gateway_language {
-        ietf_code
-        national_name
-        english_name
-      }
-    }
-  }
-}
-    """
-    payload = {"query": graphql_query}
-    try:
-        response = requests.post(str(data_api_url), json=payload)
-        if response.status_code == 200:
-            data = response.json()
-            logger.info("Writing json data to: %s", jsonfile_path)
-            # Filter out empty gateway_languages entries
-            with open(jsonfile_path, "w") as fp:
-                fp.write(str(json.dumps(data["data"])))
-            filtered_data = {
-                "language": [
-                    entry
-                    for entry in data["data"]["language"]
-                    if entry["gateway_languages"]
-                ]
-            }
-            return filtered_data
-        else:
-            logger.info(
-                "Failed to get data from data API, graphql API might be down..."
-            )
-            response.raise_for_status()
-    except Exception as e:
-        return {"error": str(e)}
-
-
-def get_gateway_languages(
-    json_file_name: str = SOURCE_GATEWAY_LANGUAGES_FILENAME,
-    working_dir: str = settings.RESOURCE_ASSETS_DIR,
-    use_hardcoded_gateway_language_values: bool = True,
-    hardcoded_gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
-) -> Any:
-    """
-    Obtain the source data, by downloading it from json_file_url, and
-    then reifying it into its JSON object form unless
-    use_hardcoded_gateway_language_values is True in which case just
-    return the hardcoded list of gateway languages.
-
-    >>> from doc.domain import resource_lookup
-    >>> ();result = resource_lookup.get_gateway_languages();() # doctest: +ELLIPSIS
-    (...)
-    >>> result[0]
-    'abs'
-    """
-    gateway_languages_collection = []
-    if use_hardcoded_gateway_language_values:
-        return hardcoded_gateway_languages
-    json_file_path = join(working_dir, json_file_name)
-    data = None
-    if file_needs_update(json_file_path):
-        logger.info("About to download %s...", json_file_name)
-        try:
-            data = fetch_gateway_languages(json_file_path)
-            # logger.debug("data: %s", data)
-        except Exception:
-            logger.exception("Caught exception: ")
-    else:
-        if exists(json_file_path):
-            logger.info("json_file_path, %s, does exist", json_file_path)
-            content = read_file(json_file_path)
-            # logger.debug("json data: %s", content)
-            data = json.loads(content)
-    gateway_languages = data["language"] if data and "language" in data else []
-    if gateway_languages:
-        for gateway_language in gateway_languages:
-            languages = gateway_language["gateway_languages"]
-            for language in languages:
-                language_ = language["gateway_language"]
-                ietf_code = language_["ietf_code"]
-                if ietf_code not in gateway_languages_collection:
-                    gateway_languages_collection.append(ietf_code)
-    # logger.debug("gateway_languages: %s", gateway_languages_collection)
-    return gateway_languages_collection
+        return SourceData.model_validate(fetch_cached_data())
 
 
 @lru_cache(maxsize=100)
@@ -405,32 +319,27 @@ def lang_codes_and_names(
     ...     resource_lookup.book_codes_for_lang(heart_lang_code)
     ...
     """
-    gateway_languages_ = get_gateway_languages()
-    if not gateway_languages_:
-        gateway_languages_ = gateway_languages
     data = fetch_source_data()
     values = []
-    if data and "git_repo" not in data:
-        raise Exception("Data API is down!")
+    if data is None or not data.git_repo:
+        logger.info("Data API is down or no git_repo found!")
+        return []
     try:
-        repos_info = data["git_repo"]
-        for repo_info in repos_info:
-            language_info = repo_info["content"]
-            language = language_info["language"]
-            ietf_code = language["ietf_code"]
-            english_name = (
-                language["english_name"] if "english_name" in language else ""
-            )
-            localized_name = language["national_name"]
-            is_gateway = ietf_code in gateway_languages_
             # if ietf_code not in lang_code_filter_list:
+        for repo_info in data.git_repo:
+            language_info = repo_info.content
+            language = language_info.language
+            ietf_code = language.ietf_code
+            english_name = language.english_name if language.english_name else ""
+            localized_name = language.national_name
+            is_gateway = ietf_code in gateway_languages
             if english_name in localized_name:
                 values.append((ietf_code, localized_name, is_gateway))
             else:
                 values.append(
                     (ietf_code, f"{localized_name} ({english_name})", is_gateway)
                 )
-    except:
+    except Exception:
         logger.exception("Failed due to the following exception.")
     unique_values = unique_tuples(values)
     return sorted(unique_values, key=lambda value: value[1])
@@ -443,33 +352,28 @@ def lang_codes_and_names_having_usfm(
 ) -> Sequence[tuple[str, str, bool]]:
     """
     >>> from doc.domain import resource_lookup
-    >>> ();result = resource_lookup.lang_codes_and_names();() # doctest: +ELLIPSIS
+    >>> ();result = resource_lookup.lang_codes_and_names_having_usfm();() # doctest: +ELLIPSIS
     (...)
     >>> result[0]
     ('cdi', ': Chodri (: Chaudhari)', False)
-    >>> heart_lang_codes = [lang_code_and_name[0] for lang_code_and_name in resource_lookup.lang_codes_and_names() if not lang_code_and_name[2]]
+    >>> heart_lang_codes = [lang_code_and_name[0] for lang_code_and_name in resource_lookup.lang_codes_and_names_having_usfm() if not lang_code_and_name[2]]
     >>> for heart_lang_code in heart_lang_codes:
     ...     resource_lookup.book_codes_for_lang(heart_lang_code)
     ...
     """
-    gateway_languages_ = get_gateway_languages()
-    if not gateway_languages_:
-        gateway_languages_ = gateway_languages
     data = fetch_source_data()
     values = []
-    if data and "git_repo" not in data:
-        raise Exception("Data API is down!")
+    if data is None or not data.git_repo:
+        logger.info("Data API is down or no git_repo found!")
+        return []
     try:
-        repos_info = data["git_repo"]
-        for repo_info in repos_info:
-            language_info = repo_info["content"]
-            language = language_info["language"]
-            ietf_code = language["ietf_code"]
-            english_name = (
-                language["english_name"] if "english_name" in language else ""
-            )
-            localized_name = language["national_name"]
-            is_gateway = ietf_code in gateway_languages_
+        for repo_info in data.git_repo:
+            language_info = repo_info.content
+            language = language_info.language
+            ietf_code = language.ietf_code
+            english_name = language.english_name if language.english_name else ""
+            localized_name = language.national_name
+            is_gateway = ietf_code in gateway_languages
             if ietf_code not in lang_code_filter_list:
                 if english_name in localized_name:
                     values.append((ietf_code, localized_name, is_gateway))
@@ -477,7 +381,7 @@ def lang_codes_and_names_having_usfm(
                     values.append(
                         (ietf_code, f"{localized_name} ({english_name})", is_gateway)
                     )
-    except:
+    except Exception:
         logger.exception("Failed due to the following exception.")
     unique_values = unique_tuples(values)
     return sorted(unique_values, key=lambda value: value[1])
@@ -492,7 +396,7 @@ def resource_types(
     bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
     resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    book_names: dict[str, str] = BOOK_NAMES,
+    book_names: Mapping[str, str] = BOOK_NAMES,
     docx_file_path: str = "en_rg_nt_survey.docx",
 ) -> Sequence[tuple[str, str]]:
     """
@@ -510,21 +414,26 @@ def resource_types(
         book_codes = list(book_names.keys())
     data = fetch_source_data()
     resource_types = []
-    repo_clone_list = []  # Collect URLs and file paths for batch cloning
+    repo_clone_list: list[tuple[HttpUrl, str]] = []
+    resource_type: str | None
+    if data is None or not data.git_repo:
+        logger.info("Data API is down or no git_repo found!")
+        return []
     try:
-        repos_info = data["git_repo"]
+        repos_info = data.git_repo
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
         for repo_info in augmented_repos_info:
-            content = repo_info["content"]
-            language_info = content["language"]
-            if language_info["ietf_code"] == lang_code:
-                resource_type = content["resource_type"]
+            content = repo_info.content
+            language_info = content.language
+            if language_info.ietf_code == lang_code:
+                resource_type = content.resource_type
                 if resource_type in resource_type_codes_and_names:
-                    url = repo_info["repo_url"]
+                    url = repo_info.repo_url
                     last_segment = get_last_segment(url, lang_code)
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    repo_clone_list.append((url, resource_filepath))
-        repo_clone_list = list(set(repo_clone_list))
+                    # Append to repo_clone_list if the URL is not already present
+                    if not any(item[0] == url for item in repo_clone_list):
+                        repo_clone_list.append((url, resource_filepath))
         # Separate repos that need to be cloned from en_rg
         repos_to_clone = [
             (url, path) for url, path in repo_clone_list if "en_rg" not in path
@@ -535,13 +444,12 @@ def resource_types(
         for url, resource_filepath in repo_clone_list:
             resource_type = next(
                 (
-                    repo_info["content"]["resource_type"]
-                    for repo_info in augmented_repos_info
-                    if repo_info["repo_url"] == url
+                    repo_info.content.resource_type
+                    for repo_info in data.git_repo
+                    if repo_info.repo_url == url
                 ),
                 None,
             )
-            # logger.debug("resource_type: %s, url: %s", resource_type, url)
             if not resource_type:
                 continue
             # Determine book assets
@@ -589,14 +497,14 @@ def resource_types(
                         resource_type_codes_and_names[resource_type],
                     )
                 )
-    except:
-        pass
+    except Exception:
+        logger.exception("Failed due to the following exception.")
     unique_values = unique_tuples(resource_types)
     return sorted(unique_values, key=lambda value: value[1])
 
 
 def batch_clone_git_repos(
-    repos: list[tuple[str, str]],
+    repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
 ) -> None:
     """
@@ -660,44 +568,37 @@ def usfm_resource_types_and_book_tuples(
     [('reg', '1co'), ('reg', '1jn'), ('reg', '1pe'), ('reg', '1th'), ('reg', '1ti'), ('reg', '2co'), ('reg', '2jn'), ('reg', '2pe'), ('reg', '2th'), ('reg', '2ti'), ('reg', '3jn'), ('reg', 'act'), ('reg', 'col'), ('reg', 'eph'), ('reg', 'gal'), ('reg', 'heb'), ('reg', 'jas'), ('reg', 'jhn'), ('reg', 'jud'), ('reg', 'luk'), ('reg', 'mat'), ('reg', 'mrk'), ('reg', 'phm'), ('reg', 'php'), ('reg', 'rev'), ('reg', 'rom'), ('reg', 'tit')]
     """
     book_codes = book_codes_str.split(",")
-    data = fetch_source_data()
+    data: SourceData | None = fetch_source_data()
     resource_type_and_book_tuples = set()
-    try:
-        repos_info = data["git_repo"]
-        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
-        for repo_info in augmented_repos_info:
-            content = repo_info["content"]
-            language_info = content["language"]
-            if language_info["ietf_code"] == lang_code:
-                resource_type = content["resource_type"]
-                if resource_type in usfm_resource_types:
-                    url = repo_info["repo_url"]
-                    for book_code in book_codes:
-                        dto = ResourceLookupDto(
-                            lang_code=lang_code,
-                            lang_name="",
-                            resource_type=resource_type,
-                            resource_type_name="",
-                            url=url,
-                            lang_direction=LangDirEnum.LTR,
-                            book_code=book_code,
-                        )
-                        # logger.debug("dto: %s", dto)
-                        resource_filepath = prepare_resource_filepath(dto)
-                        if file_needs_update(resource_filepath):
-                            provision_asset_files(dto.url, resource_filepath)
-                        content_file = parsing.usfm_asset_file(
-                            dto,
-                            resource_filepath,
-                            False,
-                        )
-                        # logger.debug("content_file: %s", content_file)
-                        if content_file:
-                            resource_type_and_book_tuples.add(
-                                (resource_type, book_code)
-                            )
-    except:
-        pass
+    if data is None:
+        return []
+    repos_info = data.git_repo
+    augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+    for repo_info in augmented_repos_info:
+        content = repo_info.content
+        language_info = content.language
+        if language_info.ietf_code == lang_code:
+            resource_type = content.resource_type
+            if resource_type in usfm_resource_types:
+                url = repo_info.repo_url
+                for book_code in book_codes:
+                    dto = ResourceLookupDto(
+                        lang_code=lang_code,
+                        lang_name=language_info.english_name,
+                        resource_type=resource_type,
+                        resource_type_name="",
+                        url=url,
+                        lang_direction=LangDirEnum(language_info.direction),
+                        book_code=book_code,
+                    )
+                    resource_filepath = prepare_resource_filepath(dto)
+                    if file_needs_update(resource_filepath):
+                        provision_asset_files(dto.url, resource_filepath)
+                    content_file = parsing.usfm_asset_file(
+                        dto, resource_filepath, False
+                    )
+                    if content_file:
+                        resource_type_and_book_tuples.add((resource_type, book_code))
     return sorted(resource_type_and_book_tuples, key=lambda value: value[0])
 
 
@@ -722,12 +623,12 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     ]
 
 
-def get_last_segment(url: str, lang_code: str) -> str:
+def get_last_segment(url: HttpUrl, lang_code: str) -> str:
     """
     Extract the last segment of the URL path and normalize it
     according to known anomalies and naming patterns.
     """
-    parsed_url = urlparse(url)
+    parsed_url = urlparse(str(url))
     path_segments = parsed_url.path.strip("/").split("/")
     last_segment = path_segments[-1] if path_segments else ""
     return normalize_last_segment(lang_code, last_segment)
@@ -862,81 +763,62 @@ def update_repo_components(
     return repo_components
 
 
-def add_data_not_supplied_by_data_api(repos_info: Any) -> Any:
+def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoEntry]:
     """
     DOC needs to support some resources which are not supplied by the
     data API so we augment the data returned from the data API to include
     them here.
     """
-    # The data API only provides id_tn repo for id, we have to
-    # add the other repos for id that are available for DOC's use.
-    id_ayt = {
-        "repo_url": "https://content.bibletranslationtools.org/WA-Catalog/id_ayt",
-        "content": {
-            "resource_type": "ayt",
-            "language": {
-                "english_name": "Indonesian",
-                "ietf_code": "id",
-                "national_name": "Bahasa Indonesian",
-                "direction": "ltr",
-            },
-        },
-    }
-    repos_info.append(id_ayt)
-    id_tq = {
-        "repo_url": "https://content.bibletranslationtools.org/WA-Catalog/id_tq",
-        "content": {
-            "resource_type": "tq",
-            "language": {
-                "english_name": "Indonesian",
-                "ietf_code": "id",
-                "national_name": "Bahasa Indonesian",
-                "direction": "ltr",
-            },
-        },
-    }
-    repos_info.append(id_tq)
-    id_tw = {
-        "repo_url": "https://content.bibletranslationtools.org/WA-Catalog/id_tw",
-        "content": {
-            "resource_type": "tw",
-            "language": {
-                "english_name": "Indonesian",
-                "ietf_code": "id",
-                "national_name": "Bahasa Indonesian",
-                "direction": "ltr",
-            },
-        },
-    }
-    repos_info.append(id_tw)
-    # data API does not provide tn_condensed for en, but DOC needs to support it
-    en_tn_condensed = {
-        "repo_url": "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn_condensed",
-        "content": {
-            "resource_type": "tn-condensed",
-            "language": {
-                "english_name": "English",
-                "ietf_code": "en",
-                "national_name": "English",
-                "direction": "ltr",
-            },
-        },
-    }
-    repos_info.append(en_tn_condensed)
-    # data API does not provide rg for en, but DOC needs to support it
-    en_rg = {
-        "repo_url": "https://github.com/WycliffeAssociates/TS-biel-files/blob/master/training/en/Refinement%20and%20Publication/Reviewers'%20Guide/NT%20Survey%20RG%20Files/NT%20Survey%20Reviewers'%20Guide.docx",
-        "content": {
-            "resource_type": "rg",
-            "language": {
-                "english_name": "English",
-                "ietf_code": "en",
-                "national_name": "English",
-                "direction": "ltr",
-            },
-        },
-    }
-    repos_info.append(en_rg)
+
+    def make_entry(url: HttpUrl, resource_type: str, lang: Language) -> RepoEntry:
+        return RepoEntry(
+            repo_url=url, content=Content(resource_type=resource_type, language=lang)
+        )
+
+    id_lang = Language(
+        english_name="Indonesian",
+        ietf_code="id",
+        national_name="Bahasa Indonesian",
+        direction=LangDirEnum.LTR,
+    )
+    en_lang = Language(
+        english_name="English",
+        ietf_code="en",
+        national_name="English",
+        direction=LangDirEnum.LTR,
+    )
+    extra_entries = [
+        make_entry(
+            HttpUrl("https://content.bibletranslationtools.org/WA-Catalog/id_ayt"),
+            "ayt",
+            id_lang,
+        ),
+        make_entry(
+            HttpUrl("https://content.bibletranslationtools.org/WA-Catalog/id_tq"),
+            "tq",
+            id_lang,
+        ),
+        make_entry(
+            HttpUrl("https://content.bibletranslationtools.org/WA-Catalog/id_tw"),
+            "tw",
+            id_lang,
+        ),
+        make_entry(
+            HttpUrl(
+                "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn_condensed"
+            ),
+            "tn-condensed",
+            en_lang,
+        ),
+        make_entry(
+            HttpUrl(
+                "https://github.com/WycliffeAssociates/TS-biel-files/blob/master/training/en/Refinement%20and%20Publication/Reviewers'%20Guide/NT%20Survey%20RG%20Files/NT%20Survey%20Reviewers'%20Guide.docx"
+            ),
+            "rg",
+            en_lang,
+        ),
+    ]
+    repos_info.extend(extra_entries)
     return repos_info
 
 
@@ -964,124 +846,127 @@ def get_book_codes_for_lang(
     usfm_only: bool = False,
 ) -> Sequence[tuple[str, str]]:
     data = fetch_source_data()
+    if data is None:
+        return []
     book_codes_and_names_localized: list[tuple[str, str]] = []
-    book_codes_and_names = []
+    book_codes_and_names: list[tuple[str, str]] = []
     book_codes_and_names2: list[tuple[str, str]] = []
-    repo_clone_list = []
+    repo_clone_list: list[tuple[HttpUrl, str]] = []
     try:
-        repos_info = data["git_repo"]
+        repos_info = data.git_repo
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
         for repo_info in augmented_repos_info:
-            content = repo_info["content"]
-            language_info = content["language"]
-            url = repo_info["repo_url"]
-            if language_info["ietf_code"] == lang_code:
+            content = repo_info.content
+            language_info = content.language
+            url = repo_info.repo_url
+            if language_info.ietf_code == lang_code:
                 last_segment = get_last_segment(url, lang_code)
                 repo_components = last_segment.split("_")
-                if dcs_mirror_git_username in url:
+                if dcs_mirror_git_username in str(url):
                     repo_components = update_repo_components(repo_components)
-                if any(
-                    usfm_resource_type in url
-                    for usfm_resource_type in usfm_resource_types
-                ):
+                if any(rt in str(url) for rt in usfm_resource_types):
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    repo_clone_list.append((url, resource_filepath))
-        repo_clone_list = list(set(repo_clone_list))
+                    # Append to repo_clone_list if the URL is not already present
+                    if not any(item[0] == url for item in repo_clone_list):
+                        repo_clone_list.append((url, resource_filepath))
         repos_to_clone = [
             (url, path) for url, path in repo_clone_list if "en_rg" not in path
         ]
-        # Perform batch cloning
         batch_clone_git_repos(repos_to_clone)
-        # Process cloned repositories
         for url, resource_filepath in repo_clone_list:
-            repo_info = next(
-                (repo for repo in augmented_repos_info if repo["repo_url"] == url),
-                None,
-            )
-            if not repo_info:
-                continue
-            last_segment = get_last_segment(url, lang_code)
-            logger.debug("last_segment: %s", last_segment)
-            repo_components = last_segment.split("_")
-            if len(repo_components) == 2 and repo_components[-1] in usfm_resource_types:
-                book_codes_and_names_localized = []
-                usfm_files = parsing.find_usfm_files(resource_filepath)
-                for usfm_file in usfm_files:
-                    usfm_file_components = Path(usfm_file).stem.lower().split("-")
-                    book_code = usfm_file_components[1]
-                    resource_type = repo_components[1]
-                    content = read_file(usfm_file) if usfm_file else ""
-                    frontmatter, _, _ = parsing.split_usfm_by_chapters(
-                        lang_code, resource_type, book_code, content
-                    )
-                    localized_book_name = parsing.maybe_localized_book_name(frontmatter)
-                    localized_book_name = maybe_correct_book_name(
-                        lang_code, localized_book_name
-                    )
-                    book_codes_and_names_localized.append(
-                        (book_code, localized_book_name)
-                    )
-                break
-            if (
-                use_localized_book_name
-                and len(repo_components) > 2
-                and repo_components[-1] in usfm_resource_types
-            ):
-                book_name_file = f"{resource_filepath}/front/title.txt"
-                if exists(book_name_file):
-                    with open(book_name_file, "r") as fin:
-                        book_name = fin.read()
-                        localized_book_name_ = normalize_localized_book_name(book_name)
-                        localized_book_name = maybe_correct_book_name(
-                            lang_code, localized_book_name_
-                        )
-                        book_code = repo_components[1]
-                        book_codes_and_names_localized.append(
-                            (
-                                book_code,
-                                localized_book_name,
+            for repo_info in augmented_repos_info:
+                if repo_info.repo_url == url:
+                    last_segment = get_last_segment(url, lang_code)
+                    # logger.debug("last_segment: %s", last_segment)
+                    repo_components = last_segment.split("_")
+                    if (
+                        len(repo_components) == 2
+                        and repo_components[-1] in usfm_resource_types
+                    ):
+                        book_codes_and_names_localized = []
+                        usfm_files = parsing.find_usfm_files(resource_filepath)
+                        for usfm_file in usfm_files:
+                            usfm_file_components = (
+                                Path(usfm_file).stem.lower().split("-")
                             )
-                        )
-            if not usfm_only:
-                if not book_codes_and_names_localized or any(
-                    name == "" for _, name in book_codes_and_names_localized
-                ):
-                    if len(repo_components) > 2:
-                        book_code = repo_components[1]
-                        if book_code in book_names:
-                            book_codes_and_names.append(
-                                (book_code, book_names[book_code])
+                            book_code = usfm_file_components[1]
+                            resource_type = repo_components[1]
+                            usfm = read_file(usfm_file) if usfm_file else ""
+                            frontmatter, _, _ = parsing.split_usfm_by_chapters(
+                                lang_code, resource_type, book_code, usfm
                             )
-                    elif len(repo_components) == 2 and not book_codes_and_names:
-                        if not book_codes_and_names2:
-                            if repo_components[-1] in usfm_resource_types:
-                                usfm_files = parsing.find_usfm_files(resource_filepath)
-                                for usfm_file in usfm_files:
-                                    book_code = (
-                                        Path(usfm_file).stem.lower().split("-")[1]
+                            localized_book_name = parsing.maybe_localized_book_name(
+                                frontmatter
+                            )
+                            localized_book_name = maybe_correct_book_name(
+                                lang_code, localized_book_name
+                            )
+                            book_codes_and_names_localized.append(
+                                (book_code, localized_book_name)
+                            )
+                        break
+                    if (
+                        use_localized_book_name
+                        and len(repo_components) > 2
+                        and repo_components[-1] in usfm_resource_types
+                    ):
+                        book_name_file = f"{resource_filepath}/front/title.txt"
+                        if exists(book_name_file):
+                            with open(book_name_file, "r") as fin:
+                                book_name = fin.read()
+                                localized_book_name_ = normalize_localized_book_name(
+                                    book_name
+                                )
+                                localized_book_name = maybe_correct_book_name(
+                                    lang_code, localized_book_name_
+                                )
+                                book_code = repo_components[1]
+                                book_codes_and_names_localized.append(
+                                    (
+                                        book_code,
+                                        localized_book_name,
                                     )
-                                    book_codes_and_names2.append(
+                                )
+                    if not usfm_only:
+                        if not book_codes_and_names_localized or any(
+                            name == "" for _, name in book_codes_and_names_localized
+                        ):
+                            if len(repo_components) > 2:
+                                book_code = repo_components[1]
+                                if book_code in book_names:
+                                    book_codes_and_names.append(
                                         (book_code, book_names[book_code])
                                     )
-                            if not book_codes_and_names2 and repo_components[-1] in [
-                                "tn",
-                                "tq",
-                            ]:
-                                subdirs = [
-                                    file
-                                    for file in scandir(resource_filepath)
-                                    if file.is_dir() and file.name in book_names
-                                ]
-                                for subdir in subdirs:
-                                    book_codes_and_names2.append(
-                                        (
-                                            subdir.name.lower(),
-                                            book_names[subdir.name.lower()],
+                            elif len(repo_components) == 2 and not book_codes_and_names:
+                                if not book_codes_and_names2:
+                                    if resource_type in usfm_resource_types:
+                                        usfm_files = parsing.find_usfm_files(
+                                            resource_filepath
                                         )
-                                    )
-    except:
-        pass
-    unique_values = []
+                                        for usfm_file in usfm_files:
+                                            book_code = (
+                                                Path(usfm_file)
+                                                .stem.lower()
+                                                .split("-")[1]
+                                            )
+                                            book_codes_and_names2.append(
+                                                (book_code, book_names[book_code])
+                                            )
+                                    elif resource_type in ["tn", "tq"]:
+                                        subdirs = [
+                                            file
+                                            for file in scandir(resource_filepath)
+                                            if file.is_dir() and file.name in book_names
+                                        ]
+                                        for subdir in subdirs:
+                                            book_codes_and_names2.append(
+                                                (
+                                                    subdir.name.lower(),
+                                                    book_names[subdir.name.lower()],
+                                                )
+                                            )
+    except Exception:
+        logger.exception("Error during get_book_codes_for_lang")
     if not book_codes_and_names_localized or any(
         name == "" for _, name in book_codes_and_names_localized
     ):
@@ -1236,114 +1121,100 @@ def resource_lookup_dto(
     >>> data
     ResourceLookupDto(lang_code='pt-br', lang_name='Brazilian Portuguese', resource_type='ulb', resource_type_name='Unlocked Literal Bible', book_code='mat', lang_direction='ltr', url='https://content.bibletranslationtools.org/WA-Catalog/pt-br_ulb')
     """
-    data = fetch_source_data()
-    resource_lookup_dto = None
-    rg_resource_lookup_dtos = []
-    two_component_url_resource_lookup_dtos = []
-    more_than_two_component_url_resource_lookup_dtos = []
+    data = fetch_source_data()  # Fetch source data
+    if data is None:
+        return None
+    resource_lookup_dto: Optional[ResourceLookupDto] = None
+    rg_resource_lookup_dtos: list[ResourceLookupDto] = []
+    two_component_url_resource_lookup_dtos: list[ResourceLookupDto] = []
+    more_than_two_component_url_resource_lookup_dtos: list[ResourceLookupDto] = []
     try:
-        repos_info = data["git_repo"]
+        repos_info = data.git_repo
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
         for repo_info in augmented_repos_info:
-            content = repo_info["content"]
-            language_info = content["language"]
-            resource_type_ = content["resource_type"]
-            url = repo_info["repo_url"]
-            if language_info["ietf_code"] == lang_code:
+            content = repo_info.content
+            language_info = content.language
+            resource_type_ = content.resource_type
+            url = repo_info.repo_url
+            if language_info.ietf_code == lang_code:
                 last_segment = get_last_segment(url, lang_code)
                 if last_segment[-4:] == "docx":
-                    # logger.debug("docx detected, url: %s", url)
                     resource_lookup_dto = ResourceLookupDto(
                         lang_code=lang_code,
-                        lang_name=language_info["english_name"],
+                        lang_name=language_info.english_name,
                         resource_type=resource_type,
                         resource_type_name=resource_type_codes_and_names[resource_type],
                         book_code=book_code,
-                        lang_direction=language_info["direction"],
+                        lang_direction=language_info.direction,
                         url=url,
                     )
                     rg_resource_lookup_dtos.append(resource_lookup_dto)
                 else:
                     repo_components = last_segment.split("_")
                     repo_components = update_repo_components(repo_components)
-                    # logger.debug(
-                    #     "url: %s, repo_components: %s, resource_type: %s",
-                    #     url,
-                    #     repo_components,
-                    #     resource_type_,
-                    # )
                     if len(repo_components) > 2:
                         book_code_ = repo_components[1]
                         if (
-                            (book_code_ in url or zmq_git_username in url)
+                            (book_code_ in str(url) or zmq_git_username in str(url))
                             and resource_type == resource_type_
                             and resource_type_ in resource_type_codes_and_names
                             and book_code_ == book_code
                         ):
                             resource_lookup_dto = ResourceLookupDto(
                                 lang_code=lang_code,
-                                lang_name=language_info["english_name"],
+                                lang_name=language_info.english_name,
                                 resource_type=resource_type,
                                 resource_type_name=resource_type_codes_and_names[
                                     resource_type
                                 ],
                                 book_code=book_code,
-                                lang_direction=language_info["direction"],
+                                lang_direction=language_info.direction,
                                 url=url,
                             )
                             more_than_two_component_url_resource_lookup_dtos.append(
                                 resource_lookup_dto
                             )
-                    elif (
-                        len(repo_components) == 2 and resource_type == resource_type_
-                    ):  # Here we handle cases like es-419_ulb, es-419_tn, en_ulb, etc.
+                    elif len(repo_components) == 2 and resource_type == resource_type_:
+                        # Handle cases like es-419_ulb, es-419_tn, en_ulb, etc.
                         resource_lookup_dto = ResourceLookupDto(
                             lang_code=lang_code,
-                            lang_name=language_info["english_name"],
+                            lang_name=language_info.english_name,
                             resource_type=resource_type,
                             resource_type_name=resource_type_codes_and_names[
                                 resource_type
                             ],
                             book_code=book_code,
-                            lang_direction=language_info["direction"],
+                            lang_direction=language_info.direction,
                             url=url,
                         )
                         two_component_url_resource_lookup_dtos.append(
                             resource_lookup_dto
                         )
-    except:
+    except Exception:
         logger.info(
             "Problem creating ResourceLookupDto instance for %s, %s, %s, likely a data problem",
             lang_code,
             resource_type,
             book_code,
         )
-    # logger.debug(
-    #     "two_component_url_resource_lookup_dtos: %s",
-    #     two_component_url_resource_lookup_dtos,
-    # )
-    # logger.debug(
-    #     "more_than_two_component_url_resource_lookup_dtos: %s",
-    #     more_than_two_component_url_resource_lookup_dtos,
-    # )
     if rg_resource_lookup_dtos:
         resource_lookup_dto = rg_resource_lookup_dtos[0]
     elif more_than_two_component_url_resource_lookup_dtos:
         resource_lookup_dto = more_than_two_component_url_resource_lookup_dtos[0]
     elif two_component_url_resource_lookup_dtos:
         resource_lookup_dto = two_component_url_resource_lookup_dtos[0]
-    # logger.debug("resource_lookup_dto: %s", resource_lookup_dto)
     return resource_lookup_dto
 
 
 def provision_asset_files(
-    url: Optional[str],
+    url: Optional[HttpUrl],
     resource_filepath: str,
 ) -> None:
-    if url is not None and url[-4:] != "docx":
-        clone_git_repo(url, resource_filepath)
-    elif url is not None and url[-4:] == "docx":
-        download_rg_file(url, resource_filepath)
+    if url is not None:
+        if str(url)[-4:] != "docx":
+            clone_git_repo(url, resource_filepath)
+        elif str(url)[-4:] == "docx":
+            download_rg_file(url, resource_filepath)
 
 
 def prepare_resource_filepath(
@@ -1362,7 +1233,7 @@ def prepare_resource_filepath(
 
 
 def clone_git_repo(
-    url: str,
+    url: HttpUrl,
     resource_filepath: str,
     branch: Optional[str] = None,
 ) -> None:
@@ -1388,7 +1259,7 @@ def clone_git_repo(
 
 
 def download_rg_file(
-    url: str,
+    url: HttpUrl,
     resource_filepath: str,
 ) -> None:
     # TODO Until data API provides reviewer's guide URL that is

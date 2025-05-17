@@ -3,9 +3,9 @@ name = "DOC"
 version = "2025.05.16"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     ]
+license = "MIT"
 # We use pip-tools to generate requirements.txt files for pinned
 # dependences, but this stanza is for other projects relying on DOC as
 # a package to take advantage of it as a library.

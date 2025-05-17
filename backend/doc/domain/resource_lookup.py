@@ -4,12 +4,13 @@ resource's asset files in the cloud and acquiring said resource
 assets.
 """
 
+from datetime import datetime, timedelta
 import json
 import re
 import shutil
 import subprocess
 from glob import glob
-from os import scandir
+from os import scandir, stat
 from os.path import basename, exists, isdir, join
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
@@ -501,6 +502,7 @@ def resource_types(
 def batch_clone_git_repos(
     repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
+    asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.
@@ -518,16 +520,26 @@ def batch_clone_git_repos(
             git_dir = join(resource_filepath, ".git")
             if asset_caching_enabled:
                 if isdir(git_dir):
-                    if all(
-                        exists(join(git_dir, filename))
-                        for filename in ["config", "HEAD", "objects"]
-                    ) and any(scandir(resource_filepath)):
-                        logger.info(
-                            f"Skipping clone: {resource_filepath} already exists and is a full repo."
-                        )
-                        continue  # ✅ Fully cloned, reuse
-                logger.warning(
-                    f"Removing incomplete or corrupt repository: {resource_filepath}"
+                    try:
+                        stat_ = stat(git_dir)
+                        mod_time = datetime.fromtimestamp(stat_.st_mtime)
+                        expiry = timedelta(minutes=asset_caching_period)
+                        if (
+                            all(
+                                exists(join(git_dir, filename))
+                                for filename in ["config", "HEAD", "objects"]
+                            )
+                            and datetime.now() - mod_time <= expiry
+                            and any(scandir(resource_filepath))
+                        ):
+                            logger.info(
+                                f"Skipping clone: {resource_filepath} already exists and is a full repo."
+                            )
+                            continue  # ✅ Fully cloned, reuse
+                    except FileNotFoundError:
+                        logger.warning(f"Git directory not found: {git_dir}")
+                logger.info(
+                    f"Removing stale, incomplete, or corrupt repository: {resource_filepath}"
                 )
             else:
                 logger.info(

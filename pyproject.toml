@@ -1,6 +1,6 @@
 [project]
 name = "DOC"
-version = "2023.11.7"
+version = "2025.05.16"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

@@ -243,7 +243,7 @@ def download_data(
     >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.download_data("assets_download/resources.json");() # doctest: +ELLIPSIS
     (...)
-    >>> result["git_repo"][0]
+    >>> result.git_repo[0]
     {'repo_url': 'https://content.bibletranslationtools.org/bahasatech.indotengah/adn_1jn_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Adang', 'ietf_code': 'adn', 'national_name': 'Adang', 'direction': 'ltr'}}}
     """
     graphql_query = """

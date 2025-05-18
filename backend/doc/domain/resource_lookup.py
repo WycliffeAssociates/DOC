@@ -61,7 +61,7 @@ RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
     "cuv": "新标点和合本",
     "f10": "French Louis Segond 1910 Bible",
     "nav": "New Arabic Version (Ketab El Hayat)",
-    "reg": "Bible",
+    "reg": "Regular",
     "rg": "NT Survey Reviewer's Guide",
     "tn": "Translation Notes",
     "tn-condensed": "Condensed Translation Notes",

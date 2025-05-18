@@ -504,7 +504,7 @@ def create_title_page_and_wrap_in_template(
     title1, title2 = get_languages_title_page_strings(
         found_resource_lookup_dtos, usfm_books
     )
-    title3 = "Formatted for Translators"
+    title3 = ""
     header = document_html_header(
         document_request.assembly_layout_kind,
         document_request.generate_docx,

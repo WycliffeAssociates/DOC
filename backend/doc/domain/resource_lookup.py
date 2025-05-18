@@ -591,6 +591,7 @@ def usfm_resource_types_and_book_tuples(
                     dto = ResourceLookupDto(
                         lang_code=lang_code,
                         lang_name=language_info.english_name,
+                        localized_lang_name=language_info.national_name,
                         resource_type=resource_type,
                         resource_type_name="",
                         url=url,
@@ -1144,6 +1145,7 @@ def resource_lookup_dto(
                     resource_lookup_dto = ResourceLookupDto(
                         lang_code=lang_code,
                         lang_name=language_info.english_name,
+                        localized_lang_name=language_info.national_name,
                         resource_type=resource_type,
                         resource_type_name=resource_type_codes_and_names[resource_type],
                         book_code=book_code,
@@ -1165,6 +1167,7 @@ def resource_lookup_dto(
                             resource_lookup_dto = ResourceLookupDto(
                                 lang_code=lang_code,
                                 lang_name=language_info.english_name,
+                                localized_lang_name=language_info.national_name,
                                 resource_type=resource_type,
                                 resource_type_name=resource_type_codes_and_names[
                                     resource_type
@@ -1181,6 +1184,7 @@ def resource_lookup_dto(
                         resource_lookup_dto = ResourceLookupDto(
                             lang_code=lang_code,
                             lang_name=language_info.english_name,
+                            localized_lang_name=language_info.national_name,
                             resource_type=resource_type,
                             resource_type_name=resource_type_codes_and_names[
                                 resource_type

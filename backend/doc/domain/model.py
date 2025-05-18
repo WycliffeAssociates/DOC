@@ -342,6 +342,7 @@ class ResourceLookupDto(NamedTuple):
 
     lang_code: str
     lang_name: str
+    localized_lang_name: str
     resource_type: str
     resource_type_name: str
     book_code: str
@@ -484,6 +485,7 @@ class USFMBook(BaseModel):
 
     lang_code: str
     lang_name: str
+    localized_lang_name: str
     book_code: str
     national_book_name: str
     resource_type_name: str
@@ -544,5 +546,3 @@ class RepoEntry(BaseModel):
 
 class SourceData(BaseModel):
     git_repo: list[RepoEntry]
-
-

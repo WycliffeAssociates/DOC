@@ -494,6 +494,7 @@ def usfm_book_content(
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
+        localized_lang_name=resource_lookup_dto.localized_lang_name,
         book_code=resource_lookup_dto.book_code,
         national_book_name=(
             localized_book_name

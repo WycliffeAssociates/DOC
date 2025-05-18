@@ -323,7 +323,7 @@ def lang_codes_and_names(
         logger.info("Data API is down or no git_repo found!")
         return []
     try:
-            # if ietf_code not in lang_code_filter_list:
+        # if ietf_code not in lang_code_filter_list:
         for repo_info in data.git_repo:
             language_info = repo_info.content
             language = language_info.language

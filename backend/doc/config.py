@@ -88,7 +88,7 @@ class Settings(BaseSettings):
     # Caching window of time in which asset
     # files on disk are considered fresh rather than re-acquiring (in
     # the case of resource asset files) or re-generating them (in the
-    # case of the final PDF). In hours.
+    # case of the final PDF). In minutes.
     ASSET_CACHING_PERIOD: int
 
     EMAIL_SEND_SUBJECT: str

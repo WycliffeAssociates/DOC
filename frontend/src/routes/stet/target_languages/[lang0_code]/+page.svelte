@@ -8,9 +8,7 @@
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
   import MobileLanguageDisplay from './MobileLanguageDisplay.svelte'
   import DesktopLanguageDisplay from './DesktopLanguageDisplay.svelte'
-  import Modal from '$lib/Modal.svelte'
   import LanguageSearch from '$lib/LanguageSearch.svelte'
-  import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import WizardBreadcrumb from '$lib/stet/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/stet/WizardBasket.svelte'
   import {

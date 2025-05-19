@@ -462,7 +462,7 @@ def fix_standalone_verse_number_and_period(content: str) -> str:
         # Extract all standalone number and period (likely verse numbers) from
         # content but skip the first part, 6 characters, of content
         # which could contain a chapter marker and its value.
-        matches = [int(m.group()) for m in re.finditer(r"\b\d+\.\b", content[7:])]
+        matches = [int(m.group(1)) for m in re.finditer(r"\b(\d+)\.", content[7:])]
         logger.debug("standalone verse number and period matches: %s", matches)
         is_ascending = all(
             earlier < later for earlier, later in zip(matches, matches[1:])

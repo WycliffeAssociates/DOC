@@ -37,7 +37,7 @@
 
   export let data: PageData
 
-  // Track if the user manually changed the tab:
+  // Track if the user manually changed the tab
   let userInteracted = false
 
   const selectGatewayTab = () => {
@@ -69,82 +69,60 @@
     langCodesAndNamesUrl: string = <string>PUBLIC_STET_TARGET_LANG_CODES_NAMES_URL
   ): Promise<Array<[string, string, boolean]>> {
     const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}/${lang0Code}`)
-    const langCodeNameAndTypes: Array<[string, string, boolean]> = await response.json()
     if (!response.ok) {
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-    return langCodeNameAndTypes
+    return await response.json()
   }
 
-  // Resolve promise for data
   let langCodeNameAndTypes: Array<[string, string, boolean]> = []
   let gatewayCodesAndNames: Array<string> = []
   let heartCodesAndNames: Array<string> = []
   let lang0Code = data.lang0Code
-  getTargetLangCodesNames(lang0Code)
-    .then((langCodeNameAndTypes_) => {
-      // Save result for later use
-      langCodeNameAndTypes = langCodeNameAndTypes_
-      gatewayCodesAndNames = langCodeNameAndTypes_
-        .filter((element: [string, string, boolean]) => {
-          return element[2]
-        })
-        .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-      heartCodesAndNames = langCodeNameAndTypes_
-        .filter((element: [string, string, boolean]) => {
-          return !element[2]
-        })
-        .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-    })
-    .catch((err) => console.log(err)) // FIXME Trigger toast for error
 
-  // Set $langCountStore
+  async function initializeData() {
+    try {
+      langCodeNameAndTypes = await getTargetLangCodesNames(lang0Code)
+      gatewayCodesAndNames = langCodeNameAndTypes
+        .filter((element) => element[2])
+        .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
+      heartCodesAndNames = langCodeNameAndTypes
+        .filter((element) => !element[2])
+        .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
+    } catch (err) {
+      console.error(err) // Consider triggering a toast notification here
+    }
+  }
+
+  initializeData()
+
+  // Reactive statements for handling languages count
   $: {
     if ($lang0CodeAndNameStore && $lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang0CodeAndNameStore))
-      codes.push(getCode($lang1CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
-    } else if ($lang0CodeAndNameStore && !$lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang0CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
-    } else if (!$lang0CodeAndNameStore && $lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang1CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
+      $langCodesStore = [getCode($lang0CodeAndNameStore), getCode($lang1CodeAndNameStore)]
+    } else if ($lang0CodeAndNameStore) {
+      $langCodesStore = [getCode($lang0CodeAndNameStore)]
+    } else if ($lang1CodeAndNameStore) {
+      $langCodesStore = [getCode($lang1CodeAndNameStore)]
     } else {
-      $langCountStore = 0
       $langCodesStore = []
-      $lang0CodeAndNameStore = ''
-      $lang1CodeAndNameStore = ''
     }
+    $langCountStore = $langCodesStore.length
   }
 
-  // Search field handling for gateway languages
   let gatewaySearchTerm: string = ''
-  let filteredGatewayCodeAndNames: Array<string> = []
-  $: {
-    if (gatewayCodesAndNames) {
-      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
-      )
-    }
-  }
-
-  // Search field handling for heart languages
   let heartSearchTerm: string = ''
+  let filteredGatewayCodeAndNames: Array<string> = []
   let filteredHeartCodeAndNames: Array<string> = []
+  // Reactive search filtering
   $: {
-    if (heartCodesAndNames) {
-      filteredHeartCodeAndNames = heartCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
-      )
-    }
+    filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item) =>
+      getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
+    )
+    filteredHeartCodeAndNames = heartCodesAndNames.filter((item) =>
+      getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
+    )
   }
 
   let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0

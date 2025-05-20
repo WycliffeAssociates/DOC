@@ -1,7 +1,7 @@
 import pytest
 import unittest
 from doc.domain.usfm_error_detection_and_fixes import (
-    remove_null_bytes_and_control_characters,
+    # remove_null_bytes_and_control_characters,
     fix_dot_after_verse_number,
     fix_usfm,
     fix_verse_marker_without_v,
@@ -9,6 +9,7 @@ from doc.domain.usfm_error_detection_and_fixes import (
     fix_missing_space_after_number,
     fix_missing_space_before_verse_marker,
     fix_standalone_verse_numbers,
+    fix_standalone_verse_number_and_period,
     fix_space_after_section_marker,
     replace_n_with_v,
     replace_cc_with_c,
@@ -369,6 +370,14 @@ Pengajar Ti Pelesu
             r"""
 \v 9 Indah tuai melikat ke benama Mikael deh enda berani mechat Sitan lebuh iya berebutka bangkai Moses enggau Sitan, tang semina nyebut, “Tuhan ngerara nuan!” \v 10 Tang bala orang tu mechat semua utai ti enda ditemu sida reti. Lalu utai ti ditemu sida ngena pengasai, baka jelu ti enda nemu berunding, nya meh utai ti ngerusak sida. \v 11 Tulah meh sida! Sida niti jalai Kain, lalu ngereja penyalah ketegal duit baka penyalah ti dikereja Balaam, lalu sida dirusak baka Korah ke angkat ngelaban.
         """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_standalone_verse_number_and_period(self) -> None:
+        self.assertEqual(
+            fix_standalone_verse_number_and_period(r"1. Some text."),
+            r"\v 1 Some text.",
         )
 
     # @pytest.mark.focus

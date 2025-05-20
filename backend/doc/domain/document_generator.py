@@ -504,7 +504,7 @@ def create_title_page_and_wrap_in_template(
     title1, title2 = get_languages_title_page_strings(
         found_resource_lookup_dtos, usfm_books
     )
-    title3 = "Formatted for Translators"
+    title3 = ""
     header = document_html_header(
         document_request.assembly_layout_kind,
         document_request.generate_docx,
@@ -826,7 +826,7 @@ def get_languages_title_page_strings(
                 lang0_book_names.add(book.national_book_name)
             lang0_resource_type_names.add(book.resource_type_name)
         if lang0_books:
-            lang0_title = f"{lang0_books[0].lang_name}: {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
+            lang0_title = f"{lang0_books[0].lang_name} ({lang0_books[0].localized_lang_name}): {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
     else:
         language0_resource_lookup_dtos = [
             resource_lookup_dto
@@ -837,7 +837,7 @@ def get_languages_title_page_strings(
             lang0_book_names.add(BOOK_NAMES[dto.book_code])
             lang0_resource_type_names.add(dto.resource_type_name)
         if language0_resource_lookup_dtos:
-            lang0_title = f"{language0_resource_lookup_dtos[0].lang_name}: {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
+            lang0_title = f"{language0_resource_lookup_dtos[0].lang_name} ({language0_resource_lookup_dtos[0].localized_lang_name}): {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
     if len(lang_codes) > 1:
         lang1_books = [
             usfm_book
@@ -849,7 +849,7 @@ def get_languages_title_page_strings(
                 lang1_book_names.add(book.national_book_name)
             lang1_resource_type_names.add(book.resource_type_name)
         if lang1_books:
-            lang1_title = f"{lang1_books[0].lang_name}: {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
+            lang1_title = f"{lang1_books[0].lang_name} ({lang1_books[0].localized_lang_name}): {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
         else:
             language1_resource_lookup_dtos = [
                 resource_lookup_dto
@@ -860,7 +860,7 @@ def get_languages_title_page_strings(
                 lang1_book_names.add(BOOK_NAMES[dto.book_code])
                 lang1_resource_type_names.add(dto.resource_type_name)
             if language1_resource_lookup_dtos:
-                lang1_title = f"{language1_resource_lookup_dtos[0].lang_name}: {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
+                lang1_title = f"{language1_resource_lookup_dtos[0].lang_name} ({language1_resource_lookup_dtos[0].localized_lang_name}): {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
     return lang0_title, lang1_title
 
 

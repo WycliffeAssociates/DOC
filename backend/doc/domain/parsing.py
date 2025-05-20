@@ -472,7 +472,6 @@ def usfm_book_content(
     )
     localized_book_name = maybe_localized_book_name(frontmatter)
     for chapter_marker, chapter_usfm in zip(chapter_markers, chapters_usfm):
-        # chapter_usfm = chapter_marker + "\n" + chapter_usfm
         chapter_num = get_chapter_num(chapter_usfm)
         if chapter_num == -1:
             chapter_num = chapter_label_numeric_part(chapter_usfm)
@@ -494,6 +493,7 @@ def usfm_book_content(
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
+        localized_lang_name=resource_lookup_dto.localized_lang_name,
         book_code=resource_lookup_dto.book_code,
         national_book_name=(
             localized_book_name

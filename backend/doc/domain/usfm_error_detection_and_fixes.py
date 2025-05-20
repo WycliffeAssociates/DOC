@@ -294,6 +294,7 @@ pattern_matchers = {
     "fix_missing_space_after_number": r"(\s+|^)(\d+)(\S+)",
     "fix_missing_space_before_verse_marker": r"(\S)(\\v\s+\d+)",
     "fix_standalone_verse_numbers": r"(?<!\\)(?<!\\c\s)(?<!\\v\s)(?<!\\v\s\d)(?<!\\q\d\s)(?<!\\li)(?<!\\li\d)\b(\d+)\b(?=\s|$|[^\d\w])",
+    "fix_standalone_verse_number_and_period": r"(?<!\\)(?<!\\c\s)(?<!\\v\s)(?<!\\v\s\d)(?<!\\q\d\s)(?<!\\li)(?<!\\li\d)\b(\d+)\.\s*(.*?)(?=\s|$|[^\d\w])",
     "replace_n_with_v": r"\\n",
     # The following are actually caused by fixes above and thus
     # constitute a second pass of this "parser" and are thus invoked
@@ -442,6 +443,50 @@ def fix_standalone_verse_numbers(content: str) -> str:
     return content
 
 
+def fix_standalone_verse_number_and_period(content: str) -> str:
+    # E.g., in Russian (ru) some of the USFM exhibits verse markers of the
+    # form 1. rather than \v 1
+    if match := compiled_patterns["fix_standalone_verse_number_and_period"].search(
+        content
+    ):
+        # Calculate safe slice indices
+        length_of_context = 50
+        num_of_occurrences = 3
+        start_index = max(0, match.start() - length_of_context)
+        end_index = min(len(content), match.end() + length_of_context)
+        context_for_standalone_verse_and_period = content[start_index:end_index]
+        logger.debug(
+            "context_for_standalone_verse_and_period: %s",
+            context_for_standalone_verse_and_period,
+        )
+        # Extract all standalone number and period (likely verse numbers) from
+        # content but skip the first part, 6 characters, of content
+        # which could contain a chapter marker and its value.
+        matches = [int(m.group(1)) for m in re.finditer(r"\b(\d+)\.", content[7:])]
+        logger.debug("standalone verse number and period matches: %s", matches)
+        is_ascending = all(
+            earlier < later for earlier, later in zip(matches, matches[1:])
+        )
+        logger.debug("is_ascending: %s", is_ascending)
+        num_matches = len(matches)
+        if (
+            not re.compile(r"""\\v \d+""").search(
+                context_for_standalone_verse_and_period
+            )
+            and not num_matches >= num_of_occurrences
+        ) or is_ascending:  # Check for non-ascending numbers
+            return re.sub(
+                pattern_matchers["fix_standalone_verse_number_and_period"],
+                r"\\v \1 \2",
+                content,
+            )
+        else:
+            logger.info(
+                "Actually, we can't be certain it was a standalone verse number and period after all upon further checking"
+            )
+    return content
+
+
 def replace_n_with_v(content: str) -> str:
     """Replace \n used mistakenly as verse markers with \v"""
     return re.sub(pattern_matchers["replace_n_with_v"], r"""\\v""", content)
@@ -485,7 +530,7 @@ def fix_usfm(
     """
     # logger.debug("Possibly defective USFM content: %s", usfm_content)
     corrected_usfm_content: str = usfm_content
-    # NOTE This is called in a different place now, leaving commented out fo now.
+    # NOTE This is called in a different place now, leaving commented out for now.
     # if compiled_patterns["remove_null_bytes_and_control_characters"].search(
     #     corrected_usfm_content
     # ):
@@ -603,6 +648,25 @@ def fix_usfm(
             book_code,
         )
         corrected_usfm_content = fix_standalone_verse_numbers(corrected_usfm_content)
+    if match := compiled_patterns["fix_standalone_verse_number_and_period"].search(
+        corrected_usfm_content
+    ):
+        logger.debug(
+            "Possible USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, attempt to fix...",
+            "fix_standalone_verse_number_and_period",
+            match.group(),
+            corrected_usfm_content[
+                max(0, match.start() - 5) : min(
+                    len(corrected_usfm_content), match.end() + 5
+                )
+            ],
+            lang_code,
+            resource_type,
+            book_code,
+        )
+        corrected_usfm_content = fix_standalone_verse_number_and_period(
+            corrected_usfm_content
+        )
     if match := compiled_patterns["replace_n_with_v"].search(corrected_usfm_content):
         logger.debug(
             "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",

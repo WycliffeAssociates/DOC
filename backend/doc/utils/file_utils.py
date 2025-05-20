@@ -3,13 +3,13 @@
 import codecs
 import json
 import os
-import pathlib
 import shutil
 import urllib
 import zipfile
 from contextlib import closing
 from datetime import datetime, timedelta
 from os.path import join
+from pathlib import Path
 from typing import Any, Optional, Union
 from urllib.request import urlopen
 
@@ -113,31 +113,22 @@ def write_file(
         out_file.write(text_to_write)
 
 
-
-
 def file_needs_update(
-    file_path: Union[str, pathlib.Path],
+    file_path: str | Path,
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
 ) -> bool:
-    """
-    Return True if settings.ASSET_CACHING_ENABLED is False or if
-    file_path either does not exist or does exist and has not been
-    updated within settings.ASSET_CACHING_PERIOD hours.
-    """
     if not asset_caching_enabled:
         return True
-    if not os.path.exists(file_path):
+    try:
+        path = Path(file_path)
+        stat = path.stat()
+        mod_time = datetime.fromtimestamp(stat.st_mtime)
+        expiry = timedelta(minutes=asset_caching_period)
+        return stat.st_size == 0 or (datetime.now() - mod_time > expiry)
+    except FileNotFoundError:
         logger.debug("Cache miss for %s", file_path)
         return True
-    if os.path.exists(file_path) and os.path.getsize(file_path) == 0:
-        logger.debug("File exists, but is empty!")
-        return True
-    file_mod_time: datetime = datetime.fromtimestamp(os.stat(file_path).st_mtime)
-    now: datetime = datetime.today()
-    max_delay: timedelta = timedelta(minutes=60 * asset_caching_period)
-    # Has it been more than settings.ASSET_CACHING_PERIOD hours since last modification time?
-    return now - file_mod_time > max_delay
 
 
 def html_filepath(

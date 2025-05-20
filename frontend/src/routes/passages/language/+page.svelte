@@ -94,7 +94,7 @@
   $: {
     if (gatewayCodesAndNames) {
       filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
+        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
       )
     }
   }
@@ -105,7 +105,7 @@
   $: {
     if (heartCodesAndNames) {
       filteredHeartCodeAndNames = heartCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
+        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
       )
     }
   }

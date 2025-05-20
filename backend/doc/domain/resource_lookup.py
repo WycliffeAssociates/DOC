@@ -194,54 +194,13 @@ LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
 
 
 def fetch_source_data(
-    json_file_name: str = SOURCE_DATA_JSON_FILENAME,
-    assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    data_api_url: HttpUrl = settings.DATA_API_URL,
 ) -> Optional[SourceData]:
     """
-    Obtain the source data, by downloading it from json_file_url, and
-    then reifying it into its JSON object form.
+    Downloads data from a GraphQL API.
 
     >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
-    (...)
-    >>> result is not None
-    True
-    >>> result.git_repo[0].repo_url
-    HttpUrl('https://content.bibletranslationtools.org/mmandarri/acz_1jn_text_reg')
-    >>> result.git_repo[0].content.resource_type
-    'reg'
-    >>> result.git_repo[0].content.language.english_name
-    'Garme'
-    """
-    json_file_path = join(assets_dir, json_file_name)
-    if file_needs_update(json_file_path):
-        logger.info("About to download %s...", json_file_name)
-        try:
-            return download_data(json_file_path)
-        except Exception:
-            logger.exception("Caught exception while downloading %s", json_file_name)
-            return None
-    logger.info("Reusing cached file: %s", json_file_path)
-    try:
-        content = read_file(json_file_path)
-        parsed = json.loads(content)
-        return SourceData.model_validate(parsed)
-    except Exception:
-        logger.exception(
-            "Caught exception while reading cached file: %s", json_file_path
-        )
-        return None
-
-
-def download_data(
-    jsonfile_path: str,
-    data_api_url: HttpUrl = settings.DATA_API_URL,
-) -> SourceData:
-    """
-    Downloads data from a GraphQL API and saves it to a JSON file.
-
-    >>> from doc.domain import resource_lookup
-    >>> ();result = resource_lookup.download_data("assets_download/resources.json");() # doctest: +ELLIPSIS
     (...)
     >>> result.git_repo[0]
     {'repo_url': 'https://content.bibletranslationtools.org/bahasatech.indotengah/adn_1jn_text_reg', 'content': {'resource_type': 'reg', 'language': {'english_name': 'Adang', 'ietf_code': 'adn', 'national_name': 'Adang', 'direction': 'ltr'}}}
@@ -265,41 +224,24 @@ query MyQuery {
 }
     """
     query_json = {"query": graphql_query}
-
-    def _read_file(file_path: str) -> str:
-        with open(file_path, "r") as file:
-            return file.read()
-
-    def _write_json_to_file(file_path: str, data: SourceData) -> None:
-        with open(file_path, "w") as file:
-            json.dump(data, file, indent=4)
-
-    def fetch_cached_data() -> SourceData:
-        logger.info("About to fetch cached data API results from %s", jsonfile_path)
-        content = _read_file(jsonfile_path)
-        parsed = json.loads(content)
-        return SourceData.model_validate(parsed)
-
     try:
         response = requests.post(str(data_api_url), json=query_json)
         if response.status_code == 200:
             data_payload = response.json().get("data", {})
             if "git_repo" in data_payload:
-                logger.info("Writing json data to: %s", jsonfile_path)
-                _write_json_to_file(jsonfile_path, data_payload)
                 return SourceData.model_validate(data_payload)
             else:
-                logger.info("Invalid payload structure, using cached data.")
-                return SourceData.model_validate(fetch_cached_data())
+                logger.info("Invalid payload structure, no data.")
+                return SourceData(git_repo=[])
         else:
             logger.info(
                 "Failed to get data from data API, graphql API might be down..."
             )
-            return SourceData.model_validate(fetch_cached_data())
+            return SourceData(git_repo=[])
     except requests.RequestException as e:
         logger.exception("Request failed: %s", e)
         logger.info("Failed to get data from data API, API might be down...")
-        return SourceData.model_validate(fetch_cached_data())
+        return SourceData(git_repo=[])
 
 
 def lang_codes_and_names(
@@ -639,6 +581,7 @@ def get_last_segment(url: HttpUrl, lang_code: str) -> str:
     path_segments = parsed_url.path.strip("/").split("/")
     last_segment = path_segments[-1] if path_segments else ""
     return normalize_last_segment(lang_code, last_segment)
+
 
 # Specific replacements: lang code, last_segment -> replacement last_segment
 REPLACEMENTS_BY_LANG_CODE_AND_LAST_SEGMENT = {

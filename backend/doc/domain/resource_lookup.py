@@ -794,6 +794,7 @@ def get_book_codes_for_lang(
     usfm_resource_types: Sequence[str],
     use_localized_book_name: bool,
     usfm_only: bool = False,
+    check_usfm: bool = False,
 ) -> Sequence[tuple[str, str]]:
     data = fetch_source_data()
     if data is None:
@@ -816,7 +817,6 @@ def get_book_codes_for_lang(
                     repo_components = update_repo_components(repo_components)
                 if any(rt in str(url) for rt in usfm_resource_types):
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
-                    # Append to repo_clone_list if the URL is not already present
                     if not any(item[0] == url for item in repo_clone_list):
                         repo_clone_list.append((url, resource_filepath))
         repos_to_clone = [
@@ -827,7 +827,6 @@ def get_book_codes_for_lang(
             for repo_info in augmented_repos_info:
                 if repo_info.repo_url == url:
                     last_segment = get_last_segment(url, lang_code)
-                    # logger.debug("last_segment: %s", last_segment)
                     repo_components = last_segment.split("_")
                     if (
                         len(repo_components) == 2
@@ -843,7 +842,7 @@ def get_book_codes_for_lang(
                             resource_type = repo_components[1]
                             usfm = read_file(usfm_file) if usfm_file else ""
                             frontmatter, _, _ = parsing.split_usfm_by_chapters(
-                                lang_code, resource_type, book_code, usfm
+                                lang_code, resource_type, book_code, usfm, check_usfm
                             )
                             localized_book_name = parsing.maybe_localized_book_name(
                                 frontmatter

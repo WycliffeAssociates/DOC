@@ -253,11 +253,11 @@ def split_usfm_by_chapters(
     resource_type: str,
     book_code: str,
     usfm_text: str,
+    check_usfm: bool = settings.CHECK_USFM,
     chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
-    check_usfm: bool = settings.CHECK_USFM,
     check_all_books_for_language: bool = settings.CHECK_ALL_BOOKS_FOR_LANGUAGE,
 ) -> tuple[str, list[str], list[str]]:
     r"""

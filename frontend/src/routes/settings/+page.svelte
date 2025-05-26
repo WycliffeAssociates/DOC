@@ -10,16 +10,16 @@
     assemblyStrategyChunkSizeStore,
     docTypeStore,
     emailStore,
-    limitTwStore,
     documentRequestKeyStore,
     settingsUpdated,
-    twResourceRequestedStore,
     useChapterLabelsStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
   import {
+    limitTwStore,
     resourceTypesStore,
     resourceTypesCountStore,
+    twResourceRequestedStore,
     usfmAvailableStore
   } from '$lib/stores/ResourceTypesStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
@@ -36,22 +36,6 @@
   // Set default value of chapter
   $assemblyStrategyChunkSizeStore = chapter.id
 
-  // Set whether TW has been requested for any of the languages
-  // requested so that we can use this fact in the UI to trigger the
-  // presence or absence of the toggle to limit TW words.
-  let twRegexp = new RegExp('.*tw.*')
-  $: {
-    if ($resourceTypesStore) {
-      $twResourceRequestedStore = $resourceTypesStore.some((item) => twRegexp.test(item))
-    }
-  }
-  $: {
-    if ($twResourceRequestedStore && $usfmAvailableStore) {
-      $limitTwStore = true
-    } else {
-      $limitTwStore = false
-    }
-  }
 
   // The 3rd party HTML to PDF conversion library we use, weasyprint,
   // doesn't seem to be able to handle line length for the Khmer language

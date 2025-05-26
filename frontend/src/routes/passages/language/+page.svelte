@@ -14,6 +14,7 @@
   let showGatewayLanguages = true
   // Track if the user manually changed the tab:
   let userInteracted = false
+
   const selectGatewayTab = () => {
     userInteracted = true
     showGatewayLanguages = true
@@ -45,12 +46,11 @@
     langCodesAndNamesUrl: string = <string>PUBLIC_LANG_CODES_NAMES_URL
   ): Promise<Array<[string, string, boolean]>> {
     const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
-    const langCodeNameAndTypes: Array<[string, string, boolean]> = await response.json()
     if (!response.ok) {
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-    return langCodeNameAndTypes
+    return await response.json()
   }
 
   // Resolve promise for data
@@ -58,23 +58,20 @@
   let gatewayCodesAndNames: Array<string> = []
   let heartCodesAndNames: Array<string> = []
 
-  onMount(() => {
-    getLangCodesNames()
-      .then((langCodeNameAndTypes_) => {
-        // Save result for later use
-        langCodeNameAndTypes = langCodeNameAndTypes_
-        gatewayCodesAndNames = langCodeNameAndTypes_
-          .filter((element: [string, string, boolean]) => {
-            return element[2]
-          })
-          .map((tuple: [string, string, boolean]) => `${tuple[0]}, ${tuple[1]}`)
-        heartCodesAndNames = langCodeNameAndTypes_
-          .filter((element: [string, string, boolean]) => {
-            return !element[2]
-          })
-          .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-      })
-      .catch((err) => console.log(err))
+  async function loadLangCodeNameAndTypes() {
+    try {
+      langCodeNameAndTypes = await getLangCodesNames()
+      gatewayCodesAndNames = langCodeNameAndTypes.filter(([ , , isGateway]) => isGateway)
+        .map(([code, name]) => `${code}, ${name}`)
+      heartCodesAndNames = langCodeNameAndTypes.filter(([ , , isGateway]) => !isGateway)
+        .map(([code, name]) => `${code}, ${name}`)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  onMount(async () => {
+    await loadLangCodeNameAndTypes()
   })
 
   // Set $langCountStore

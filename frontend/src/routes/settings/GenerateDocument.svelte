@@ -4,7 +4,7 @@
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { otBookStore, ntBookStore, bookCountStore } from '$lib/stores/BooksStore'
-  import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
+  import { limitTwStore, resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
   import {
     layoutForPrintStore,
     assemblyStrategyKindStore,
@@ -14,7 +14,6 @@
     generateDocxStore,
     emailStore,
     documentRequestKeyStore,
-    limitTwStore,
     settingsUpdated,
     useChapterLabelsStore
   } from '$lib/stores/SettingsStore'

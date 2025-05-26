@@ -953,6 +953,7 @@ def book_codes_for_lang(
         usfm_resource_types,
         use_localized_book_name,
         usfm_only=False,
+        check_usfm=False,
     )
 
 
@@ -980,6 +981,7 @@ def book_codes_for_lang_from_usfm_only(
         usfm_resource_types,
         use_localized_book_name,
         usfm_only=True,
+        check_usfm=False,
     )
 
 

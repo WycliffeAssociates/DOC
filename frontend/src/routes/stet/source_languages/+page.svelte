@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import {
     PUBLIC_STET_SOURCE_LANG_CODES_NAMES_URL,
     PUBLIC_TAILWIND_SM_MIN_WIDTH
@@ -67,59 +68,54 @@
     langCodesAndNamesUrl: string = <string>PUBLIC_STET_SOURCE_LANG_CODES_NAMES_URL
   ): Promise<Array<[string, string, boolean]>> {
     const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
-    const langCodeNameAndTypes: Array<[string, string, boolean]> = await response.json()
     if (!response.ok) {
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-    return langCodeNameAndTypes
+    return await response.json()
   }
 
   // Resolve promise for data
   let langCodeNameAndTypes: Array<[string, string, boolean]> = []
   let gatewayCodesAndNames: Array<string> = []
   let heartCodesAndNames: Array<string> = []
-  getSourceLangCodesNames()
-    .then((langCodeNameAndTypes_) => {
-      // Save result for later use
-      langCodeNameAndTypes = langCodeNameAndTypes_
-      gatewayCodesAndNames = langCodeNameAndTypes_
+  async function loadSourceLangCodesAndNames() {
+    try {
+    langCodeNameAndTypes = await getSourceLangCodesNames()
+    gatewayCodesAndNames = langCodeNameAndTypes
         .filter((element: [string, string, boolean]) => {
           return element[2]
         })
         .map((tuple: [string, string, boolean]) => `${tuple[0]}, ${tuple[1]}`)
-      heartCodesAndNames = langCodeNameAndTypes_
+      heartCodesAndNames = langCodeNameAndTypes
         .filter((element: [string, string, boolean]) => {
           return !element[2]
         })
         .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-    })
-    .catch((err) => console.log(err))
+    } catch(err) {
+      console.error(err)
+    }
+  }
 
-  // Set $langCountStore
+  onMount(async () => {
+    await loadSourceLangCodesAndNames()
+  })
+
+  // Reactive statements for handling languages count
   $: {
     if ($lang0CodeAndNameStore && $lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang0CodeAndNameStore))
-      codes.push(getCode($lang1CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
-    } else if ($lang0CodeAndNameStore && !$lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang0CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
-    } else if (!$lang0CodeAndNameStore && $lang1CodeAndNameStore) {
-      let codes = []
-      codes.push(getCode($lang1CodeAndNameStore))
-      $langCodesStore = codes
-      $langCountStore = $langCodesStore.length
+      $langCodesStore = [getCode($lang0CodeAndNameStore), getCode($lang1CodeAndNameStore)]
+    } else if ($lang0CodeAndNameStore) {
+      $langCodesStore = [getCode($lang0CodeAndNameStore)]
+    } else if ($lang1CodeAndNameStore) {
+      $langCodesStore = [getCode($lang1CodeAndNameStore)]
     } else {
       $langCountStore = 0
       $langCodesStore = []
       $lang0CodeAndNameStore = ''
       $lang1CodeAndNameStore = ''
     }
+    $langCountStore = $langCodesStore.length
   }
 
   // Search field handling for gateway languages

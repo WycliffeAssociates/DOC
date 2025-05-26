@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { PUBLIC_LANGUAGE_BOOK_ORDER } from '$env/static/public'
   import {
     PUBLIC_LANG_CODES_NAMES_URL,
@@ -59,34 +60,34 @@
     langCodesAndNamesUrl: string = <string>PUBLIC_LANG_CODES_NAMES_URL
   ): Promise<Array<[string, string, boolean]>> {
     const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
-    const langCodeNameAndTypes: Array<[string, string, boolean]> = await response.json()
     if (!response.ok) {
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-    return langCodeNameAndTypes
+    return await response.json()
   }
 
-  // Resolve promise for data
   let langCodeNameAndTypes: Array<[string, string, boolean]> = []
   let gatewayCodesAndNames: Array<string> = []
   let heartCodesAndNames: Array<string> = []
-  getLangCodesNames()
-    .then((langCodeNameAndTypes_) => {
-      // Save result for later use
-      langCodeNameAndTypes = langCodeNameAndTypes_
-      gatewayCodesAndNames = langCodeNameAndTypes_
-        .filter((element: [string, string, boolean]) => {
-          return element[2]
-        })
-        .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-      heartCodesAndNames = langCodeNameAndTypes_
-        .filter((element: [string, string, boolean]) => {
-          return !element[2]
-        })
-        .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-    })
-    .catch((err) => console.log(err)) // FIXME Trigger toast for error
+
+  async function loadLanguageCodesAndNames() {
+    try {
+      langCodeNameAndTypes = await getLangCodesNames()
+      gatewayCodesAndNames = langCodeNameAndTypes
+        .filter(([, , isGateway]) => isGateway)
+        .map(([code, name]) => `${code}, ${name}`)
+      heartCodesAndNames = langCodeNameAndTypes
+        .filter(([, , isGateway]) => !isGateway)
+        .map(([code, name]) => `${code}, ${name}`)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  onMount(async () => {
+    await loadLanguageCodesAndNames()
+  })
 
   let nonEmptyGatewayLanguages: boolean
   $: nonEmptyGatewayLanguages = $gatewayCodeAndNamesStore.every((item) => item.length > 0)
@@ -94,76 +95,29 @@
   let nonEmptyHeartLanguages: boolean
   $: nonEmptyHeartLanguages = $heartCodeAndNamesStore.every((item) => item.length > 0)
 
+  $: $langCountStore =
+    (nonEmptyGatewayLanguages ? $gatewayCodeAndNamesStore.length : 0) +
+    (nonEmptyHeartLanguages ? $heartCodeAndNamesStore.length : 0)
+
+  $: $langCodesStore = [
+    ...(nonEmptyGatewayLanguages ? $gatewayCodeAndNamesStore.map(getCode) : []),
+    ...(nonEmptyHeartLanguages ? $heartCodeAndNamesStore.map(getCode) : [])
+  ]
+
+  $: $langNamesStore = [
+    ...(nonEmptyGatewayLanguages ? $gatewayCodeAndNamesStore.map(getName) : []),
+    ...(nonEmptyHeartLanguages ? $heartCodeAndNamesStore.map(getName) : [])
+  ]
+
   $: {
-    if (nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
-      $langCountStore = $gatewayCodeAndNamesStore.length + $heartCodeAndNamesStore.length
-      // Set the langCodesStore
-      let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
-      $langCodesStore = codes
-      // Set the langNamesStore
-      let names = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      $langNamesStore = names
-      $resourceTypesStore = $resourceTypesStore.filter(
-        (item) =>
-          $langCodesStore[0] === getResourceTypeLangCode(item) ||
-          $langCodesStore[1] === getResourceTypeLangCode(item)
-      )
-      $resourceTypesCountStore = $resourceTypesStore.length
-    } else if (nonEmptyGatewayLanguages && !nonEmptyHeartLanguages) {
-      $langCountStore = $gatewayCodeAndNamesStore.length
-      // Set the langCodesStore
-      let codes = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
-      $langCodesStore = codes
-      // Set the langNamesStore
-      let names = []
-      for (let stringTuple of $gatewayCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      $langNamesStore = names
-      $resourceTypesStore = $resourceTypesStore.filter(
-        (item) =>
-          $langCodesStore[0] === getResourceTypeLangCode(item) ||
-          $langCodesStore[1] === getResourceTypeLangCode(item)
-      )
-      $resourceTypesCountStore = $resourceTypesStore.length
-    } else if (!nonEmptyGatewayLanguages && nonEmptyHeartLanguages) {
-      // Set the langCountStore
-      $langCountStore = $heartCodeAndNamesStore.length
-      // Set the langCodesStore
-      let codes = []
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        codes.push(getCode(stringTuple))
-      }
-      $langCodesStore = codes
-      // Set the langNamesStore
-      let names = []
-      for (let stringTuple of $heartCodeAndNamesStore) {
-        names.push(getName(stringTuple))
-      }
-      $langNamesStore = names
-      $resourceTypesStore = $resourceTypesStore.filter(
-        (item) =>
-          $langCodesStore[0] === getResourceTypeLangCode(item) ||
-          $langCodesStore[1] === getResourceTypeLangCode(item)
-      )
-      $resourceTypesCountStore = $resourceTypesStore.length
-    } else {
-      $langCountStore = 0
+    $resourceTypesStore = $resourceTypesStore.filter((item) =>
+      $langCodesStore.includes(getResourceTypeLangCode(item))
+    )
+    $resourceTypesCountStore = $resourceTypesStore.length
+  }
+
+  $: {
+    if (!$langCountStore) {
       $langCodesStore = []
       $langNamesStore = []
       $resourceTypesStore = []
@@ -174,6 +128,7 @@
       $assemblyStrategyKindStore = <string>PUBLIC_LANGUAGE_BOOK_ORDER
     }
   }
+
 
   // Search field handling for gateway languages
   let gatewaySearchTerm: string = ''
@@ -225,7 +180,7 @@
       {selectGatewayTab}
       {selectHeartTab}
     />
-    {#if gatewayCodesAndNames && gatewayCodesAndNames.length > 0 && heartCodesAndNames && heartCodesAndNames.length > 0}
+    {#if gatewayCodesAndNames.length > 0 && heartCodesAndNames.length > 0}
       {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
         <MobileLanguageDisplay
           {showGatewayLanguages}

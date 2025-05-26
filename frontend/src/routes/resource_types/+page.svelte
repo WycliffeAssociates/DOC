@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import {
     PUBLIC_SHARED_RESOURCE_TYPES_URL,
     PUBLIC_TAILWIND_SM_MIN_WIDTH
@@ -11,12 +12,20 @@
   import { langCodesStore, langNamesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { bookCountStore } from '$lib/stores/BooksStore'
   import {
+    limitTwStore,
     resourceTypesStore,
     resourceTypesCountStore,
+    twResourceRequestedStore,
     usfmAvailableStore
   } from '$lib/stores/ResourceTypesStore'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
-  import { getCode, getName, getResourceTypeLangCode, getResourceTypeName } from '$lib/utils'
+  import {
+    getCode,
+    getName,
+    getResourceTypeLangCode,
+    getResourceTypeCode,
+    getResourceTypeName
+  } from '$lib/utils'
 
   async function getResourceTypesAndNames(
     langCode: string,
@@ -24,138 +33,126 @@
     apiRootUrl = <string>env.PUBLIC_BACKEND_API_URL,
     sharedResourceTypesUrl = <string>PUBLIC_SHARED_RESOURCE_TYPES_URL
   ): Promise<Array<[string, string, string]>> {
-    // Form the URL to ultimately invoke
-    // resource_lookup.resource_types.
-    let book_codes = bookCodeAndNames.map((bookCodeAndName) => bookCodeAndName[0]).join(',')
-    const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`
-    const url = new URL(url_)
+    let book_codes = bookCodeAndNames.map(([code]) => code).join(',')
+    const url = new URL(`${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`)
     console.log(`About to send request ${url} to backend`)
     const response = await fetch(url)
-    const resourceTypesAndNames: Array<[string, string]> = await response.json()
     if (!response.ok) {
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)
     }
-    // Associate the langCode to each resource type code and name pair
-    return resourceTypesAndNames.map((element) => [langCode, element[0], element[1]])
+    const resourceTypesAndNames: Array<[string, string]> = await response.json()
+    return resourceTypesAndNames.map(([code, name]) => [langCode, code, name])
   }
 
-  // Resolve promise for data
+  let otBookCodes: Array<[string, string]> = $otBookStore.map((item) => [
+    getCode(item),
+    getName(item)
+  ])
+
+  let ntBookCodes: Array<[string, string]> = $ntBookStore.map((item) => [
+    getCode(item),
+    getName(item)
+  ])
+
   let lang0ResourceTypesAndNames: Array<string>
-  let otBookCodes_: Array<[string, string]> = $otBookStore.map((item) => [
-    getCode(item),
-    getName(item)
-  ])
-  let ntBookCodes_: Array<[string, string]> = $ntBookStore.map((item) => [
-    getCode(item),
-    getName(item)
-  ])
-  // Resolve promise for data
-  if ($langCodesStore[0]) {
-    getResourceTypesAndNames($langCodesStore[0], [...otBookCodes_, ...ntBookCodes_])
-      .then((resourceTypesAndNames) => {
-        lang0ResourceTypesAndNames = resourceTypesAndNames.map(
-          (tuple) => `${tuple[0]}, ${tuple[1]}, ${tuple[2]}`
-        )
-      })
-      .catch((err) => console.error(err))
-  }
-
-  // Resolve promise for data for language
   let lang1ResourceTypesAndNames: Array<string>
-  if ($langCodesStore[1]) {
-    getResourceTypesAndNames($langCodesStore[1], [...otBookCodes_, ...ntBookCodes_])
-      .then((resourceTypesAndNames) => {
-        lang1ResourceTypesAndNames = resourceTypesAndNames.map(
-          (tuple) => `${tuple[0]}, ${tuple[1]}, ${tuple[2]}`
+  onMount(async () => {
+    if ($langCodesStore[0]) {
+      try {
+        const resourceTypesAndNames = await getResourceTypesAndNames($langCodesStore[0], [
+          ...otBookCodes,
+          ...ntBookCodes
+        ])
+        lang0ResourceTypesAndNames = resourceTypesAndNames.map(([lang, code, name]) =>
+          [lang, code, name].join(', ')
         )
-      })
-      .catch((err) => console.error(err))
-  }
-
-  let nonEmptyResourcetypes: boolean
-  $: nonEmptyResourcetypes = $resourceTypesStore.every((item) => item.length > 0)
-
-  $: {
-    if (nonEmptyResourcetypes) {
-      $resourceTypesCountStore = $resourceTypesStore.length
-    } else {
-      $resourceTypesCountStore = 0
+      } catch (err) {
+        console.error(err)
+      }
     }
-  }
+    if ($langCodesStore[1]) {
+      try {
+        const resourceTypesAndNames_ = await getResourceTypesAndNames($langCodesStore[1], [
+          ...otBookCodes,
+          ...ntBookCodes
+        ])
+        lang1ResourceTypesAndNames = resourceTypesAndNames_.map(([lang, code, name]) =>
+          [lang, code, name].join(', ')
+        )
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  })
+
+  $: $resourceTypesCountStore = $resourceTypesStore.every((item) => item.length > 0)
+    ? $resourceTypesStore.length
+    : 0
 
   let showWizardBasketModal = false
-
-  function selectAllLang0ResourceTypes(event: Event) {
-    if ((<HTMLInputElement>event.target).checked) {
-      // Make sure all the lang0 resource types are added to
-      // resourceTypesStore.
-      lang0ResourceTypesAndNames.map((item) => $resourceTypesStore.push(item))
-      // Get rid of duplicates
-      $resourceTypesStore = [...new Set($resourceTypesStore)]
-      // Set the resourceTypesCountStore
-      $resourceTypesCountStore = $resourceTypesStore.length
-    } else {
-      // Remove any lang0 resource types from the resourceTypesStore
-      $resourceTypesStore = $resourceTypesStore.filter(
-        (item) => $langCodesStore[0] !== getResourceTypeLangCode(item)
-      )
-    }
-  }
-  function selectAllLang1ResourceTypes(event: Event) {
-    if ((<HTMLInputElement>event.target).checked) {
-      // Make sure all the lang0 resource types are added to
-      // resourceTypesStore.
-      lang1ResourceTypesAndNames.map((item) => $resourceTypesStore.push(item))
-      // Get rid of duplicates
-      $resourceTypesStore = [...new Set($resourceTypesStore)]
-      // Set the resourceTypesCountStore
-      $resourceTypesCountStore = $resourceTypesStore.length
-    } else {
-      // Remove any lang1 resource types from the resourceTypesStore
-      $resourceTypesStore = $resourceTypesStore.filter(
-        (item) => $langCodesStore[1] !== getResourceTypeLangCode(item)
-      )
-    }
-  }
 
   // Set whether a USFM type is available for any of the languages
   // requested so that we can use this fact in the UI to trigger the
   // presence or absence of the toggle to limit TW words.
   let usfmRegexp = /\S*(avd|ayt|blv|cuv|f10|nav|reg|ugnt|uhb|ulb|usfm)\S*/
   $: {
-    if (
-      lang0ResourceTypesAndNames &&
-      lang0ResourceTypesAndNames.length > 0 &&
-      lang1ResourceTypesAndNames &&
-      lang1ResourceTypesAndNames.length > 0
-    ) {
-      $usfmAvailableStore =
-        lang0ResourceTypesAndNames.some((item) => usfmRegexp.test(item)) ||
-        lang1ResourceTypesAndNames.some((item) => usfmRegexp.test(item))
-    } else if (
-      lang0ResourceTypesAndNames &&
-      lang0ResourceTypesAndNames.length > 0 &&
-      !lang1ResourceTypesAndNames
-    ) {
-      $usfmAvailableStore = lang0ResourceTypesAndNames.some((item) => usfmRegexp.test(item))
+    $usfmAvailableStore = $resourceTypesStore.some((item) => usfmRegexp.test(item)) || false
+  }
+
+  // Set whether TW has been requested for any of the languages
+  // requested so that we can use this fact in the UI to trigger the
+  // presence or absence of the toggle to limit TW words.
+  let twRegexp = new RegExp('.*tw.*')
+  $: {
+    $twResourceRequestedStore =
+      $resourceTypesStore && $resourceTypesStore.some((item) => twRegexp.test(item))
+  }
+  $: {
+    $limitTwStore = $twResourceRequestedStore && $usfmAvailableStore
+  }
+  $: console.log(`lang0ResourceTypesAndNames: ${lang0ResourceTypesAndNames}`)
+  $: console.log(`lang1ResourceTypesAndNames: ${lang0ResourceTypesAndNames}`)
+  $: console.log(`$twResourceRequestedStore: ${$twResourceRequestedStore}`)
+  $: console.log(`$limitTwStore: ${$limitTwStore}`)
+  $: console.log(`$resourceTypesStore: ${$resourceTypesStore}`)
+  $: console.log(`$usfmAvailableStore: ${$usfmAvailableStore}`)
+
+  function selectAllLang0ResourceTypes(event: Event) {
+    if ((<HTMLInputElement>event.target).checked) {
+      lang0ResourceTypesAndNames.map((item) => $resourceTypesStore.push(item))
+      $resourceTypesStore = [...new Set($resourceTypesStore)]
+      $resourceTypesCountStore = $resourceTypesStore.length
+    } else {
+      $resourceTypesStore = $resourceTypesStore.filter(
+        (item) => $langCodesStore[0] !== getResourceTypeLangCode(item)
+      )
     }
   }
 
-  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
+  function selectAllLang1ResourceTypes(event: Event) {
+    if ((<HTMLInputElement>event.target).checked) {
+      lang1ResourceTypesAndNames.map((item) => $resourceTypesStore.push(item))
+      $resourceTypesStore = [...new Set($resourceTypesStore)]
+      $resourceTypesCountStore = $resourceTypesStore.length
+    } else {
+      $resourceTypesStore = $resourceTypesStore.filter(
+        (item) => $langCodesStore[1] !== getResourceTypeLangCode(item)
+      )
+    }
+  }
+
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
-  // $: console.log(`TAILWIND_SM_MIN_WIDTH: ${TAILWIND_SM_MIN_WIDTH}`)
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
 
 <WizardBreadcrumb />
 
-<!-- container for "center" div -->
 <div class="flex flex-grow flex-row overflow-y-auto overflow-x-hidden">
-  <!-- center -->
   <div class="mx-4 mb-6 flex flex-1 flex-col bg-white sm:w-2/3">
     <h3 class="mb-4 text-4xl font-normal leading-[48px] text-[#33445C]">Pick your resources</h3>
     <!-- mobile basket modal launcher -->
@@ -195,7 +192,7 @@
     </div>
     {#if ($langCountStore > 0 && (!lang0ResourceTypesAndNames || (lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length == 0))) || ($langCountStore > 1 && (!lang1ResourceTypesAndNames || (lang1ResourceTypesAndNames && lang1ResourceTypesAndNames.length == 0)))}
       <ProgressIndicator
-        labelString="Analyzing resources available for books chosen, please be patient..."
+        labelString="Analyzing resources available for books chosen, please be patient"
       />
     {:else if windowWidth < TAILWIND_SM_MIN_WIDTH}
       {#if $langCountStore > 0}
@@ -217,10 +214,10 @@
                 >Select all</label
               >
             </div>
-            <ul>
-              {#each lang0ResourceTypesAndNames as lang0ResourceTypeAndName, index}
-                <label for="lang0-resourcetype-{index}">
-                  <li class="target flex items-center py-2 pl-4">
+            {#each lang0ResourceTypesAndNames as lang0ResourceTypeAndName, index}
+              <label for="lang0-resourcetype-{index}">
+                <div class="target flex h-[56px] items-center justify-between px-4">
+                  <div class="target2 flex items-center">
                     <input
                       id="lang0-resourcetype-{index}"
                       type="checkbox"
@@ -228,12 +225,16 @@
                       value={lang0ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1 text-xl">{getResourceTypeName(lang0ResourceTypeAndName)}</span
+                    <span class="pl-1 text-xl text-[#33445C]"
+                      >{getResourceTypeName(lang0ResourceTypeAndName)}</span
                     >
-                  </li>
-                </label>
-              {/each}
-            </ul>
+                  </div>
+                  <span class="text-xl text-[#33445C]"
+                    >{getResourceTypeCode(lang0ResourceTypeAndName)}</span
+                  >
+                </div>
+              </label>
+            {/each}
           </div>
         {/if}
         {#if $langCountStore > 1}
@@ -254,10 +255,10 @@
                 >Select all</label
               >
             </div>
-            <ul>
-              {#each lang1ResourceTypesAndNames as lang1ResourceTypeAndName, index}
-                <label for="lang1-resourcetype-{index}">
-                  <li class="target flex items-center py-2 pl-4">
+            {#each lang1ResourceTypesAndNames as lang1ResourceTypeAndName, index}
+              <label for="lang1-resourcetype-{index}">
+                <div class="target flex h-[56px] items-center justify-between px-4">
+                  <div class="target2 flex items-center">
                     <input
                       id="lang1-resourcetype-{index}"
                       type="checkbox"
@@ -265,31 +266,35 @@
                       value={lang1ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1 text-xl">{getResourceTypeName(lang1ResourceTypeAndName)}</span
+                    <span class="pl-1 text-xl text-[#33445C]"
+                      >{getResourceTypeName(lang1ResourceTypeAndName)}</span
                     >
-                  </li>
-                </label>
-              {/each}
-            </ul>
+                  </div>
+                  <span class="text-xl text-[#33445C]"
+                    >{getResourceTypeCode(lang1ResourceTypeAndName)}</span
+                  >
+                </div>
+              </label>
+            {/each}
           </div>
         {/if}
       </div>
     {:else}
       <div class="mb-2 flex flex-shrink-0 flex-grow-0 flex-row">
         {#if $langCountStore > 0}
-          <div class="w-1/2">
+          <div class={$langCountStore > 1 ? 'w-1/2' : 'w-full'}>
             <h3 class="text-2xl text-[#33445C]">{$langNamesStore[0]}</h3>
           </div>
         {/if}
         {#if $langCountStore > 1 && lang1ResourceTypesAndNames}
-          <div class="w-1/2">
+          <div class={$langCountStore > 1 ? 'w-1/2' : 'w-full'}>
             <h3 class="text-2xl text-[#33445C]">{$langNamesStore[1]}</h3>
           </div>
         {/if}
       </div>
       <div class="flex flex-shrink-0 flex-grow-0 flex-row">
         {#if lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length > 0}
-          <div class="w-1/2">
+          <div class={$langCountStore > 1 ? 'w-1/2' : 'w-full'}>
             <div class="flex items-center py-2 pl-4">
               <input
                 id="select-all-lang0-resource-types"
@@ -301,10 +306,10 @@
                 >Select all</label
               >
             </div>
-            <ul>
-              {#each lang0ResourceTypesAndNames as lang0ResourceTypeAndName, index}
-                <label for="lang0-resourcetype-{index}">
-                  <li class="target flex items-center py-2 pl-4">
+            {#each lang0ResourceTypesAndNames as lang0ResourceTypeAndName, index}
+              <label for="lang0-resourcetype-{index}">
+                <div class="target flex h-[56px] items-center justify-between px-4">
+                  <div class="target2 flex items-center">
                     <input
                       id="lang0-resourcetype-{index}"
                       type="checkbox"
@@ -312,15 +317,20 @@
                       value={lang0ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1">{getResourceTypeName(lang0ResourceTypeAndName)}</span>
-                  </li>
-                </label>
-              {/each}
-            </ul>
+                    <span class="pl-1 text-xl text-[#33445C]"
+                      >{getResourceTypeName(lang0ResourceTypeAndName)}</span
+                    >
+                  </div>
+                  <span class="text-xl text-[#33445C]"
+                    >{getResourceTypeCode(lang0ResourceTypeAndName)}</span
+                  >
+                </div>
+              </label>
+            {/each}
           </div>
         {/if}
         {#if lang1ResourceTypesAndNames && lang1ResourceTypesAndNames.length > 0}
-          <div class="ml-4 w-1/2">
+          <div class={$langCountStore > 1 ? 'ml-4 w-1/2' : 'ml-4 w-full'}>
             <div class="flex items-center py-2 pl-4">
               <input
                 id="select-all-lang1-resource-types"
@@ -332,10 +342,10 @@
                 >Select all</label
               >
             </div>
-            <ul>
-              {#each lang1ResourceTypesAndNames as lang1ResourceTypeAndName, index}
-                <label for="lang1-resourcetype-{index}">
-                  <li class="target flex items-center py-2 pl-4">
+            {#each lang1ResourceTypesAndNames as lang1ResourceTypeAndName, index}
+              <label for="lang1-resourcetype-{index}">
+                <div class="target flex h-[56px] items-center justify-between px-4">
+                  <div class="target2 flex items-center">
                     <input
                       id="lang1-resourcetype-{index}"
                       type="checkbox"
@@ -343,12 +353,16 @@
                       value={lang1ResourceTypeAndName}
                       class="checkbox-target checkbox-style"
                     />
-                    <span class="pl-1 text-xl">{getResourceTypeName(lang1ResourceTypeAndName)}</span
+                    <span class="pl-1 text-xl text-[#33445C]"
+                      >{getResourceTypeName(lang1ResourceTypeAndName)}</span
                     >
-                  </li>
-                </label>
-              {/each}
-            </ul>
+                  </div>
+                  <span class="text-xl text-[#33445C]"
+                    >{getResourceTypeCode(lang1ResourceTypeAndName)}</span
+                  >
+                </div>
+              </label>
+            {/each}
           </div>
         {/if}
       </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import {
     PUBLIC_TAILWIND_SM_MIN_WIDTH,
     PUBLIC_BOOK_CODES_URL,
@@ -10,7 +11,7 @@
   import otBooks from '$lib/ot-books'
   import { ntBookStore, otBookStore, bookCountStore } from '$lib/stores/BooksStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
-  import { getName } from '$lib/utils'
+  import { getName, handleError } from '$lib/utils'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
   import MobileBookDisplay from './MobileBookDisplay.svelte'
   import DesktopBookDisplay from './DesktopBookDisplay.svelte'
@@ -18,168 +19,57 @@
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import { errorStore } from '$lib/stores/NotificationStore'
 
-  async function getSharedBookCodesAndNames(
-    lang0Code: string,
-    lang1Code: string,
-    apiRootUrl = env.PUBLIC_BACKEND_API_URL,
-    sharedBookCodesUrl = <string>PUBLIC_SHARED_BOOK_CODES_URL
-  ): Promise<Array<[string, string]>> {
-    const response = await fetch(`${apiRootUrl}${sharedBookCodesUrl}${lang0Code}/${lang1Code}`)
-    const sharedBookCodesAndNames: Array<[string, string]> = await response.json()
-    if (!response.ok) throw new Error(response.statusText)
-    return sharedBookCodesAndNames
-  }
-
   async function getBookCodesAndNames(
-    langCode: string,
-    apiRootUrl = env.PUBLIC_BACKEND_API_URL,
-    bookCodesUrl = <string>PUBLIC_BOOK_CODES_URL
+    langCode0: string,
+    langCode1?: string,
+    apiRootUrl: string = env.PUBLIC_BACKEND_API_URL,
+    sharedBookCodesUrl: string = PUBLIC_SHARED_BOOK_CODES_URL,
+    bookCodesUrl: string = PUBLIC_BOOK_CODES_URL
   ): Promise<Array<[string, string]>> {
-    const response = await fetch(`${apiRootUrl}${bookCodesUrl}${langCode}`)
-    const bookCodesAndNames: Array<[string, string]> = await response.json()
-    if (!response.ok) {
-      console.error(response.statusText)
-      throw new Error(response.statusText)
-    }
-    return bookCodesAndNames
+    const url = langCode1
+      ? `${apiRootUrl}${sharedBookCodesUrl}${langCode0}/${langCode1}`
+      : `${apiRootUrl}${bookCodesUrl}${langCode0}`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(response.statusText)
+    return response.json()
   }
 
-  // Resolve promise for data reactively
+  async function loadBookCodesAndNames() {
+    try {
+      const bookCodesAndNames = $langCountStore > 1
+        ? await getBookCodesAndNames($langCodesStore[0], $langCodesStore[1])
+        : await getBookCodesAndNames($langCodesStore[0])
+      updateStores(bookCodesAndNames)
+    } catch (err) {
+      console.error(err)
+      // Check the type of err
+      $errorStore = handleError(err)
+    }
+  }
+
   let otBookCodes: Array<string>
   let ntBookCodes: Array<string>
-  if ($langCountStore > 1) {
-    getSharedBookCodesAndNames($langCodesStore[0], $langCodesStore[1])
-      .then((bookCodesAndNames) => {
-        if (bookCodesAndNames) {
-          // Filter set of all resource codes into old testament
-          // book codes.
-          otBookCodes = bookCodesAndNames
-            .filter((element: [string, string]) => {
-              return otBooks.some((item) => item === element[0])
-            })
-            .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-          // If otBookStore has contents, then assume we are coming
-          // back here from the user clicking to edit their book
-          // selections in the wizard basket, so we want to eliminate
-          // any otBookStore elements that are not in otBookCodes.
-          if ($otBookStore.length > 0) {
-            $otBookStore = $otBookStore.filter((item) => {
-              return otBookCodes.some((element) => element === item)
-            })
-          }
-          // Filter set of all book codes into new testament
-          // book codes.
-          ntBookCodes = bookCodesAndNames
-            .filter((element: [string, string]) => {
-              return !otBooks.some((item) => item === element[0])
-            })
-            .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-          // If ntBookStore has contents, then assume we are coming
-          // back here from the user clicking to edit their book
-          // selections in the wizard basket, so we want to eliminate
-          // any ntBookStore elements that are not in ntBookCodes.
-          if ($ntBookStore.length > 0) {
-            $ntBookStore = $ntBookStore.filter((item) => {
-              return ntBookCodes.some((element) => element === item)
-            })
-          }
-        } else {
-          // Filter set of all resource codes into old testament
-          // book codes.
-          otBookCodes = []
-          // If otBookStore has contents, then assume we are coming
-          // back here from the user clicking to edit their book
-          // selections in the wizard basket, so we want to eliminate
-          // any otBookStore elements that are not in otBookCodes.
-          if ($otBookStore.length > 0) {
-            $otBookStore = $otBookStore.filter((item) => {
-              return otBookCodes.some((element) => element === item)
-            })
-          }
-          // Filter set of all book codes into new testament
-          // book codes.
-          ntBookCodes = []
-          // If ntBookStore has contents, then assume we are coming
-          // back here from the user clicking to edit their book
-          // selections in the wizard basket, so we want to eliminate
-          // any ntBookStore elements that are not in ntBookCodes.
-          if ($ntBookStore.length > 0) {
-            $ntBookStore = $ntBookStore.filter((item) => {
-              return ntBookCodes.some((element) => element === item)
-            })
-          }
-        }
-      })
-      .catch((err) => {
-        console.error(err)
-        // Stop progress bar
-        $errorStore = err
-      })
-  } else {
-    getBookCodesAndNames($langCodesStore[0])
-      .then((bookCodesAndNames) => {
-        // Filter set of all book codes into old testament
-        // book codes.
-        otBookCodes = bookCodesAndNames
-          .filter((element: [string, string]) => {
-            return otBooks.some((item) => item === element[0])
-          })
-          .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
 
-        // If otBookStore has contents, then assume we are coming
-        // back here from the user clicking to edit their book
-        // selections in the wizard basket, so we want to eliminate
-        // any otBookStore elements that are not in otBookCodes.
-        if ($otBookStore.length > 0) {
-          $otBookStore = $otBookStore.filter((item) => {
-            return otBookCodes.some((element) => element === item)
-          })
-        }
-
-        // Filter set of all book codes into new testament
-        // book codes.
-        ntBookCodes = bookCodesAndNames
-          .filter((element: [string, string]) => {
-            return !otBooks.some((item) => item === element[0])
-          })
-          .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-
-        // If ntBookStore has contents, then assume we are coming
-        // back here from the user clicking to edit their book
-        // selections in the wizard basket, so we want to eliminate
-        // any ntBookStore elements that are not in ntBookCodes.
-        if ($ntBookStore.length > 0) {
-          $ntBookStore = $ntBookStore.filter((item) => {
-            return ntBookCodes.some((element) => element === item)
-          })
-        }
-      })
-      .catch((err) => {
-        console.error(err)
-        // Stop progress bar
-        $errorStore = err
-      })
-  }
-
-  // Derive and set the count of books for use here and in other
-  // pages.
-  let nonEmptyOtBooks: boolean
-  $: nonEmptyOtBooks = $otBookStore.every((item) => item.length > 0)
-
-  let nonEmptyNtBooks: boolean
-  $: nonEmptyNtBooks = $ntBookStore.every((item) => item.length > 0)
-
-  $: {
-    if (nonEmptyOtBooks && nonEmptyNtBooks) {
-      $bookCountStore = $otBookStore.length + $ntBookStore.length
-    } else if (nonEmptyOtBooks && !nonEmptyNtBooks) {
-      $bookCountStore = $otBookStore.length
-    } else if (!nonEmptyOtBooks && nonEmptyNtBooks) {
-      $bookCountStore = $ntBookStore.length
-    } else {
-      $bookCountStore = 0
+  function updateStores(bookCodesAndNames: Array<[string, string]>) {
+    otBookCodes = bookCodesAndNames
+      .filter(([code]) => otBooks.includes(code))
+      .map(([code, name]) => `${code}, ${name}`)
+    if ($otBookStore.length > 0) {
+      $otBookStore = $otBookStore.filter(item => otBookCodes.includes(item))
+    }
+    ntBookCodes = bookCodesAndNames
+      .filter(([code]) => !otBooks.includes(code))
+      .map(([code, name]) => `${code}, ${name}`)
+    if ($ntBookStore.length > 0) {
+      $ntBookStore = $ntBookStore.filter(item => ntBookCodes.includes(item))
     }
   }
+
+  onMount(async () => {
+   await loadBookCodesAndNames()
+  })
+
+  $: $bookCountStore = $otBookStore.length + $ntBookStore.length
 
   let otSearchTerm = ''
   let filteredOtBookCodes: Array<string> = []
@@ -200,20 +90,12 @@
     }
   }
 
-  let showOldTestament = false
   // If user has previously chosen (during this session, i.e., prior
   // to browser reload) any OT books and no NT books then default to
   // showing the OT, otherwise the default stands of showing the NT
   $: console.log(`$otBookStore.length: ${$otBookStore.length}`)
   $: console.log(`$ntBookStore.length: ${$ntBookStore.length}`)
-  $: {
-    if (
-      ($otBookStore.length > 0 && $ntBookStore.length === 0) ||
-      (otBookCodes && ntBookCodes && ntBookCodes.length === 0 && otBookCodes.length > 0)
-    ) {
-      showOldTestament = true
-    }
-  }
+  let showOldTestament = ($otBookStore.length > 0 && $ntBookStore.length === 0)
   let showFilterMenu = false
   let showWizardBasketModal = false
 

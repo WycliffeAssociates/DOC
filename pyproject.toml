@@ -1,6 +1,6 @@
 [project]
 name = "DOC"
-version = "2025.05.16"
+version = "2025.05.26"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

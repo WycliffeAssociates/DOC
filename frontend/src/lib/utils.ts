@@ -15,7 +15,8 @@ import { otBookStore, ntBookStore, bookCountStore } from '$lib/stores/BooksStore
 import {
   lang0ResourceTypesStore,
   lang1ResourceTypesStore,
-  resourceTypesCountStore
+  resourceTypesCountStore,
+  twResourceRequestedStore
 } from '$lib/stores/ResourceTypesStore'
 import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
 import {
@@ -24,8 +25,7 @@ import {
   generatePdfStore,
   generateEpubStore,
   generateDocxStore,
-  documentRequestKeyStore,
-  twResourceRequestedStore
+  documentRequestKeyStore
 } from '$lib/stores/SettingsStore'
 
 const languageBookOrder: string = <string>PUBLIC_LANGUAGE_BOOK_ORDER
@@ -97,4 +97,14 @@ export function routeToPage(url: string): void {
   if (browser) {
     goto(url)
   }
+}
+
+export function handleError(err: unknown): string | null {
+  if (typeof err === 'string') {
+    return err
+  }
+  if (err instanceof Error) {
+    return err.message
+  }
+  return null
 }

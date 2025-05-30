@@ -214,7 +214,7 @@ def usfm_chapter_html(
     chapter_num: int,
     working_dir: str = settings.WORKING_DIR,
 ) -> Optional[str]:
-    resource_filepath_sans_suffix = "_".join(
+    resource_filename_sans_suffix = "_".join(
         [
             resource_lookup_dto.lang_code,
             resource_lookup_dto.resource_type,
@@ -222,7 +222,7 @@ def usfm_chapter_html(
             str(chapter_num),
         ]
     )
-    resource_filepath_sans_suffix = f"{working_dir}/{resource_filepath_sans_suffix}"
+    resource_filepath_sans_suffix = f"{working_dir}/{resource_filename_sans_suffix}"
     html_content_filepath = f"{resource_filepath_sans_suffix}.html"
     t0 = time.time()
     convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
@@ -253,11 +253,11 @@ def split_usfm_by_chapters(
     resource_type: str,
     book_code: str,
     usfm_text: str,
+    check_usfm: bool = settings.CHECK_USFM,
     chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
-    check_usfm: bool = settings.CHECK_USFM,
     check_all_books_for_language: bool = settings.CHECK_ALL_BOOKS_FOR_LANGUAGE,
 ) -> tuple[str, list[str], list[str]]:
     r"""

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test('test', async ({ page }) => {
-  await page.goto('http://localhost:8001/passages/language')
+  await page.goto('http://localhost:8001/passages')
   await page.getByText('Español Latin America (Latin').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByLabel('Bible Book').selectOption('jos')
@@ -23,24 +23,8 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test.skip('test _', async ({ page }) => {
+test('test add nt survey reviewer passages', async ({ page }) => {
   await page.goto('http://localhost:8001/passages')
-  await page.goto('http://localhost:8001/passages/language')
-  await page.getByRole('button', { name: 'Heart' }).click()
-  await page.getByText('Abure').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('link', { name: 'Language' }).click()
-  await page.getByRole('button', { name: 'Gateway' }).click()
-  await page.getByText('Bahasa Indonesian').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByLabel('Add NT Survey Reviewer\'s').check()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.getByText('Matthew 2:1-12')).toBeVisible()
-})
-
-test.skip('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
-  await page.goto('http://localhost:8001/passages')
-  await page.goto('http://localhost:8001/passages/language')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Abure').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -49,7 +33,21 @@ test.skip('test that you can select gateway tab after first selecting heart lang
   await page.getByText('Bahasa Indonesia (Indonesian)').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByLabel('Add NT Survey Reviewer\'s').check()
-  await expect(page.getByText('Matthew 2:1-')).toBeVisible()
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.getByText('Matthew 2:1-')).toBeVisible()
+  await expect(page.getByText('Matius 2:1-')).toBeVisible()
+})
+
+test('test that you can select gateway tab after first selecting heart language and hitting next', async ({ page }) => {
+  await page.goto('http://localhost:8001/passages')
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByText('Abure').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('link', { name: 'Language' }).click()
+  await page.getByRole('button', { name: 'Gateway' }).click()
+  await page.getByText('Bahasa Indonesia (Indonesian)').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByLabel('Add NT Survey Reviewer\'s').check()
+  await expect(page.getByText('Matius 2:1-')).toBeVisible()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.getByText('Matius 2:1-')).toBeVisible()
 })

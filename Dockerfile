@@ -25,8 +25,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libdeflate0 \
     # For weasyprint
     pango1.0-tools \
-    # For stet
-    # pandoc \
     # For fc-cache
     fontconfig
 

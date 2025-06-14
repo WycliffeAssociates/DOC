@@ -6,6 +6,7 @@
     PUBLIC_BOOK_CODES_FROM_USFM_ONLY_URL,
     PUBLIC_CHAPTERS_IN_BOOKS_URL,
     PUBLIC_NT_SURVEY_RG_PASSAGES_URL,
+    PUBLIC_STET_PASSAGES_URL,
     PUBLIC_TAILWIND_SM_MIN_WIDTH
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
@@ -132,7 +133,7 @@
     }
   }
 
-  async function getBibleReferences(
+  async function getNTSurveyRGPassages(
     langCode: string,
     apiRootUrl = env.PUBLIC_BACKEND_API_URL,
     ntSurveyRgPassagesUrl = <string>PUBLIC_NT_SURVEY_RG_PASSAGES_URL
@@ -150,7 +151,7 @@
 
   export async function addNTSurveyRGPassages() {
     try {
-      const bibleReferences = await getBibleReferences($langCodeAndNameStore.split(",")[0])
+      const bibleReferences = await getNTSurveyRGPassages($langCodeAndNameStore.split(',')[0])
       console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
           addPassageReference(
@@ -170,7 +171,45 @@
     }
   }
 
-  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
+  async function getSTETPassages(
+    langCode: string,
+    apiRootUrl = env.PUBLIC_BACKEND_API_URL,
+    stetPassagesUrl = <string>PUBLIC_STET_PASSAGES_URL
+  ): Promise<Array<BibleReference>> {
+    const url = `${apiRootUrl}${stetPassagesUrl}/${langCode}`
+    console.log(`url: ${url}`)
+    const response = await fetch(url)
+    const bibleReferences: Array<BibleReference> = await response.json()
+    if (!response.ok) {
+      console.error(response.statusText)
+      throw new Error(response.statusText)
+    }
+    return bibleReferences
+  }
+
+  export async function addSTETPassages() {
+    try {
+      const bibleReferences = await getSTETPassages($langCodeAndNameStore.split(',')[0])
+      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
+      for (const bibleRef of bibleReferences) {
+        addPassageReference(
+          $langCodeAndNameStore.split(',')[0],
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+    } catch (error) {
+      console.error('Failed to add STET passages:', error)
+    } finally {
+      console.log('Passages added successfully')
+    }
+  }
+
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
 
   $: console.log(`windowWidth: ${windowWidth}`)
@@ -193,7 +232,7 @@
       {#if !bookCodesAndNames || bookCodesAndNames.length === 0}
         <div class="ml-4">
           <ProgressIndicator
-            labelString="Analyzing books available for language chosen, please be patient..."
+            labelString="Acquiring and analyzing books available for language chosen, please be patient..."
           />
         </div>
       {:else}
@@ -208,6 +247,7 @@
           {handleVerseInput}
           {addPassage}
           {addNTSurveyRGPassages}
+          {addSTETPassages}
         />
         {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
           <button class="ml-2" on:click={() => (showWizardBasketModal = true)}>

@@ -59,8 +59,12 @@ RUN mkdir -p working_temp
 RUN mkdir -p document_output
 # Make the directory where stet source documents are stored
 RUN mkdir -p stet
+# Make the directory where passage source documents are stored
+RUN mkdir -p passages
+
 
 COPY backend/stet/data/stet_*.docx stet/
+COPY backend/passages/data/Spiritual_Terms_Evaluation_Exhaustive_Verse_List.txt passages/
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .

@@ -28,6 +28,37 @@ class BibleReference(BaseModel):
     end_chapter: Optional[ChapterNum]
     end_chapter_verse_ref: Optional[str]
 
+    def __hash__(self: "BibleReference") -> int:
+        return hash(
+            (
+                self.book_code,
+                self.book_name,
+                self.start_chapter,
+                self.start_chapter_verse_ref,
+                self.end_chapter,
+                self.end_chapter_verse_ref,
+            )
+        )
+
+    def __eq__(self: "BibleReference", other: object) -> bool:
+        if not isinstance(other, BibleReference):
+            return NotImplemented
+        return (
+            self.book_code,
+            self.book_name,
+            self.start_chapter,
+            self.start_chapter_verse_ref,
+            self.end_chapter,
+            self.end_chapter_verse_ref,
+        ) == (
+            other.book_code,
+            other.book_name,
+            other.start_chapter,
+            other.start_chapter_verse_ref,
+            other.end_chapter,
+            other.end_chapter_verse_ref,
+        )
+
 
 @final
 class ParsedText(BaseModel):

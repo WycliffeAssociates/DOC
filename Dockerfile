@@ -51,6 +51,8 @@ WORKDIR /app
 
 # Make the output directory where resource asset files are cloned.
 RUN mkdir -p assets_download
+# Make the input directory where en_rg_nt_survey.docx is stored.
+RUN mkdir -p en_rg
 # Make the directory where intermediate document parts are saved.
 RUN mkdir -p working_temp
 # Make the output directory where generated HTML and PDFs are placed.

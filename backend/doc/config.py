@@ -66,6 +66,7 @@ class Settings(BaseSettings):
 
     # Location where resource assets will be cloned.
     RESOURCE_ASSETS_DIR: str = "assets_download"
+    EN_RG_DIR: str = "en_rg"
 
     # Location where intermediate generated document parts are saved.
     WORKING_DIR: str = "working_temp"

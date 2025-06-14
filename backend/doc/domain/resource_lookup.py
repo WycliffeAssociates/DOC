@@ -334,6 +334,7 @@ def resource_types(
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     book_names: Mapping[str, str] = BOOK_NAMES,
     docx_file_path: str = "en_rg_nt_survey.docx",
+    en_rg: str = settings.EN_RG_DIR,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from doc.domain import resource_lookup
@@ -655,6 +656,7 @@ def normalize_last_segment(
     ] = REPLACEMENTS_BY_LANG_CODE_AND_LAST_SEGMENT,
     universal_prefixes: list[str] = PREFIXES_TO_REMOVE,
     lang_specific_prefixes: dict[str, list[str]] = LANG_SPECIFIC_PREFIXES_TO_REMOVE,
+    en_rg_dir: str = settings.EN_RG_DIR,
 ) -> str:
     """
     Handle special cases where git repo URL does not follow the expected pattern.
@@ -667,7 +669,7 @@ def normalize_last_segment(
     here.
     """
     if lang_code == "en" and last_segment.endswith(".docx"):
-        return "en_rg"
+        return en_rg_dir
     if (lang_code, last_segment) in hardcoded_replacements:
         return hardcoded_replacements[(lang_code, last_segment)]
     for prefix in universal_prefixes:
@@ -1246,7 +1248,7 @@ def nt_survey_rg_passages(
     resource_type_name: str = "NT Survey Reviewer's Guide",
     lang_direction: LangDirEnum = LangDirEnum.LTR,
     assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-    resource_dir: str = "en_rg",
+    resource_dir: str = settings.EN_RG_DIR,
 ) -> list[BibleReference]:
     """
     >>> from doc.domain import resource_lookup

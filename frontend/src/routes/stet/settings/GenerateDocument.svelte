@@ -278,16 +278,18 @@
 
 <style lang="postcss">
   * :global(.gray-gradiant) {
-    background: linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05)),
+    background:
+      linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05)),
       linear-gradient(0deg, rgba(20, 14, 8, 0), rgba(20, 14, 8, 0));
   }
   * :global(.gray-gradient:hover) {
-    background: linear-gradient(0deg, rgba(20, 14, 8, 0.3), rgba(20, 14, 8, 0.3)),
+    background:
+      linear-gradient(0deg, rgba(20, 14, 8, 0.3), rgba(20, 14, 8, 0.3)),
       linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05));
   }
   * :global(.blue-gradient) {
-    background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%),
-      linear-gradient(0deg, #33445c, #33445c);
+    background:
+      linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #33445c, #33445c);
   }
   * :global(.blue-gradient-bar) {
     background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%);

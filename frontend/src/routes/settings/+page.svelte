@@ -37,7 +37,6 @@
   // Set default value of chapter
   $assemblyStrategyChunkSizeStore = chapter.id
 
-
   // The 3rd party HTML to PDF conversion library we use, weasyprint,
   // doesn't seem to be able to handle line length for the Khmer language
   // which results in words overlapping each other when two column

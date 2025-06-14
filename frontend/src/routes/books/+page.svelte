@@ -70,7 +70,7 @@
   }
 
   onMount(async () => {
-   await loadBookCodesAndNames()
+    await loadBookCodesAndNames()
   })
 
   $: $bookCountStore = $otBookStore.length + $ntBookStore.length
@@ -99,7 +99,7 @@
   // showing the OT, otherwise the default stands of showing the NT
   $: console.log(`$otBookStore.length: ${$otBookStore.length}`)
   $: console.log(`$ntBookStore.length: ${$ntBookStore.length}`)
-  let showOldTestament = ($otBookStore.length > 0 && $ntBookStore.length === 0)
+  let showOldTestament = $otBookStore.length > 0 && $ntBookStore.length === 0
   let showFilterMenu = false
   let showWizardBasketModal = false
 

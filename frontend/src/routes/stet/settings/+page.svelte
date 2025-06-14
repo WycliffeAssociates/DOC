@@ -21,10 +21,8 @@
   //   resourceTypesCountStore,
   //   usfmAvailableStore
   // } from '$lib/stores/ResourceTypesStore'
-  import {
-    langCountStore
-  } from '$lib/stet/stores/LanguagesStore'
   // import { bookCountStore } from '$lib/stores/BooksStore'
+  import { langCountStore } from '$lib/stet/stores/LanguagesStore'
   import GenerateDocument from './GenerateDocument.svelte'
   import LogRocket from 'logrocket'
   import CheckIcon from '$lib/CheckIcon.svelte'

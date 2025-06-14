@@ -4,6 +4,7 @@ This module provides an API for parsing content.
 
 import re
 import subprocess
+import requests
 import time
 from glob import glob
 from os import DirEntry, getenv, scandir, walk
@@ -142,36 +143,28 @@ def print_directory_contents(directory: str) -> None:
 
 def convert_usfm_chapter_to_html(
     content: str,
-    resource_filepath_sans_suffix: str,
+    input_file: str,
+    output_file: str,
+    api_url: str = "http://usfmparserapi:80/api/converter/convert",
 ) -> None:
     """
-    Invoke the dotnet USFM parser to parse the USFM file, if it exists,
-    and render it into HTML and store on disk.
+    Invoke the dotnet USFM parser through an HTTP POST request to parse the USFM file,
+    and render it into HTML and store it on disk.
     """
-    content_file = write_usfm_content_to_file(content, resource_filepath_sans_suffix)
-    logger.info("About to convert USFM to HTML")
-    dll_path = "/app/USFMParserDriver/bin/Release/net8.0/USFMParserDriver.dll"
-    if not exists(f"{getenv('DOTNET_ROOT')}/dotnet"):
-        logger.info("dotnet cli not found!")
-        raise Exception("dotnet cli not found")
-    if not exists(dll_path):
-        logger.info("dotnet parser executable not found!")
-        # print_directory_contents("/app/USFMParserDriver")
-        raise Exception("dotnet parser executable not found!")
-    if not exists(content_file):
-        logger.info("dotnet parser expects %s to exist, but it does not!", content_file)
-    command = [
-        f"{getenv('DOTNET_ROOT')}/dotnet",
-        dll_path,
-        f"/app/{content_file}",
-        f"/app/{resource_filepath_sans_suffix}.html",
-    ]
-    logger.info("dotnet command: %s", " ".join(command))
-    subprocess.run(
-        command,
-        check=True,
-        text=True,
-    )
+    logger.info("About to convert USFM to HTML via HTTP POST")
+    payload = {
+        "InputFile": input_file,
+        "OutputFile": output_file,
+    }
+    try:
+        response = requests.post(api_url, json=payload)
+        response.raise_for_status()  # Raise an error for 4xx/5xx responses
+        if response.json():  # response should return True on success
+            logger.info("Conversion successful: %s", output_file)
+        else:
+            logger.error("Conversion failed with an unknown error.")
+    except requests.exceptions.RequestException as e:
+        logger.error("HTTP request failed: %s", e)
 
 
 def usfm_asset_file(
@@ -210,32 +203,22 @@ def usfm_asset_file(
 
 def usfm_chapter_html(
     content: str,
-    resource_lookup_dto: ResourceLookupDto,
+    input_file: str,
+    output_file: str,
     chapter_num: int,
-    working_dir: str = settings.WORKING_DIR,
 ) -> Optional[str]:
-    resource_filename_sans_suffix = "_".join(
-        [
-            resource_lookup_dto.lang_code,
-            resource_lookup_dto.resource_type,
-            resource_lookup_dto.book_code,
-            str(chapter_num),
-        ]
-    )
-    resource_filepath_sans_suffix = f"{working_dir}/{resource_filename_sans_suffix}"
-    html_content_filepath = f"{resource_filepath_sans_suffix}.html"
     t0 = time.time()
-    convert_usfm_chapter_to_html(content, resource_filepath_sans_suffix)
+    with open(input_file, "w") as f:
+        f.write(content)
+    convert_usfm_chapter_to_html(content, input_file, output_file)
     t1 = time.time()
     logger.info(
-        "Time to convert USFM to HTML for %s-%s-%s: %s",
-        resource_lookup_dto.lang_code,
-        resource_lookup_dto.resource_type,
-        resource_lookup_dto.book_code,
+        "Time to convert USFM to HTML for %s: %s",
+        output_file,
         t1 - t0,
     )
-    if exists(html_content_filepath):
-        html_content = read_file(html_content_filepath)
+    if exists(output_file):
+        html_content = read_file(output_file)
         return html_content
     return None
 
@@ -449,6 +432,7 @@ def usfm_book_content(
     resource_dir: str,
     use_chapter_labels: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
+    working_dir: str = settings.WORKING_DIR,
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
@@ -478,8 +462,19 @@ def usfm_book_content(
         if use_chapter_labels:
             chapter_usfm = ensure_chapter_label(chapter_usfm, chapter_num)
         chapter_usfm = ensure_chapter_marker(chapter_usfm, chapter_num)
+        resource_filename_sans_suffix = "_".join(
+            [
+                resource_lookup_dto.lang_code,
+                resource_lookup_dto.resource_type,
+                resource_lookup_dto.book_code,
+                str(chapter_num),
+            ]
+        )
+        resource_filepath_sans_suffix = join(working_dir, resource_filename_sans_suffix)
+        input_file = f"{resource_filepath_sans_suffix}.usfm"
+        output_file = f"{resource_filepath_sans_suffix}.html"
         chapter_html_content = usfm_chapter_html(
-            chapter_usfm, resource_lookup_dto, chapter_num
+            chapter_usfm, input_file, output_file, chapter_num
         )
         cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
             chapter_html_content

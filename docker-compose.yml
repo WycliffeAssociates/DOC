@@ -7,6 +7,20 @@ services:
       timeout: 3s
       retries: 5
     restart: unless-stopped
+  usfmparserapi:
+    build: ./dotnet/USFMParserApi
+    ports:
+      - 8081:80
+    volumes:
+      - shared_assets:/app/assets_download
+      - shared_working:/app/working_temp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
   api:
     image: wycliffeassociates/doc:${IMAGE_TAG}
     env_file:
@@ -28,6 +42,8 @@ services:
       - shared:/app/document_output
       - shared_assets:/app/assets_download
     depends_on:
+      usfmparserapi:
+        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
@@ -50,6 +66,7 @@ services:
       SEND_EMAIL: ${SEND_EMAIL}
     volumes:
       - shared:/app/document_output
+      - shared_working:/app/working_temp
       - shared_assets:/app/assets_download
     depends_on:
       api:
@@ -113,4 +130,5 @@ services:
       retries: 10
 volumes:
   shared:
+  shared_working:
   shared_assets:

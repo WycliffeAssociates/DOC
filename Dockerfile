@@ -50,26 +50,6 @@ RUN ebook-convert --version
 
 WORKDIR /app
 
-RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
-    && chmod +x ./dotnet-install.sh
-
-# Create a directory for .NET SDK
-RUN mkdir -p /home/appuser/.dotnet
-
-# Install .NET SDK to the created directory
-RUN ./dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet
-
-COPY dotnet ./
-
-# Set environment variables for .NET
-ENV DOTNET_ROOT=/usr/share/dotnet
-ENV PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-
-# Install dependencies and build the .NET project
-RUN cd USFMParserDriver && \
-    ${DOTNET_ROOT}/dotnet restore && \
-    ${DOTNET_ROOT}/dotnet build --configuration Release
 
 # Make the output directory where resource asset files are cloned.
 RUN mkdir -p assets_download
@@ -101,6 +81,7 @@ COPY ./tests ./tests
 COPY .env .
 COPY template.docx .
 COPY template_compact.docx .
+
 # Next two lines are useful when the data (graphql) API are down so
 # that we can still test
 # COPY resources.json assets_download/resources.json
@@ -123,7 +104,7 @@ RUN mypy --strict --install-types --non-interactive backend/passages/**/*.py
 RUN mypy --strict --install-types --non-interactive tests/**/*.py
 
 # Change ownership of app specific directories to the non-root user
-RUN chown -R appuser:appgroup /app /home/appuser/calibre-bin /usr/share/dotnet
+RUN chown -R appuser:appgroup /app /home/appuser/calibre-bin
 
 # Switch to the non-root user
 USER appuser

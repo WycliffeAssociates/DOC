@@ -67,7 +67,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bne", "reg", "gal"),
     ("bof", "reg", "mat"),
     ("bou", "reg", "gen"),
-    ("btd-x-boang", "reg", "mat"),
+    # ("btd-x-boang", "reg", "mat"), #  unavailable from data API as of 6/13/2025
     ("btd-x-boang", "reg", "1ti"),
     ("btd-x-boang", "reg", "phm"),
     ("btm", "reg", "phm"),
@@ -142,7 +142,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("kod", "reg", "phm"),
     ("kqi", "reg", "2th"),
     ("kqi", "reg", "2ti"),
-    # ("kqi", "reg", "mrk"), # book not available from data api anymore
+    # ("kqi", "reg", "mrk"), # book no longer available from data api
     ("kqi", "reg", "heb"),
     ("kqi", "reg", "1pe"),
     ("kqi", "reg", "tit"),
@@ -164,7 +164,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("lky", "reg", "2th"),
     ("lbx-x-capuracu", "reg", "eph"),
     ("mfq-x-mual", "reg", "1ki"),
-    ("mgs", "reg", "php"),
+    # ("mgs", "reg", "php"), # book no longer available from data api
     ("mgs", "reg", "2th"),
     ("mhi-x-burolo", "reg", "mat"),
     ("mhi-x-burolo", "reg", "2jn"),

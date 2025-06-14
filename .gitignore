@@ -19,3 +19,5 @@ tests_output.log
 /build/
 /DOC.egg-info/
 /assets_download/
+/dotnet/USFMParserApi/bin/
+/dotnet/USFMParserApi/obj/

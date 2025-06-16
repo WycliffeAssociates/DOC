@@ -296,6 +296,7 @@ def generate_passages_docx_document(
     return document_request_key_
 
 
+@worker.app.task
 def stet_exhaustive_verse_list(
     lang_code: str = "en",
     filepath: str = "backend/passages/data/Spiritual_Terms_Evaluation_Exhaustive_Verse_List.txt",

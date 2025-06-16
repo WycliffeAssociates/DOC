@@ -51,3 +51,13 @@ test('test that you can select gateway tab after first selecting heart language 
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.getByText('Matius 2:1-')).toBeVisible()
 })
+
+test('test add stet verse list to passages', async ({ page }) => {
+  await page.goto('http://localhost:8001/passages')
+  await page.getByText('Cebuano').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Add STET Passages').click()
+  await page.getByText('Mateo 1:1', { exact: true }).click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Generate File' }).click()
+})

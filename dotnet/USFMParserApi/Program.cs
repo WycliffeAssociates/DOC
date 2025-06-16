@@ -56,7 +56,6 @@ namespace USFMParserApi
                 return BadRequest("Invalid request.");
             }
 
-            // if (!System.IO.File.Exists(Path.Combine("/app/assets_download", request.InputFile)))
             if (!System.IO.File.Exists(request.InputFile))
             {
                 return NotFound("Input file does not exist.");

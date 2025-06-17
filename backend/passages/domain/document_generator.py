@@ -12,6 +12,7 @@ from doc.domain.parsing import split_chapter_into_verses, usfm_book_content
 from doc.domain.resource_lookup import (
     RESOURCE_TYPE_CODES_AND_NAMES,
     book_codes_for_lang_from_usfm_only,
+    maybe_correct_book_name,
     prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
@@ -334,7 +335,10 @@ def stet_exhaustive_verse_list(
             bible_reference.book_code, bible_reference.book_name
         )
         logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
-        bible_reference.book_name = maybe_localized_book_name
+        localized_book_name = maybe_correct_book_name(
+            lang_code, maybe_localized_book_name
+        )
+        bible_reference.book_name = localized_book_name
     return unique_bible_references
 
 

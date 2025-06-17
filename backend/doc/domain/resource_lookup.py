@@ -381,7 +381,6 @@ def resource_types(
         # Process cloned repositories
         for url, resource_filepath, resource_type in repo_clone_list:
             if resource_type:
-                # Determine book assets
                 book_assets = []
                 if resource_type in ["tq", "tn", "tn-condensed"]:
                     book_assets = [
@@ -420,7 +419,6 @@ def resource_types(
                         for book_code in book_codes
                         if book_code in book_codes_
                     ]
-                # Check if at least one selected book exists in the repo
                 if book_assets or resource_type == "tw":
                     resource_types.append(
                         (

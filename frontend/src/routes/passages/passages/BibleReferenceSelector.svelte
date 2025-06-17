@@ -37,29 +37,6 @@
 </script>
 
 <div class="flex flex-col">
-  <!-- Select NT Survey RG passages button -->
-  <div class="flex h-[56px] items-center px-4 mb-2">
-    <input
-      id="add-nt-survey-passages-checkbox"
-      type="checkbox"
-      class="checkbox-target checkbox-style"
-      on:click={handleAddNTSurveyRGPassagesClick}
-    />
-    <label for="add-nt-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
-      >Add NT Survey Reviewer's Guide Passages</label
-    >
-  </div>
-  <div class="flex h-[56px] items-center px-4 mb-2">
-    <input
-      id="add-stet-passages-checkbox"
-      type="checkbox"
-      class="checkbox-target checkbox-style"
-      on:click={handleAddSTETPassagesClick}
-    />
-    <label for="add-stet-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
-      >Add STET Passages</label
-    >
-  </div>
   <!-- <button -->
   <!--   type="button" -->
   <!--   class="mt-4 ml-2 w-1/2 rounded-md -->
@@ -129,5 +106,27 @@
     >
       Add Passage
     </button>
+  </div>
+  <div class="flex h-[56px] items-center px-4 mb-2">
+    <input
+      id="add-nt-survey-passages-checkbox"
+      type="checkbox"
+      class="checkbox-target checkbox-style"
+      on:click={handleAddNTSurveyRGPassagesClick}
+    />
+    <label for="add-nt-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
+      >Add NT Survey Reviewer's Guide Passages</label
+    >
+  </div>
+  <div class="flex h-[56px] items-center px-4 mb-2">
+    <input
+      id="add-stet-passages-checkbox"
+      type="checkbox"
+      class="checkbox-target checkbox-style"
+      on:click={handleAddSTETPassagesClick}
+    />
+    <label for="add-stet-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
+      >Add STET Passages</label
+    >
   </div>
 </div>

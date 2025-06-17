@@ -94,6 +94,8 @@ async def initialize_assets() -> None:
             makedirs(DOCKER_EN_RG_DIR, exist_ok=True)
             if not exists(DOCKER_DOCX_FILE_DEST):
                 shutil.copy(DOCKER_DOCX_FILE_SRC, DOCKER_DOCX_FILE_DEST)
+                if not exists(DOCKER_DOCX_FILE_DEST):
+                    raise AssertionError("en_rg_nt_survey.docx not copied into place at startup!")
         elif exists(LOCAL_ASSETS_DOWNLOAD_DIR):  # Executing outside Docker container
             makedirs(LOCAL_EN_RG_DIR, exist_ok=True)
             if not exists(LOCAL_DOCX_FILE_DEST):

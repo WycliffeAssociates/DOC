@@ -404,7 +404,7 @@ def resource_types(
                     book_assets = parsing.find_usfm_files(resource_filepath)
                 elif resource_type == "rg":
                     between_texts, bible_reference_strs = find_bible_references(
-                        join(resource_filepath, docx_file_path)
+                        join(en_rg, docx_file_path)
                     )
                     bible_references = [
                         parse_bible_reference(bible_reference)

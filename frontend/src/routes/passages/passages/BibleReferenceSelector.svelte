@@ -37,16 +37,6 @@
 </script>
 
 <div class="flex flex-col">
-  <!-- <button -->
-  <!--   type="button" -->
-  <!--   class="mt-4 ml-2 w-1/2 rounded-md -->
-  <!--         border border-[#E5E8EB] bg-[#F2F3F5] p-4 -->
-  <!--         text-center text-xl text-[#B3B9C2] hover:bg-[#efefef]" -->
-  <!--   on:click={handleAddNTSurveyRGPassagesClick} -->
-  <!--   disabled={loading} -->
-  <!-- > -->
-  <!--   {loading ? 'Loading...' : 'Add NT Survey RG Passages'} -->
-  <!-- </button> -->
   <!-- Bible Book Dropdown -->
   <div class="flex items-center">
     <div class="mr-2">
@@ -63,7 +53,6 @@
         {/each}
       </select>
     </div>
-
     <!-- Chapter Dropdown -->
     <div class="mr-2">
       <label for="chapter" class="block text-sm font-medium text-gray-700">Chapter</label>
@@ -82,7 +71,6 @@
         {/each}
       </select>
     </div>
-
     <!-- Verse Reference Input -->
     <div class="mr-2">
       <label for="verses" class="block text-sm font-medium text-gray-700">Verse(s)</label>
@@ -95,8 +83,6 @@
         bind:value={verseReference}
       />
     </div>
-
-    <!-- Add Passage Button -->
     <button
       type="button"
       class="mt-4 ml-2 w-1/2 rounded-md

@@ -904,6 +904,7 @@ def books(
     bc_resource_type: str = BC_RESOURCE_TYPE,
     rg_resource_type: str = RG_RESOURCE_TYPE,
     docx_file_path: str = "en_rg_nt_survey.docx",
+    en_rg_dir: str = settings.EN_RG_DIR,
 ) -> tuple[
     Sequence[USFMBook],
     Sequence[TNBook],
@@ -952,7 +953,7 @@ def books(
             )
             bc_books.append(bc_book)
         elif resource_lookup_dto.resource_type == rg_resource_type:
-            path = join(resource_dir, docx_file_path)
+            path = join(en_rg_dir, docx_file_path)
             # logger.debug("About to get_rg_books from: %s", path)
             rg_books = get_rg_books(
                 path,

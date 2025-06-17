@@ -954,7 +954,7 @@ def books(
             bc_books.append(bc_book)
         elif resource_lookup_dto.resource_type == rg_resource_type:
             path = join(en_rg_dir, docx_file_path)
-            # logger.debug("About to get_rg_books from: %s", path)
+            logger.debug("About to get_rg_books from: %s", path)
             rg_books = get_rg_books(
                 path,
                 resource_lookup_dto.lang_code,

@@ -181,7 +181,7 @@
     </div>
     {#if ($langCountStore > 0 && (!lang0ResourceTypesAndNames || (lang0ResourceTypesAndNames && lang0ResourceTypesAndNames.length == 0))) || ($langCountStore > 1 && (!lang1ResourceTypesAndNames || (lang1ResourceTypesAndNames && lang1ResourceTypesAndNames.length == 0)))}
       <ProgressIndicator
-        labelString="Analyzing resources available for books chosen, please be patient"
+        labelString="Analyzing resources available for languages and books chosen, please be patient"
       />
     {:else if windowWidth < TAILWIND_SM_MIN_WIDTH}
       {#if $langCountStore > 0}

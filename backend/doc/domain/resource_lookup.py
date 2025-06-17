@@ -436,6 +436,7 @@ def batch_clone_git_repos(
     repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
+    en_rg: str = settings.EN_RG_DIR,
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.
@@ -447,7 +448,7 @@ def batch_clone_git_repos(
     clone_commands = []
     for url, resource_filepath in repos:
         if isdir(resource_filepath):
-            if basename(resource_filepath) == "en_rg":
+            if basename(resource_filepath) == en_rg:
                 logger.info(f"Preserving special directory: {resource_filepath}")
                 continue
             git_dir = join(resource_filepath, ".git")

@@ -159,7 +159,7 @@ def convert_usfm_chapter_to_html(
     try:
         response = requests.post(api_url, json=payload)
         # response.raise_for_status()  # Raise an error for 4xx/5xx responses
-        if response.json():  # response should return True on success
+        if response.json():
             logger.info("Conversion successful: %s", output_file)
         else:
             logger.error("Conversion failed with an unknown error.")

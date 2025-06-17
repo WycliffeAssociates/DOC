@@ -421,7 +421,6 @@ def document_html_header(
     if generate_docx:
         template = env.get_template("html/header_no_css_enclosing.html")
         return template.render()
-
     if assembly_layout_kind and assembly_layout_kind in [
         AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,

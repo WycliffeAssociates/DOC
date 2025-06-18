@@ -109,24 +109,6 @@
     verseReference = target.value
   }
 
-  const addPassage = () => {
-    if (selectedBookCode && selectedChapter && verseReference) {
-      const bookName =
-        bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'
-      addPassageReference(
-        $langCodeAndNameStore.split(',')[0],
-        selectedBookCode,
-        bookName,
-        Number(selectedChapter),
-        verseReference,
-        null,
-        null
-      )
-      selectedBookCode = ''
-      selectedChapter = ''
-      verseReference = ''
-    }
-  }
 
   async function getNTSurveyRGPassages(
     langCode: string,
@@ -225,7 +207,7 @@
       {#if !bookCodesAndNames || bookCodesAndNames.length === 0}
         <div class="ml-4">
           <ProgressIndicator
-            labelString="Acquiring and analyzing books available for language chosen, please be patient..."
+            labelString="Acquiring and analyzing books available for language chosen, please be patient"
           />
         </div>
       {:else}
@@ -238,7 +220,6 @@
           {handleBookChange}
           {handleChapterChange}
           {handleVerseInput}
-          {addPassage}
           {addNTSurveyRGPassages}
           {addSTETPassages}
         />

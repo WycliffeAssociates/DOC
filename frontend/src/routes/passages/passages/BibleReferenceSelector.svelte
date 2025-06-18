@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { passagesStore, addPassageReference } from '$lib/passages/stores/PassagesStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+
   export let bookCodesAndNames: [string, string][] = []
   export let selectedBookCode: string = ''
   export let selectedChapter: string = ''
@@ -8,32 +11,68 @@
   export let handleBookChange: (event: Event) => void
   export let handleChapterChange: (event: Event) => void
   export let handleVerseInput: (event: Event) => void
-  export let addPassage: () => void
   export let addNTSurveyRGPassages: () => Promise<void>
   export let addSTETPassages: () => Promise<void>
 
   let loading = false
+  let ntSurveySuccessMessage: string = ''
+  let stetSuccessMessage: string = ''
+  let passageSuccessMessage: string = ''
 
   async function handleAddNTSurveyRGPassagesClick() {
     loading = true
     try {
       await addNTSurveyRGPassages()
+      ntSurveySuccessMessage = '✔'
+      setTimeout(() => {
+        ntSurveySuccessMessage = ''
+      }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
       loading = false
     }
   }
+
   async function handleAddSTETPassagesClick() {
     loading = true
     try {
       await addSTETPassages()
+      stetSuccessMessage = '✔'
+      setTimeout(() => {
+        stetSuccessMessage = ''
+      }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
       loading = false
     }
   }
+
+
+  const addPassage = () => {
+    if (selectedBookCode && selectedChapter && verseReference) {
+      const bookName =
+        bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'
+      addPassageReference(
+        $langCodeAndNameStore.split(',')[0],
+        selectedBookCode,
+        bookName,
+        Number(selectedChapter),
+        verseReference,
+        null,
+        null
+      )
+      passageSuccessMessage = '✔'
+      setTimeout(() => {
+        passageSuccessMessage = ''
+      }, 4000)
+      selectedBookCode = ''
+      selectedChapter = ''
+      verseReference = ''
+    }
+  }
+
 </script>
 
 <div class="flex flex-col">
@@ -100,6 +139,11 @@
     <label for="add-nt-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
       >Add NT Survey Reviewers' Guide Passages</label
     >
+    {#if ntSurveySuccessMessage}
+      <div class="success-message text-green-500 ml-2">
+        {ntSurveySuccessMessage}
+      </div>
+    {/if}
   </div>
   <div class="flex h-[56px] items-center mb-2">
     <input
@@ -111,5 +155,17 @@
     <label for="add-stet-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
       >Add STET Passages</label
     >
+    {#if stetSuccessMessage}
+      <div class="success-message text-green-500 ml-2">
+        {stetSuccessMessage}
+      </div>
+    {/if}
   </div>
 </div>
+
+<style>
+  .success-message {
+    transition: opacity 1s ease;
+    opacity: 1;
+  }
+</style>

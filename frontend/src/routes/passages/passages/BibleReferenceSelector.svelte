@@ -270,6 +270,13 @@
     >
       Add Passage
     </button>
+    <div class="loader-container">
+      {#if passageSuccessMessage}
+        <div class="success-message text-green-500 ml-2">
+          {passageSuccessMessage}
+        </div>
+      {/if}
+    </div>
   </div>
   <div class="flex h-[56px] items-center mb-2">
     <input

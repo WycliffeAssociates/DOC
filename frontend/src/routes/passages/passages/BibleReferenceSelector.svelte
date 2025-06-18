@@ -283,11 +283,15 @@
       class="pl-1 text-xl text-[#33445C] {isLoadingNTSurvey ? 'text-gray-400' : ''}"
       >Add NT Survey Reviewers' Guide Passages</label
     >
-    {#if ntSurveySuccessMessage}
-      <div class="success-message text-green-500 ml-2">
-        {ntSurveySuccessMessage}
-      </div>
-    {/if}
+    <div class="loader-container">
+      {#if isLoadingNTSurvey}
+        <div class="loader"></div>
+      {:else if ntSurveySuccessMessage}
+        <div class="success-message text-green-500 ml-2">
+          {ntSurveySuccessMessage}
+        </div>
+      {/if}
+    </div>
   </div>
   <div class="flex h-[56px] items-center mb-2">
     <input
@@ -296,15 +300,20 @@
       class="checkbox-target checkbox-style"
       on:click={handleSTETCheckboxClick}
     />
-    <label for="add-stet-passages-checkbox" class="pl-1 text-xl
-                                                   text-[#33445C] {isLoadingStetPassages ? 'text-gray-400' : ''}"
+    <label
+      for="add-stet-passages-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingStetPassages ? 'text-gray-400' : ''}"
       >Add STET Passages</label
     >
-    {#if stetSuccessMessage}
-      <div class="success-message text-green-500 ml-2">
-        {stetSuccessMessage}
-      </div>
-    {/if}
+    <div class="loader-container">
+      {#if isLoadingStetPassages}
+        <div class="loader"></div>
+      {:else if stetSuccessMessage}
+        <div class="success-message text-green-500 ml-2">
+          {stetSuccessMessage}
+        </div>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -312,5 +321,27 @@
   .success-message {
     transition: opacity 1s ease;
     opacity: 1;
+  }
+
+  .loader-container {
+    display: flex;
+    align-items: center;
+  }
+  .loader {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #4caf50;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 </style>

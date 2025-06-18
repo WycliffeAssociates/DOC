@@ -37,7 +37,6 @@
 </script>
 
 <div class="flex flex-col">
-  <!-- Bible Book Dropdown -->
   <div class="flex items-center">
     <div class="mr-2">
       <label for="book" class="block text-sm font-medium text-gray-700">Bible Book</label>
@@ -53,7 +52,6 @@
         {/each}
       </select>
     </div>
-    <!-- Chapter Dropdown -->
     <div class="mr-2">
       <label for="chapter" class="block text-sm font-medium text-gray-700">Chapter</label>
       <select
@@ -71,7 +69,6 @@
         {/each}
       </select>
     </div>
-    <!-- Verse Reference Input -->
     <div class="mr-2">
       <label for="verses" class="block text-sm font-medium text-gray-700">Verse(s)</label>
       <input

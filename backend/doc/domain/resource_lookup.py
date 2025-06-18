@@ -62,7 +62,7 @@ RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
     "f10": "French Louis Segond 1910 Bible",
     "nav": "New Arabic Version (Ketab El Hayat)",
     "reg": "Regular",
-    "rg": "NT Survey Reviewer's Guide",
+    "rg": "NT Survey Reviewers' Guide",
     "tn": "Translation Notes",
     "tn-condensed": "Condensed Translation Notes",
     "tq": "Translation Questions",
@@ -1238,7 +1238,7 @@ def nt_survey_rg_passages(
     lang_code: str = "en",
     lang_name: str = "English",
     docx_file_path: str = "en_rg_nt_survey.docx",
-    resource_type_name: str = "NT Survey Reviewer's Guide",
+    resource_type_name: str = "NT Survey Reviewers' Guide",
     lang_direction: LangDirEnum = LangDirEnum.LTR,
     resource_dir: str = settings.EN_RG_DIR,
 ) -> list[BibleReference]:

@@ -52,7 +52,6 @@
     return chaptersInBooks
   }
 
-  // Resolve promise for data reactively
   let bookCodesAndNames: Array<[string, string]> = []
   let chapters: Record<string, number[]> = {}
 
@@ -125,8 +124,6 @@
         null,
         null
       )
-
-      // Reset fields for the next entry
       selectedBookCode = ''
       selectedChapter = ''
       verseReference = ''
@@ -223,9 +220,7 @@
 
 <WizardBreadcrumb />
 
-<!-- container for "center" div -->
 <div class="flex flex-grow flex-row overflow-y-auto overflow-x-hidden">
-  <!-- center -->
   <div class="flex flex-1 flex-col bg-white sm:w-2/3">
     <h3 class="ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">Add Passages</h3>
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">

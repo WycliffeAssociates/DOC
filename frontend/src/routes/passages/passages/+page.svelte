@@ -11,7 +11,6 @@
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
-  import Modal from '$lib/Modal.svelte'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'

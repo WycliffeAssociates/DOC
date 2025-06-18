@@ -93,7 +93,7 @@
       Add Passage
     </button>
   </div>
-  <div class="flex h-[56px] items-center px-4 mb-2">
+  <div class="flex h-[56px] items-center mb-2">
     <input
       id="add-nt-survey-passages-checkbox"
       type="checkbox"
@@ -101,10 +101,10 @@
       on:click={handleAddNTSurveyRGPassagesClick}
     />
     <label for="add-nt-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
-      >Add NT Survey Reviewer's Guide Passages</label
+      >Add NT Survey Reviewers' Guide Passages</label
     >
   </div>
-  <div class="flex h-[56px] items-center px-4 mb-2">
+  <div class="flex h-[56px] items-center mb-2">
     <input
       id="add-stet-passages-checkbox"
       type="checkbox"

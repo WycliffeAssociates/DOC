@@ -142,8 +142,12 @@
     verseReference = target.value
   }
 
+  let isLoadingNTSurvey = false
+  let isLoadingStetPassages = false
+
   async function handleAddNTSurveyRGPassagesClick() {
     loading = true
+    isLoadingNTSurvey = true
     try {
       await addNTSurveyRGPassages()
       ntSurveySuccessMessage = '✔'
@@ -154,6 +158,7 @@
       console.error('Error:', error)
     } finally {
       loading = false
+      isLoadingNTSurvey = false
     }
   }
 
@@ -166,6 +171,7 @@
 
   async function handleAddSTETPassagesClick() {
     loading = true
+    isLoadingStetPassages = true
     try {
       await addSTETPassages()
       stetSuccessMessage = '✔'
@@ -176,6 +182,7 @@
       console.error('Error:', error)
     } finally {
       loading = false
+      isLoadingStetPassages = false
     }
   }
 
@@ -271,7 +278,9 @@
       class="checkbox-target checkbox-style"
       on:click={handleNTSurveyCheckboxClick}
     />
-    <label for="add-nt-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
+    <label
+      for="add-nt-survey-passages-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingNTSurvey ? 'text-gray-400' : ''}"
       >Add NT Survey Reviewers' Guide Passages</label
     >
     {#if ntSurveySuccessMessage}
@@ -287,7 +296,8 @@
       class="checkbox-target checkbox-style"
       on:click={handleSTETCheckboxClick}
     />
-    <label for="add-stet-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
+    <label for="add-stet-passages-checkbox" class="pl-1 text-xl
+                                                   text-[#33445C] {isLoadingStetPassages ? 'text-gray-400' : ''}"
       >Add STET Passages</label
     >
     {#if stetSuccessMessage}

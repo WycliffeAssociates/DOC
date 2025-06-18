@@ -17,6 +17,8 @@
   let ntSurveySuccessMessage: string = ''
   let stetSuccessMessage: string = ''
   let passageSuccessMessage: string = ''
+  let checkIcon =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 0A8 8 0 1 0 8 16A8 8 0 0 0 8 0zM3.5 8.5l2.5 2.5L12.5 5l-1-1l-7 7l-2.5-2.5l-1 1z"/></svg>'
 
   let selectedBookCode: string = ''
   let selectedChapter: string = ''
@@ -264,8 +266,10 @@
     <button
       type="button"
       class="mt-4 ml-2 w-1/2 rounded-md
-           border border-[#E5E8EB] bg-[#F2F3F5] p-4
-           text-center text-xl text-[#B3B9C2] hover:bg-[#efefef]"
+           border border-[#E5E8EB] p-4
+           text-center text-xl text-white
+           add-passage-button
+           "
       on:click={addPassage}
     >
       Add Passage
@@ -273,7 +277,7 @@
     <div class="loader-container">
       {#if passageSuccessMessage}
         <div class="success-message text-green-500 ml-2">
-          {passageSuccessMessage}
+          {@html checkIcon}
         </div>
       {/if}
     </div>
@@ -295,7 +299,7 @@
         <div class="loader"></div>
       {:else if ntSurveySuccessMessage}
         <div class="success-message text-green-500 ml-2">
-          {ntSurveySuccessMessage}
+          {@html checkIcon}
         </div>
       {/if}
     </div>
@@ -317,7 +321,7 @@
         <div class="loader"></div>
       {:else if stetSuccessMessage}
         <div class="success-message text-green-500 ml-2">
-          {stetSuccessMessage}
+          {@html checkIcon}
         </div>
       {/if}
     </div>
@@ -350,5 +354,13 @@
     100% {
       transform: rotate(360deg);
     }
+  }
+  * :global(.add-passage-button) {
+    background:
+      linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #33445c, #33445c);
+  }
+  * :global(.add-passage-button:hover) {
+    background:
+      linear-gradient(180deg, #0765ec 0%, #0149c8 100%), linear-gradient(0deg, #33445c, #33445c);
   }
 </style>

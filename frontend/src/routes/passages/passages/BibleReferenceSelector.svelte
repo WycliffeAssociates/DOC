@@ -24,7 +24,6 @@
   let chaptersForSelectedBook: number[] = []
   let chapters: Record<string, number[]> = {}
 
-
   onMount(() => {
     getChaptersInBooks()
       .then((chaptersInBooks_) => {
@@ -45,7 +44,6 @@
     }
     return chaptersInBooks
   }
-
 
   async function getNTSurveyRGPassages(
     langCode: string,
@@ -123,7 +121,6 @@
     }
   }
 
-
   const handleBookChange = (event: Event) => {
     const target = event.target as HTMLSelectElement
     selectedBookCode = target.value
@@ -145,7 +142,6 @@
     verseReference = target.value
   }
 
-
   async function handleAddNTSurveyRGPassagesClick() {
     loading = true
     try {
@@ -158,6 +154,13 @@
       console.error('Error:', error)
     } finally {
       loading = false
+    }
+  }
+
+  const handleNTSurveyCheckboxClick = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.checked) {
+      handleAddNTSurveyRGPassagesClick()
     }
   }
 
@@ -176,6 +179,12 @@
     }
   }
 
+  const handleSTETCheckboxClick = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.checked) {
+      handleAddSTETPassagesClick()
+    }
+  }
 
   const addPassage = () => {
     if (selectedBookCode && selectedChapter && verseReference) {
@@ -199,7 +208,6 @@
       verseReference = ''
     }
   }
-
 </script>
 
 <div class="flex flex-col">
@@ -261,7 +269,7 @@
       id="add-nt-survey-passages-checkbox"
       type="checkbox"
       class="checkbox-target checkbox-style"
-      on:click={handleAddNTSurveyRGPassagesClick}
+      on:click={handleNTSurveyCheckboxClick}
     />
     <label for="add-nt-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
       >Add NT Survey Reviewers' Guide Passages</label
@@ -277,7 +285,7 @@
       id="add-stet-passages-checkbox"
       type="checkbox"
       class="checkbox-target checkbox-style"
-      on:click={handleAddSTETPassagesClick}
+      on:click={handleSTETCheckboxClick}
     />
     <label for="add-stet-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
       >Add STET Passages</label

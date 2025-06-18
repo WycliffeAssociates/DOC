@@ -93,7 +93,6 @@
     const target = event.target as HTMLSelectElement
     selectedBookCode = target.value
     console.log('Book Selected:', selectedBookCode)
-
     // Manually reset chapter only when book changes, avoiding reactivity loop
     selectedChapter = ''
     chaptersForSelectedBook = chapters[selectedBookCode] || []

@@ -11,14 +11,14 @@ from doc.domain.model import Attachment
 from doc.domain.parsing import split_chapter_into_verses, usfm_book_content
 from doc.domain.resource_lookup import (
     RESOURCE_TYPE_CODES_AND_NAMES,
+    book_codes_for_lang_from_usfm_only,
+    maybe_correct_book_name,
     prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
     resource_types,
 )
-from passages.utils.docx_utils import add_footer, add_header
-from passages.domain.model import PassageDto, PassageReferenceDto
-from passages.domain.parser import verse_text_html
+from doc.reviewers_guide.model import BibleReference
 from doc.utils.file_utils import docx_filepath, file_needs_update
 from docx import Document  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
@@ -26,6 +26,10 @@ from docx.oxml import parse_xml
 from docx.shared import Inches  # type: ignore
 from docx.table import _Cell  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
+from passages.domain.model import PassageDto, PassageReferenceDto
+from passages.domain.parser import verse_text_html
+from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
+from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
 
 logger = settings.logger(__name__)
@@ -291,3 +295,73 @@ def generate_passages_docx_document(
     else:
         logger.debug("Cache hit for %s", docx_filepath_)
     return document_request_key_
+
+
+@worker.app.task
+def stet_exhaustive_verse_list(
+    lang_code: str = "en",
+    filepath: str = "backend/passages/data/Spiritual_Terms_Evaluation_Exhaustive_Verse_List.txt",
+) -> Sequence[BibleReference]:
+    """
+    >>> from passages.domain.document_generator import stet_exhaustive_verse_list
+    >>> result = stet_exhaustive_verse_list()
+    >>> result[0]
+    Matthew 10:1
+    """
+    bible_references = []
+    with open(filepath, "r") as fi:
+        text = fi.read()
+        parsed = parse_bible_blocks(text)
+        for sublist in parsed.values():
+            for value in sublist:
+                if len(value.split()) >= 2:
+                    bible_references.append(parse_bible_reference(value))
+    # Remove duplicates and sort based on the book index, chapter, and verse
+    unique_bible_references = sorted(
+        set(bible_references),
+        key=lambda ref: (
+            BOOK_INDEX[ref.book_code],
+            ref.start_chapter,
+            ref.start_chapter_verse_ref,
+        ),
+    )
+    # Localize the book names
+    book_name_map = {
+        book_code_and_name[0]: book_code_and_name[1]
+        for book_code_and_name in book_codes_for_lang_from_usfm_only(lang_code)
+    }
+    for bible_reference in unique_bible_references:
+        maybe_localized_book_name = book_name_map.get(
+            bible_reference.book_code, bible_reference.book_name
+        )
+        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
+        localized_book_name = maybe_correct_book_name(
+            lang_code, maybe_localized_book_name
+        )
+        bible_reference.book_name = localized_book_name
+    return unique_bible_references
+
+
+def get_book_code(book_name: str) -> str:
+    return next(code for code, name in BOOK_NAMES.items() if name == book_name)
+
+
+def parse_bible_reference(book_and_reference_raw: str) -> BibleReference:
+    book_name_and_reference = book_and_reference_raw.split()
+    book_name = (
+        " ".join(book_name_and_reference[:-1])
+        if len(book_name_and_reference) > 2
+        else book_name_and_reference[0]
+    )
+    chapter_reference = book_name_and_reference[-1]
+    chapter = int(chapter_reference.split(":")[0])
+    chapter_verse_ref = chapter_reference.split(":")[1]
+    bible_reference = BibleReference(
+        book_code=get_book_code(book_name),
+        book_name=book_name,
+        start_chapter=chapter,
+        start_chapter_verse_ref=chapter_verse_ref,
+        end_chapter=None,
+        end_chapter_verse_ref=None,
+    )
+    return bible_reference

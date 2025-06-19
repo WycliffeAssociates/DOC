@@ -1,15 +1,14 @@
 import json
-from fastapi import APIRouter
+from typing import Sequence
 
 import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
-from passages.domain import document_generator
-from passages.domain import model
-
-from fastapi import HTTPException, status
-
+from doc.reviewers_guide.model import BibleReference
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
+from passages.domain import document_generator, model
+from passages.domain.document_generator import stet_exhaustive_verse_list
 
 router = APIRouter()
 
@@ -62,3 +61,8 @@ async def task_status(task_id: str) -> JSONResponse:
             "state": res.state,
         }
     )
+
+
+@router.get("/passages/stet_verse_list/{lang_code}")
+async def stet_verse_list(lang_code: str) -> Sequence[BibleReference]:
+    return stet_exhaustive_verse_list(lang_code)

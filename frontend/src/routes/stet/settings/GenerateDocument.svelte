@@ -21,6 +21,7 @@
   import { getCode } from '$lib/stet/utils'
   import LogRocket from 'logrocket'
   import TaskStatus from './TaskStatus.svelte'
+  import ErrorAlertIcon from '$lib/ErrorAlertIcon.svelte'
 
   let apiRootUrl = env.PUBLIC_BACKEND_API_URL
   let fileServerUrl: string = env.PUBLIC_FILE_SERVER_URL
@@ -164,16 +165,7 @@
 <div class="bg-white pb-4 pt-12">
   {#if $errorStore}
     <div class="bg-white">
-      <svg
-        class="m-auto"
-        width="44"
-        height="38"
-        viewBox="0 0 44 38"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path d="M24 24H20V14H24V24ZM24 32H20V28H24V32ZM0 38H44L22 0L0 38Z" fill="#B85659" />
-      </svg>
+      <ErrorAlertIcon />
       <div class="m-auto"><h3 class="text-center text-[#B85659]">Uh Oh...</h3></div>
       <div class="m-auto">
         <p class="text-xl text-[#B3B9C2]">
@@ -286,16 +278,18 @@
 
 <style lang="postcss">
   * :global(.gray-gradiant) {
-    background: linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05)),
+    background:
+      linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05)),
       linear-gradient(0deg, rgba(20, 14, 8, 0), rgba(20, 14, 8, 0));
   }
   * :global(.gray-gradient:hover) {
-    background: linear-gradient(0deg, rgba(20, 14, 8, 0.3), rgba(20, 14, 8, 0.3)),
+    background:
+      linear-gradient(0deg, rgba(20, 14, 8, 0.3), rgba(20, 14, 8, 0.3)),
       linear-gradient(0deg, rgba(20, 14, 8, 0.05), rgba(20, 14, 8, 0.05));
   }
   * :global(.blue-gradient) {
-    background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%),
-      linear-gradient(0deg, #33445c, #33445c);
+    background:
+      linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #33445c, #33445c);
   }
   * :global(.blue-gradient-bar) {
     background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%);

@@ -4,19 +4,16 @@
   import { onMount } from 'svelte'
   import {
     PUBLIC_BOOK_CODES_FROM_USFM_ONLY_URL,
-    PUBLIC_CHAPTERS_IN_BOOKS_URL,
-    PUBLIC_NT_SURVEY_RG_PASSAGES_URL,
     PUBLIC_TAILWIND_SM_MIN_WIDTH
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
-  import Modal from '$lib/Modal.svelte'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
   import { passagesStore, addPassageReference } from '$lib/passages/stores/PassagesStore'
-  import type { BibleReference } from "./model"
+  import CheckIcon from '$lib/CheckIcon.svelte'
 
   // For use by Mobile UI
   let showWizardBasketModal = false
@@ -37,22 +34,8 @@
     return bookCodesAndNames
   }
 
-  async function getChaptersInBooks(
-    apiRootUrl = env.PUBLIC_BACKEND_API_URL,
-    chaptersInBooksUrl = <string>PUBLIC_CHAPTERS_IN_BOOKS_URL
-  ): Promise<Record<string, number[]>> {
-    const response = await fetch(`${apiRootUrl}${chaptersInBooksUrl}`)
-    const chaptersInBooks: Record<string, number[]> = await response.json()
-    if (!response.ok) {
-      console.error(response.statusText)
-      throw new Error(response.statusText)
-    }
-    return chaptersInBooks
-  }
 
-  // Resolve promise for data reactively
   let bookCodesAndNames: Array<[string, string]> = []
-  let chapters: Record<string, number[]> = {}
 
   onMount(() => {
     let langCode = $langCodeAndNameStore.split(',')[0]
@@ -64,11 +47,6 @@
       })
       .catch((err) => console.error(err))
 
-    getChaptersInBooks()
-      .then((chaptersInBooks_) => {
-        chapters = { ...chaptersInBooks_ } // Ensure reactivity with {...blah}
-      })
-      .catch((err) => console.error(err))
   })
 
   function removePassage(id: number) {
@@ -83,99 +61,12 @@
     }
   }
 
-  let selectedBookCode: string = ''
-  let selectedChapter: string = ''
-  let verseReference: string = ''
-  let chaptersForSelectedBook: number[] = []
 
-  const handleBookChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement
-    selectedBookCode = target.value
-    console.log('Book Selected:', selectedBookCode)
 
-    // Manually reset chapter only when book changes, avoiding reactivity loop
-    selectedChapter = ''
-    chaptersForSelectedBook = chapters[selectedBookCode] || []
-    console.log('Chapters for selected book:', chaptersForSelectedBook)
-  }
-
-  const handleChapterChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement
-    selectedChapter = target.value
-    console.log('Chapter selected:', selectedChapter)
-  }
-
-  const handleVerseInput = (event: Event) => {
-    const target = event.target as HTMLInputElement
-    verseReference = target.value
-  }
-
-  const addPassage = () => {
-    if (selectedBookCode && selectedChapter && verseReference) {
-      const bookName =
-        bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'
-      addPassageReference(
-        $langCodeAndNameStore.split(',')[0],
-        selectedBookCode,
-        bookName,
-        Number(selectedChapter),
-        verseReference,
-        null,
-        null
-      )
-
-      // Reset fields for the next entry
-      selectedBookCode = ''
-      selectedChapter = ''
-      verseReference = ''
-    }
-  }
-
-  async function getBibleReferences(
-    langCode: string,
-    apiRootUrl = env.PUBLIC_BACKEND_API_URL,
-    ntSurveyRgPassagesUrl = <string>PUBLIC_NT_SURVEY_RG_PASSAGES_URL
-  ): Promise<Array<BibleReference>> {
-    const url = `${apiRootUrl}${ntSurveyRgPassagesUrl}/${langCode}`
-    console.log(`url: ${url}`)
-    const response = await fetch(url)
-    const bibleReferences: Array<BibleReference> = await response.json()
-    if (!response.ok) {
-      console.error(response.statusText)
-      throw new Error(response.statusText)
-    }
-    return bibleReferences
-  }
-
-  export async function addNTSurveyRGPassages() {
-    try {
-      const bibleReferences = await getBibleReferences($langCodeAndNameStore.split(",")[0])
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
-      for (const bibleRef of bibleReferences) {
-          addPassageReference(
-            $langCodeAndNameStore.split(",")[0],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
-      }
-    } catch (error) {
-      console.error("Failed to add NT Survey RG passages:", error)
-    } finally {
-      console.log("Passages added successfully")
-    }
-  }
-
-  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
 
   $: console.log(`windowWidth: ${windowWidth}`)
-  $: console.log(`selectedBookCode: ${selectedBookCode}`)
-  $: console.log(`selectedChapter: ${selectedChapter}`)
-  $: console.log(`verseReference: ${verseReference}`)
   $: console.log(`$passagesStore: ${JSON.stringify($passagesStore)}`)
 </script>
 
@@ -183,47 +74,22 @@
 
 <WizardBreadcrumb />
 
-<!-- container for "center" div -->
 <div class="flex flex-grow flex-row overflow-y-auto overflow-x-hidden">
-  <!-- center -->
   <div class="flex flex-1 flex-col bg-white sm:w-2/3">
     <h3 class="ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">Add Passages</h3>
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
       {#if !bookCodesAndNames || bookCodesAndNames.length === 0}
         <div class="ml-4">
           <ProgressIndicator
-            labelString="Analyzing books available for language chosen, please be patient..."
+            labelString="Acquiring and analyzing books available for language chosen, please be patient"
           />
         </div>
       {:else}
-        <BibleReferenceSelector
-          {bookCodesAndNames}
-          bind:selectedBookCode
-          bind:selectedChapter
-          bind:verseReference
-          {chaptersForSelectedBook}
-          {handleBookChange}
-          {handleChapterChange}
-          {handleVerseInput}
-          {addPassage}
-          {addNTSurveyRGPassages}
-        />
+        <BibleReferenceSelector {bookCodesAndNames} />
         {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
           <button class="ml-2" on:click={() => (showWizardBasketModal = true)}>
             <div class="relative">
-              <svg
-                width="56"
-                height="48"
-                viewBox="0 0 56 48"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M35 15H21C19.9 15 19 15.9 19 17V31C19 32.1 19.9 33 21 33H35C36.1 33 37 32.1 37 31V17C37 15.9 36.1 15 35 15ZM26.71 28.29C26.6175 28.3827 26.5076 28.4563 26.3866 28.5064C26.2657 28.5566 26.136 28.5824 26.005 28.5824C25.874 28.5824 25.7443 28.5566 25.6234 28.5064C25.5024 28.4563 25.3925 28.3827 25.3 28.29L21.71 24.7C21.6174 24.6074 21.544 24.4975 21.4939 24.3765C21.4438 24.2556 21.418 24.1259 21.418 23.995C21.418 23.8641 21.4438 23.7344 21.4939 23.6135C21.544 23.4925 21.6174 23.3826 21.71 23.29C21.8026 23.1974 21.9125 23.124 22.0335 23.0739C22.1544 23.0238 22.2841 22.998 22.415 22.998C22.5459 22.998 22.6756 23.0238 22.7965 23.0739C22.9175 23.124 23.0274 23.1974 23.12 23.29L26 26.17L32.88 19.29C33.067 19.103 33.3206 18.998 33.585 18.998C33.8494 18.998 34.103 19.103 34.29 19.29C34.477 19.477 34.582 19.7306 34.582 19.995C34.582 20.2594 34.477 20.513 34.29 20.7L26.71 28.29Z"
-                  fill="#33445C"
-                />
-                <rect x="0.5" y="0.5" width="55" height="47" rx="11.5" stroke="#E5E8EB" />
-              </svg>
+              <CheckIcon />
               {#if $passagesStore.length > 0}
                 <!-- badge -->
                 <div

@@ -25,8 +25,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libdeflate0 \
     # For weasyprint
     pango1.0-tools \
-    # For stet
-    # pandoc \
     # For fc-cache
     fontconfig
 
@@ -50,37 +48,23 @@ RUN ebook-convert --version
 
 WORKDIR /app
 
-RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
-    && chmod +x ./dotnet-install.sh
-
-# Create a directory for .NET SDK
-RUN mkdir -p /home/appuser/.dotnet
-
-# Install .NET SDK to the created directory
-RUN ./dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet
-
-COPY dotnet ./
-
-# Set environment variables for .NET
-ENV DOTNET_ROOT=/usr/share/dotnet
-ENV PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-
-# Install dependencies and build the .NET project
-RUN cd USFMParserDriver && \
-    ${DOTNET_ROOT}/dotnet restore && \
-    ${DOTNET_ROOT}/dotnet build --configuration Release
 
 # Make the output directory where resource asset files are cloned.
 RUN mkdir -p assets_download
+# Make the input directory where en_rg_nt_survey.docx is stored.
+RUN mkdir -p en_rg
 # Make the directory where intermediate document parts are saved.
 RUN mkdir -p working_temp
 # Make the output directory where generated HTML and PDFs are placed.
 RUN mkdir -p document_output
 # Make the directory where stet source documents are stored
 RUN mkdir -p stet
+# Make the directory where passage source documents are stored
+RUN mkdir -p passages
+
 
 COPY backend/stet/data/stet_*.docx stet/
+COPY backend/passages/data/Spiritual_Terms_Evaluation_Exhaustive_Verse_List.txt passages/
 
 COPY pyproject.toml .
 COPY ./backend/requirements.txt .
@@ -101,6 +85,7 @@ COPY ./tests ./tests
 COPY .env .
 COPY template.docx .
 COPY template_compact.docx .
+
 # Next two lines are useful when the data (graphql) API are down so
 # that we can still test
 # COPY resources.json assets_download/resources.json
@@ -123,7 +108,7 @@ RUN mypy --strict --install-types --non-interactive backend/passages/**/*.py
 RUN mypy --strict --install-types --non-interactive tests/**/*.py
 
 # Change ownership of app specific directories to the non-root user
-RUN chown -R appuser:appgroup /app /home/appuser/calibre-bin /usr/share/dotnet
+RUN chown -R appuser:appgroup /app /home/appuser/calibre-bin
 
 # Switch to the non-root user
 USER appuser

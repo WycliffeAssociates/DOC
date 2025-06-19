@@ -109,7 +109,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('1 Corinthians').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewer's Guide" })).not.toBeVisible({timeout: 580000})
+  await expect(page.locator('li').filter({ hasText: "NT Survey Reviewers' Guide" })).not.toBeVisible({timeout: 580000})
 })
 
 test('test that reviewers guide is only shown when book is chosen that it includes - part 2', async ({ page }) => {
@@ -118,7 +118,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Galatians').click({ timeout: 60000 })
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('span').filter({ hasText: "NT Survey Reviewer's Guide" })).toBeVisible({ timeout: 5800000 })
+  await expect(page.locator('span').filter({ hasText: "NT Survey Reviewers' Guide" })).toBeVisible({ timeout: 5800000 })
 })
 
 

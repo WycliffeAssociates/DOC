@@ -4839,7 +4839,7 @@ def test_en_ulb_rom_en_tn_rom_en_tq_rom_en_tw_rom_zh_cuv_rom_zh_cuv_tn_rom_zh_cu
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_es_419_rg_gal_en_bc_es_419_bc_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_en_bc_es_419_bc_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -4891,11 +4891,6 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_es_41
                         "book_code": "gal",
                     },
                     {
-                        "lang_code": "es-419",
-                        "resource_type": "rg",
-                        "book_code": "gal",
-                    },
-                    {
                         "lang_code": "en",
                         "resource_type": "bc",
                         "book_code": "gal",
@@ -4921,7 +4916,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_es_41
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_en_bc_es_419_bc_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_en_bc_es_419_bc_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -4963,11 +4958,6 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_en_bc_es_419_bc
                         "book_code": "gal",
                     },
                     {
-                        "lang_code": "es-419",
-                        "resource_type": "rg",
-                        "book_code": "gal",
-                    },
-                    {
                         "lang_code": "en",
                         "resource_type": "bc",
                         "book_code": "gal",
@@ -4993,7 +4983,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_en_bc_es_419_bc
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_en_tw_es_419_tw_book_language_order_1c_by_chapter() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -5031,11 +5021,6 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_en_tw_es_419_tw
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "rg",
-                        "book_code": "gal",
-                    },
-                    {
-                        "lang_code": "es-419",
                         "resource_type": "rg",
                         "book_code": "gal",
                     },
@@ -5107,7 +5092,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_book_language_o
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_book_language_order_2c_sl_sr_by_chapter() -> (
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_book_language_order_2c_sl_sr_by_chapter() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -5145,11 +5130,6 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_es_419_rg_gal_book_language_o
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "rg",
-                        "book_code": "gal",
-                    },
-                    {
-                        "lang_code": "es-419",
                         "resource_type": "rg",
                         "book_code": "gal",
                     },

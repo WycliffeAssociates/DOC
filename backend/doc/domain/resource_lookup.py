@@ -62,7 +62,7 @@ RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
     "f10": "French Louis Segond 1910 Bible",
     "nav": "New Arabic Version (Ketab El Hayat)",
     "reg": "Regular",
-    "rg": "NT Survey Reviewer's Guide",
+    "rg": "NT Survey Reviewers' Guide",
     "tn": "Translation Notes",
     "tn-condensed": "Condensed Translation Notes",
     "tq": "Translation Questions",
@@ -334,6 +334,7 @@ def resource_types(
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     book_names: Mapping[str, str] = BOOK_NAMES,
     docx_file_path: str = "en_rg_nt_survey.docx",
+    en_rg: str = settings.EN_RG_DIR,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from doc.domain import resource_lookup
@@ -350,7 +351,7 @@ def resource_types(
         book_codes = list(book_names.keys())
     data = fetch_source_data()
     resource_types = []
-    repo_clone_list: list[tuple[HttpUrl, str]] = []
+    repo_clone_list: list[tuple[HttpUrl, str, str]] = []
     resource_type: str | None
     if data is None or not data.git_repo:
         logger.info("Data API is down or no git_repo found!")
@@ -360,79 +361,71 @@ def resource_types(
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
         for repo_info in augmented_repos_info:
             content = repo_info.content
-            language_info = content.language
-            if language_info.ietf_code == lang_code:
+            if content.language.ietf_code == lang_code:
                 resource_type = content.resource_type
                 if resource_type in resource_type_codes_and_names:
                     url = repo_info.repo_url
                     last_segment = get_last_segment(url, lang_code)
-                    resource_filepath = f"{resource_assets_dir}/{last_segment}"
+                    resource_filepath = join(resource_assets_dir, last_segment)
                     # Append to repo_clone_list if the URL is not already present
                     if not any(item[0] == url for item in repo_clone_list):
-                        repo_clone_list.append((url, resource_filepath))
+                        repo_clone_list.append((url, resource_filepath, resource_type))
         # Separate repos that need to be cloned from en_rg
         repos_to_clone = [
-            (url, path) for url, path in repo_clone_list if "en_rg" not in path
+            (url, path)
+            for url, path, resource_type_ in repo_clone_list
+            if "rg" != resource_type_
         ]
         # Perform batch cloning only on filtered list
         batch_clone_git_repos(repos_to_clone)
         # Process cloned repositories
-        for url, resource_filepath in repo_clone_list:
-            resource_type = next(
-                (
-                    repo_info.content.resource_type
-                    for repo_info in data.git_repo
-                    if repo_info.repo_url == url
-                ),
-                None,
-            )
-            if not resource_type:
-                continue
-            # Determine book assets
-            book_assets = []
-            if resource_type in ["tq", "tn", "tn-condensed"]:
-                book_assets = [
-                    file.name
-                    for file in scandir(resource_filepath)
-                    if file.is_dir()
-                    and not file.name.startswith(".")
-                    and file.name.lower() in book_codes
-                ]
-            elif resource_type == "bc":
-                book_assets = [
-                    file.name
-                    for file in scandir(resource_filepath)
-                    if file.is_dir()
-                    and not file.name.startswith(".")
-                    and re.search(bc_book_asset_pattern, file.name)
-                    and file.name.split("-")[1].lower() in book_codes
-                ]
-            elif resource_type in usfm_resource_types:
-                book_assets = parsing.find_usfm_files(resource_filepath)
-            elif resource_type == "rg":
-                between_texts, bible_reference_strs = find_bible_references(
-                    f"{resource_filepath}/{docx_file_path}"
-                )
-                bible_references = [
-                    parse_bible_reference(bible_reference)
-                    for bible_reference in bible_reference_strs
-                ]
-                book_codes_ = {
-                    bible_reference.book_code
-                    for bible_reference in bible_references
-                    if bible_reference
-                }
-                book_assets = [
-                    book_code for book_code in book_codes if book_code in book_codes_
-                ]
-            # Check if at least one selected book exists in the repo
-            if book_assets or resource_type == "tw":
-                resource_types.append(
-                    (
-                        resource_type,
-                        resource_type_codes_and_names[resource_type],
+        for url, resource_filepath, resource_type in repo_clone_list:
+            if resource_type:
+                book_assets = []
+                if resource_type in ["tq", "tn", "tn-condensed"]:
+                    book_assets = [
+                        file.name
+                        for file in scandir(resource_filepath)
+                        if file.is_dir()
+                        and not file.name.startswith(".")
+                        and file.name.lower() in book_codes
+                    ]
+                elif resource_type == "bc":
+                    book_assets = [
+                        file.name
+                        for file in scandir(resource_filepath)
+                        if file.is_dir()
+                        and not file.name.startswith(".")
+                        and re.search(bc_book_asset_pattern, file.name)
+                        and file.name.split("-")[1].lower() in book_codes
+                    ]
+                elif resource_type in usfm_resource_types:
+                    book_assets = parsing.find_usfm_files(resource_filepath)
+                elif resource_type == "rg":
+                    between_texts, bible_reference_strs = find_bible_references(
+                        join(en_rg, docx_file_path)
                     )
-                )
+                    bible_references = [
+                        parse_bible_reference(bible_reference)
+                        for bible_reference in bible_reference_strs
+                    ]
+                    book_codes_ = {
+                        bible_reference.book_code
+                        for bible_reference in bible_references
+                        if bible_reference
+                    }
+                    book_assets = [
+                        book_code
+                        for book_code in book_codes
+                        if book_code in book_codes_
+                    ]
+                if book_assets or resource_type == "tw":
+                    resource_types.append(
+                        (
+                            resource_type,
+                            resource_type_codes_and_names[resource_type],
+                        )
+                    )
     except Exception:
         logger.exception("Failed due to the following exception.")
     unique_values = unique_tuples(resource_types)
@@ -443,6 +436,7 @@ def batch_clone_git_repos(
     repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
+    en_rg: str = settings.EN_RG_DIR,
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.
@@ -454,7 +448,7 @@ def batch_clone_git_repos(
     clone_commands = []
     for url, resource_filepath in repos:
         if isdir(resource_filepath):
-            if basename(resource_filepath) == "en_rg":
+            if basename(resource_filepath) == en_rg:
                 logger.info(f"Preserving special directory: {resource_filepath}")
                 continue
             git_dir = join(resource_filepath, ".git")
@@ -655,6 +649,7 @@ def normalize_last_segment(
     ] = REPLACEMENTS_BY_LANG_CODE_AND_LAST_SEGMENT,
     universal_prefixes: list[str] = PREFIXES_TO_REMOVE,
     lang_specific_prefixes: dict[str, list[str]] = LANG_SPECIFIC_PREFIXES_TO_REMOVE,
+    en_rg_dir: str = settings.EN_RG_DIR,
 ) -> str:
     """
     Handle special cases where git repo URL does not follow the expected pattern.
@@ -667,7 +662,7 @@ def normalize_last_segment(
     here.
     """
     if lang_code == "en" and last_segment.endswith(".docx"):
-        return "en_rg"
+        return en_rg_dir
     if (lang_code, last_segment) in hardcoded_replacements:
         return hardcoded_replacements[(lang_code, last_segment)]
     for prefix in universal_prefixes:
@@ -1243,10 +1238,9 @@ def nt_survey_rg_passages(
     lang_code: str = "en",
     lang_name: str = "English",
     docx_file_path: str = "en_rg_nt_survey.docx",
-    resource_type_name: str = "NT Survey Reviewer's Guide",
+    resource_type_name: str = "NT Survey Reviewers' Guide",
     lang_direction: LangDirEnum = LangDirEnum.LTR,
-    assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-    resource_dir: str = "en_rg",
+    resource_dir: str = settings.EN_RG_DIR,
 ) -> list[BibleReference]:
     """
     >>> from doc.domain import resource_lookup
@@ -1254,7 +1248,7 @@ def nt_survey_rg_passages(
     >>> rg_books[0]
     BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
-    path = join(assets_dir, resource_dir, docx_file_path)
+    path = join(resource_dir, docx_file_path)
     # logger.debug("path: %s exists: %s", path, exists(path))
     # TODO Check if resource_dir exists and if it doesn't then submit
     # a document request to DOC API to make sure it is cloned.
@@ -1272,9 +1266,7 @@ def nt_survey_rg_passages(
         chapter for rg_book in rg_books for chapter in rg_book.chapters.values()
     ]
     bible_references = [
-        pt.bible_reference
-        for chapter in rg_book_chapters
-        for pt in chapter.content  # content is now list[ParsedText]
+        pt.bible_reference for chapter in rg_book_chapters for pt in chapter.content
     ]
     # Localize the book names since they are provided in English from en_rg_nt_survey.docx
     book_name_map = {

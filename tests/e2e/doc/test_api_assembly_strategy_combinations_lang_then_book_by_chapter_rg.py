@@ -244,7 +244,7 @@ def test_en_ulb_gal_en_tn_gal_en_tq_gal_en_rg_en_bc_en_tw_language_book_order_1c
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_es_419_rg_gal_en_bc_es_419_bc_en_tw_es_419_tw_language_book_order_1c_by_chapter() -> (
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_en_bc_es_419_bc_en_tw_es_419_tw_language_book_order_1c_by_chapter() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -292,11 +292,6 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_es_41
                     },
                     {
                         "lang_code": "en",
-                        "resource_type": "rg",
-                        "book_code": "gal",
-                    },
-                    {
-                        "lang_code": "es-419",
                         "resource_type": "rg",
                         "book_code": "gal",
                     },

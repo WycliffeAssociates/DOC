@@ -421,7 +421,6 @@ def document_html_header(
     if generate_docx:
         template = env.get_template("html/header_no_css_enclosing.html")
         return template.render()
-
     if assembly_layout_kind and assembly_layout_kind in [
         AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
         AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT,
@@ -504,6 +503,7 @@ def create_title_page_and_wrap_in_template(
     title1, title2 = get_languages_title_page_strings(
         found_resource_lookup_dtos, usfm_books
     )
+    logger.debug("title1: %s, title2: %s", title1, title2)
     title3 = ""
     header = document_html_header(
         document_request.assembly_layout_kind,

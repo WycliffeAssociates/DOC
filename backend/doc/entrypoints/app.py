@@ -16,13 +16,12 @@ from fastapi.responses import JSONResponse
 
 # Docker container paths
 DOCKER_BASE_DIR = "/app"
-DOCKER_ASSETS_DOWNLOAD_DIR = join(DOCKER_BASE_DIR, settings.RESOURCE_ASSETS_DIR)
-DOCKER_EN_RG_DIR = join(DOCKER_ASSETS_DOWNLOAD_DIR, "en_rg")
+DOCKER_EN_RG_DIR = join(DOCKER_BASE_DIR, settings.EN_RG_DIR)
 DOCKER_DOCX_FILE_SRC = join(DOCKER_BASE_DIR, "en_rg_nt_survey.docx")
 DOCKER_DOCX_FILE_DEST = join(DOCKER_EN_RG_DIR, "en_rg_nt_survey.docx")
 # Local filesystem paths
 LOCAL_ASSETS_DOWNLOAD_DIR = settings.RESOURCE_ASSETS_DIR
-LOCAL_EN_RG_DIR = join(LOCAL_ASSETS_DOWNLOAD_DIR, "en_rg")
+LOCAL_EN_RG_DIR = settings.EN_RG_DIR
 LOCAL_DOCX_FILE_SRC = "en_rg_nt_survey.docx"
 LOCAL_DOCX_FILE_DEST = join(LOCAL_EN_RG_DIR, "en_rg_nt_survey.docx")
 
@@ -95,6 +94,8 @@ async def initialize_assets() -> None:
             makedirs(DOCKER_EN_RG_DIR, exist_ok=True)
             if not exists(DOCKER_DOCX_FILE_DEST):
                 shutil.copy(DOCKER_DOCX_FILE_SRC, DOCKER_DOCX_FILE_DEST)
+                if not exists(DOCKER_DOCX_FILE_DEST):
+                    raise AssertionError("en_rg_nt_survey.docx not copied into place at startup!")
         elif exists(LOCAL_ASSETS_DOWNLOAD_DIR):  # Executing outside Docker container
             makedirs(LOCAL_EN_RG_DIR, exist_ok=True)
             if not exists(LOCAL_DOCX_FILE_DEST):

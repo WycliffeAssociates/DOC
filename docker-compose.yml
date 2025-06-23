@@ -10,7 +10,7 @@ services:
   usfmparserapi:
     build: ./dotnet/USFMParserApi
     ports:
-      - 8081:80
+      - ${DOTNET_API_PORT:-8081}:80
     volumes:
       - shared_assets:/app/assets_download
       - shared_working:/app/working_temp

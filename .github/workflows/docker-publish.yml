@@ -49,7 +49,6 @@ jobs:
           context: ./dotnet/USFMParserApi
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: wycliffeassociates/doc-usfmparser:local
 
   Test-API-Image:
     name: Test API image

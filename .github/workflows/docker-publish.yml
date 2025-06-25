@@ -46,7 +46,7 @@ jobs:
       - name: Build USFMParser image
         uses: docker/build-push-action@v3
         with:
-          context: ./dotnet/USFMParser
+          context: ./dotnet/USFMParserApi
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -175,7 +175,7 @@ jobs:
       - name: Build and conditional push Parser image
         uses: docker/build-push-action@v3
         with:
-          context: ./dotnet/USFMParser
+          context: ./dotnet/USFMParserApi
           push: true
           tags: |
             ${{ env.DOC_PARSER_TAG_SHA }}

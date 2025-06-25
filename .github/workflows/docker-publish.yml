@@ -53,7 +53,7 @@ jobs:
   Test-API-Image:
     name: Test API image
     runs-on: ubuntu-24.04
-    needs: Build-API-Image
+    needs: [Build-API-Image, Build-USFMParser-Image]
     steps:
       - uses: actions/checkout@v3
       - uses: FranzDiebold/github-env-vars-action@v2
@@ -75,7 +75,7 @@ jobs:
   Test-Frontend-Image:
     name: Test Frontend image
     runs-on: ubuntu-24.04
-    needs: [Build-API-Image, Build-Frontend-Image]
+    needs: [Build-API-Image, Build-Frontend-Image, Build-USFMParser-Image]
     steps:
       - uses: actions/checkout@v3
       - uses: FranzDiebold/github-env-vars-action@v2

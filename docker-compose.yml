@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
   usfmparserapi:
     build: wycliffeassociates/doc-usfmparser:${IMAGE_TAG}
+    environment:
+      IMAGE_TAG: ${IMAGE_TAG:-local}
     ports:
       - ${DOTNET_API_PORT:-8081}:80
     volumes:

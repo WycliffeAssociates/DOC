@@ -135,6 +135,11 @@ jobs:
           echo "DOC_UI_TAG_SHA=wycliffeassociates/doc-ui:$GITHUB_SHA" >> $GITHUB_ENV && \
           echo "DOC_UI_TAG_BRANCH=wycliffeassociates/doc-ui:$CI_REF_NAME_SLUG" >> $GITHUB_ENV && \
           echo "DOC_UI_TAG_LATEST=wycliffeassociates/doc-ui:latest" >> $GITHUB_ENV
+      - name: Set DOC USFM parser tags
+        run: |
+          echo "DOC_PARSER_TAG_SHA=wycliffeassociates/doc-usfmparser:$GITHUB_SHA" >> $GITHUB_ENV && \
+          echo "DOC_PARSER_TAG_BRANCH=wycliffeassociates/doc-usfmparser:$CI_REF_NAME_SLUG" >> $GITHUB_ENV && \
+          echo "DOC_PARSER_TAG_LATEST=wycliffeassociates/doc-usfmparser:latest" >> $GITHUB_ENV
 
       - name: Set version inside UI
         run: |
@@ -173,9 +178,9 @@ jobs:
           context: ./dotnet/USFMParser
           push: true
           tags: |
-            ${{ env.DOC_TAG_SHA }}
-            ${{ env.DOC_TAG_BRANCH }}
-            ${{ env.DOC_TAG_LATEST }}
+            ${{ env.DOC_PARSER_TAG_SHA }}
+            ${{ env.DOC_PARSER_TAG_BRANCH }}
+            ${{ env.DOC_PARSER_TAG_LATEST }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
   Deploy-develop:

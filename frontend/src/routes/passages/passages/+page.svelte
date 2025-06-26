@@ -34,7 +34,6 @@
     return bookCodesAndNames
   }
 
-
   let bookCodesAndNames: Array<[string, string]> = []
 
   onMount(() => {
@@ -46,7 +45,6 @@
         bookCodesAndNames = [...bookCodesAndNames_] // Ensure reactivity with [...blah]
       })
       .catch((err) => console.error(err))
-
   })
 
   function removePassage(id: number) {
@@ -60,8 +58,6 @@
       }
     }
   }
-
-
 
   let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number

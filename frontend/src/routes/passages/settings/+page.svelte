@@ -2,10 +2,7 @@
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
-  import {
-    emailStore,
-    documentRequestKeyStore,
-  } from '$lib/passages/stores/SettingsStore'
+  import { emailStore, documentRequestKeyStore } from '$lib/passages/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import GenerateDocument from './GenerateDocument.svelte'

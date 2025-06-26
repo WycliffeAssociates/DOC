@@ -81,8 +81,8 @@
   let heartCodesAndNames: Array<string> = []
   async function loadSourceLangCodesAndNames() {
     try {
-    langCodeNameAndTypes = await getSourceLangCodesNames()
-    gatewayCodesAndNames = langCodeNameAndTypes
+      langCodeNameAndTypes = await getSourceLangCodesNames()
+      gatewayCodesAndNames = langCodeNameAndTypes
         .filter((element: [string, string, boolean]) => {
           return element[2]
         })
@@ -92,7 +92,7 @@
           return !element[2]
         })
         .map((tuple) => `${tuple[0]}, ${tuple[1]}`)
-    } catch(err) {
+    } catch (err) {
       console.error(err)
     }
   }
@@ -123,8 +123,10 @@
   let filteredGatewayCodeAndNames: Array<string> = []
   $: {
     if (gatewayCodesAndNames) {
-      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
+      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
       )
     }
   }
@@ -134,13 +136,15 @@
   let filteredHeartCodeAndNames: Array<string> = []
   $: {
     if (heartCodesAndNames) {
-      filteredHeartCodeAndNames = heartCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
+      filteredHeartCodeAndNames = heartCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
       )
     }
   }
 
-  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number

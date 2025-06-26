@@ -13,7 +13,6 @@
   import LogRocket from 'logrocket'
   import CheckIcon from '$lib/CheckIcon.svelte'
 
-
   $: showEmail = false
   $: showEmailCaptured = false
   $: $documentReadyStore = false

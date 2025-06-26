@@ -5,7 +5,7 @@
   import {
     PUBLIC_CHAPTERS_IN_BOOKS_URL,
     PUBLIC_NT_SURVEY_RG_PASSAGES_URL,
-    PUBLIC_STET_PASSAGES_URL,
+    PUBLIC_STET_PASSAGES_URL
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import type { BibleReference } from './model'

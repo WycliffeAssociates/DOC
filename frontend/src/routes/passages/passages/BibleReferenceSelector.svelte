@@ -64,9 +64,9 @@
 
   export async function addNTSurveyRGPassages() {
     try {
-      langCode = $langCodeAndNameStore.split(',')[0]
+      const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getNTSurveyRGPassages(langCode)
-      // console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
+      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addPassageReference(
           langCode,
@@ -103,11 +103,12 @@
 
   export async function addSTETPassages() {
     try {
-      const bibleReferences = await getSTETPassages($langCodeAndNameStore.split(',')[0])
+      const langCode = $langCodeAndNameStore.split(',')[0]
+      const bibleReferences = await getSTETPassages(langCode)
       console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addPassageReference(
-          $langCodeAndNameStore.split(',')[0],
+          langCode,
           bibleRef.book_code,
           bibleRef.book_name,
           Number(bibleRef.start_chapter),

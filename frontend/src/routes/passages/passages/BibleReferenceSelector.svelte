@@ -64,11 +64,12 @@
 
   export async function addNTSurveyRGPassages() {
     try {
-      const bibleReferences = await getNTSurveyRGPassages($langCodeAndNameStore.split(',')[0])
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
+      langCode = $langCodeAndNameStore.split(',')[0]
+      const bibleReferences = await getNTSurveyRGPassages(langCode)
+      // console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addPassageReference(
-          $langCodeAndNameStore.split(',')[0],
+          langCode,
           bibleRef.book_code,
           bibleRef.book_name,
           Number(bibleRef.start_chapter),

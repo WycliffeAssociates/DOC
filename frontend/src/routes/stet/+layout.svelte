@@ -5,9 +5,3 @@
 
 <slot />
 
-<style lang="postcss">
-  .footer {
-    margin-top: 12px;
-    margin-left: 12px;
-  }
-</style>

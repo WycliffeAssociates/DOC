@@ -378,23 +378,14 @@
     background-position: left center;
     outline: 0;
   }
-  div.target:has(input[type='checkbox']:checked) {
+  div.radio-target:has(input[type='radio']:checked) {
     background: #e6eefb;
   }
-  div.target:has(input[type='radio']:checked) {
-    background: #e6eefb;
-  }
-  input.checkbox-target[type='checkbox']:checked + span {
+  input#show-gateway-radio-button[type='radio']:checked + span {
     color: #015ad9;
   }
-  div.target3:has(input[type='checkbox']:checked) + span {
+  input#show-heart-radio-button[type='radio']:checked + span {
     color: #015ad9;
-  }
-  div.target2:has(input[type='checkbox']:checked) + div {
-    color: #015ad9;
-  }
-  .checkbox-style {
-    @apply h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600;
   }
   .radio-style {
     @apply h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600;

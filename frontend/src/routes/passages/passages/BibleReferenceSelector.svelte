@@ -5,7 +5,7 @@
   import {
     PUBLIC_CHAPTERS_IN_BOOKS_URL,
     PUBLIC_NT_SURVEY_RG_PASSAGES_URL,
-    PUBLIC_STET_PASSAGES_URL,
+    PUBLIC_STET_PASSAGES_URL
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import type { BibleReference } from './model'
@@ -64,11 +64,12 @@
 
   export async function addNTSurveyRGPassages() {
     try {
-      const bibleReferences = await getNTSurveyRGPassages($langCodeAndNameStore.split(',')[0])
+      const langCode = $langCodeAndNameStore.split(',')[0]
+      const bibleReferences = await getNTSurveyRGPassages(langCode)
       console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addPassageReference(
-          $langCodeAndNameStore.split(',')[0],
+          langCode,
           bibleRef.book_code,
           bibleRef.book_name,
           Number(bibleRef.start_chapter),
@@ -102,11 +103,12 @@
 
   export async function addSTETPassages() {
     try {
-      const bibleReferences = await getSTETPassages($langCodeAndNameStore.split(',')[0])
+      const langCode = $langCodeAndNameStore.split(',')[0]
+      const bibleReferences = await getSTETPassages(langCode)
       console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addPassageReference(
-          $langCodeAndNameStore.split(',')[0],
+          langCode,
           bibleRef.book_code,
           bibleRef.book_name,
           Number(bibleRef.start_chapter),

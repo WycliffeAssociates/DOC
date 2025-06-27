@@ -131,6 +131,24 @@ def file_needs_update(
         return True
 
 
+def dir_needs_update(
+    dir_path: str | Path,
+    asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
+    asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
+) -> bool:
+    if not asset_caching_enabled:
+        return True
+    try:
+        path = Path(dir_path)
+        stat = path.stat()
+        mod_time = datetime.fromtimestamp(stat.st_mtime)
+        expiry = timedelta(minutes=asset_caching_period)
+        return datetime.now() - mod_time > expiry
+    except FileNotFoundError:
+        logger.debug("Cache miss for %s", dir_path)
+        return True
+
+
 def html_filepath(
     document_request_key: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
 ) -> str:

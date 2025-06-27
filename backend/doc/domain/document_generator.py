@@ -806,61 +806,23 @@ def check_content_for_issues(
 def get_languages_title_page_strings(
     resource_lookup_dtos: Sequence[ResourceLookupDto],
     usfm_books: Sequence[USFMBook],
+    book_names: dict[str, str] = BOOK_NAMES,
 ) -> tuple[str, str]:
-    lang_codes = list(
-        {resource_lookup_dto.lang_code for resource_lookup_dto in resource_lookup_dtos}
-    )
-    lang0_book_names = set()
-    lang0_resource_type_names = set()
-    lang1_book_names = set()
-    lang1_resource_type_names = set()
-    lang0_title, lang1_title = "", ""
-    if usfm_books:
-        lang0_books = [
-            usfm_book
-            for usfm_book in usfm_books
-            if usfm_book.lang_code == lang_codes[0]
-        ]
-        for book in lang0_books:
-            if book.national_book_name:
-                lang0_book_names.add(book.national_book_name)
-            lang0_resource_type_names.add(book.resource_type_name)
-        if lang0_books:
-            lang0_title = f"{lang0_books[0].lang_name} ({lang0_books[0].localized_lang_name}): {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
-    else:
-        language0_resource_lookup_dtos = [
-            resource_lookup_dto
-            for resource_lookup_dto in resource_lookup_dtos
-            if resource_lookup_dto.lang_code == lang_codes[0]
-        ]
-        for dto in language0_resource_lookup_dtos:
-            lang0_book_names.add(BOOK_NAMES[dto.book_code])
-            lang0_resource_type_names.add(dto.resource_type_name)
-        if language0_resource_lookup_dtos:
-            lang0_title = f"{language0_resource_lookup_dtos[0].lang_name} ({language0_resource_lookup_dtos[0].localized_lang_name}): {', '.join(sorted(lang0_resource_type_names))} for {', '.join(sorted(lang0_book_names))}"
-    if len(lang_codes) > 1:
-        lang1_books = [
-            usfm_book
-            for usfm_book in usfm_books
-            if usfm_book.lang_code == lang_codes[1]
-        ]
-        for book in lang1_books:
-            if book.national_book_name:
-                lang1_book_names.add(book.national_book_name)
-            lang1_resource_type_names.add(book.resource_type_name)
-        if lang1_books:
-            lang1_title = f"{lang1_books[0].lang_name} ({lang1_books[0].localized_lang_name}): {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
-        else:
-            language1_resource_lookup_dtos = [
-                resource_lookup_dto
-                for resource_lookup_dto in resource_lookup_dtos
-                if resource_lookup_dto.lang_code == lang_codes[1]
-            ]
-            for dto in language1_resource_lookup_dtos:
-                lang1_book_names.add(BOOK_NAMES[dto.book_code])
-                lang1_resource_type_names.add(dto.resource_type_name)
-            if language1_resource_lookup_dtos:
-                lang1_title = f"{language1_resource_lookup_dtos[0].lang_name} ({language1_resource_lookup_dtos[0].localized_lang_name}): {', '.join(sorted(lang1_resource_type_names))} for {', '.join(sorted(lang1_book_names))}"
+    lang_codes = list({dto.lang_code for dto in resource_lookup_dtos})
+
+    def get_language_details(lang_code: str) -> str:
+        book_names_set = set()
+        resource_type_names_set = set()
+        dtos = [dto for dto in resource_lookup_dtos if dto.lang_code == lang_code]
+        for dto in dtos:
+            book_names_set.add(book_names[dto.book_code])
+            resource_type_names_set.add(dto.resource_type_name)
+        if dtos:
+            return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(sorted(resource_type_names_set))} for {', '.join(sorted(book_names_set))}"
+        return ""
+
+    lang0_title = get_language_details(lang_codes[0])
+    lang1_title = get_language_details(lang_codes[1]) if len(lang_codes) > 1 else ""
     return lang0_title, lang1_title
 
 

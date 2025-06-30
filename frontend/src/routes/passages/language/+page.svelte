@@ -15,12 +15,12 @@
   // Track if the user manually changed the tab:
   let userInteracted = false
 
-  const selectGatewayTab = () => {
+  function selectGatewayTab() {
     userInteracted = true
     showGatewayLanguages = true
   }
 
-  const selectHeartTab = () => {
+  function selectHeartTab() {
     userInteracted = true
     showGatewayLanguages = false
   }

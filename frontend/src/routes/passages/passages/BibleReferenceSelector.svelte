@@ -124,7 +124,7 @@
     }
   }
 
-  const handleBookChange = (event: Event) => {
+  function handleBookChange(event: Event) {
     const target = event.target as HTMLSelectElement
     selectedBookCode = target.value
     console.log('Book Selected:', selectedBookCode)
@@ -134,13 +134,13 @@
     console.log('Chapters for selected book:', chaptersForSelectedBook)
   }
 
-  const handleChapterChange = (event: Event) => {
+  function handleChapterChange(event: Event) {
     const target = event.target as HTMLSelectElement
     selectedChapter = target.value
     console.log('Chapter selected:', selectedChapter)
   }
 
-  const handleVerseInput = (event: Event) => {
+  function handleVerseInput(event: Event) {
     const target = event.target as HTMLInputElement
     verseReference = target.value
   }
@@ -165,7 +165,7 @@
     }
   }
 
-  const handleNTSurveyCheckboxClick = (event: Event) => {
+  function handleNTSurveyCheckboxClick(event: Event) {
     const target = event.target as HTMLInputElement
     if (target.checked) {
       handleAddNTSurveyRGPassagesClick()
@@ -189,14 +189,14 @@
     }
   }
 
-  const handleSTETCheckboxClick = (event: Event) => {
+  function handleSTETCheckboxClick(event: Event) {
     const target = event.target as HTMLInputElement
     if (target.checked) {
       handleAddSTETPassagesClick()
     }
   }
 
-  const addPassage = () => {
+  function addPassage() {
     if (selectedBookCode && selectedChapter && verseReference) {
       const bookName =
         bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'

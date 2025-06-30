@@ -198,9 +198,12 @@ BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
 # present. It makes it seem like a bug in STET and is bad UX.
 LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
 
+USER_AGENT_STR: str = "wa-doc"
+
 
 def fetch_source_data(
     data_api_url: HttpUrl = settings.DATA_API_URL,
+    user_agent_str: str = USER_AGENT_STR,
 ) -> Optional[SourceData]:
     """
     Downloads data from a GraphQL API.
@@ -230,8 +233,9 @@ query MyQuery {
 }
     """
     query_json = {"query": graphql_query}
+    headers = {"User-Agent": user_agent_str}
     try:
-        response = requests.post(str(data_api_url), json=query_json)
+        response = requests.post(str(data_api_url), json=query_json, headers=headers)
         if response.status_code == 200:
             data_payload = response.json().get("data", {})
             if "git_repo" in data_payload:
@@ -449,7 +453,7 @@ def batch_download_repos(
         "https://content.bibletranslationtools.org/api/v1/repos/"
     ),
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-    user_agent_str: str = "wa-doc",
+    user_agent_str: str = USER_AGENT_STR,
 ) -> None:
     """Batch download repos and then batch unzip repos."""
     download_commands = []
@@ -484,12 +488,17 @@ def batch_download_repos(
         subprocess.check_call(unzip_command, shell=True)
     except subprocess.CalledProcessError:
         logger.error("Batch download or unzip failed!")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Download of repo master.zip failed",
+        )
+
 
 def batch_clone_git_repos(
     repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
-    user_agent_str: str = "wa-doc",
+    user_agent_str: str = USER_AGENT_STR,
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.

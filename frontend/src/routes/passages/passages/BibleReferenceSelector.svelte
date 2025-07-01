@@ -16,6 +16,7 @@
 
   export let bookCodesAndNames: [string, string][] = []
 
+  let buttonEnabled = false
   let loading = false
   let ntSurveySuccessMessage: string = ''
   let stetSuccessMessage: string = ''
@@ -298,12 +299,20 @@
       passageSuccessMessage = '✔'
       setTimeout(() => {
         passageSuccessMessage = ''
+        // Reset the button and fields
+        selectedBookCode = ''
+        selectedChapter = ''
+        verseReference = ''
+        buttonEnabled = false // Change button state back to disabled
       }, 4000)
       selectedBookCode = ''
       selectedChapter = ''
       verseReference = ''
     }
   }
+
+  // Watcher for input fields to update button state
+  $: buttonEnabled = Boolean(selectedBookCode && selectedChapter && verseReference)
 </script>
 
 <div class="flex flex-col">
@@ -352,12 +361,12 @@
     </div>
     <button
       type="button"
-      class="mt-4 ml-2 w-1/2 rounded-md
+      class={`mt-4 ml-2 w-1/2 rounded-md
            border border-[#E5E8EB] p-4
            text-center text-xl text-white
-           add-passage-button
-           "
+           ${buttonEnabled ? 'add-passage-button' : 'add-passage-button-disabled'} `}
       on:click={addPassage}
+      disabled={!buttonEnabled}
     >
       Add Passage
     </button>
@@ -444,6 +453,15 @@
       transform: rotate(360deg);
     }
   }
+*:global(.add-passage-button-disabled) {
+    background:
+      linear-gradient(180deg, #a3c1ff 0%, #8bb3ff 100%), /* lighter blue */
+      linear-gradient(0deg, #33447e, #33447e);
+}
+* :global(.add-passage-button-disabled:hover) {
+  background:
+    linear-gradient(180deg, #cce4ff 0%, #a3c1ff 100%), linear-gradient(0deg, #33447e, #33447e);
+}
   * :global(.add-passage-button) {
     background:
       linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #33445c, #33445c);

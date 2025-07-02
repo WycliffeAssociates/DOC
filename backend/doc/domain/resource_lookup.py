@@ -10,7 +10,7 @@ import re
 import shutil
 import subprocess
 from glob import glob
-from os import scandir, stat
+from os import remove, scandir, stat
 from os.path import exists, isdir, join
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
@@ -41,7 +41,6 @@ from doc.reviewers_guide.parser import (
 )
 from doc.utils.file_utils import (
     delete_tree,
-    dir_needs_update,
     file_needs_update,
     make_dir,
     read_file,
@@ -459,18 +458,22 @@ def batch_download_repos(
     download_commands = []
     zip_file_paths = []
     for url, resource_filepath in repos:
+        zip_file_path = f"{resource_filepath}.zip"
         if isdir(resource_filepath):
-            if dir_needs_update(resource_filepath):
+            # Instead of checking the directory which was created from
+            # a zip with timestamps current when the zip file was created (which
+            # would likely be quite old), we instead check the zip file itself.
+            if file_needs_update(zip_file_path):
                 logger.info(
-                    f"Removing stale, incomplete, or corrupt repository: {resource_filepath}"
+                    f"Removing stale, incomplete, or corrupt repository: {resource_filepath} and zip file: {zip_file_path}"
                 )
+                remove(zip_file_path)
                 delete_tree(resource_filepath)
             else:
                 logger.info(f"Skipping download: {resource_filepath} already exists.")
                 continue
         zip_url_base = re.sub(str(base_url), str(base_url_replacement), str(url))
         zip_url = f"{zip_url_base}/archive/master.zip"
-        zip_file_path = f"{resource_filepath}.zip"
         download_commands.append(
             f"curl -A {user_agent_str} -X 'GET' {zip_url} -H 'accept: application/json' --output {zip_file_path} --parallel"
         )

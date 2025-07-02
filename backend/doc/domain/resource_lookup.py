@@ -10,7 +10,7 @@ import re
 import shutil
 import subprocess
 from glob import glob
-from os import remove, scandir, stat
+from os import scandir, stat
 from os.path import exists, isdir, join
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
@@ -462,7 +462,7 @@ def batch_download_repos(
     download_commands = []
     zip_file_paths = []
     for url, resource_filepath in repos:
-        zip_file_path = f"{resource_filepath}.zip"
+        zip_file_path = Path(f"{resource_filepath}.zip")
         if isdir(resource_filepath):
             # Instead of checking the directory which was created from
             # a zip with timestamps current when the zip file was created (which
@@ -471,7 +471,8 @@ def batch_download_repos(
                 logger.info(
                     f"Removing stale, incomplete, or corrupt repository: {resource_filepath} and zip file: {zip_file_path}"
                 )
-                remove(zip_file_path)
+                if zip_file_path.is_file():
+                    zip_file_path.unlink()
                 delete_tree(resource_filepath)
             else:
                 logger.info(f"Skipping download: {resource_filepath} already exists.")

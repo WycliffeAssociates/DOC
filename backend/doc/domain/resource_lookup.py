@@ -197,12 +197,15 @@ BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
 # present. It makes it seem like a bug in STET and is bad UX.
 LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
 
+# For cloudflare
 USER_AGENT_STR: str = "wa-doc"
+X_REQUESTED_WITH_VALUE: str = "WA-Tool-Doc"
 
 
 def fetch_source_data(
     data_api_url: HttpUrl = settings.DATA_API_URL,
     user_agent_str: str = USER_AGENT_STR,
+    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
 ) -> Optional[SourceData]:
     """
     Downloads data from a GraphQL API.
@@ -232,7 +235,7 @@ query MyQuery {
 }
     """
     query_json = {"query": graphql_query}
-    headers = {"User-Agent": user_agent_str}
+    headers = {"User-Agent": user_agent_str, "X-Requested-With": x_requested_with_value}
     try:
         response = requests.post(str(data_api_url), json=query_json, headers=headers)
         if response.status_code == 200:
@@ -453,6 +456,7 @@ def batch_download_repos(
     ),
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
     user_agent_str: str = USER_AGENT_STR,
+    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
 ) -> None:
     """Batch download repos and then batch unzip repos."""
     download_commands = []
@@ -475,7 +479,7 @@ def batch_download_repos(
         zip_url_base = re.sub(str(base_url), str(base_url_replacement), str(url))
         zip_url = f"{zip_url_base}/archive/master.zip"
         download_commands.append(
-            f"curl -A {user_agent_str} -X 'GET' {zip_url} -H 'accept: application/json' --output {zip_file_path} --parallel"
+            f"curl -A {user_agent_str} -H 'X-Requested-With: {x_requested_with_value}' -X 'GET' {zip_url} -H 'accept: application/json' --output {zip_file_path} --parallel"
         )
         zip_file_paths.append(zip_file_path)
     download_command = " && ".join(download_commands)
@@ -502,6 +506,7 @@ def batch_clone_git_repos(
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
     user_agent_str: str = USER_AGENT_STR,
+    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.
@@ -541,7 +546,7 @@ def batch_clone_git_repos(
                     f"Asset caching disabled: forcibly removing {resource_filepath}"
                 )
             shutil.rmtree(resource_filepath)
-        clone_command = f"git -c http.userAgent={user_agent_str} clone --depth=1 --single-branch '{url}' '{resource_filepath}' || true"
+        clone_command = f"git -c http.userAgent={user_agent_str} http.extraHeader=X-Requested-With: {x_requested_with_value} clone --depth=1 --single-branch '{url}' '{resource_filepath}' || true"
         clone_commands.append(clone_command)
     if clone_commands:
         full_command = " && ".join(clone_commands)

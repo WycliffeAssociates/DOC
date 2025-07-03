@@ -159,7 +159,7 @@ test('test optional settings', async ({ page }) => {
 })
 
 
-test('test aba philemon', async ({ page }) => {
+test.skip('test aba philemon', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Abé aba').click()

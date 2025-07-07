@@ -547,7 +547,11 @@ def batch_clone_git_repos(
                     f"Asset caching disabled: forcibly removing {resource_filepath}"
                 )
             shutil.rmtree(resource_filepath)
-        clone_command = f"git -c http.userAgent={user_agent_str} http.extraHeader=X-Requested-With: {x_requested_with_value} clone --depth=1 --single-branch '{url}' '{resource_filepath}' || true"
+        clone_command = (
+            f"git -c http.userAgent='{user_agent_str}' "
+            f"-c http.extraHeader='X-Requested-With:{x_requested_with_value}' "
+            f"clone --depth=1 --single-branch '{url}' '{resource_filepath}' || true"
+        )
         clone_commands.append(clone_command)
     if clone_commands:
         full_command = " && ".join(clone_commands)

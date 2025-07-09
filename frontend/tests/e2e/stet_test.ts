@@ -42,6 +42,14 @@ test.describe('Desktop Tests', () => {
     await page.getByRole('button', { name: 'Submit' }).click()
     await page.getByRole('button', { name: 'Generate File' }).click()
   })
+    test('test tok pisin input language', async ({ page }) => {
+        await page.goto('http://localhost:8001/stet')
+        await page.getByText('Tok Pisin').click()
+        await page.getByRole('button', { name: 'Next' }).click()
+        await page.getByLabel('English en').check()
+        await page.getByRole('button', { name: 'Next' }).click()
+        await page.getByRole('button', { name: 'Generate File' }).click()
+    })
 })
 
 // Separate group for mobile tests

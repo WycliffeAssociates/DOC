@@ -78,8 +78,6 @@ h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-html2docx==1.6.0
-    # via -r ./backend/requirements.in
 htmldocx==0.0.6
     # via -r ./backend/requirements.in
 httpcore==1.0.7
@@ -156,7 +154,6 @@ python-docx==1.1.0
     # via
     #   docxcompose
     #   docxtpl
-    #   html2docx
     #   htmldocx
 python-dotenv==1.0.1
     # via
@@ -198,7 +195,6 @@ termcolor==2.5.0
 tinycss2==1.4.0
     # via
     #   cssselect2
-    #   html2docx
     #   weasyprint
 tinyhtml5==2.0.0
     # via weasyprint

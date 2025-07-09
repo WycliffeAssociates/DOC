@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { passagesStore, addPassageReference } from '$lib/passages/stores/PassagesStore'
+  import {
+    passagesStore,
+    addPassageReference,
+    removePassageReference
+  } from '$lib/passages/stores/PassagesStore'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
   import { onMount } from 'svelte'
   import {
@@ -12,6 +16,7 @@
 
   export let bookCodesAndNames: [string, string][] = []
 
+  let buttonEnabled = false
   let loading = false
   let ntSurveySuccessMessage: string = ''
   let stetSuccessMessage: string = ''
@@ -85,6 +90,28 @@
     }
   }
 
+  export async function removeNTSurveyRGPassages() {
+    try {
+      const langCode = $langCodeAndNameStore.split(',')[0]
+      const bibleReferences = await getNTSurveyRGPassages(langCode)
+      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
+      for (const bibleRef of bibleReferences) {
+        removePassageReference(
+          langCode,
+          bibleRef.book_code,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+    } catch (error) {
+      console.error('Failed to remove NT Survey RG passages:', error)
+    } finally {
+      console.log('NT Survey RG Passages removed successfully')
+    }
+  }
+
   async function getSTETPassages(
     langCode: string,
     apiRootUrl = env.PUBLIC_BACKEND_API_URL,
@@ -124,7 +151,29 @@
     }
   }
 
-  const handleBookChange = (event: Event) => {
+  export async function removeSTETPassages() {
+    try {
+      const langCode = $langCodeAndNameStore.split(',')[0]
+      const bibleReferences = await getSTETPassages(langCode)
+      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
+      for (const bibleRef of bibleReferences) {
+        removePassageReference(
+          langCode,
+          bibleRef.book_code,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+    } catch (error) {
+      console.error('Failed to remove STET passages:', error)
+    } finally {
+      console.log('STET passages removed successfully')
+    }
+  }
+
+  function handleBookChange(event: Event) {
     const target = event.target as HTMLSelectElement
     selectedBookCode = target.value
     console.log('Book Selected:', selectedBookCode)
@@ -134,13 +183,13 @@
     console.log('Chapters for selected book:', chaptersForSelectedBook)
   }
 
-  const handleChapterChange = (event: Event) => {
+  function handleChapterChange(event: Event) {
     const target = event.target as HTMLSelectElement
     selectedChapter = target.value
     console.log('Chapter selected:', selectedChapter)
   }
 
-  const handleVerseInput = (event: Event) => {
+  function handleVerseInput(event: Event) {
     const target = event.target as HTMLInputElement
     verseReference = target.value
   }
@@ -154,9 +203,9 @@
     try {
       await addNTSurveyRGPassages()
       ntSurveySuccessMessage = '✔'
-      setTimeout(() => {
-        ntSurveySuccessMessage = ''
-      }, 4000)
+      // setTimeout(() => {
+      //   ntSurveySuccessMessage = ''
+      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -165,10 +214,29 @@
     }
   }
 
-  const handleNTSurveyCheckboxClick = (event: Event) => {
+  async function handleRemoveNTSurveyRGPassagesClick() {
+    loading = true
+    isLoadingNTSurvey = true
+    try {
+      await removeNTSurveyRGPassages()
+      // ntSurveySuccessMessage = '✔'
+      // setTimeout(() => {
+      ntSurveySuccessMessage = ''
+      // }, 4000)
+    } catch (error) {
+      console.error('Error:', error)
+    } finally {
+      loading = false
+      isLoadingNTSurvey = false
+    }
+  }
+
+  function handleNTSurveyCheckboxClick(event: Event) {
     const target = event.target as HTMLInputElement
     if (target.checked) {
       handleAddNTSurveyRGPassagesClick()
+    } else {
+      handleRemoveNTSurveyRGPassagesClick()
     }
   }
 
@@ -178,9 +246,9 @@
     try {
       await addSTETPassages()
       stetSuccessMessage = '✔'
-      setTimeout(() => {
-        stetSuccessMessage = ''
-      }, 4000)
+      // setTimeout(() => {
+      //   stetSuccessMessage = ''
+      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -189,14 +257,33 @@
     }
   }
 
-  const handleSTETCheckboxClick = (event: Event) => {
-    const target = event.target as HTMLInputElement
-    if (target.checked) {
-      handleAddSTETPassagesClick()
+  async function handleRemoveSTETPassagesClick() {
+    loading = true
+    isLoadingStetPassages = true
+    try {
+      await removeSTETPassages()
+      // stetSuccessMessage = '✔'
+      // setTimeout(() => {
+      stetSuccessMessage = ''
+      // }, 4000)
+    } catch (error) {
+      console.error('Error:', error)
+    } finally {
+      loading = false
+      isLoadingStetPassages = false
     }
   }
 
-  const addPassage = () => {
+  function handleSTETCheckboxClick(event: Event) {
+    const target = event.target as HTMLInputElement
+    if (target.checked) {
+      handleAddSTETPassagesClick()
+    } else {
+      handleRemoveSTETPassagesClick()
+    }
+  }
+
+  function addPassage() {
     if (selectedBookCode && selectedChapter && verseReference) {
       const bookName =
         bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'
@@ -212,12 +299,20 @@
       passageSuccessMessage = '✔'
       setTimeout(() => {
         passageSuccessMessage = ''
+        // Reset the button and fields
+        selectedBookCode = ''
+        selectedChapter = ''
+        verseReference = ''
+        buttonEnabled = false // Change button state back to disabled
       }, 4000)
       selectedBookCode = ''
       selectedChapter = ''
       verseReference = ''
     }
   }
+
+  // Watcher for input fields to update button state
+  $: buttonEnabled = Boolean(selectedBookCode && selectedChapter && verseReference)
 </script>
 
 <div class="flex flex-col">
@@ -266,12 +361,12 @@
     </div>
     <button
       type="button"
-      class="mt-4 ml-2 w-1/2 rounded-md
+      class={`mt-4 ml-2 w-1/2 rounded-md
            border border-[#E5E8EB] p-4
            text-center text-xl text-white
-           add-passage-button
-           "
+           ${buttonEnabled ? 'add-passage-button' : 'add-passage-button-disabled'} `}
       on:click={addPassage}
+      disabled={!buttonEnabled}
     >
       Add Passage
     </button>
@@ -292,8 +387,9 @@
     />
     <label
       for="add-nt-survey-passages-checkbox"
-      class="pl-1 text-xl text-[#33445C] {isLoadingNTSurvey ? 'text-gray-400' : ''}"
-      >Add NT Survey Reviewers' Guide Passages</label
+      class="pl-1 text-xl text-[#33445C] {isLoadingNTSurvey || ntSurveySuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add NT Survey Reviewers' Guide Passages</label
     >
     <div class="loader-container">
       {#if isLoadingNTSurvey}
@@ -314,8 +410,9 @@
     />
     <label
       for="add-stet-passages-checkbox"
-      class="pl-1 text-xl text-[#33445C] {isLoadingStetPassages ? 'text-gray-400' : ''}"
-      >Add STET Passages</label
+      class="pl-1 text-xl text-[#33445C] {isLoadingStetPassages || stetSuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add STET Passages</label
     >
     <div class="loader-container">
       {#if isLoadingStetPassages}
@@ -356,6 +453,15 @@
       transform: rotate(360deg);
     }
   }
+*:global(.add-passage-button-disabled) {
+    background:
+      linear-gradient(180deg, #a3c1ff 0%, #8bb3ff 100%), /* lighter blue */
+      linear-gradient(0deg, #33447e, #33447e);
+}
+* :global(.add-passage-button-disabled:hover) {
+  background:
+    linear-gradient(180deg, #cce4ff 0%, #a3c1ff 100%), linear-gradient(0deg, #33447e, #33447e);
+}
   * :global(.add-passage-button) {
     background:
       linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #33445c, #33445c);

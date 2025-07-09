@@ -11,7 +11,7 @@ import shutil
 import subprocess
 from glob import glob
 from os import scandir, stat
-from os.path import basename, exists, isdir, join
+from os.path import exists, isdir, join
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
 from urllib.parse import urlparse
@@ -39,7 +39,12 @@ from doc.reviewers_guide.parser import (
     get_rg_books,
     parse_bible_reference,
 )
-from doc.utils.file_utils import file_needs_update, make_dir, read_file
+from doc.utils.file_utils import (
+    delete_tree,
+    file_needs_update,
+    make_dir,
+    read_file,
+)
 from doc.utils.list_utils import unique_tuples
 from doc.utils.text_utils import normalize_localized_book_name
 from fastapi import HTTPException, status
@@ -192,9 +197,15 @@ BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
 # present. It makes it seem like a bug in STET and is bad UX.
 LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
 
+# For cloudflare
+USER_AGENT_STR: str = "wa-doc"
+X_REQUESTED_WITH_VALUE: str = "WA-Tool-Doc"
+
 
 def fetch_source_data(
     data_api_url: HttpUrl = settings.DATA_API_URL,
+    user_agent_str: str = USER_AGENT_STR,
+    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
 ) -> Optional[SourceData]:
     """
     Downloads data from a GraphQL API.
@@ -224,8 +235,9 @@ query MyQuery {
 }
     """
     query_json = {"query": graphql_query}
+    headers = {"User-Agent": user_agent_str, "X-Requested-With": x_requested_with_value}
     try:
-        response = requests.post(str(data_api_url), json=query_json)
+        response = requests.post(str(data_api_url), json=query_json, headers=headers)
         if response.status_code == 200:
             data_payload = response.json().get("data", {})
             if "git_repo" in data_payload:
@@ -335,6 +347,7 @@ def resource_types(
     book_names: Mapping[str, str] = BOOK_NAMES,
     docx_file_path: str = "en_rg_nt_survey.docx",
     en_rg: str = settings.EN_RG_DIR,
+    download_assets: bool = settings.DOWNLOAD_ASSETS,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from doc.domain import resource_lookup
@@ -376,9 +389,10 @@ def resource_types(
             for url, path, resource_type_ in repo_clone_list
             if "rg" != resource_type_
         ]
-        # Perform batch cloning only on filtered list
-        batch_clone_git_repos(repos_to_clone)
-        # Process cloned repositories
+        if download_assets:
+            batch_download_repos(repos_to_clone)
+        else:
+            batch_clone_git_repos(repos_to_clone)
         for url, resource_filepath, resource_type in repo_clone_list:
             if resource_type:
                 book_assets = []
@@ -432,25 +446,78 @@ def resource_types(
     return sorted(unique_values, key=lambda value: value[1])
 
 
+def batch_download_repos(
+    repos: list[tuple[HttpUrl, str]],
+    asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
+    asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
+    base_url: HttpUrl = HttpUrl("https://content.bibletranslationtools.org/"),
+    base_url_replacement: HttpUrl = HttpUrl(
+        "https://content.bibletranslationtools.org/api/v1/repos/"
+    ),
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    user_agent_str: str = USER_AGENT_STR,
+    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
+) -> None:
+    """Batch download repos and then batch unzip repos."""
+    download_commands = []
+    zip_file_paths = []
+    for url, resource_filepath in repos:
+        zip_file_path = Path(f"{resource_filepath}.zip")
+        if isdir(resource_filepath):
+            # Instead of checking the directory which was created from
+            # a zip with timestamps current when the zip file was created (which
+            # would likely be quite old), we instead check the zip file itself.
+            if file_needs_update(zip_file_path):
+                logger.info(
+                    f"Removing stale, incomplete, or corrupt repository: {resource_filepath} and zip file: {zip_file_path}"
+                )
+                if zip_file_path.is_file():
+                    zip_file_path.unlink()
+                delete_tree(resource_filepath)
+            else:
+                logger.info(f"Skipping download: {resource_filepath} already exists.")
+                continue
+        zip_url_base = re.sub(str(base_url), str(base_url_replacement), str(url))
+        zip_url = f"{zip_url_base}/archive/master.zip"
+        download_commands.append(
+            f"curl -A {user_agent_str} -H 'X-Requested-With: {x_requested_with_value}' -X 'GET' {zip_url} -H 'accept: application/json' --output {zip_file_path} --parallel"
+        )
+        zip_file_paths.append(zip_file_path)
+    download_command = " && ".join(download_commands)
+    logger.info(f"Downloading repos with command: {download_command}")
+    try:
+        subprocess.check_call(download_command, shell=True)
+        unzip_commands = [
+            f"unzip -q -o {zip_file_path} -d {resource_assets_dir}"
+            for zip_file_path in zip_file_paths
+        ]
+        unzip_command = " && ".join(unzip_commands)
+        logger.info(f"Unzipping downloaded files with command: {unzip_command}")
+        subprocess.check_call(unzip_command, shell=True)
+    except subprocess.CalledProcessError:
+        logger.error("Batch download or unzip failed!")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Download of repo master.zip failed",
+        )
+
+
 def batch_clone_git_repos(
     repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
-    en_rg: str = settings.EN_RG_DIR,
+    user_agent_str: str = USER_AGENT_STR,
+    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.
     - If a repository already exists and is fully cloned, it is skipped.
     - If a repository exists but is a partial clone (corrupt or missing key files), it is removed first.
-    - The 'en_rg' directory is preserved and never deleted or cloned.
-    - If asset_caching_enabled is False, repositories are always deleted and re-cloned (except 'en_rg').
+    - If asset_caching_enabled is False, repositories are always deleted and re-cloned.
     """
     clone_commands = []
     for url, resource_filepath in repos:
         if isdir(resource_filepath):
-            if basename(resource_filepath) == en_rg:
-                logger.info(f"Preserving special directory: {resource_filepath}")
-                continue
             git_dir = join(resource_filepath, ".git")
             if asset_caching_enabled:
                 if isdir(git_dir):
@@ -480,7 +547,11 @@ def batch_clone_git_repos(
                     f"Asset caching disabled: forcibly removing {resource_filepath}"
                 )
             shutil.rmtree(resource_filepath)
-        clone_command = f"git clone --depth=1 '{url}' '{resource_filepath}' || true"
+        clone_command = (
+            f"git -c http.userAgent='{user_agent_str}' "
+            f"-c http.extraHeader='X-Requested-With:{x_requested_with_value}' "
+            f"clone --depth=1 --single-branch '{url}' '{resource_filepath}' || true"
+        )
         clone_commands.append(clone_command)
     if clone_commands:
         full_command = " && ".join(clone_commands)
@@ -788,6 +859,7 @@ def get_book_codes_for_lang(
     use_localized_book_name: bool,
     usfm_only: bool = False,
     check_usfm: bool = False,
+    download_assets: bool = settings.DOWNLOAD_ASSETS,
 ) -> Sequence[tuple[str, str]]:
     data = fetch_source_data()
     if data is None:
@@ -815,7 +887,10 @@ def get_book_codes_for_lang(
         repos_to_clone = [
             (url, path) for url, path in repo_clone_list if "en_rg" not in path
         ]
-        batch_clone_git_repos(repos_to_clone)
+        if download_assets:
+            batch_download_repos(repos_to_clone)
+        else:
+            batch_clone_git_repos(repos_to_clone)
         for url, resource_filepath in repo_clone_list:
             for repo_info in augmented_repos_info:
                 if repo_info.repo_url == url:

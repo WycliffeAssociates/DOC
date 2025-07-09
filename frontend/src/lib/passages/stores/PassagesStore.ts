@@ -42,3 +42,26 @@ export const addPassageReference = (
     ]
   })
 }
+
+export const removePassageReference = (
+  langCode: string,
+  bookCode: string,
+  startChapterNum: number,
+  startChapterVerseReference: string,
+  endChapterNum?: number | null,
+  endChapterVerseReference?: string | null
+) => {
+  passagesStore.update((currentPassages) => {
+    return currentPassages.filter(
+      (p) =>
+        !(
+          p.langCode === langCode &&
+          p.bookCode === bookCode &&
+          p.startChapterNum === startChapterNum &&
+          p.startChapterVerseReference === startChapterVerseReference &&
+          p.endChapterNum === endChapterNum &&
+          p.endChapterVerseReference === endChapterVerseReference
+        )
+    )
+  })
+}

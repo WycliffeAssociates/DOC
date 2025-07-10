@@ -23,5 +23,5 @@ TRANSLATED_TABLE_COLUMN_HEADERS = {
     "en": ("Source Reference", "Target Reference", "Status", "OK"),
     "es-419": ("Fuente", "Idioma Materna", "Estado", "OK"),
     "pt-br": ("Referência de Origem", "Referência de Destino", "Status", "OK"),
-    "tpi": ("As bilong dispela", "As bilong mak", "Stet", "OK"),
+    "tpi": ("Narapela baibel ves", "Tokples ves", "Sek", "OK"),
 }

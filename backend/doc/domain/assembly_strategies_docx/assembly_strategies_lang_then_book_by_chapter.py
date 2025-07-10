@@ -9,19 +9,13 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     tn_chapter_verses,
     tq_chapter_verses,
 )
-from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
-    add_hr,
-    create_docx_subdoc,
-    add_one_column_section,
-    add_two_column_section,
-    add_page_break,
-)
 
 from doc.domain.bible_books import BOOK_NAMES
 from doc.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
     ChunkSizeEnum,
+    DocumentPart,
     LangDirEnum,
     TNBook,
     TQBook,
@@ -29,8 +23,7 @@ from doc.domain.model import (
     USFMBook,
 )
 from doc.reviewers_guide.model import RGBook
-from docx import Document  # type: ignore
-from docxcompose.composer import Composer  # type: ignore
+
 
 logger = settings.logger(__name__)
 
@@ -47,14 +40,14 @@ def assemble_content_by_lang_then_book(
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
     book_names: Mapping[str, str] = BOOK_NAMES,
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Group content by language and then by book and then pass content
     and a couple other parameters, assembly_layout_kind and
     chunk_size, to interleaving strategy to do the actual
     interleaving.
     """
-    composers: list[Composer] = []
+    document_parts: list[DocumentPart] = []
     book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
     all_lang_codes = (
         {usfm_book.lang_code for usfm_book in usfm_books}
@@ -127,7 +120,7 @@ def assemble_content_by_lang_then_book(
             ]
             rg_book = selected_rg_books[0] if selected_rg_books else None
             if usfm_book is not None:
-                composers.append(
+                document_parts.extend(
                     assemble_usfm_by_book(
                         usfm_book,
                         tn_book,
@@ -139,7 +132,7 @@ def assemble_content_by_lang_then_book(
                     )
                 )
             elif usfm_book is None and tn_book is not None:
-                composers.append(
+                document_parts.extend(
                     assemble_tn_by_book(
                         usfm_book,
                         tn_book,
@@ -151,7 +144,7 @@ def assemble_content_by_lang_then_book(
                     )
                 )
             elif usfm_book is None and tn_book is None and tq_book is not None:
-                composers.append(
+                document_parts.extend(
                     assemble_tq_by_book(
                         usfm_book,
                         tn_book,
@@ -168,7 +161,7 @@ def assemble_content_by_lang_then_book(
                 and tq_book is None
                 and (tw_book is not None or bc_book is not None or rg_book is not None)
             ):
-                composers.append(
+                document_parts.extend(
                     assemble_tw_by_book(
                         usfm_book,
                         tn_book,
@@ -179,10 +172,7 @@ def assemble_content_by_lang_then_book(
                         rg_book,
                     )
                 )
-    first_composer = composers[0]
-    for composer in composers[1:]:
-        first_composer.append(composer.doc)
-    return first_composer
+    return document_parts
 
 
 def assemble_usfm_by_book(
@@ -195,44 +185,36 @@ def assemble_usfm_by_book(
     rg_book: Optional[RGBook],
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
     fmt_str: str = BOOK_NAME_FMT_STR,
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Construct the HTML for a 'by book' strategy wherein at least
     usfm_book_content_unit exists.
     """
-    doc = Document()
-    composer = Composer(doc)
+    document_parts: list[DocumentPart] = []
     if show_tn_book_intro and tn_book and tn_book.book_intro:
-        subdoc = create_docx_subdoc(
-            tn_book.book_intro,
-            tn_book.lang_code,
-            tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+        document_parts.append(
+            DocumentPart(
+                content=tn_book.book_intro,
+                is_rtl=tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+            )
         )
-        composer.append(subdoc)
     if bc_book:
         if bc_book.book_intro:
-            subdoc = create_docx_subdoc(
-                bc_book.book_intro,
-                bc_book.lang_code,
-            )
-            composer.append(subdoc)
+            document_parts.append(DocumentPart(content=bc_book.book_intro))
     if usfm_book:
-        # fmt: off
         is_rtl = usfm_book and usfm_book.lang_direction == LangDirEnum.RTL
-        # fmt: on
         # Add book name
-        subdoc = create_docx_subdoc(
-            fmt_str.format(usfm_book.national_book_name),
-            usfm_book.lang_code,
-            is_rtl,
-            False,
+        document_parts.append(
+            DocumentPart(
+                content=fmt_str.format(usfm_book.national_book_name),
+                is_rtl=is_rtl,
+                add_hr_p=False,
+            )
         )
-        composer.append(subdoc)
         for (
             chapter_num,
             chapter,
         ) in usfm_book.chapters.items():
-            add_one_column_section(doc)
             tn_verses: str = ""
             tq_verses: str = ""
             rg_verses: str = ""
@@ -247,70 +229,64 @@ def assemble_usfm_by_book(
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
             if rg_book:
                 rg_verses = rg_chapter_verses(rg_book, chapter_num)
-            subdoc = create_docx_subdoc(
-                chapter.content,
-                usfm_book.lang_code,
-                is_rtl,
-            )
-            composer.append(subdoc)
+            document_parts.append(DocumentPart(content=chapter.content, is_rtl=is_rtl))
             if chapter_intro_:
-                subdoc = create_docx_subdoc(chapter_intro_, usfm_book.lang_code, is_rtl)
-                composer.append(subdoc)
+                document_parts.append(
+                    DocumentPart(content=chapter_intro_, is_rtl=is_rtl)
+                )
             if chapter_commentary_:
-                subdoc = create_docx_subdoc(
-                    chapter_commentary_, usfm_book.lang_code, is_rtl, False
+                document_parts.append(
+                    DocumentPart(
+                        content=chapter_commentary_, is_rtl=is_rtl, add_hr_p=False
+                    )
                 )
-                composer.append(subdoc)
             if tn_verses:
-                add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    tn_verses,
-                    usfm_book.lang_code,
-                    is_rtl,
-                    False,
+                document_parts.append(
+                    DocumentPart(
+                        content=tn_verses,
+                        is_rtl=is_rtl,
+                        add_hr_p=False,
+                        contained_in_two_column_section=True,
+                    )
                 )
-                composer.append(subdoc)
-                add_one_column_section(doc)
-                p = doc.add_paragraph()
-                add_hr(p)
+                document_parts.append(DocumentPart(content=""))
             if tq_verses:
-                add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    tq_verses,
-                    usfm_book.lang_code,
-                    is_rtl,
-                    False,
+                document_parts.append(
+                    DocumentPart(
+                        content=tq_verses,
+                        is_rtl=is_rtl,
+                        add_hr_p=False,
+                        contained_in_two_column_section=True,
+                    )
                 )
-                composer.append(subdoc)
-                add_one_column_section(doc)
-                p = doc.add_paragraph()
-                add_hr(p)
+                document_parts.append(DocumentPart(content=""))
             if rg_verses:
-                # add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    rg_verses,
-                    usfm_book.lang_code,
-                    is_rtl,
-                    False,
+                document_parts.append(
+                    DocumentPart(content=rg_verses, is_rtl=is_rtl, add_hr_p=False)
                 )
-                composer.append(subdoc)
-                add_one_column_section(doc)
             # TODO Get feedback on whether we should allow a user to select a primary _and_
             # a secondary USFM resource. If we want to limit the user to only one USFM per
             # document then we would want to control that in the UI and maybe also at the API
             # level. The API level control would be implemented in the DocumentRequest
             # validation.
             if usfm_book2:
-                add_one_column_section(doc)
                 # Here we add the whole chapter's worth of verses for the secondary usfm
-                subdoc = create_docx_subdoc(
-                    usfm_book2.chapters[chapter_num].content,
-                    usfm_book.lang_code,
-                    usfm_book2 and usfm_book2.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=usfm_book2.chapters[chapter_num].content,
+                        is_rtl=usfm_book2
+                        and usfm_book2.lang_direction == LangDirEnum.RTL,
+                        contained_in_two_column_section=True,
+                    )
                 )
-                composer.append(subdoc)
-            add_page_break(doc)
-    return composer
+            document_parts.append(
+                DocumentPart(
+                    content="",
+                    add_hr_p=False,
+                    add_page_break=True,
+                )
+            )
+    return document_parts
 
 
 def assemble_tn_by_book(
@@ -322,85 +298,73 @@ def assemble_tn_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Construct the HTML for a 'by book' strategy wherein at least
     tn_book exists.
     """
-    doc = Document()
-    composer = Composer(doc)
+    document_parts: list[DocumentPart] = []
     if tn_book:
         if show_tn_book_intro and tn_book.book_intro:
-            subdoc = create_docx_subdoc(
-                tn_book.book_intro,
-                tn_book.lang_code,
-                tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+            document_parts.append(
+                DocumentPart(
+                    content=tn_book.book_intro,
+                    is_rtl=tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                )
             )
-            composer.append(subdoc)
         if bc_book and bc_book.book_intro:
-            subdoc = create_docx_subdoc(
-                bc_book.book_intro,
-                tn_book.lang_code,
-            )
-            composer.append(subdoc)
+            document_parts.append(DocumentPart(content=bc_book.book_intro))
         for chapter_num in tn_book.chapters:
-            add_one_column_section(doc)
             one_column_html = []
             one_column_html.append(chapter_heading(chapter_num))
             one_column_html.append(chapter_intro(tn_book, chapter_num))
             one_column_html_ = "".join(one_column_html)
             if one_column_html_:
-                subdoc = create_docx_subdoc(
-                    one_column_html_,
-                    tn_book.lang_code,
-                    tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=one_column_html_,
+                        is_rtl=tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                    )
                 )
-                composer.append(subdoc)
             if bc_book:
-                subdoc = create_docx_subdoc(
-                    chapter_commentary(bc_book, chapter_num),
-                    bc_book.lang_code,
+                document_parts.append(
+                    DocumentPart(content=chapter_commentary(bc_book, chapter_num))
                 )
-                composer.append(subdoc)
             tn_verses = tn_chapter_verses(tn_book, chapter_num)
             if tn_verses:
-                add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    tn_verses,
-                    tn_book.lang_code,
-                    tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=tn_verses,
+                        is_rtl=tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                        add_hr_p=False,
+                        contained_in_two_column_section=True,
+                    )
                 )
-                composer.append(subdoc)
-                add_one_column_section(doc)
-                p = doc.add_paragraph()
-                add_hr(p)
+                document_parts.append(DocumentPart(content=""))
             tq_verses = tq_chapter_verses(tq_book, chapter_num)
             if tq_book and tq_verses:
-                add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    tq_verses,
-                    tq_book.lang_code,
-                    tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=tq_verses,
+                        is_rtl=tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                        contained_in_two_column_section=True,
+                    )
                 )
-                composer.append(subdoc)
-                add_one_column_section(doc)
-                p = doc.add_paragraph()
-                add_hr(p)
+                document_parts.append(DocumentPart(content=""))
             rg_verses = rg_chapter_verses(rg_book, chapter_num)
             if rg_book and rg_verses:
                 # add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    rg_verses,
-                    rg_book.lang_code,
-                    rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=rg_verses,
+                        is_rtl=rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                    )
                 )
-                composer.append(subdoc)
-                # add_one_column_section(doc)
-                p = doc.add_paragraph()
-                add_hr(p)
-            add_page_break(doc)
-
-    return composer
+                document_parts.append(DocumentPart(content=""))
+            document_parts.append(
+                DocumentPart(content="", add_hr_p=False, add_page_break=True)
+            )
+    return document_parts
 
 
 def assemble_tq_by_book(
@@ -411,48 +375,45 @@ def assemble_tq_by_book(
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Construct the HTML for a 'by book' strategy wherein at least
     tq_book exists.
     """
-    doc = Document()
-    composer = Composer(doc)
+    document_parts: list[DocumentPart] = []
     if tq_book:
         for chapter_num in tq_book.chapters:
-            add_one_column_section(doc)
             if bc_book:
-                subdoc = create_docx_subdoc(
-                    chapter_commentary(bc_book, chapter_num),
-                    bc_book.lang_code,
+                document_parts.append(
+                    DocumentPart(content=chapter_commentary(bc_book, chapter_num))
                 )
-                composer.append(subdoc)
-            subdoc = create_docx_subdoc(
-                chapter_heading(chapter_num),
-                tq_book.lang_code,
-                tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+            document_parts.append(
+                DocumentPart(
+                    content=chapter_heading(chapter_num),
+                    is_rtl=tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                )
             )
-            composer.append(subdoc)
             tq_verses = tq_chapter_verses(tq_book, chapter_num)
             if tq_verses:
-                add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    tq_verses,
-                    tq_book.lang_code,
-                    tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=tq_verses,
+                        is_rtl=tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                        contained_in_two_column_section=True,
+                    )
                 )
-                composer.append(subdoc)
             rg_verses = rg_chapter_verses(rg_book, chapter_num)
             if rg_book and rg_verses:
-                # add_two_column_section(doc)
-                subdoc = create_docx_subdoc(
-                    rg_verses,
-                    rg_book.lang_code,
-                    rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=rg_verses,
+                        is_rtl=rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                    )
                 )
-                composer.append(subdoc)
-            add_page_break(doc)
-    return composer
+            document_parts.append(
+                DocumentPart(content="", add_hr_p=False, add_page_break=True)
+            )
+    return document_parts
 
 
 def assemble_tw_by_book(
@@ -463,18 +424,17 @@ def assemble_tw_by_book(
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
-) -> Composer:
+) -> list[DocumentPart]:
     """
     TW is handled outside this module, that is why no
     code for TW is explicitly included here.
     """
-    doc = Document()
-    composer = Composer(doc)
+    document_parts: list[DocumentPart] = []
     if bc_book:
-        subdoc = create_docx_subdoc(bc_book.book_intro, bc_book.lang_code)
-        composer.append(subdoc)
+        document_parts.append(DocumentPart(content=bc_book.book_intro))
         for chapter in bc_book.chapters.values():
-            subdoc = create_docx_subdoc(chapter.commentary, bc_book.lang_code)
-            composer.append(subdoc)
-            add_page_break(doc)
-    return composer
+            document_parts.append(DocumentPart(content=chapter.commentary))
+            document_parts.append(
+                DocumentPart(content="", add_hr_p=False, add_page_break=True)
+            )
+    return document_parts

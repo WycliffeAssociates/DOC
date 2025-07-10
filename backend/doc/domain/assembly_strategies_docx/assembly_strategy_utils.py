@@ -109,26 +109,17 @@ def add_hr(paragraph: Paragraph) -> None:
     pBdr.append(bottom)
 
 
-def create_docx_subdoc(
-    content: str,
+
+
+def set_docx_language(
+    doc: Document,
     lang_code: str,
-    is_rtl: bool = False,
-    add_hr_p: bool = True,
     oxml_language_list_lowercase: list[str] = OXML_LANGUAGE_LIST_LOWERCASE,
     oxml_language_list_lowercase_split: list[str] = OXML_LANGUAGE_LIST_LOWERCASE_SPLIT,
 ) -> Document:
-    """
-    Create and return a Document instance from the content parameter.
-    """
-    html_to_docx = HtmlToDocx()
-    subdoc = html_to_docx.parse_html_string(content)
-    if is_rtl:
-        # Setting each run to be RTL language direction
-        for p in subdoc.paragraphs:
-            for run in p.runs:
-                run.font.rtl = True
-    if subdoc.paragraphs:
-        p = subdoc.paragraphs[-1]
+    """Set the Language for spell check"""
+    if doc.paragraphs:
+        p = doc.paragraphs[-1]
         # Set the language for this paragraph for the sake of the Word
         # spellchecker.
         p_run = p.add_run()
@@ -175,10 +166,6 @@ def create_docx_subdoc(
             p_run_lang.set(qn("w:eastAsia"), "en-US")
             p_run_lang.set(qn("w:bidi"), "en-US")
         p_rpr.append(p_run_lang)
-        # Add a horizontal ruler at the end of the paragraph if requested.
-        if add_hr_p:
-            add_hr(p)
-    return subdoc
 
 
 def add_one_column_section(doc: Document) -> None:

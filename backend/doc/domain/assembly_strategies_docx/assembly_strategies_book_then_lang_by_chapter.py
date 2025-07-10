@@ -10,17 +10,12 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     tn_chapter_verses,
     tq_chapter_verses,
 )
-from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
-    add_one_column_section,
-    add_page_break,
-    add_two_column_section,
-    create_docx_subdoc,
-)
 from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
 from doc.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
     ChunkSizeEnum,
+    DocumentPart,
     LangDirEnum,
     TNBook,
     TQBook,
@@ -28,8 +23,6 @@ from doc.domain.model import (
     USFMBook,
 )
 from doc.reviewers_guide.model import RGBook
-from docx import Document  # type: ignore
-from docxcompose.composer import Composer  # type: ignore
 
 logger = settings.logger(__name__)
 
@@ -46,12 +39,13 @@ def assemble_content_by_book_then_lang(
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
     book_names: Mapping[str, str] = BOOK_NAMES,
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Assemble by book then by language in alphabetic order before
     delegating more atomic ordering/interleaving to an assembly
     sub-strategy.
     """
+    document_parts: list[DocumentPart] = []
     # Sort the books in canonical order so that groupby does what we want.
     book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
     most_book_codes = max(
@@ -88,7 +82,7 @@ def assemble_content_by_book_then_lang(
             rg_book for rg_book in rg_books if rg_book.book_code == book_code
         ]
         if selected_usfm_books:
-            composer = assemble_usfm_by_chapter(
+            document_parts = assemble_usfm_by_chapter(
                 usfm_books,
                 tn_books,
                 tq_books,
@@ -96,9 +90,9 @@ def assemble_content_by_book_then_lang(
                 bc_books,
                 rg_books,
             )
-            return composer
+            return document_parts
         elif not selected_usfm_books and selected_tn_books:
-            composer = assemble_tn_by_chapter(
+            document_parts = assemble_tn_by_chapter(
                 usfm_books,
                 tn_books,
                 tq_books,
@@ -106,9 +100,9 @@ def assemble_content_by_book_then_lang(
                 bc_books,
                 rg_books,
             )
-            return composer
+            return document_parts
         elif not selected_usfm_books and not selected_tn_books and selected_tq_books:
-            composer = assemble_tq_by_chapter(
+            document_parts = assemble_tq_by_chapter(
                 usfm_books,
                 tn_books,
                 tq_books,
@@ -116,14 +110,14 @@ def assemble_content_by_book_then_lang(
                 bc_books,
                 rg_books,
             )
-            return composer
+            return document_parts
         elif (
             not selected_usfm_books
             and not selected_tn_books
             and not selected_tq_books
             and (selected_tw_books or selected_bc_books or selected_rg_books)
         ):
-            composer = assemble_tw_by_chapter(
+            document_parts = assemble_tw_by_chapter(
                 usfm_books,
                 tn_books,
                 tq_books,
@@ -131,7 +125,8 @@ def assemble_content_by_book_then_lang(
                 bc_books,
                 rg_books,
             )
-            return composer
+            return document_parts
+    return document_parts
 
 
 def assemble_usfm_by_chapter(
@@ -144,7 +139,7 @@ def assemble_usfm_by_chapter(
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
     fmt_str: str = BOOK_NAME_FMT_STR,
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Construct the Docx wherein at least one USFM resource exists, one column
     layout.
@@ -170,73 +165,65 @@ def assemble_usfm_by_chapter(
     tq_books = sorted(tq_books, key=tq_sort_key)
     bc_books = sorted(bc_books, key=bc_sort_key)
     rg_books = sorted(rg_books, key=rg_sort_key)
-    doc = Document()
-    composer = Composer(doc)
+    document_parts: list[DocumentPart] = []
     if show_tn_book_intro:
         for tn_book in tn_books:
             if tn_book.book_intro:
                 book_intro_ = tn_book.book_intro
                 book_intro_adj = adjust_book_intro_headings(book_intro_)
-                subdoc = create_docx_subdoc(
-                    book_intro_adj,
-                    tn_book.lang_code,
-                    tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=book_intro_adj,
+                        is_rtl=tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                    )
                 )
-                composer.append(subdoc)
     for bc_book in bc_books:
         # Add the commentary book intro
-        subdoc = create_docx_subdoc(bc_book.book_intro, bc_book.lang_code)
-        composer.append(subdoc)
+        document_parts.append(DocumentPart(content=bc_book.book_intro))
     book_codes = {usfm_book.book_code for usfm_book in usfm_books}
     for book_code in book_codes:
         num_chapters = book_chapters[book_code]
         for chapter_num in range(1, num_chapters + 1):
-            add_one_column_section(doc)
             # Add chapter intro for each language
             for tn_book in [
                 tn_book for tn_book in tn_books if tn_book.book_code == book_code
             ]:
                 if chapter_num in tn_book.chapters:
-                    subdoc = create_docx_subdoc(
-                        chapter_intro(tn_book, chapter_num),
-                        tn_book.lang_code,
-                        tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                    document_parts.append(
+                        DocumentPart(
+                            content=chapter_intro(tn_book, chapter_num),
+                            is_rtl=tn_book
+                            and tn_book.lang_direction == LangDirEnum.RTL,
+                        )
                     )
-                    composer.append(subdoc)
             for bc_book in [
                 bc_book for bc_book in bc_books if bc_book.book_code == book_code
             ]:
                 if chapter_num in bc_book.chapters:
                     # Add the chapter commentary.
-                    subdoc = create_docx_subdoc(
-                        chapter_commentary(bc_book, chapter_num),
-                        bc_book.lang_code,
+                    document_parts.append(
+                        DocumentPart(content=chapter_commentary(bc_book, chapter_num))
                     )
-                    composer.append(subdoc)
             for usfm_book in [
                 usfm_book
                 for usfm_book in usfm_books
                 if usfm_book.book_code == book_code
             ]:
-                add_one_column_section(doc)
-                # Add the book title, e.g., 1 Peter
-                subdoc = create_docx_subdoc(
-                    fmt_str.format(usfm_book.national_book_name),
-                    usfm_book.lang_code,
+                document_parts.append(
+                    DocumentPart(
+                        content=fmt_str.format(usfm_book.national_book_name),
+                        add_hr_p=False,
+                    )
                 )
-                composer.append(subdoc)
                 if chapter_num in usfm_book.chapters:
                     # Add the interleaved USFM chapters
-                    add_one_column_section(doc)
-                    # fmt: off
-                    is_rtl = usfm_book and usfm_book.lang_direction == LangDirEnum.RTL
-                    # fmt: on
-                    subdoc = create_docx_subdoc(
-                        usfm_book.chapters[chapter_num].content,
-                        usfm_book.lang_code,
-                        is_rtl,
+                    document_parts.append(
+                        DocumentPart(
+                            content=usfm_book.chapters[chapter_num].content,
+                            is_rtl=usfm_book
+                            and usfm_book.lang_direction == LangDirEnum.RTL,
+                        )
                     )
-                    composer.append(subdoc)
             # Add the interleaved tn notes
             tn_verses = None
             for tn_book in [
@@ -247,13 +234,14 @@ def assemble_usfm_by_chapter(
                 if chapter_num in tn_book.chapters:
                     tn_verses = tn_chapter_verses(tn_book, chapter_num)
                     if tn_verses:
-                        add_two_column_section(doc)
-                        subdoc = create_docx_subdoc(
-                            tn_verses,
-                            tn_book.lang_code,
-                            tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                        document_parts.append(
+                            DocumentPart(
+                                content=tn_verses,
+                                is_rtl=tn_book
+                                and tn_book.lang_direction == LangDirEnum.RTL,
+                                contained_in_two_column_section=True,
+                            )
                         )
-                        composer.append(subdoc)
             # Add the interleaved tq questions
             for tq_book in [
                 tq_book
@@ -264,26 +252,27 @@ def assemble_usfm_by_chapter(
                     tq_verses = tq_chapter_verses(tq_book, chapter_num)
                     # Add TQ verse content, if any
                     if tq_verses:
-                        add_two_column_section(doc)
-                        subdoc = create_docx_subdoc(
-                            tq_verses,
-                            tq_book.lang_code,
-                            tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                        document_parts.append(
+                            DocumentPart(
+                                content=tq_verses,
+                                is_rtl=tq_book
+                                and tq_book.lang_direction == LangDirEnum.RTL,
+                                contained_in_two_column_section=True,
+                            )
                         )
-                        composer.append(subdoc)
             for rg_book in [
                 rg_book
                 for rg_book in rg_books
                 if rg_book.book_code == usfm_book.book_code
             ]:
                 if chapter_num in rg_book.chapters:
-                    subdoc = create_docx_subdoc(
-                        rg_chapter_verses(rg_book, chapter_num),
-                        rg_book.lang_code,
+                    document_parts.append(
+                        DocumentPart(content=rg_chapter_verses(rg_book, chapter_num))
                     )
-                    composer.append(subdoc)
-            add_page_break(doc)
-    return composer
+            document_parts.append(
+                DocumentPart(content="", add_hr_p=False, add_page_break=True)
+            )
+    return document_parts
 
 
 def assemble_tn_by_chapter(
@@ -295,7 +284,7 @@ def assemble_tn_by_chapter(
     rg_books: Sequence[RGBook],
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
     tn_book_content_units exists.
@@ -317,32 +306,25 @@ def assemble_tn_by_chapter(
     tq_books = sorted(tq_books, key=tq_sort_key)
     bc_books = sorted(bc_books, key=bc_sort_key)
     rg_books = sorted(rg_books, key=rg_sort_key)
-    doc = Document()
-    composer = Composer(doc)
-    add_one_column_section(doc)
+    document_parts: list[DocumentPart] = []
     if show_tn_book_intro:
         # Add book intros for each tn_book
         for tn_book in tn_books:
             if tn_book.book_intro:
                 book_intro_ = tn_book.book_intro
                 book_intro_adj = adjust_book_intro_headings(book_intro_)
-                subdoc = create_docx_subdoc(
-                    book_intro_adj,
-                    tn_book.lang_code,
-                    tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                document_parts.append(
+                    DocumentPart(
+                        content=book_intro_adj,
+                        is_rtl=tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                    )
                 )
-                composer.append(subdoc)
     for bc_book in bc_books:
-        subdoc = create_docx_subdoc(
-            bc_book_intro(bc_book),
-            bc_book.lang_code,
-        )
-        composer.append(subdoc)
+        document_parts.append(DocumentPart(content=bc_book_intro(bc_book)))
     book_codes = {tn_book.book_code for tn_book in tn_books}
     for book_code in book_codes:
         num_chapters = book_chapters[book_code]
         for chapter_num in range(1, num_chapters + 1):
-            add_one_column_section(doc)
             for tn_book in [
                 tn_book for tn_book in tn_books if tn_book.book_code == book_code
             ]:
@@ -353,22 +335,21 @@ def assemble_tn_by_chapter(
                     one_column_html.append(chapter_intro(tn_book, chapter_num))
                     one_column_html_ = "".join(one_column_html)
                     if one_column_html_:
-                        subdoc = create_docx_subdoc(
-                            one_column_html_,
-                            tn_book.lang_code,
-                            tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                        document_parts.append(
+                            DocumentPart(
+                                content=one_column_html_,
+                                is_rtl=tn_book
+                                and tn_book.lang_direction == LangDirEnum.RTL,
+                            )
                         )
-                        composer.append(subdoc)
             for bc_book in [
                 bc_book for bc_book in bc_books if bc_book.book_code == book_code
             ]:
                 if chapter_num in bc_book.chapters:
                     # Add the chapter commentary.
-                    subdoc = create_docx_subdoc(
-                        chapter_commentary(bc_book, chapter_num),
-                        bc_book.lang_code,
+                    document_parts.append(
+                        DocumentPart(content=chapter_commentary(bc_book, chapter_num))
                     )
-                    composer.append(subdoc)
             # Add the interleaved tn notes
             for tn_book in [
                 tn_book for tn_book in tn_books if tn_book.book_code == book_code
@@ -376,13 +357,13 @@ def assemble_tn_by_chapter(
                 if chapter_num in tn_book.chapters:
                     tn_verses = tn_chapter_verses(tn_book, chapter_num)
                     if tn_verses:
-                        add_two_column_section(doc)
-                        subdoc = create_docx_subdoc(
-                            tn_verses,
-                            tn_book.lang_code,
-                            tn_book and tn_book.lang_direction == LangDirEnum.RTL,
+                        document_parts.append(
+                            DocumentPart(
+                                content=tn_verses,
+                                is_rtl=tn_book
+                                and tn_book.lang_direction == LangDirEnum.RTL,
+                            )
                         )
-                        composer.append(subdoc)
             # Add the interleaved tq questions
             for tq_book in [
                 tq_book for tq_book in tq_books if tq_book.book_code == book_code
@@ -390,28 +371,30 @@ def assemble_tn_by_chapter(
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
                 # Add TQ verse content, if any
                 if tq_verses:
-                    add_two_column_section(doc)
-                    subdoc = create_docx_subdoc(
-                        tq_verses,
-                        tq_book.lang_code,
-                        tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                    document_parts.append(
+                        DocumentPart(
+                            content=tq_verses,
+                            is_rtl=tq_book
+                            and tq_book.lang_direction == LangDirEnum.RTL,
+                            contained_in_two_column_section=True,
+                        )
                     )
-                    composer.append(subdoc)
             for rg_book in [
                 rg_book for rg_book in rg_books if rg_book.book_code == book_code
             ]:
                 rg_verses = rg_chapter_verses(rg_book, chapter_num)
                 if rg_verses:
-                    add_one_column_section(doc)
-                    # add_two_column_section(doc)
-                    subdoc = create_docx_subdoc(
-                        rg_verses,
-                        rg_book.lang_code,
-                        rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                    document_parts.append(
+                        DocumentPart(
+                            content=rg_verses,
+                            is_rtl=rg_book
+                            and rg_book.lang_direction == LangDirEnum.RTL,
+                        )
                     )
-                    composer.append(subdoc)
-            add_page_break(doc)
-    return composer
+            document_parts.append(
+                DocumentPart(content="", add_hr_p=False, add_page_break=True)
+            )
+    return document_parts
 
 
 def assemble_tq_by_chapter(
@@ -422,7 +405,7 @@ def assemble_tq_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
     tq_book_content_units exists.
@@ -440,8 +423,7 @@ def assemble_tq_by_chapter(
     tq_books = sorted(tq_books, key=tq_sort_key)
     bc_books = sorted(bc_books, key=bc_sort_key)
     rg_books = sorted(rg_books, key=rg_sort_key)
-    doc = Document()
-    composer = Composer(doc)
+    document_parts: list[DocumentPart] = []
     book_codes = {tq_book.book_code for tq_book in tq_books}
     for book_code in book_codes:
         num_chapters = book_chapters[book_code]
@@ -453,9 +435,7 @@ def assemble_tq_by_chapter(
             ]:
                 one_column_html.append(chapter_commentary(bc_book, chapter_num))
             if one_column_html:
-                add_one_column_section(doc)
-                subdoc = create_docx_subdoc("".join(one_column_html), bc_book.lang_code)
-                composer.append(subdoc)
+                document_parts.append(DocumentPart(content="".join(one_column_html)))
             # Add the interleaved tq questions
             for tq_book in [
                 tq_book
@@ -464,13 +444,14 @@ def assemble_tq_by_chapter(
             ]:
                 tq_verses = tq_chapter_verses(tq_book, chapter_num)
                 if tq_verses:
-                    add_two_column_section(doc)
-                    subdoc = create_docx_subdoc(
-                        tq_verses,
-                        tq_book.lang_code,
-                        tq_book and tq_book.lang_direction == LangDirEnum.RTL,
+                    document_parts.append(
+                        DocumentPart(
+                            content=tq_verses,
+                            is_rtl=tq_book
+                            and tq_book.lang_direction == LangDirEnum.RTL,
+                            contained_in_two_column_section=True,
+                        )
                     )
-                    composer.append(subdoc)
             for rg_book in [
                 rg_book
                 for rg_book in rg_books
@@ -478,15 +459,17 @@ def assemble_tq_by_chapter(
             ]:
                 rg_verses = rg_chapter_verses(rg_book, chapter_num)
                 if rg_verses:
-                    add_one_column_section(doc)
-                    subdoc = create_docx_subdoc(
-                        rg_verses,
-                        rg_book.lang_code,
-                        rg_book and rg_book.lang_direction == LangDirEnum.RTL,
+                    document_parts.append(
+                        DocumentPart(
+                            content=rg_verses,
+                            is_rtl=rg_book
+                            and rg_book.lang_direction == LangDirEnum.RTL,
+                        )
                     )
-                    composer.append(subdoc)
-            add_page_break(doc)
-    return composer
+            document_parts.append(
+                DocumentPart(content="", add_hr_p=False, add_page_break=True)
+            )
+    return document_parts
 
 
 # This function could be a little confusing for newcomers. TW lives at
@@ -503,10 +486,9 @@ def assemble_tw_by_chapter(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
-) -> Composer:
+) -> list[DocumentPart]:
     """Construct the HTML for BC and TW."""
-    doc = Document()
-    composer = Composer(doc)
+    document_parts: list[DocumentPart] = []
 
     def bc_sort_key(resource: BCBook) -> str:
         return resource.lang_code
@@ -517,10 +499,10 @@ def assemble_tw_by_chapter(
     bc_books = sorted(bc_books, key=bc_sort_key)
     rg_books = sorted(rg_books, key=rg_sort_key)
     for bc_book in bc_books:
-        subdoc = create_docx_subdoc(bc_book.book_intro, bc_book.lang_code)
-        composer.append(subdoc)
+        document_parts.append(DocumentPart(content=bc_book.book_intro))
         for chapter in bc_book.chapters.values():
-            subdoc = create_docx_subdoc(chapter.commentary, bc_book.lang_code)
-            composer.append(subdoc)
-            add_page_break(doc)
-    return composer
+            document_parts.append(DocumentPart(content=chapter.commentary))
+            document_parts.append(
+                DocumentPart(content="", add_hr_p=False, add_page_break=True)
+            )
+    return document_parts

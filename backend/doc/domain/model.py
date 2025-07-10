@@ -546,3 +546,11 @@ class RepoEntry(BaseModel):
 
 class SourceData(BaseModel):
     git_repo: list[RepoEntry]
+
+
+class DocumentPart(BaseModel):
+    content: str
+    is_rtl: bool = False
+    add_hr_p: bool = True
+    contained_in_two_column_section: bool = False
+    add_page_break: bool = False

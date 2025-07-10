@@ -24,7 +24,13 @@ from doc.domain.assembly_strategies_docx import (
 from doc.domain.assembly_strategies_docx import (
     assembly_strategies_lang_then_book_by_chapter as lang_then_book,
 )
-from doc.domain.assembly_strategies_docx.assembly_strategy_utils import add_hr
+from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
+    add_hr,
+    add_one_column_section,
+    add_page_break,
+    add_two_column_section,
+    set_docx_language,
+)
 from doc.domain.bible_books import BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import (
@@ -33,6 +39,7 @@ from doc.domain.model import (
     Attachment,
     BCBook,
     ChunkSizeEnum,
+    DocumentPart,
     DocumentRequest,
     DocumentRequestSourceEnum,
     ResourceLookupDto,
@@ -58,6 +65,7 @@ from doc.utils.tw_utils import (
     filter_unique_by_lang_code,
     translation_words_section,
 )
+from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
@@ -279,7 +287,7 @@ def generate_docx_document(
         t1 = time.time()
         logger.info("Time to parse all resource content: %s", t1 - t0)
         current_task.update_state(state="Assembling content")
-        composer = assemble_docx_content(
+        document_parts = assemble_docx_content(
             document_request_key_,
             document_request,
             usfm_books,
@@ -303,7 +311,7 @@ def generate_docx_document(
         convert_html_to_docx(
             html_filepath_,
             docx_filepath_,
-            composer,
+            document_parts,
             document_request.layout_for_print,
             title1,
             title2,
@@ -525,18 +533,18 @@ def assemble_docx_content(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Assemble and return the content from all requested resources according to the
     assembly_strategy requested.
     """
     t0 = time.time()
-    composer = None
+    document_parts: list[DocumentPart] = []
     if (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
     ):
-        composer = lang_then_book.assemble_content_by_lang_then_book(
+        document_parts = lang_then_book.assemble_content_by_lang_then_book(
             usfm_books,
             tn_books,
             tq_books,
@@ -550,7 +558,7 @@ def assemble_docx_content(
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
     ):
-        composer = book_then_lang.assemble_content_by_book_then_lang(
+        document_parts = book_then_lang.assemble_content_by_book_then_lang(
             usfm_books,
             tn_books,
             tq_books,
@@ -562,32 +570,26 @@ def assemble_docx_content(
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)
-    tw_subdocs = []
     if tw_books:
-        html_to_docx = HtmlToDocx()
         t0 = time.time()
         # Add the translation words definition section for each language requested.
         unique_tw_books = filter_unique_by_lang_code(tw_books)
         for tw_book in unique_tw_books:
-            tw_subdoc = html_to_docx.parse_html_string(
-                translation_words_section(
-                    tw_book,
-                    usfm_books,
-                    document_request.limit_words,
-                    document_request.resource_requests,
+            document_parts.append(
+                DocumentPart(
+                    content=translation_words_section(
+                        tw_book,
+                        usfm_books,
+                        document_request.limit_words,
+                        document_request.resource_requests,
+                    )
                 )
             )
-            if tw_subdoc.paragraphs:
-                p = tw_subdoc.paragraphs[-1]
-                add_hr(p)
-                tw_subdocs.append(tw_subdoc)
+            document_parts.append(DocumentPart(content=""))
         t1 = time.time()
         logger.info("Time for adding TW content to document: %s", t1 - t0)
     # Now add any TW subdocs to the composer
-    if composer:
-        for tw_subdoc_ in tw_subdocs:
-            composer.append(tw_subdoc_)
-    return composer
+    return document_parts
 
 
 # HTML to PDF converters:
@@ -656,18 +658,39 @@ def convert_html_to_epub(
     logger.info("Time for converting HTML to ePub: %s", t1 - t0)
 
 
+def compose_document(document_parts: list[DocumentPart]) -> Document:
+    doc = Document()
+    html_to_docx = HtmlToDocx()
+    for part in document_parts:
+        logger.debug("part.content: %s", part.content)
+        if part.contained_in_two_column_section:
+            add_two_column_section(doc)
+            html_to_docx.add_html_to_document(part.content, doc)
+            # add_one_column_section(doc)
+        else:
+            add_one_column_section(doc)
+            html_to_docx.add_html_to_document(part.content, doc)
+        # Get spell check to behave itself
+        # set_docx_language(doc, lang_code)
+        if part.add_hr_p:
+            add_hr(doc.paragraphs[-1])
+        if part.add_page_break:
+            add_page_break(doc)
+    return doc
+
+
 def convert_html_to_docx(
     html_filepath: str,
     docx_filepath: str,
-    composer: Composer,
+    document_parts: list[DocumentPart],
     layout_for_print: bool,
     title1: str = "title1",
     title2: str = "title2",
-    title3: str = "Formatted for Translators",
+    title3: str = "",
     docx_template_path: str = settings.DOCX_TEMPLATE_PATH,
     docx_compact_template_path: str = settings.DOCX_COMPACT_TEMPLATE_PATH,
 ) -> None:
-    """Generate Docx and copy it to output directory."""
+    """Generate Docx and write it to output directory."""
     t0 = time.time()
     # Get data for front page of Docx template.
     title1 = title1
@@ -690,8 +713,7 @@ def convert_html_to_docx(
     new_section = doc.add_section(WD_SECTION.CONTINUOUS)
     new_section.start_type
     master = Composer(doc)
-    # Add the main (non-front-matter) content.
-    master.append(composer.doc)
+    master.append(compose_document(document_parts))
     master.save(docx_filepath)
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %s", t1 - t0)

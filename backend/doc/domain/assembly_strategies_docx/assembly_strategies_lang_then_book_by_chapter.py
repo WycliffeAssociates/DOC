@@ -68,7 +68,6 @@ def assemble_content_by_lang_then_book(
         .union(rg_book.book_code for rg_book in rg_books)
     )
     most_book_codes = list(all_book_codes)
-    # Cache book_id_map lookup
     book_codes_sorted = sorted(
         most_book_codes, key=lambda book_code: book_id_map[book_code]
     )

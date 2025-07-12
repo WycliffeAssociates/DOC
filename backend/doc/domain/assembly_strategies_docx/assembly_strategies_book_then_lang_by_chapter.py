@@ -178,13 +178,11 @@ def assemble_usfm_by_chapter(
                     )
                 )
     for bc_book in bc_books:
-        # Add the commentary book intro
         document_parts.append(DocumentPart(content=bc_book.book_intro))
     book_codes = {usfm_book.book_code for usfm_book in usfm_books}
     for book_code in book_codes:
         num_chapters = book_chapters[book_code]
         for chapter_num in range(1, num_chapters + 1):
-            # Add chapter intro for each language
             for tn_book in [
                 tn_book for tn_book in tn_books if tn_book.book_code == book_code
             ]:
@@ -200,7 +198,6 @@ def assemble_usfm_by_chapter(
                 bc_book for bc_book in bc_books if bc_book.book_code == book_code
             ]:
                 if chapter_num in bc_book.chapters:
-                    # Add the chapter commentary.
                     document_parts.append(
                         DocumentPart(content=chapter_commentary(bc_book, chapter_num))
                     )
@@ -216,7 +213,6 @@ def assemble_usfm_by_chapter(
                     )
                 )
                 if chapter_num in usfm_book.chapters:
-                    # Add the interleaved USFM chapters
                     document_parts.append(
                         DocumentPart(
                             content=usfm_book.chapters[chapter_num].content,
@@ -224,7 +220,6 @@ def assemble_usfm_by_chapter(
                             and usfm_book.lang_direction == LangDirEnum.RTL,
                         )
                     )
-            # Add the interleaved tn notes
             tn_verses = None
             for tn_book in [
                 tn_book
@@ -242,7 +237,6 @@ def assemble_usfm_by_chapter(
                                 contained_in_two_column_section=True,
                             )
                         )
-            # Add the interleaved tq questions
             for tq_book in [
                 tq_book
                 for tq_book in tq_books
@@ -250,7 +244,6 @@ def assemble_usfm_by_chapter(
             ]:
                 if chapter_num in tq_book.chapters:
                     tq_verses = tq_chapter_verses(tq_book, chapter_num)
-                    # Add TQ verse content, if any
                     if tq_verses:
                         document_parts.append(
                             DocumentPart(

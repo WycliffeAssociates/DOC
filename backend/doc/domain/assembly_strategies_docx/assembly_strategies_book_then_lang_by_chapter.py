@@ -3,6 +3,8 @@ from typing import Mapping, Sequence
 from doc.config import settings
 from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_book_intro_headings,
+)
+from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
     bc_book_intro,
     chapter_commentary,
     chapter_intro,

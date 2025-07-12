@@ -1,9 +1,9 @@
 from typing import Mapping, Optional, Sequence
 
 from doc.config import settings
-from doc.domain.assembly_strategies.assembly_strategy_utils import (
+from doc.domain.assembly_strategies.assembly_strategy_utils import chapter_heading
+from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
     chapter_commentary,
-    chapter_heading,
     chapter_intro,
     rg_chapter_verses,
     tn_chapter_verses,

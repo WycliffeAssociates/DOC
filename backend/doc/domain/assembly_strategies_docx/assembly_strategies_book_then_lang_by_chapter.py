@@ -10,7 +10,7 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     tn_chapter_verses,
     tq_chapter_verses,
 )
-from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
+from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
@@ -39,6 +39,7 @@ def assemble_content_by_book_then_lang(
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
     book_names: Mapping[str, str] = BOOK_NAMES,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[DocumentPart]:
     """
     Assemble by book then by language in alphabetic order before
@@ -46,8 +47,6 @@ def assemble_content_by_book_then_lang(
     sub-strategy.
     """
     document_parts: list[DocumentPart] = []
-    # Sort the books in canonical order so that groupby does what we want.
-    book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
     most_book_codes = max(
         [
             [usfm_book.book_code for usfm_book in usfm_books],

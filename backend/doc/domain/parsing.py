@@ -17,7 +17,7 @@ from doc.config import settings
 from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
-from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.exceptions import MissingChapterMarkerError
 from doc.domain.model import (
     BC_RESOURCE_TYPE,
@@ -905,6 +905,7 @@ def books(
     rg_resource_type: str = RG_RESOURCE_TYPE,
     docx_file_path: str = "en_rg_nt_survey.docx",
     en_rg_dir: str = settings.EN_RG_DIR,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> tuple[
     Sequence[USFMBook],
     Sequence[TNBook],
@@ -920,7 +921,10 @@ def books(
     bc_books = []
     rg_books = []
     filtered_rg_books = []
-    for resource_lookup_dto, resource_dir in zip(resource_lookup_dtos, resource_dirs):
+    for resource_lookup_dto, resource_dir in sorted(
+        zip(resource_lookup_dtos, resource_dirs),
+        key=lambda dto_with_dir: book_id_map[dto_with_dir[0].book_code],
+    ):
         if resource_lookup_dto.resource_type in usfm_resource_types:
             usfm_book = usfm_book_content(
                 resource_lookup_dto,

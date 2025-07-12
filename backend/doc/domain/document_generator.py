@@ -31,7 +31,7 @@ from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
     add_two_column_section,
     set_docx_language,
 )
-from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import (
     AssemblyLayoutEnum,
@@ -829,18 +829,40 @@ def get_languages_title_page_strings(
     resource_lookup_dtos: Sequence[ResourceLookupDto],
     usfm_books: Sequence[USFMBook],
     book_names: dict[str, str] = BOOK_NAMES,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> tuple[str, str]:
     lang_codes = list({dto.lang_code for dto in resource_lookup_dtos})
 
     def get_language_details(lang_code: str) -> str:
-        book_names_set = set()
-        resource_type_names_set = set()
-        dtos = [dto for dto in resource_lookup_dtos if dto.lang_code == lang_code]
+        book_names_ = []
+        resource_type_names = []
+        dtos = [
+            dto
+            for dto in sorted(
+                resource_lookup_dtos,
+                key=lambda resource_lookup_dto: book_id_map[
+                    resource_lookup_dto.book_code
+                ],
+            )
+            if dto.lang_code == lang_code
+        ]
         for dto in dtos:
-            book_names_set.add(book_names[dto.book_code])
-            resource_type_names_set.add(dto.resource_type_name)
+            usfm_books_ = [
+                usfm_book
+                for usfm_book in usfm_books
+                if usfm_book.book_code == dto.book_code
+                and usfm_book.lang_code == lang_code
+            ]
+            if usfm_books_:
+                book_name = usfm_books_[0].national_book_name
+            else:
+                book_name = book_names[dto.book_code]
+            if book_name not in book_names_:
+                book_names_.append(book_name)
+            if dto.resource_type_name not in resource_type_names:
+                resource_type_names.append(dto.resource_type_name)
         if dtos:
-            return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(sorted(resource_type_names_set))} for {', '.join(sorted(book_names_set))}"
+            return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(resource_type_names)} for {', '.join(book_names_)}"
         return ""
 
     lang0_title = get_language_details(lang_codes[0])

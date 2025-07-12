@@ -10,7 +10,7 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     tq_chapter_verses,
 )
 
-from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
@@ -40,6 +40,7 @@ def assemble_content_by_lang_then_book(
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
     book_names: Mapping[str, str] = BOOK_NAMES,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[DocumentPart]:
     """
     Group content by language and then by book and then pass content
@@ -48,7 +49,6 @@ def assemble_content_by_lang_then_book(
     interleaving.
     """
     document_parts: list[DocumentPart] = []
-    book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
     all_lang_codes = (
         {usfm_book.lang_code for usfm_book in usfm_books}
         .union(tn_book.lang_code for tn_book in tn_books)

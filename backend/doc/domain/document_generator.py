@@ -662,7 +662,6 @@ def compose_document(document_parts: list[DocumentPart]) -> Document:
     doc = Document()
     html_to_docx = HtmlToDocx()
     for part in document_parts:
-        logger.debug("part.content: %s", part.content)
         if part.contained_in_two_column_section:
             add_two_column_section(doc)
             html_to_docx.add_html_to_document(part.content, doc)

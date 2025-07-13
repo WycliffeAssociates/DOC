@@ -44,9 +44,9 @@ def assemble_content_by_book_then_lang(
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[DocumentPart]:
     """
-    Assemble by book then by language in alphabetic order before
-    delegating more atomic ordering/interleaving to an assembly
-    sub-strategy.
+    Assemble by book in canonical bible book order then by language in
+    alphabetic order before delegating more atomic ordering/interleaving
+    to an assembly sub-strategy.
     """
     document_parts: list[DocumentPart] = []
     most_book_codes = max(
@@ -83,50 +83,54 @@ def assemble_content_by_book_then_lang(
             rg_book for rg_book in rg_books if rg_book.book_code == book_code
         ]
         if selected_usfm_books:
-            document_parts = assemble_usfm_by_chapter(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
+            document_parts.extend(
+                assemble_usfm_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                    selected_rg_books,
+                )
             )
-            return document_parts
         elif not selected_usfm_books and selected_tn_books:
-            document_parts = assemble_tn_by_chapter(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
+            document_parts.extend(
+                assemble_tn_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                    selected_rg_books,
+                )
             )
-            return document_parts
         elif not selected_usfm_books and not selected_tn_books and selected_tq_books:
-            document_parts = assemble_tq_by_chapter(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
+            document_parts.extend(
+                assemble_tq_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                    selected_rg_books,
+                )
             )
-            return document_parts
         elif (
             not selected_usfm_books
             and not selected_tn_books
             and not selected_tq_books
             and (selected_tw_books or selected_bc_books or selected_rg_books)
         ):
-            document_parts = assemble_tw_by_chapter(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
+            document_parts.extend(
+                assemble_tw_by_chapter(
+                    selected_usfm_books,
+                    selected_tn_books,
+                    selected_tq_books,
+                    selected_tw_books,
+                    selected_bc_books,
+                    selected_rg_books,
+                )
             )
-            return document_parts
     return document_parts
 
 

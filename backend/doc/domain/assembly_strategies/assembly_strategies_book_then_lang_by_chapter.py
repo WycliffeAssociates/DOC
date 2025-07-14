@@ -17,7 +17,7 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     tq_language_direction_html,
     usfm_language_direction_html,
 )
-from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
+from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     AssemblyLayoutEnum,
     BCBook,
@@ -50,6 +50,7 @@ def assemble_content_by_book_then_lang(
     rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     book_names: Mapping[str, str] = BOOK_NAMES,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> str:
     """
     Assemble by book then by language in alphabetic order before
@@ -57,7 +58,6 @@ def assemble_content_by_book_then_lang(
     sub-strategy.
     """
     content = []
-    book_id_map = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
     # Collect and deduplicate book codes
     all_book_codes = (
         {usfm_book.book_code for usfm_book in usfm_books}

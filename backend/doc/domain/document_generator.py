@@ -380,9 +380,9 @@ def document_request_key(
     else:
         document_request_key = f"{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}"
     if len(document_request_key) >= max_filename_len:
-        # Likely the generated filename was too long for the OS where this is
-        # running. In that case, use the current time as a document_request_key
-        # value as doing so results in an acceptably short length.
+        # The generated filename could be too long for the OS where this is
+        # running. Therefore, use the current time as a document_request_key
+        # so that filename is not too long.
         timestamp_components = str(time.time()).split(".")
         return f"{timestamp_components[0]}_{timestamp_components[1]}"
     else:
@@ -588,7 +588,6 @@ def assemble_docx_content(
             document_parts.append(DocumentPart(content=""))
         t1 = time.time()
         logger.info("Time for adding TW content to document: %s", t1 - t0)
-    # Now add any TW subdocs to the composer
     return document_parts
 
 
@@ -665,11 +664,10 @@ def compose_document(document_parts: list[DocumentPart]) -> Document:
         if part.contained_in_two_column_section:
             add_two_column_section(doc)
             html_to_docx.add_html_to_document(part.content, doc)
-            # add_one_column_section(doc)
         else:
             add_one_column_section(doc)
             html_to_docx.add_html_to_document(part.content, doc)
-        # Get spell check to behave itself
+        # Set the language for spellcheck
         # set_docx_language(doc, lang_code)
         if part.add_hr_p:
             add_hr(doc.paragraphs[-1])
@@ -695,9 +693,9 @@ def convert_html_to_docx(
     title1 = title1
     title2 = title2
     title3 = title3
-    # fmt: off
-    template_path = docx_compact_template_path if layout_for_print else docx_template_path
-    # fmt: on
+    template_path = (
+        docx_compact_template_path if layout_for_print else docx_template_path
+    )
     doc = DocxTemplate(template_path)
     toc_path = generate_docx_toc(docx_filepath)
     toc = doc.new_subdoc(toc_path)
@@ -790,7 +788,6 @@ def write_html_content_to_file(
     Write HTML content to file.
     """
     logger.info("About to write HTML to %s", output_filename)
-    # Write the HTML file to disk.
     write_file(
         output_filename,
         content,

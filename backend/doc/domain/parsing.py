@@ -70,7 +70,6 @@ BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/Wycliff
 # fmt: on
 
 
-# CHAPTER_LABEL_REGEX = r"\\cl\s+.*"
 CHAPTER_LABEL_REGEX = re.compile(r"\\cl\s+[^\n]+")
 CHAPTER_LABEL_REGEX2 = re.compile(r"\\cl\s+(.+)")
 CHAPTER_REGEX = re.compile(r"\\c\s+\d+")
@@ -390,7 +389,6 @@ def maybe_localized_book_name(frontmatter: str) -> str:
 
     Steps 5 and 6 happen outside this function.
     """
-    # logger.debug("frontmatter: %s", frontmatter)
     frontmatter_data = extract_usfm_frontmatter(frontmatter)
     localized_book_name = (
         frontmatter_data.get("h")
@@ -981,7 +979,6 @@ def ensure_paragraph_before_verses(
     usfm_verse_one_file_regex: str = r"^01\..*",
     chapter_marker_not_on_own_line_regex: str = r"^\\c [0-9]+ .*|\n",
     chapter_marker_not_on_own_line_with_match_groups: str = r"(^\\c [0-9]+) (.*|\n)",
-    # chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
     chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\n\2\n",
 ) -> str:
     r"""

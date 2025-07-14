@@ -3,11 +3,10 @@ This module provides an API for parsing content.
 """
 
 import re
-import subprocess
 import requests
 import time
 from glob import glob
-from os import DirEntry, getenv, scandir, walk
+from os import DirEntry, scandir, walk
 from os.path import exists, join, split
 from pathlib import Path
 from typing import Mapping, Optional, Sequence

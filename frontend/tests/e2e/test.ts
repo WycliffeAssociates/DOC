@@ -206,4 +206,88 @@ test('test limit tw words switch', async ({ page }) => {
   await page.getByLabel('Translation Words tw').check()
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.getByRole('main')).toContainText('Limit TW words')
+test('test use section visual separator setting', async ({ page }) => {
+    await page.goto('http://localhost:8001/')
+    await page.getByText('Español Latin America (Latin').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('Efesios').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('Select all').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+    await page.locator('div').filter({ hasText: 'Show visual separator (' }).nth(4).click()
+    await page.getByRole('button', { name: 'Generate File' }).click()
+})
+
+test('test ordering of books in document title(s) and body', async ({ page }) => {
+    await page.goto('http://localhost:8001/')
+    await page.getByPlaceholder('Search Gateway Languages').click()
+    await page.getByPlaceholder('Search Gateway Languages').fill('tpi')
+    await page.getByText('Tok Pisin').click()
+    await page.getByRole('button', { name: 'Heart' }).click()
+    await page.getByPlaceholder('Search Heart Languages').click()
+    await page.getByPlaceholder('Search Heart Languages').fill('ont')
+    await page.getByText('Ontenu').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('Matyu').click()
+    await page.getByText('Mak').click()
+    await page.getByText('Luk', { exact: true }).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('Unlocked Literal Bible').click()
+    await page.getByText('Regular').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('PDF').click()
+    await page.getByText('Interleave content by chapter').click()
+    await page.getByRole('button', { name: 'Generate File' }).click()
+    // Wait for the "View HTML Online" button to appear and become visible
+    const viewHtmlButton = page.getByRole('button', { name: 'View HTML Online' })
+    await viewHtmlButton.waitFor({ state: 'visible' })
+    // Start waiting for the popup BEFORE clicking
+    const page1Promise = page.waitForEvent('popup')
+    // Click to trigger the popup
+    await viewHtmlButton.click()
+    // Get the new popup page
+    const page1 = await page1Promise
+    // Perform text expectations on the popup page
+    await expect(page1.locator('body')).toContainText(
+        'Ontenu (Ontenu): Regular for Matthew, Maki, Luk'
+    )
+    await expect(page1.locator('body')).toContainText(
+        'Tok Pisin (Tok Pisin): Unlocked Literal Bible for Matyu, Mak, Luk'
+    )
+
+    // Order assertions
+    const headings = await page1.locator('h2').allTextContents()
+    // Ensure expected headings are present
+    expect(headings).toContain('Matthew')
+    expect(headings).toContain('Matyu')
+    expect(headings).toContain('Maki')
+    expect(headings).toContain('Mak')
+    expect(headings).toContain('Luk')
+
+    // Find the positions of each
+    const index1 = headings.indexOf('Matthew')
+    const index2 = headings.indexOf('Matyu')
+    const index3 = headings.indexOf('Maki')
+    const index4 = headings.indexOf('Mak')
+    const index5 = headings.indexOf('Luk')
+
+    // Ensure all were found
+    expect(index1).not.toBe(-1)
+    expect(index2).not.toBe(-1)
+    expect(index3).not.toBe(-1)
+    expect(index4).not.toBe(-1)
+    expect(index5).not.toBe(-1)
+
+    // Check the order
+    expect(index1).toBeLessThan(index2)
+    expect(index1).toBeLessThan(index3)
+    expect(index2).toBeLessThan(index3)
+    expect(index1).toBeLessThan(index4)
+    expect(index2).toBeLessThan(index4)
+    expect(index3).toBeLessThan(index4)
+    expect(index1).toBeLessThan(index5)
+    expect(index2).toBeLessThan(index5)
+    expect(index3).toBeLessThan(index5)
+    expect(index4).toBeLessThan(index5)
 })

@@ -7,7 +7,7 @@ import subprocess
 import time
 from datetime import datetime
 from os.path import exists, join
-from typing import Any, Optional, Sequence, cast
+from typing import Optional, Sequence, cast
 
 from celery import current_task
 from doc.config import settings
@@ -82,7 +82,8 @@ logger = settings.logger(__name__)
 # )
 @worker.app.task
 def generate_document(
-    document_request_json: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
+    document_request_json: str,
+    output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
 ) -> str:
     """
     This is the main entry point for this module for non-docx generation.
@@ -215,7 +216,7 @@ def generate_document(
 
 @worker.app.task
 def generate_docx_document(
-    document_request_json: Json[Any],
+    document_request_json: str,
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
 ) -> Json[str]:
     """

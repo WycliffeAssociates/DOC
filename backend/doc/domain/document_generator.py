@@ -70,7 +70,6 @@ from docx.enum.section import WD_SECTION  # type: ignore
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
-from pydantic import Json
 
 logger = settings.logger(__name__)
 
@@ -218,7 +217,7 @@ def generate_document(
 def generate_docx_document(
     document_request_json: str,
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
-) -> Json[str]:
+) -> str:
     """
     This is the alternative entry point for Docx document creation only.
     """

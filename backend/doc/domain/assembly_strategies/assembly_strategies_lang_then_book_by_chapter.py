@@ -44,7 +44,7 @@ def assemble_content_by_lang_then_book(
     use_section_visual_separator: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
-) -> str:
+) -> list[str]:
     """
     Assemble by language then by book in lexicographical order before
     delegating more atomic ordering/interleaving to an assembly
@@ -116,7 +116,7 @@ def assemble_content_by_lang_then_book(
             ]
             rg_book = selected_rg_books[0] if selected_rg_books else None
             if usfm_book is not None:
-                content.append(
+                content.extend(
                     assemble_usfm_by_book(
                         usfm_book,
                         tn_book,
@@ -129,7 +129,7 @@ def assemble_content_by_lang_then_book(
                     )
                 )
             elif usfm_book is None and tn_book is not None:
-                content.append(
+                content.extend(
                     assemble_tn_by_book(
                         usfm_book,
                         tn_book,
@@ -142,7 +142,7 @@ def assemble_content_by_lang_then_book(
                     )
                 )
             elif usfm_book is None and tn_book is None and tq_book is not None:
-                content.append(
+                content.extend(
                     assemble_tq_by_book(
                         usfm_book,
                         tn_book,
@@ -160,7 +160,7 @@ def assemble_content_by_lang_then_book(
                 and tq_book is None
                 and (tw_book is not None or bc_book is not None or rg_book is not None)
             ):
-                content.append(
+                content.extend(
                     assemble_tw_by_book(
                         usfm_book,
                         tn_book,
@@ -172,7 +172,7 @@ def assemble_content_by_lang_then_book(
                         use_section_visual_separator,
                     )
                 )
-    return "".join(content)
+    return content
 
 
 def assemble_usfm_by_book(
@@ -188,7 +188,7 @@ def assemble_usfm_by_book(
     hr: str = "<hr/>",
     close_direction_html: str = "</div>",
     fmt_str: str = BOOK_NAME_FMT_STR,
-) -> str:
+) -> list[str]:
     content = []
     content.append(usfm_language_direction_html(usfm_book))
     content.append(tn_book_intro(tn_book, use_section_visual_separator))
@@ -234,7 +234,7 @@ def assemble_usfm_by_book(
                     content.append(usfm_book2.chapters[chapter_num].content)
             content.append(end_of_chapter_html)
     content.append(close_direction_html)
-    return "".join(content)
+    return content
 
 
 def assemble_tn_by_book(
@@ -248,7 +248,7 @@ def assemble_tn_by_book(
     use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
-) -> str:
+) -> list[str]:
     content = []
     content.append(tn_language_direction_html(tn_book))
     content.append(tn_book_intro(tn_book, use_section_visual_separator))
@@ -272,7 +272,7 @@ def assemble_tn_by_book(
             )
             content.append(end_of_chapter_html)
     content.append(close_direction_html)
-    return "".join(content)
+    return content
 
 
 def assemble_tq_by_book(
@@ -286,7 +286,7 @@ def assemble_tq_by_book(
     use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
-) -> str:
+) -> list[str]:
     content = []
     content.append(tq_language_direction_html(tq_book))
     if tq_book:
@@ -303,7 +303,7 @@ def assemble_tq_by_book(
             )
             content.append(end_of_chapter_html)
     content.append(close_direction_html)
-    return "".join(content)
+    return content
 
 
 def assemble_rg_by_chapter(
@@ -316,7 +316,7 @@ def assemble_rg_by_chapter(
     use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
-) -> str:
+) -> list[str]:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
     rg_books exists.
@@ -360,7 +360,7 @@ def assemble_rg_by_chapter(
                         )
                     )
                     content.append(close_direction_html)
-    return "".join(content)
+    return content
 
 
 # It is possible to request only TW, however TW is handled at a
@@ -376,7 +376,7 @@ def assemble_tw_by_book(
     use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
-) -> str:
+) -> list[str]:
     content = []
     if bc_book:
         for chapter_num in bc_book.chapters:
@@ -391,4 +391,4 @@ def assemble_tw_by_book(
             )
             content.append(end_of_chapter_html)
 
-    return "".join(content)
+    return content

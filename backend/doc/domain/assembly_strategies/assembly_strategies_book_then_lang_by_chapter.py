@@ -96,7 +96,7 @@ def assemble_content_by_book_then_lang(
             assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN
             or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
         ):
-            content.append(
+            content.extend(
                 assemble_usfm_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
@@ -115,7 +115,7 @@ def assemble_content_by_book_then_lang(
                 or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
             )
         ):
-            content.append(
+            content.extend(
                 assemble_tn_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
@@ -135,7 +135,7 @@ def assemble_content_by_book_then_lang(
                 or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
             )
         ):
-            content.append(
+            content.extend(
                 assemble_tq_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
@@ -156,7 +156,7 @@ def assemble_content_by_book_then_lang(
                 or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
             )
         ):
-            content.append(
+            content.extend(
                 assemble_tw_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
@@ -173,7 +173,7 @@ def assemble_content_by_book_then_lang(
             or assembly_layout_kind
             == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT_COMPACT
         ):
-            content.append(
+            content.extend(
                 assemble_usfm_by_chapter_2c_sl_sr(
                     selected_usfm_books,
                     selected_tn_books,
@@ -201,7 +201,7 @@ def assemble_usfm_by_chapter(
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
     fmt_str: str = BOOK_NAME_FMT_STR,
-) -> str:
+) -> list[str]:
     """
     Construct the HTML wherein at least one USFM resource exists, one column
     layout.
@@ -317,7 +317,7 @@ def assemble_usfm_by_chapter(
                         content.append(rg_verses)
                         content.append(close_direction_html)
             content.append(end_of_chapter_html)
-    return "".join(content)
+    return content
 
 
 def assemble_tn_by_chapter(
@@ -332,7 +332,7 @@ def assemble_tn_by_chapter(
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-) -> str:
+) -> list[str]:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
     tn_books exists.
@@ -420,7 +420,7 @@ def assemble_tn_by_chapter(
                         content.append(rg_verses)
                         content.append(close_direction_html)
             content.append(end_of_chapter_html)
-    return "".join(content)
+    return content
 
 
 def assemble_tq_by_chapter(
@@ -434,7 +434,7 @@ def assemble_tq_by_chapter(
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
-) -> str:
+) -> list[str]:
     """
     Construct the HTML for a 'by chapter' strategy wherein at least
     tq_books exists.
@@ -490,7 +490,7 @@ def assemble_tq_by_chapter(
                         content.append(rg_verses)
                         content.append(close_direction_html)
             content.append(end_of_chapter_html)
-    return "".join(content)
+    return content
 
 
 # This function could be a little confusing for newcomers. TW lives at
@@ -509,7 +509,7 @@ def assemble_tw_by_chapter(
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
-) -> str:
+) -> list[str]:
     content = []
 
     def bc_sort_key(resource: BCBook) -> str:
@@ -523,7 +523,7 @@ def assemble_tw_by_chapter(
                 chapter_commentary(bc_book, chapter_num, use_section_visual_separator)
             )
             content.append(end_of_chapter_html)
-    return "".join(content)
+    return content
 
 
 def assemble_usfm_by_chapter_2c_sl_sr(
@@ -544,7 +544,7 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     fmt_str: str = BOOK_NAME_FMT_STR,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-) -> str:
+) -> list[str]:
     """
     Construct the HTML for the two column scripture left scripture
     right layout.
@@ -791,4 +791,4 @@ def assemble_usfm_by_chapter_2c_sl_sr(
                     content.append(html_column_end)
             content.append(html_row_end)
             content.append(html_row_end)
-    return "".join(content)
+    return content

@@ -19,9 +19,10 @@
     emailStore,
     documentRequestKeyStore,
     settingsUpdated,
-    useChapterLabelsStore
+    useChapterLabelsStore,
+    useSectionVisualSeparatorStore
   } from '$lib/stores/SettingsStore'
-  import { taskIdStore, taskStateStore } from '$lib/stores/TaskStore'
+  import { taskStateStore } from '$lib/stores/TaskStore'
   import { getCode, getResourceTypeLangCode, getResourceTypeCode } from '$lib/utils'
   import LogRocket from 'logrocket'
   import TaskStatus from './TaskStatus.svelte'
@@ -86,7 +87,8 @@
       resource_requests: resourceRequests,
       document_request_source: 'ui',
       limit_words: $limitTwStore,
-      use_chapter_labels: $useChapterLabelsStore
+      use_chapter_labels: $useChapterLabelsStore,
+      use_section_visual_separator: $useSectionVisualSeparatorStore
     }
     console.log('document request: ', JSON.stringify(documentRequest, null, 2))
     $errorStore = null

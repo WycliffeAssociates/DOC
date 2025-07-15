@@ -49,6 +49,7 @@ def assemble_content_by_book_then_lang(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
+    use_section_visual_separator: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> str:
@@ -103,6 +104,7 @@ def assemble_content_by_book_then_lang(
                     selected_tw_books,
                     selected_bc_books,
                     selected_rg_books,
+                    use_section_visual_separator,
                 )
             )
         elif (
@@ -121,6 +123,7 @@ def assemble_content_by_book_then_lang(
                     selected_tw_books,
                     selected_bc_books,
                     selected_rg_books,
+                    use_section_visual_separator,
                 )
             )
         elif (
@@ -140,6 +143,7 @@ def assemble_content_by_book_then_lang(
                     selected_tw_books,
                     selected_bc_books,
                     selected_rg_books,
+                    use_section_visual_separator,
                 )
             )
         elif (
@@ -160,6 +164,7 @@ def assemble_content_by_book_then_lang(
                     selected_tw_books,
                     selected_bc_books,
                     selected_rg_books,
+                    use_section_visual_separator,
                 )
             )
         elif selected_usfm_books and (
@@ -176,6 +181,7 @@ def assemble_content_by_book_then_lang(
                     selected_tw_books,
                     selected_bc_books,
                     selected_rg_books,
+                    use_section_visual_separator,
                 )
             )
     return "".join(content)
@@ -188,6 +194,7 @@ def assemble_usfm_by_chapter(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
+    use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     hr: str = "<hr/>",
@@ -225,12 +232,12 @@ def assemble_usfm_by_chapter(
     if show_tn_book_intro:
         for tn_book in tn_books:
             content.append(tn_language_direction_html(tn_book))
-            book_intro_ = tn_book_intro(tn_book)
+            book_intro_ = tn_book_intro(tn_book, use_section_visual_separator)
             book_intro_adj = adjust_book_intro_headings(book_intro_)
             content.append(book_intro_adj)
             content.append(close_direction_html)
     for bc_book in bc_books:
-        content.append(bc_book_intro(bc_book))
+        content.append(bc_book_intro(bc_book, use_section_visual_separator))
     book_codes = {usfm_book.book_code for usfm_book in usfm_books}
     for book_code in book_codes:
         num_chapters = book_chapters[book_code]
@@ -240,13 +247,21 @@ def assemble_usfm_by_chapter(
             ]:
                 if chapter_num in tn_book.chapters:
                     content.append(tn_language_direction_html(tn_book))
-                    content.append(chapter_intro(tn_book, chapter_num))
+                    content.append(
+                        chapter_intro(
+                            tn_book, chapter_num, use_section_visual_separator
+                        )
+                    )
                     content.append(close_direction_html)
             for bc_book in [
                 bc_book for bc_book in bc_books if bc_book.book_code == book_code
             ]:
                 if chapter_num in bc_book.chapters:
-                    content.append(chapter_commentary(bc_book, chapter_num))
+                    content.append(
+                        chapter_commentary(
+                            bc_book, chapter_num, use_section_visual_separator
+                        )
+                    )
             for usfm_book in [
                 usfm_book
                 for usfm_book in usfm_books
@@ -266,7 +281,9 @@ def assemble_usfm_by_chapter(
                 tn_book for tn_book in tn_books if tn_book.book_code == book_code
             ]:
                 if chapter_num in tn_book.chapters:
-                    tn_verses = tn_chapter_verses(tn_book, chapter_num)
+                    tn_verses = tn_chapter_verses(
+                        tn_book, chapter_num, use_section_visual_separator
+                    )
                     if tn_verses:
                         content.append(tn_language_direction_html(tn_book))
                         content.append(tn_verses)
@@ -276,7 +293,9 @@ def assemble_usfm_by_chapter(
                 tq_book for tq_book in tq_books if tq_book.book_code == book_code
             ]:
                 if chapter_num in tq_book.chapters:
-                    tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                    tq_verses = tq_chapter_verses(
+                        tq_book, chapter_num, use_section_visual_separator
+                    )
                     if tq_verses:
                         content.append(tq_language_direction_html(tq_book))
                         content.append(tq_verses)
@@ -290,7 +309,9 @@ def assemble_usfm_by_chapter(
                 # and rg_book.book_code == book_code
             ]:
                 if chapter_num in rg_book.chapters:
-                    rg_verses = rg_chapter_verses(rg_book, chapter_num)
+                    rg_verses = rg_chapter_verses(
+                        rg_book, chapter_num, use_section_visual_separator
+                    )
                     if rg_verses:
                         content.append(rg_language_direction_html(rg_book))
                         content.append(rg_verses)
@@ -306,6 +327,7 @@ def assemble_tn_by_chapter(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
+    use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
@@ -334,56 +356,65 @@ def assemble_tn_by_chapter(
     bc_books = sorted(bc_books, key=bc_sort_key)
     rg_books = sorted(rg_books, key=rg_sort_key)
     if show_tn_book_intro:
-        # Add book intros for each tn_book
         for tn_book in tn_books:
             content.append(tn_language_direction_html(tn_book))
-            book_intro_ = tn_book_intro(tn_book)
+            book_intro_ = tn_book_intro(tn_book, use_section_visual_separator)
             book_intro_adj = adjust_book_intro_headings(book_intro_)
             content.append(book_intro_adj)
             content.append(close_direction_html)
     for bc_book in bc_books:
-        content.append(bc_book_intro(bc_book))
+        content.append(bc_book_intro(bc_book, use_section_visual_separator))
     book_codes = {tn_book.book_code for tn_book in tn_books}
     for book_code in book_codes:
         num_chapters = book_chapters[book_code]
         for chapter_num in range(1, num_chapters + 1):
-            # Add chapter intro
             for tn_book in [
                 tn_book for tn_book in tn_books if tn_book.book_code == book_code
             ]:
                 if chapter_num in tn_book.chapters:
                     content.append(tn_language_direction_html(tn_book))
-                    content.append(chapter_intro(tn_book, chapter_num))
+                    content.append(
+                        chapter_intro(
+                            tn_book, chapter_num, use_section_visual_separator
+                        )
+                    )
                     content.append(close_direction_html)
             for bc_book in [
                 bc_book for bc_book in bc_books if bc_book.book_code == book_code
             ]:
                 if chapter_num in bc_book.chapters:
-                    content.append(chapter_commentary(bc_book, chapter_num))
-            # Add tn notes
+                    content.append(
+                        chapter_commentary(
+                            bc_book, chapter_num, use_section_visual_separator
+                        )
+                    )
             for tn_book in [
                 tn_book for tn_book in tn_books if tn_book.book_code == book_code
             ]:
                 if chapter_num in tn_book.chapters:
-                    tn_verses = tn_chapter_verses(tn_book, chapter_num)
+                    tn_verses = tn_chapter_verses(
+                        tn_book, chapter_num, use_section_visual_separator
+                    )
                     content.append(tn_language_direction_html(tn_book))
                     content.append(tn_verses)
                     content.append(close_direction_html)
-            # Add tq questions
             for tq_book in [
                 tq_book for tq_book in tq_books if tq_book.book_code == book_code
             ]:
                 if chapter_num in tq_book.chapters:
-                    tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                    tq_verses = tq_chapter_verses(
+                        tq_book, chapter_num, use_section_visual_separator
+                    )
                     content.append(tq_language_direction_html(tq_book))
                     content.append(tq_verses)
                     content.append(close_direction_html)
-            # Add rg content
             for rg_book in [
                 rg_book for rg_book in rg_books if rg_book.book_code == book_code
             ]:
                 if chapter_num in rg_book.chapters:
-                    rg_verses = rg_chapter_verses(rg_book, chapter_num)
+                    rg_verses = rg_chapter_verses(
+                        rg_book, chapter_num, use_section_visual_separator
+                    )
                     if rg_verses:
                         content.append(rg_language_direction_html(rg_book))
                         content.append(rg_verses)
@@ -399,6 +430,7 @@ def assemble_tq_by_chapter(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
+    use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
@@ -430,12 +462,18 @@ def assemble_tq_by_chapter(
                 bc_book for bc_book in bc_books if bc_book.book_code == book_code
             ]:
                 if chapter_num in bc_book.chapters:
-                    content.append(chapter_commentary(bc_book, chapter_num))
+                    content.append(
+                        chapter_commentary(
+                            bc_book, chapter_num, use_section_visual_separator
+                        )
+                    )
             for tq_book in [
                 tq_book for tq_book in tq_books if tq_book.book_code == book_code
             ]:
                 if chapter_num in tq_book.chapters:
-                    tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                    tq_verses = tq_chapter_verses(
+                        tq_book, chapter_num, use_section_visual_separator
+                    )
                     if tq_verses:
                         content.append(tq_language_direction_html(tq_book))
                         content.append(tq_verses)
@@ -444,7 +482,9 @@ def assemble_tq_by_chapter(
                 rg_book for rg_book in rg_books if rg_book.book_code == book_code
             ]:
                 if chapter_num in rg_book.chapters:
-                    rg_verses = rg_chapter_verses(rg_book, chapter_num)
+                    rg_verses = rg_chapter_verses(
+                        rg_book, chapter_num, use_section_visual_separator
+                    )
                     if rg_verses:
                         content.append(rg_language_direction_html(rg_book))
                         content.append(rg_verses)
@@ -467,6 +507,7 @@ def assemble_tw_by_chapter(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
+    use_section_visual_separator: bool,
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
 ) -> str:
     content = []
@@ -476,9 +517,11 @@ def assemble_tw_by_chapter(
 
     bc_books = sorted(bc_books, key=bc_sort_key)
     for bc_book in bc_books:
-        content.append(bc_book_intro(bc_book))
+        content.append(bc_book_intro(bc_book, use_section_visual_separator))
         for chapter_num, chapter in bc_book.chapters.items():
-            content.append(chapter_commentary(bc_book, chapter_num))
+            content.append(
+                chapter_commentary(bc_book, chapter_num, use_section_visual_separator)
+            )
             content.append(end_of_chapter_html)
     return "".join(content)
 
@@ -490,6 +533,7 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
+    use_section_visual_separator: bool,
     html_row_begin: str = HTML_ROW_BEGIN,
     html_column_begin: str = HTML_COLUMN_BEGIN,
     html_column_left_begin: str = HTML_COLUMN_LEFT_BEGIN,
@@ -637,8 +681,7 @@ def assemble_usfm_by_chapter_2c_sl_sr(
                 content.append(adjust_book_intro_headings(book_intro_))
                 content.append(close_direction_html)
     for bc_book in bc_books:
-        content.append(bc_book_intro(bc_book))
-    # Get unique book codes in usfm_books
+        content.append(bc_book_intro(bc_book, use_section_visual_separator))
     for usfm_book in usfm_books:
         for chapter_num, chapter in usfm_book.chapters.items():
             content.append(fmt_str.format(usfm_book.national_book_name))
@@ -649,7 +692,11 @@ def assemble_usfm_by_chapter_2c_sl_sr(
             ]:
                 if chapter_num in tn_book.chapters:
                     content.append(tn_language_direction_html(tn_book))
-                    content.append(chapter_intro(tn_book, chapter_num))
+                    content.append(
+                        chapter_intro(
+                            tn_book, chapter_num, use_section_visual_separator
+                        )
+                    )
                     content.append(close_direction_html)
             for bc_book in [
                 bc_book
@@ -657,7 +704,11 @@ def assemble_usfm_by_chapter_2c_sl_sr(
                 if bc_book.book_code == usfm_book.book_code
             ]:
                 if chapter_num in bc_book.chapters:
-                    content.append(chapter_commentary(bc_book, chapter_num))
+                    content.append(
+                        chapter_commentary(
+                            bc_book, chapter_num, use_section_visual_separator
+                        )
+                    )
             # Get lang_code of first USFM so that we can use it later
             # to make sure USFMs of the same language are on the same
             # side of the two column layout.
@@ -693,7 +744,9 @@ def assemble_usfm_by_chapter_2c_sl_sr(
             # notes on the left and lang1 notes on the right.
             tn_verses = None
             for idx, tn_book in enumerate(tn_books):
-                tn_verses = tn_chapter_verses(tn_book, chapter_num)
+                tn_verses = tn_chapter_verses(
+                    tn_book, chapter_num, use_section_visual_separator
+                )
                 if tn_verses:
                     if is_even(idx):
                         content.append(html_row_begin)
@@ -707,7 +760,9 @@ def assemble_usfm_by_chapter_2c_sl_sr(
             # questions on the left and lang1 questions on the right.
             tq_verses = None
             for idx, tq_book in enumerate(tq_books):
-                tq_verses = tq_chapter_verses(tq_book, chapter_num)
+                tq_verses = tq_chapter_verses(
+                    tq_book, chapter_num, use_section_visual_separator
+                )
                 if tq_verses:
                     if is_even(idx):
                         content.append(html_row_begin)
@@ -723,7 +778,9 @@ def assemble_usfm_by_chapter_2c_sl_sr(
                     if rg_book.book_code == usfm_book.book_code
                 ]
             ):
-                rg_verses = rg_chapter_verses(rg_book, chapter_num)
+                rg_verses = rg_chapter_verses(
+                    rg_book, chapter_num, use_section_visual_separator
+                )
                 if rg_verses:
                     if is_even(idx):
                         content.append(html_row_begin)

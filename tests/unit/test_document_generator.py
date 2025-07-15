@@ -84,6 +84,7 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
     chunk_size = model.ChunkSizeEnum.CHAPTER
     limit_words = True
     use_chapter_labels = True
+    use_section_visual_separator = True
     key = document_generator.document_request_key(
         resource_requests,
         assembly_strategy_kind,
@@ -91,5 +92,6 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
         chunk_size,
         limit_words,
         use_chapter_labels,
+        use_section_visual_separator,
     )
     assert re.search(r"[0-9]+_[0-9]+", key)

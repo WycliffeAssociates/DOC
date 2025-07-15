@@ -105,6 +105,7 @@ def generate_document(
         document_request.chunk_size,
         document_request.limit_words,
         document_request.use_chapter_labels,
+        document_request.use_section_visual_separator,
     )
     html_filepath_ = html_filepath(document_request_key_)
     pdf_filepath_ = pdf_filepath(document_request_key_)
@@ -237,6 +238,7 @@ def generate_docx_document(
         document_request.chunk_size,
         document_request.limit_words,
         document_request.use_chapter_labels,
+        document_request.use_section_visual_separator,
     )
     html_filepath_ = html_filepath(document_request_key_)
     docx_filepath_ = docx_filepath(document_request_key_)
@@ -313,6 +315,7 @@ def generate_docx_document(
             docx_filepath_,
             document_parts,
             document_request.layout_for_print,
+            document_request.use_section_visual_separator,
             title1,
             title2,
         )
@@ -344,6 +347,7 @@ def document_request_key(
     chunk_size: ChunkSizeEnum,
     limit_words: bool,
     use_chapter_labels: bool,
+    use_section_visual_separator: bool,
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -376,9 +380,9 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}'
     else:
-        document_request_key = f"{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}"
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}'
     if len(document_request_key) >= max_filename_len:
         # The generated filename could be too long for the OS where this is
         # running. Therefore, use the current time as a document_request_key
@@ -451,18 +455,19 @@ def assemble_content(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     found_resource_lookup_dtos: Sequence[ResourceLookupDto],
+    hr: str = "<hr/>",
 ) -> str:
     """
     Assemble and return the content from all requested resources according to the
     assembly_strategy requested.
     """
     t0 = time.time()
-    content = ""
+    content = []
     if (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
     ):
-        content = "".join(
+        content.append(
             assemble_content_by_lang_then_book(
                 usfm_books,
                 tn_books,
@@ -471,13 +476,14 @@ def assemble_content(
                 bc_books,
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
+                document_request.use_section_visual_separator,
             )
         )
     elif (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
     ):
-        content = "".join(
+        content.append(
             assemble_content_by_book_then_lang(
                 usfm_books,
                 tn_books,
@@ -486,6 +492,7 @@ def assemble_content(
                 bc_books,
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
+                document_request.use_section_visual_separator,
             )
         )
     t1 = time.time()
@@ -496,10 +503,19 @@ def assemble_content(
     for tw_book in tw_books:
         if tw_book.lang_code not in unique_lang_codes:
             unique_lang_codes.add(tw_book.lang_code)
-            content = f"{content}{translation_words_section(tw_book, usfm_books, document_request.limit_words, document_request.resource_requests)}<hr/>"
+            content.append(
+                translation_words_section(
+                    tw_book,
+                    usfm_books,
+                    document_request.limit_words,
+                    document_request.resource_requests,
+                )
+            )
+            if document_request.use_section_visual_separator:
+                content.append(hr)
     t1 = time.time()
     logger.info("Time for add TW content to document: %s", t1 - t0)
-    return content
+    return "".join(content)
 
 
 def create_title_page_and_wrap_in_template(
@@ -553,6 +569,7 @@ def assemble_docx_content(
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
+            document_request.use_section_visual_separator,
         )
     elif (
         document_request.assembly_strategy_kind
@@ -567,6 +584,7 @@ def assemble_docx_content(
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
+            document_request.use_section_visual_separator,
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)
@@ -582,10 +600,16 @@ def assemble_docx_content(
                         usfm_books,
                         document_request.limit_words,
                         document_request.resource_requests,
-                    )
+                    ),
+                    use_section_visual_separator=document_request.use_section_visual_separator,
                 )
             )
-            document_parts.append(DocumentPart(content=""))
+            document_parts.append(
+                DocumentPart(
+                    content="",
+                    use_section_visual_separator=document_request.use_section_visual_separator,
+                )
+            )
         t1 = time.time()
         logger.info("Time for adding TW content to document: %s", t1 - t0)
     return document_parts
@@ -657,7 +681,9 @@ def convert_html_to_epub(
     logger.info("Time for converting HTML to ePub: %s", t1 - t0)
 
 
-def compose_document(document_parts: list[DocumentPart]) -> Document:
+def compose_document(
+    document_parts: list[DocumentPart], use_section_visual_separator: bool
+) -> Document:
     doc = Document()
     html_to_docx = HtmlToDocx()
     for part in document_parts:
@@ -669,7 +695,7 @@ def compose_document(document_parts: list[DocumentPart]) -> Document:
             html_to_docx.add_html_to_document(part.content, doc)
         # Set the language for spellcheck
         # set_docx_language(doc, lang_code)
-        if part.add_hr_p:
+        if use_section_visual_separator and part.add_hr_p:
             add_hr(doc.paragraphs[-1])
         if part.add_page_break:
             add_page_break(doc)
@@ -681,6 +707,7 @@ def convert_html_to_docx(
     docx_filepath: str,
     document_parts: list[DocumentPart],
     layout_for_print: bool,
+    use_section_visual_separator: bool,
     title1: str = "title1",
     title2: str = "title2",
     title3: str = "",
@@ -710,7 +737,7 @@ def convert_html_to_docx(
     new_section = doc.add_section(WD_SECTION.CONTINUOUS)
     new_section.start_type
     master = Composer(doc)
-    master.append(compose_document(document_parts))
+    master.append(compose_document(document_parts, use_section_visual_separator))
     master.save(docx_filepath)
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %s", t1 - t0)

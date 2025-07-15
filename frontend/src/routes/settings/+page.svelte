@@ -12,7 +12,8 @@
     emailStore,
     documentRequestKeyStore,
     settingsUpdated,
-    useChapterLabelsStore
+    useChapterLabelsStore,
+    useSectionVisualSeparatorStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
   import {
@@ -234,6 +235,15 @@
             <Switch bind:checked={$useChapterLabelsStore} id="use-chapter-labels" />
             <span class="ml-2 text-xl text-[#33445C]"
               >Use chapter labels, e.g., 'Chapter 1' instead of '1'</span
+            >
+          </div>
+          <div class="mb-2 mt-6 flex">
+            <Switch
+              bind:checked={$useSectionVisualSeparatorStore}
+              id="use-section-visual-separator"
+            />
+            <span class="ml-2 text-xl text-[#33445C]"
+              >Show visual separator (horizontal line) between sections</span
             >
           </div>
         </div>

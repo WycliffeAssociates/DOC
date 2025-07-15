@@ -201,6 +201,8 @@ class DocumentRequest(BaseModel):
     # is True, then the chapter label will be localized to the language(s)
     # requested.
     use_chapter_labels: bool = False
+    # Indiciate whether to show visual separator between sections, e.g., hr element
+    use_section_visual_separator: bool = False
     # Indicate whether TN book intros should be included. Currently,
     # the content team does not want them included.
     include_tn_book_intros: bool = False
@@ -554,3 +556,4 @@ class DocumentPart(BaseModel):
     add_hr_p: bool = True
     contained_in_two_column_section: bool = False
     add_page_break: bool = False
+    use_section_visual_separator: bool = False

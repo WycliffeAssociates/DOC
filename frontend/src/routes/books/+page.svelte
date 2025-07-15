@@ -40,9 +40,10 @@
 
   async function loadBookCodesAndNames() {
     try {
-      const bookCodesAndNames = $langCountStore > 1
-        ? await getBookCodesAndNames($langCodesStore[0], $langCodesStore[1])
-        : await getBookCodesAndNames($langCodesStore[0])
+      const bookCodesAndNames =
+        $langCountStore > 1
+          ? await getBookCodesAndNames($langCodesStore[0], $langCodesStore[1])
+          : await getBookCodesAndNames($langCodesStore[0])
       updateStores(bookCodesAndNames)
     } catch (err) {
       console.error(err)
@@ -59,13 +60,13 @@
       .filter(([code]) => otBooks.includes(code))
       .map(([code, name]) => `${code}, ${name}`)
     if ($otBookStore.length > 0) {
-      $otBookStore = $otBookStore.filter(item => otBookCodes.includes(item))
+      $otBookStore = $otBookStore.filter((item) => otBookCodes.includes(item))
     }
     ntBookCodes = bookCodesAndNames
       .filter(([code]) => !otBooks.includes(code))
       .map(([code, name]) => `${code}, ${name}`)
     if ($ntBookStore.length > 0) {
-      $ntBookStore = $ntBookStore.filter(item => ntBookCodes.includes(item))
+      $ntBookStore = $ntBookStore.filter((item) => ntBookCodes.includes(item))
     }
   }
 
@@ -238,7 +239,7 @@
             </label>
             <div class="ml-2 hidden sm:flex" role="group">
               <button
-                class="h-10 w-36 rounded-l-md border-x-2 border-x-2 border-b-2 border-t-2 border-[#015ad9] bg-white text-xl font-medium leading-tight text-[#33445c] transition duration-150 ease-in-out hover:bg-white focus:bg-white focus:outline-none focus:ring-0 active:bg-white"
+                class="h-10 w-36 rounded-l-md border-x-2 border-b-2 border-t-2 border-[#015ad9] bg-white text-xl font-medium leading-tight text-[#33445c] transition duration-150 ease-in-out hover:bg-white focus:bg-white focus:outline-none focus:ring-0 active:bg-white"
                 on:click={() => (showOldTestament = true)}
               >
                 Old Testament

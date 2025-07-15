@@ -67,6 +67,7 @@ def adjust_commentary_headings(
 def chapter_intro(
     tn_book: Optional[TNBook],
     chapter_num: int,
+    use_section_visual_separator: bool,
     hr: str = "<hr/>",
 ) -> str:
     """Get the chapter intro."""
@@ -77,7 +78,8 @@ def chapter_intro(
         and tn_book.chapters[chapter_num].intro_html
     ):
         content.append(tn_book.chapters[chapter_num].intro_html)
-        content.append(hr)
+        if use_section_visual_separator:
+            content.append(hr)
     return "".join(content)
 
 
@@ -87,39 +89,48 @@ def has_footnotes(html_content: str) -> bool:
 
 def bc_book_intro(
     bc_book: Optional[BCBook],
+    use_section_visual_separator: bool,
     hr: str = "<hr/>",
 ) -> str:
-    content = ""
+    content = []
     if bc_book and bc_book.book_intro:
-        content = f"{bc_book.book_intro}{hr}"
-    return content
+        content.append(bc_book.book_intro)
+        if use_section_visual_separator:
+            content.append(hr)
+    return "".join(content)
 
 
 def tn_book_intro(
     tn_book: Optional[TNBook],
+    use_section_visual_separator: bool,
     hr: str = "<hr/>",
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> str:
-    content = ""
+    content = []
     if show_tn_book_intro and tn_book and tn_book.book_intro:
-        content = f"{tn_book.book_intro}{hr}"
-    return content
+        content.append(tn_book.book_intro)
+        if use_section_visual_separator:
+            content.append(hr)
+    return "".join(content)
 
 
 def chapter_commentary(
     bc_book: Optional[BCBook],
     chapter_num: int,
+    use_section_visual_separator: bool,
     hr: str = "<hr/>",
 ) -> str:
     """Get the chapter commentary."""
-    content = ""
+    content = []
     if (
         bc_book
         and chapter_num in bc_book.chapters
         and bc_book.chapters[chapter_num].commentary
     ):
-        content = f"{bc_book.chapters[chapter_num].commentary}{hr}"
-    return content
+        content.append(bc_book.chapters[chapter_num].commentary)
+        if use_section_visual_separator:
+            content.append(hr)
+    return "".join(content)
 
 
 def usfm_language_direction_html(
@@ -169,6 +180,7 @@ def rg_language_direction_html(
 def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,
+    use_section_visual_separator: bool,
     fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
     hr: str = "<hr/>",
 ) -> str:
@@ -180,13 +192,15 @@ def tn_chapter_verses(
     if tn_book and chapter_num in tn_book.chapters:
         tn_verses = tn_book.chapters[chapter_num].verses
         content.append(fmt_str.format("".join(tn_verses.values())))
-        content.append(hr)
+        if use_section_visual_separator:
+            content.append(hr)
     return "".join(content)
 
 
 def tq_chapter_verses(
     tq_book: Optional[TQBook],
     chapter_num: int,
+    use_section_visual_separator: bool,
     fmt_str: str = TQ_HEADING_AND_QUESTIONS_FMT_STR,
     hr: str = "<hr/>",
 ) -> str:
@@ -200,13 +214,15 @@ def tq_chapter_verses(
                 "".join(tq_verses.values()),
             )
         )
-        content.append(hr)
+        if use_section_visual_separator:
+            content.append(hr)
     return "".join(content)
 
 
 def rg_chapter_verses(
     rg_book: Optional[RGBook],
     chapter_num: int,
+    use_section_visual_separator: bool,
     hr: str = "<hr/>",
 ) -> str:
     """
@@ -217,7 +233,8 @@ def rg_chapter_verses(
     if rg_book and chapter_num in rg_book.chapters:
         rg_verses = render_chapter(rg_book.chapters[chapter_num])
         content.append(rg_verses)
-        content.append(hr)
+        if use_section_visual_separator:
+            content.append(hr)
     return "".join(content)
 
 

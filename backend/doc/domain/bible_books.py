@@ -74,6 +74,10 @@ BOOK_NAMES: dict[str, str] = {
     "rev": "Revelation",
 }
 
+
+# Sort the books in canonical order so that groupby does what we want.
+BOOK_ID_MAP = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
+
 BOOK_NUMBERS: Mapping[str, str] = {
     "gen": "01",
     "exo": "02",

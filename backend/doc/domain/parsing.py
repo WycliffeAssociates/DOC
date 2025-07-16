@@ -3,11 +3,10 @@ This module provides an API for parsing content.
 """
 
 import re
-import subprocess
 import requests
 import time
 from glob import glob
-from os import DirEntry, getenv, scandir, walk
+from os import DirEntry, scandir, walk
 from os.path import exists, join, split
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
@@ -17,7 +16,7 @@ from doc.config import settings
 from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
-from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.exceptions import MissingChapterMarkerError
 from doc.domain.model import (
     BC_RESOURCE_TYPE,
@@ -70,7 +69,6 @@ BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/Wycliff
 # fmt: on
 
 
-# CHAPTER_LABEL_REGEX = r"\\cl\s+.*"
 CHAPTER_LABEL_REGEX = re.compile(r"\\cl\s+[^\n]+")
 CHAPTER_LABEL_REGEX2 = re.compile(r"\\cl\s+(.+)")
 CHAPTER_REGEX = re.compile(r"\\c\s+\d+")
@@ -390,7 +388,6 @@ def maybe_localized_book_name(frontmatter: str) -> str:
 
     Steps 5 and 6 happen outside this function.
     """
-    # logger.debug("frontmatter: %s", frontmatter)
     frontmatter_data = extract_usfm_frontmatter(frontmatter)
     localized_book_name = (
         frontmatter_data.get("h")
@@ -905,6 +902,7 @@ def books(
     rg_resource_type: str = RG_RESOURCE_TYPE,
     docx_file_path: str = "en_rg_nt_survey.docx",
     en_rg_dir: str = settings.EN_RG_DIR,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> tuple[
     Sequence[USFMBook],
     Sequence[TNBook],
@@ -920,7 +918,10 @@ def books(
     bc_books = []
     rg_books = []
     filtered_rg_books = []
-    for resource_lookup_dto, resource_dir in zip(resource_lookup_dtos, resource_dirs):
+    for resource_lookup_dto, resource_dir in sorted(
+        zip(resource_lookup_dtos, resource_dirs),
+        key=lambda dto_with_dir: book_id_map[dto_with_dir[0].book_code],
+    ):
         if resource_lookup_dto.resource_type in usfm_resource_types:
             usfm_book = usfm_book_content(
                 resource_lookup_dto,
@@ -977,7 +978,6 @@ def ensure_paragraph_before_verses(
     usfm_verse_one_file_regex: str = r"^01\..*",
     chapter_marker_not_on_own_line_regex: str = r"^\\c [0-9]+ .*|\n",
     chapter_marker_not_on_own_line_with_match_groups: str = r"(^\\c [0-9]+) (.*|\n)",
-    # chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\\p\n\2\n",
     chapter_marker_not_on_own_line_repair_regex: str = r"\1\n\n\2\n",
 ) -> str:
     r"""

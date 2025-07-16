@@ -7,7 +7,7 @@ import subprocess
 import time
 from datetime import datetime
 from os.path import exists, join
-from typing import Any, Optional, Sequence, cast
+from typing import Optional, Sequence, cast
 
 from celery import current_task
 from doc.config import settings
@@ -24,8 +24,14 @@ from doc.domain.assembly_strategies_docx import (
 from doc.domain.assembly_strategies_docx import (
     assembly_strategies_lang_then_book_by_chapter as lang_then_book,
 )
-from doc.domain.assembly_strategies_docx.assembly_strategy_utils import add_hr
-from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
+    add_hr,
+    add_one_column_section,
+    add_page_break,
+    add_two_column_section,
+    set_docx_language,
+)
+from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import (
     AssemblyLayoutEnum,
@@ -33,6 +39,7 @@ from doc.domain.model import (
     Attachment,
     BCBook,
     ChunkSizeEnum,
+    DocumentPart,
     DocumentRequest,
     DocumentRequestSourceEnum,
     ResourceLookupDto,
@@ -58,33 +65,20 @@ from doc.utils.tw_utils import (
     filter_unique_by_lang_code,
     translation_words_section,
 )
+from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
-from pydantic import Json
 
 logger = settings.logger(__name__)
 
 
-# @worker.app.task(
-#     autoretry_for=(Exception,),
-#     retry_backoff=True,
-#     retry_kwargs={"max_retries": 3},
-# )
-@worker.app.task
-def generate_document(
-    document_request_json: str, output_dir: str = settings.DOCUMENT_OUTPUT_DIR
-) -> str:
-    """
-    This is the main entry point for this module for non-docx generation.
-    >>> from doc.domain import document_generator
-    >>> document_request_json = '{"email_address":null,"assembly_strategy_kind":"lbo","assembly_layout_kind":"1c","layout_for_print":false,"resource_requests":[{"lang_code":"es-419","resource_type":"ulb","book_code":"mat"}],"generate_pdf":true,"generate_epub":false,"generate_docx":false,"chunk_size":"chapter","limit_words":false,"include_tn_book_intros":false,"document_request_source":"ui"}'
-    >>> document_generator.generate_document(document_request_json)
-    """
-    logger.info("document_request_json: %s", document_request_json)
-    current_task.update_state(state="Receiving request")
+def initialize_document_request_and_key(
+    document_request_json: str,
+) -> tuple[DocumentRequest, str]:
     document_request = DocumentRequest.parse_raw(document_request_json)
+    logger.info("document_request: %s", document_request)
     document_request.assembly_layout_kind = select_assembly_layout_kind(
         document_request
     )
@@ -97,60 +91,115 @@ def generate_document(
         document_request.chunk_size,
         document_request.limit_words,
         document_request.use_chapter_labels,
+        document_request.use_section_visual_separator,
+    )
+    return document_request, document_request_key_
+
+
+def locate_acquire_and_build_resource_objects(
+    document_request: DocumentRequest,
+) -> tuple[
+    Sequence[ResourceLookupDto],
+    Sequence[USFMBook],
+    Sequence[TNBook],
+    Sequence[TQBook],
+    Sequence[TWBook],
+    Sequence[BCBook],
+    Sequence[RGBook],
+]:
+    # Update the state of the worker process. This is used by the
+    # UI to report status.
+    current_task.update_state(state="Locating assets")
+    # Docx didn't exist in cache so go ahead and start by getting the
+    # resource lookup DTOs for each resource request in the document
+    # request.
+    resource_lookup_dtos = []
+    for resource_request in document_request.resource_requests:
+        resource_lookup_dto = resource_lookup.resource_lookup_dto(
+            resource_request.lang_code,
+            resource_request.resource_type,
+            resource_request.book_code,
+        )
+        if resource_lookup_dto:
+            resource_lookup_dtos.append(resource_lookup_dto)
+    # Determine which resource URLs were actually found.
+    found_resource_lookup_dtos = [
+        resource_lookup_dto
+        for resource_lookup_dto in resource_lookup_dtos
+        if resource_lookup_dto.url is not None
+    ]
+    # if not found_resource_lookup_dtos:
+    #     raise exceptions.ResourceAssetFileNotFoundError(
+    #         message="No supported resource assets were found"
+    #     )
+    current_task.update_state(state="Provisioning asset files")
+    t0 = time.time()
+    resource_dirs = [
+        resource_lookup.prepare_resource_filepath(dto)
+        for dto in found_resource_lookup_dtos
+    ]
+    for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
+        resource_lookup.provision_asset_files(dto.url, resource_dir)
+    t1 = time.time()
+    logger.info(
+        "Time to provision asset files (acquire and write to disk): %s", t1 - t0
+    )
+    current_task.update_state(state="Parsing asset files")
+    # Initialize found resources from their provisioned assets.
+    t0 = time.time()
+    usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
+        found_resource_lookup_dtos,
+        resource_dirs,
+        document_request.resource_requests,
+        document_request.layout_for_print,
+        document_request.use_chapter_labels,
+    )
+    t1 = time.time()
+    logger.info("Time to parse all resource content: %s", t1 - t0)
+    return (
+        found_resource_lookup_dtos,
+        usfm_books,
+        tn_books,
+        tq_books,
+        tw_books,
+        bc_books,
+        rg_books,
+    )
+
+
+# @worker.app.task(
+#     autoretry_for=(Exception,),
+#     retry_backoff=True,
+#     retry_kwargs={"max_retries": 3},
+# )
+@worker.app.task
+def generate_document(
+    document_request_json: str,
+    output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
+) -> str:
+    """
+    This is the main entry point for this module for non-docx generation.
+    >>> from doc.domain import document_generator
+    >>> document_request_json = '{"email_address":null,"assembly_strategy_kind":"lbo","assembly_layout_kind":"1c","layout_for_print":false,"resource_requests":[{"lang_code":"es-419","resource_type":"ulb","book_code":"mat"}],"generate_pdf":true,"generate_epub":false,"generate_docx":false,"chunk_size":"chapter","limit_words":false,"include_tn_book_intros":false,"document_request_source":"ui"}'
+    >>> document_generator.generate_document(document_request_json)
+    """
+    current_task.update_state(state="Receiving request")
+    document_request, document_request_key_ = initialize_document_request_and_key(
+        document_request_json
     )
     html_filepath_ = html_filepath(document_request_key_)
     pdf_filepath_ = pdf_filepath(document_request_key_)
     epub_filepath_ = epub_filepath(document_request_key_)
     if file_needs_update(html_filepath_):
-        # Update the state of the worker process. This is used by the
-        # UI to report status.
-        current_task.update_state(state="Locating assets")
-        # HTML didn't exist in cache so go ahead and start by getting the
-        # resource lookup DTOs for each resource request in the document
-        # request.
-        resource_lookup_dtos = []
-        for resource_request in document_request.resource_requests:
-            resource_lookup_dto = resource_lookup.resource_lookup_dto(
-                resource_request.lang_code,
-                resource_request.resource_type,
-                resource_request.book_code,
-            )
-            if resource_lookup_dto:
-                resource_lookup_dtos.append(resource_lookup_dto)
-        # Determine which resource URLs were actually found.
-        found_resource_lookup_dtos = [
-            resource_lookup_dto
-            for resource_lookup_dto in resource_lookup_dtos
-            if resource_lookup_dto.url is not None
-        ]
-        # if not found_resource_lookup_dtos:
-        #     raise exceptions.ResourceAssetFileNotFoundError(
-        #         message="No supported resource assets were found"
-        #     )
-        current_task.update_state(state="Provisioning asset files")
-        t0 = time.time()
-        resource_dirs = [
-            resource_lookup.prepare_resource_filepath(dto)
-            for dto in found_resource_lookup_dtos
-        ]
-        for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
-            resource_lookup.provision_asset_files(dto.url, resource_dir)
-        t1 = time.time()
-        logger.info(
-            "Time to provision asset files (acquire and write to disk): %s", t1 - t0
-        )
-        current_task.update_state(state="Parsing asset files")
-        # Initialize found resources from their provisioned assets.
-        t0 = time.time()
-        usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
+        (
             found_resource_lookup_dtos,
-            resource_dirs,
-            document_request.resource_requests,
-            document_request.layout_for_print,
-            document_request.use_chapter_labels,
-        )
-        t1 = time.time()
-        logger.info("Time to parse all resource content: %s", t1 - t0)
+            usfm_books,
+            tn_books,
+            tq_books,
+            tw_books,
+            bc_books,
+            rg_books,
+        ) = locate_acquire_and_build_resource_objects(document_request)
         current_task.update_state(state="Assembling content")
         content = assemble_content(
             document_request_key_,
@@ -163,12 +212,13 @@ def generate_document(
             rg_books,
             found_resource_lookup_dtos,
         )
+        content_str = "".join(content)
         if usfm_books:
-            content = check_content_for_issues(content)
-        content = create_title_page_and_wrap_in_template(
-            content, document_request, found_resource_lookup_dtos, usfm_books
+            content_str = check_content_for_issues(content_str)
+        content_str = create_title_page_and_wrap_in_template(
+            content_str, document_request, found_resource_lookup_dtos, usfm_books
         )
-        write_html_content_to_file(content, html_filepath_)
+        write_html_content_to_file(content_str, html_filepath_)
     else:
         logger.info("Cache hit for %s", html_filepath_)
     # Immediately return pre-built PDF if the document has previously been
@@ -206,80 +256,30 @@ def generate_document(
 
 @worker.app.task
 def generate_docx_document(
-    document_request_json: Json[Any],
+    document_request_json: str,
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
-) -> Json[str]:
+) -> str:
     """
     This is the alternative entry point for Docx document creation only.
     """
-    document_request = DocumentRequest.parse_raw(document_request_json)
-    logger.info(
-        "document_request: %s",
-        document_request,
-    )
-    document_request.assembly_layout_kind = select_assembly_layout_kind(
-        document_request
-    )
-    # Generate the document request key that identifies this and
-    # identical document requests.
-    document_request_key_ = document_request_key(
-        document_request.resource_requests,
-        document_request.assembly_strategy_kind,
-        document_request.assembly_layout_kind,
-        document_request.chunk_size,
-        document_request.limit_words,
-        document_request.use_chapter_labels,
+    current_task.update_state(state="Receiving request")
+    document_request, document_request_key_ = initialize_document_request_and_key(
+        document_request_json
     )
     html_filepath_ = html_filepath(document_request_key_)
     docx_filepath_ = docx_filepath(document_request_key_)
     if document_request.generate_docx and file_needs_update(docx_filepath_):
-        # Update the state of the worker process. This is used by the
-        # UI to report status.
-        current_task.update_state(state="Locating assets")
-        # Docx didn't exist in cache so go ahead and start by getting the
-        # resource lookup DTOs for each resource request in the document
-        # request.
-        resource_lookup_dtos = []
-        for resource_request in document_request.resource_requests:
-            resource_lookup_dto = resource_lookup.resource_lookup_dto(
-                resource_request.lang_code,
-                resource_request.resource_type,
-                resource_request.book_code,
-            )
-            if resource_lookup_dto:
-                resource_lookup_dtos.append(resource_lookup_dto)
-        # Determine which resource URLs were actually found.
-        found_resource_lookup_dtos = [
-            resource_lookup_dto
-            for resource_lookup_dto in resource_lookup_dtos
-            if resource_lookup_dto.url is not None
-        ]
-        current_task.update_state(state="Provisioning asset files")
-        t0 = time.time()
-        resource_dirs = [
-            resource_lookup.prepare_resource_filepath(dto)
-            for dto in found_resource_lookup_dtos
-        ]
-        for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
-            resource_lookup.provision_asset_files(dto.url, resource_dir)
-        t1 = time.time()
-        logger.info(
-            "Time to provision asset files (acquire and write to disk): %s", t1 - t0
-        )
-        current_task.update_state(state="Parsing asset files")
-        # Initialize found resources from their provisioned assets.
-        t0 = time.time()
-        usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
+        (
             found_resource_lookup_dtos,
-            resource_dirs,
-            document_request.resource_requests,
-            document_request.layout_for_print,
-            document_request.use_chapter_labels,
-        )
-        t1 = time.time()
-        logger.info("Time to parse all resource content: %s", t1 - t0)
+            usfm_books,
+            tn_books,
+            tq_books,
+            tw_books,
+            bc_books,
+            rg_books,
+        ) = locate_acquire_and_build_resource_objects(document_request)
         current_task.update_state(state="Assembling content")
-        composer = assemble_docx_content(
+        document_parts = assemble_docx_content(
             document_request_key_,
             document_request,
             usfm_books,
@@ -303,8 +303,9 @@ def generate_docx_document(
         convert_html_to_docx(
             html_filepath_,
             docx_filepath_,
-            composer,
+            document_parts,
             document_request.layout_for_print,
+            document_request.use_section_visual_separator,
             title1,
             title2,
         )
@@ -336,6 +337,7 @@ def document_request_key(
     chunk_size: ChunkSizeEnum,
     limit_words: bool,
     use_chapter_labels: bool,
+    use_section_visual_separator: bool,
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -368,13 +370,13 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}'
     else:
-        document_request_key = f"{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}"
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}'
     if len(document_request_key) >= max_filename_len:
-        # Likely the generated filename was too long for the OS where this is
-        # running. In that case, use the current time as a document_request_key
-        # value as doing so results in an acceptably short length.
+        # The generated filename could be too long for the OS where this is
+        # running. Therefore, use the current time as a document_request_key
+        # so that filename is not too long.
         timestamp_components = str(time.time()).split(".")
         return f"{timestamp_components[0]}_{timestamp_components[1]}"
     else:
@@ -443,18 +445,20 @@ def assemble_content(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     found_resource_lookup_dtos: Sequence[ResourceLookupDto],
-) -> str:
+    hr: str = "<hr/>",
+) -> list[str]:
     """
     Assemble and return the content from all requested resources according to the
     assembly_strategy requested.
+
     """
     t0 = time.time()
-    content = ""
+    content = []
     if (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
     ):
-        content = "".join(
+        content.extend(
             assemble_content_by_lang_then_book(
                 usfm_books,
                 tn_books,
@@ -463,13 +467,14 @@ def assemble_content(
                 bc_books,
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
+                document_request.use_section_visual_separator,
             )
         )
     elif (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
     ):
-        content = "".join(
+        content.extend(
             assemble_content_by_book_then_lang(
                 usfm_books,
                 tn_books,
@@ -478,6 +483,7 @@ def assemble_content(
                 bc_books,
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
+                document_request.use_section_visual_separator,
             )
         )
     t1 = time.time()
@@ -488,7 +494,16 @@ def assemble_content(
     for tw_book in tw_books:
         if tw_book.lang_code not in unique_lang_codes:
             unique_lang_codes.add(tw_book.lang_code)
-            content = f"{content}{translation_words_section(tw_book, usfm_books, document_request.limit_words, document_request.resource_requests)}<hr/>"
+            content.extend(
+                translation_words_section(
+                    tw_book,
+                    usfm_books,
+                    document_request.limit_words,
+                    document_request.resource_requests,
+                )
+            )
+            if document_request.use_section_visual_separator:
+                content.append(hr)
     t1 = time.time()
     logger.info("Time for add TW content to document: %s", t1 - t0)
     return content
@@ -525,18 +540,18 @@ def assemble_docx_content(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
-) -> Composer:
+) -> list[DocumentPart]:
     """
     Assemble and return the content from all requested resources according to the
     assembly_strategy requested.
     """
     t0 = time.time()
-    composer = None
+    document_parts: list[DocumentPart] = []
     if (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
     ):
-        composer = lang_then_book.assemble_content_by_lang_then_book(
+        document_parts = lang_then_book.assemble_content_by_lang_then_book(
             usfm_books,
             tn_books,
             tq_books,
@@ -545,12 +560,13 @@ def assemble_docx_content(
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
+            document_request.use_section_visual_separator,
         )
     elif (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
     ):
-        composer = book_then_lang.assemble_content_by_book_then_lang(
+        document_parts = book_then_lang.assemble_content_by_book_then_lang(
             usfm_books,
             tn_books,
             tq_books,
@@ -559,35 +575,35 @@ def assemble_docx_content(
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
+            document_request.use_section_visual_separator,
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)
-    tw_subdocs = []
     if tw_books:
-        html_to_docx = HtmlToDocx()
         t0 = time.time()
         # Add the translation words definition section for each language requested.
         unique_tw_books = filter_unique_by_lang_code(tw_books)
         for tw_book in unique_tw_books:
-            tw_subdoc = html_to_docx.parse_html_string(
-                translation_words_section(
-                    tw_book,
-                    usfm_books,
-                    document_request.limit_words,
-                    document_request.resource_requests,
+            document_parts.append(
+                DocumentPart(
+                    content=translation_words_section(
+                        tw_book,
+                        usfm_books,
+                        document_request.limit_words,
+                        document_request.resource_requests,
+                    ),
+                    use_section_visual_separator=document_request.use_section_visual_separator,
                 )
             )
-            if tw_subdoc.paragraphs:
-                p = tw_subdoc.paragraphs[-1]
-                add_hr(p)
-                tw_subdocs.append(tw_subdoc)
+            document_parts.append(
+                DocumentPart(
+                    content="",
+                    use_section_visual_separator=document_request.use_section_visual_separator,
+                )
+            )
         t1 = time.time()
         logger.info("Time for adding TW content to document: %s", t1 - t0)
-    # Now add any TW subdocs to the composer
-    if composer:
-        for tw_subdoc_ in tw_subdocs:
-            composer.append(tw_subdoc_)
-    return composer
+    return document_parts
 
 
 # HTML to PDF converters:
@@ -656,26 +672,48 @@ def convert_html_to_epub(
     logger.info("Time for converting HTML to ePub: %s", t1 - t0)
 
 
+def compose_document(
+    document_parts: list[DocumentPart], use_section_visual_separator: bool
+) -> Document:
+    doc = Document()
+    html_to_docx = HtmlToDocx()
+    for part in document_parts:
+        if part.contained_in_two_column_section:
+            add_two_column_section(doc)
+            html_to_docx.add_html_to_document(part.content, doc)
+        else:
+            add_one_column_section(doc)
+            html_to_docx.add_html_to_document(part.content, doc)
+        # Set the language for spellcheck
+        # set_docx_language(doc, lang_code)
+        if use_section_visual_separator and part.add_hr_p:
+            add_hr(doc.paragraphs[-1])
+        if part.add_page_break:
+            add_page_break(doc)
+    return doc
+
+
 def convert_html_to_docx(
     html_filepath: str,
     docx_filepath: str,
-    composer: Composer,
+    document_parts: list[DocumentPart],
     layout_for_print: bool,
+    use_section_visual_separator: bool,
     title1: str = "title1",
     title2: str = "title2",
-    title3: str = "Formatted for Translators",
+    title3: str = "",
     docx_template_path: str = settings.DOCX_TEMPLATE_PATH,
     docx_compact_template_path: str = settings.DOCX_COMPACT_TEMPLATE_PATH,
 ) -> None:
-    """Generate Docx and copy it to output directory."""
+    """Generate Docx and write it to output directory."""
     t0 = time.time()
     # Get data for front page of Docx template.
     title1 = title1
     title2 = title2
     title3 = title3
-    # fmt: off
-    template_path = docx_compact_template_path if layout_for_print else docx_template_path
-    # fmt: on
+    template_path = (
+        docx_compact_template_path if layout_for_print else docx_template_path
+    )
     doc = DocxTemplate(template_path)
     toc_path = generate_docx_toc(docx_filepath)
     toc = doc.new_subdoc(toc_path)
@@ -690,8 +728,7 @@ def convert_html_to_docx(
     new_section = doc.add_section(WD_SECTION.CONTINUOUS)
     new_section.start_type
     master = Composer(doc)
-    # Add the main (non-front-matter) content.
-    master.append(composer.doc)
+    master.append(compose_document(document_parts, use_section_visual_separator))
     master.save(docx_filepath)
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %s", t1 - t0)
@@ -769,7 +806,6 @@ def write_html_content_to_file(
     Write HTML content to file.
     """
     logger.info("About to write HTML to %s", output_filename)
-    # Write the HTML file to disk.
     write_file(
         output_filename,
         content,
@@ -807,18 +843,40 @@ def get_languages_title_page_strings(
     resource_lookup_dtos: Sequence[ResourceLookupDto],
     usfm_books: Sequence[USFMBook],
     book_names: dict[str, str] = BOOK_NAMES,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> tuple[str, str]:
     lang_codes = list({dto.lang_code for dto in resource_lookup_dtos})
 
     def get_language_details(lang_code: str) -> str:
-        book_names_set = set()
-        resource_type_names_set = set()
-        dtos = [dto for dto in resource_lookup_dtos if dto.lang_code == lang_code]
+        book_names_ = []
+        resource_type_names = []
+        dtos = [
+            dto
+            for dto in sorted(
+                resource_lookup_dtos,
+                key=lambda resource_lookup_dto: book_id_map[
+                    resource_lookup_dto.book_code
+                ],
+            )
+            if dto.lang_code == lang_code
+        ]
         for dto in dtos:
-            book_names_set.add(book_names[dto.book_code])
-            resource_type_names_set.add(dto.resource_type_name)
+            usfm_books_ = [
+                usfm_book
+                for usfm_book in usfm_books
+                if usfm_book.book_code == dto.book_code
+                and usfm_book.lang_code == lang_code
+            ]
+            if usfm_books_:
+                book_name = usfm_books_[0].national_book_name
+            else:
+                book_name = book_names[dto.book_code]
+            if book_name not in book_names_:
+                book_names_.append(book_name)
+            if dto.resource_type_name not in resource_type_names:
+                resource_type_names.append(dto.resource_type_name)
         if dtos:
-            return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(sorted(resource_type_names_set))} for {', '.join(sorted(book_names_set))}"
+            return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(resource_type_names)} for {', '.join(book_names_)}"
         return ""
 
     lang0_title = get_language_details(lang_codes[0])

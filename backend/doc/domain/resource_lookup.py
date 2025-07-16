@@ -20,7 +20,7 @@ import requests
 import yaml
 from doc.config import settings
 from doc.domain import parsing, worker
-from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_NAMES
+from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     NON_USFM_RESOURCE_TYPES,
     Content,
@@ -859,6 +859,7 @@ def get_book_codes_for_lang(
     use_localized_book_name: bool,
     usfm_only: bool = False,
     check_usfm: bool = False,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
     download_assets: bool = settings.DOWNLOAD_ASSETS,
 ) -> Sequence[tuple[str, str]]:
     data = fetch_source_data()
@@ -991,7 +992,6 @@ def get_book_codes_for_lang(
         unique_values = unique_tuples(book_codes_and_names)
     else:
         unique_values = unique_tuples(book_codes_and_names_localized)
-    book_id_map = {id: pos for pos, id in enumerate(book_names.keys())}
     return sorted(
         unique_values, key=lambda book_code_and_name: book_id_map[book_code_and_name[0]]
     )

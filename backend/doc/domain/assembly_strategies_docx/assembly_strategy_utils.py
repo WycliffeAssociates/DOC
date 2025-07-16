@@ -2,14 +2,22 @@
 Utility functions used by assembly_strategies.
 """
 
+from typing import Optional
+
 from doc.config import settings
+from doc.domain.model import BCBook, TNBook, TQBook
+from doc.reviewers_guide.model import RGBook
+from doc.reviewers_guide.render_to_html import render_chapter
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docx.enum.text import WD_BREAK  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
 from docx.oxml.shared import OxmlElement  # type: ignore
 from docx.text.paragraph import Paragraph  # type: ignore
-from htmldocx import HtmlToDocx  # type: ignore
+from doc.domain.assembly_strategies.assembly_strategy_utils import (
+    TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
+    TQ_HEADING_AND_QUESTIONS_FMT_STR,
+)
 
 logger = settings.logger(__name__)
 
@@ -66,6 +74,104 @@ OXML_LANGUAGE_LIST_LOWERCASE_SPLIT: list[str] = [
 ]
 
 
+def tn_book_intro(
+    tn_book: Optional[TNBook],
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
+) -> str:
+    content = ""
+    if show_tn_book_intro and tn_book and tn_book.book_intro:
+        content = tn_book.book_intro
+    return content
+
+
+def bc_book_intro(
+    bc_book: Optional[BCBook],
+) -> str:
+    content = ""
+    if bc_book and bc_book.book_intro:
+        content = bc_book.book_intro
+    return content
+
+
+def chapter_commentary(
+    bc_book: Optional[BCBook],
+    chapter_num: int,
+) -> str:
+    """Get the chapter commentary."""
+    content = ""
+    if (
+        bc_book
+        and chapter_num in bc_book.chapters
+        and bc_book.chapters[chapter_num].commentary
+    ):
+        content = bc_book.chapters[chapter_num].commentary
+    return content
+
+
+def chapter_intro(
+    tn_book: Optional[TNBook],
+    chapter_num: int,
+) -> str:
+    """Get the chapter intro."""
+    content = []
+    if (
+        tn_book
+        and chapter_num in tn_book.chapters
+        and tn_book.chapters[chapter_num].intro_html
+    ):
+        content.append(tn_book.chapters[chapter_num].intro_html)
+    return "".join(content)
+
+
+def tn_chapter_verses(
+    tn_book: Optional[TNBook],
+    chapter_num: int,
+    fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
+) -> str:
+    """
+    Return the HTML for verses that are in the chapter with
+    chapter_num.
+    """
+    content = []
+    if tn_book and chapter_num in tn_book.chapters:
+        tn_verses = tn_book.chapters[chapter_num].verses
+        content.append(fmt_str.format("".join(tn_verses.values())))
+    return "".join(content)
+
+
+def tq_chapter_verses(
+    tq_book: Optional[TQBook],
+    chapter_num: int,
+    fmt_str: str = TQ_HEADING_AND_QUESTIONS_FMT_STR,
+) -> str:
+    """Return the HTML for verses in chapter_num."""
+    content = []
+    if tq_book and chapter_num in tq_book.chapters:
+        tq_verses = tq_book.chapters[chapter_num].verses
+        content.append(
+            fmt_str.format(
+                tq_book.resource_type_name,
+                "".join(tq_verses.values()),
+            )
+        )
+    return "".join(content)
+
+
+def rg_chapter_verses(
+    rg_book: Optional[RGBook],
+    chapter_num: int,
+) -> str:
+    """
+    Return the HTML for verses that are in the chapter with
+    chapter_num.
+    """
+    content = []
+    if rg_book and chapter_num in rg_book.chapters:
+        rg_verses = render_chapter(rg_book.chapters[chapter_num])
+        content.append(rg_verses)
+    return "".join(content)
+
+
 def add_hr(paragraph: Paragraph) -> None:
     """Add a horizontal line at the end of the given paragraph."""
     p = paragraph._p  # p is the <w:p> XML element
@@ -109,26 +215,15 @@ def add_hr(paragraph: Paragraph) -> None:
     pBdr.append(bottom)
 
 
-def create_docx_subdoc(
-    content: str,
+def set_docx_language(
+    doc: Document,
     lang_code: str,
-    is_rtl: bool = False,
-    add_hr_p: bool = True,
     oxml_language_list_lowercase: list[str] = OXML_LANGUAGE_LIST_LOWERCASE,
     oxml_language_list_lowercase_split: list[str] = OXML_LANGUAGE_LIST_LOWERCASE_SPLIT,
 ) -> Document:
-    """
-    Create and return a Document instance from the content parameter.
-    """
-    html_to_docx = HtmlToDocx()
-    subdoc = html_to_docx.parse_html_string(content)
-    if is_rtl:
-        # Setting each run to be RTL language direction
-        for p in subdoc.paragraphs:
-            for run in p.runs:
-                run.font.rtl = True
-    if subdoc.paragraphs:
-        p = subdoc.paragraphs[-1]
+    """Set the Language for spell check"""
+    if doc.paragraphs:
+        p = doc.paragraphs[-1]
         # Set the language for this paragraph for the sake of the Word
         # spellchecker.
         p_run = p.add_run()
@@ -175,10 +270,6 @@ def create_docx_subdoc(
             p_run_lang.set(qn("w:eastAsia"), "en-US")
             p_run_lang.set(qn("w:bidi"), "en-US")
         p_rpr.append(p_run_lang)
-        # Add a horizontal ruler at the end of the paragraph if requested.
-        if add_hr_p:
-            add_hr(p)
-    return subdoc
 
 
 def add_one_column_section(doc: Document) -> None:

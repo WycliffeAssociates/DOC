@@ -42,7 +42,6 @@ from doc.reviewers_guide.parser import (
 from doc.utils.file_utils import (
     delete_tree,
     file_needs_update,
-    make_dir,
     read_file,
 )
 from doc.utils.list_utils import unique_tuples

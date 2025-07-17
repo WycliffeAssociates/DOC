@@ -852,15 +852,15 @@ def maybe_correct_book_name(
 
 def get_book_codes_for_lang(
     lang_code: str,
-    resource_assets_dir: str,
-    book_names: Mapping[str, str],
-    dcs_mirror_git_username: str,
-    usfm_resource_types: Sequence[str],
-    use_localized_book_name: bool,
     usfm_only: bool = False,
     check_usfm: bool = False,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
     download_assets: bool = settings.DOWNLOAD_ASSETS,
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    book_names: Mapping[str, str] = BOOK_NAMES,
+    dcs_mirror_git_username: str = "DCS-Mirror",
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> Sequence[tuple[str, str]]:
     data = fetch_source_data()
     if data is None:
@@ -1000,11 +1000,6 @@ def get_book_codes_for_lang(
 @worker.app.task
 def book_codes_for_lang(
     lang_code: str,
-    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-    book_names: Mapping[str, str] = BOOK_NAMES,
-    dcs_mirror_git_username: str = "DCS-Mirror",
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from doc.domain import resource_lookup
@@ -1015,11 +1010,6 @@ def book_codes_for_lang(
     """
     return get_book_codes_for_lang(
         lang_code,
-        resource_assets_dir,
-        book_names,
-        dcs_mirror_git_username,
-        usfm_resource_types,
-        use_localized_book_name,
         usfm_only=False,
         check_usfm=False,
     )
@@ -1028,11 +1018,6 @@ def book_codes_for_lang(
 @worker.app.task
 def book_codes_for_lang_from_usfm_only(
     lang_code: str,
-    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-    book_names: Mapping[str, str] = BOOK_NAMES,
-    dcs_mirror_git_username: str = "DCS-Mirror",
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from doc.domain import resource_lookup
@@ -1043,11 +1028,6 @@ def book_codes_for_lang_from_usfm_only(
     """
     return get_book_codes_for_lang(
         lang_code,
-        resource_assets_dir,
-        book_names,
-        dcs_mirror_git_username,
-        usfm_resource_types,
-        use_localized_book_name,
         usfm_only=True,
         check_usfm=False,
     )

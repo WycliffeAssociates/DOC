@@ -677,6 +677,7 @@ def compose_document(
 ) -> Document:
     doc = Document()
     html_to_docx = HtmlToDocx()
+    t0 = time.time()
     for part in document_parts:
         if part.contained_in_two_column_section:
             add_two_column_section(doc)
@@ -690,6 +691,8 @@ def compose_document(
             add_hr(doc.paragraphs[-1])
         if part.add_page_break:
             add_page_break(doc)
+    t1 = time.time()
+    logger.info("Time for converting HTML to Docx: %s", t1 - t0)
     return doc
 
 

@@ -701,6 +701,7 @@ PREFIXES_TO_REMOVE = [
 
 # lang code -> prefixes to remove
 LANG_SPECIFIC_PREFIXES_TO_REMOVE = {
+    "dz": ["Dzongkha_", "chuck_"],
     "iba-x-ketungau": ["dayakketungau_"],
     "knx-x-bajanya": ["bajanya_knx"],
     "ndh": ["chindali_"],
@@ -881,7 +882,9 @@ def get_book_codes_for_lang(
                 repo_components = last_segment.split("_")
                 if dcs_mirror_git_username in str(url):
                     repo_components = update_repo_components(repo_components)
-                if any(rt in str(url) for rt in usfm_resource_types):
+                if any(
+                    rt in str(url) or rt in last_segment for rt in usfm_resource_types
+                ):
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
                     if not any(item[0] == url for item in repo_clone_list):
                         repo_clone_list.append((url, resource_filepath))

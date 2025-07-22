@@ -850,28 +850,17 @@ def maybe_correct_book_name(
     return book_name_
 
 
-def get_book_codes_for_lang(
+def repos_to_clone(
     lang_code: str,
-    usfm_only: bool = False,
-    check_usfm: bool = False,
-    book_id_map: dict[str, int] = BOOK_ID_MAP,
-    download_assets: bool = settings.DOWNLOAD_ASSETS,
+    augmented_repos_info: list[RepoEntry],
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-    book_names: Mapping[str, str] = BOOK_NAMES,
     dcs_mirror_git_username: str = "DCS-Mirror",
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
-) -> Sequence[tuple[str, str]]:
-    data = fetch_source_data()
-    if data is None:
-        return []
-    book_codes_and_names_localized: list[tuple[str, str]] = []
-    book_codes_and_names: list[tuple[str, str]] = []
-    book_codes_and_names2: list[tuple[str, str]] = []
+    resource_type_codes_and_names: Sequence[str] = list(
+        RESOURCE_TYPE_CODES_AND_NAMES.keys()
+    ),
+) -> list[tuple[HttpUrl, str]]:
     repo_clone_list: list[tuple[HttpUrl, str]] = []
     try:
-        repos_info = data.git_repo
-        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
         for repo_info in augmented_repos_info:
             content = repo_info.content
             language_info = content.language
@@ -882,121 +871,195 @@ def get_book_codes_for_lang(
                 if dcs_mirror_git_username in str(url):
                     repo_components = update_repo_components(repo_components)
                 if any(
-                    rt in str(url) or rt in last_segment for rt in usfm_resource_types
+                    rt in str(url) or rt in last_segment
+                    for rt in resource_type_codes_and_names
                 ):
                     resource_filepath = f"{resource_assets_dir}/{last_segment}"
                     if not any(item[0] == url for item in repo_clone_list):
                         repo_clone_list.append((url, resource_filepath))
-        repos_to_clone = [
+    except Exception:
+        logger.exception("Error during repos_to_clone")
+    finally:
+        return repo_clone_list
+
+
+def get_book_codes_for_lang(
+    lang_code: str,
+    usfm_only: bool = False,
+    download_assets: bool = settings.DOWNLOAD_ASSETS,
+) -> Sequence[tuple[str, str]]:
+    data = fetch_source_data()
+    if data is None:
+        return []
+    repo_clone_list: list[tuple[HttpUrl, str]] = []
+    try:
+        repos_info = data.git_repo
+        augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
+        repo_clone_list = repos_to_clone(lang_code, augmented_repos_info)
+        repos_to_clone_ = [
             (url, path) for url, path in repo_clone_list if "en_rg" not in path
         ]
         if download_assets:
-            batch_download_repos(repos_to_clone)
+            batch_download_repos(repos_to_clone_)
         else:
-            batch_clone_git_repos(repos_to_clone)
-        for url, resource_filepath in repo_clone_list:
-            for repo_info in augmented_repos_info:
-                if repo_info.repo_url == url:
-                    last_segment = get_last_segment(url, lang_code)
-                    repo_components = last_segment.split("_")
-                    if (
-                        len(repo_components) == 2
-                        and repo_components[-1] in usfm_resource_types
-                    ):
-                        book_codes_and_names_localized = []
-                        usfm_files = parsing.find_usfm_files(resource_filepath)
-                        for usfm_file in usfm_files:
-                            usfm_file_components = (
-                                Path(usfm_file).stem.lower().split("-")
-                            )
-                            book_code = usfm_file_components[1]
-                            resource_type = repo_components[1]
-                            usfm = read_file(usfm_file) if usfm_file else ""
-                            frontmatter, _, _ = parsing.split_usfm_by_chapters(
-                                lang_code, resource_type, book_code, usfm, check_usfm
-                            )
-                            localized_book_name = parsing.maybe_localized_book_name(
-                                frontmatter
-                            )
-                            localized_book_name = maybe_correct_book_name(
-                                lang_code, localized_book_name
-                            )
-                            book_codes_and_names_localized.append(
-                                (book_code, localized_book_name)
-                            )
-                        break
-                    if (
-                        use_localized_book_name
-                        and len(repo_components) > 2
-                        and repo_components[-1] in usfm_resource_types
-                    ):
-                        book_name_file = f"{resource_filepath}/front/title.txt"
-                        if exists(book_name_file):
-                            with open(book_name_file, "r") as fin:
-                                book_name = fin.read()
-                                localized_book_name_ = normalize_localized_book_name(
-                                    book_name
-                                )
-                                localized_book_name = maybe_correct_book_name(
-                                    lang_code, localized_book_name_
-                                )
-                                book_code = repo_components[1]
-                                book_codes_and_names_localized.append(
-                                    (
-                                        book_code,
-                                        localized_book_name,
-                                    )
-                                )
-                    if not usfm_only:
-                        if not book_codes_and_names_localized or any(
-                            name == "" for _, name in book_codes_and_names_localized
-                        ):
-                            if len(repo_components) > 2:
-                                book_code = repo_components[1]
-                                if book_code in book_names:
-                                    book_codes_and_names.append(
-                                        (book_code, book_names[book_code])
-                                    )
-                            elif len(repo_components) == 2 and not book_codes_and_names:
-                                if not book_codes_and_names2:
-                                    if resource_type in usfm_resource_types:
-                                        usfm_files = parsing.find_usfm_files(
-                                            resource_filepath
-                                        )
-                                        for usfm_file in usfm_files:
-                                            book_code = (
-                                                Path(usfm_file)
-                                                .stem.lower()
-                                                .split("-")[1]
-                                            )
-                                            book_codes_and_names2.append(
-                                                (book_code, book_names[book_code])
-                                            )
-                                    elif resource_type in ["tn", "tq"]:
-                                        subdirs = [
-                                            file
-                                            for file in scandir(resource_filepath)
-                                            if file.is_dir() and file.name in book_names
-                                        ]
-                                        for subdir in subdirs:
-                                            book_codes_and_names2.append(
-                                                (
-                                                    subdir.name.lower(),
-                                                    book_names[subdir.name.lower()],
-                                                )
-                                            )
+            batch_clone_git_repos(repos_to_clone_)
+        book_codes_and_names = get_book_codes_for_lang_(
+            repo_clone_list,
+            augmented_repos_info,
+            lang_code,
+            usfm_only,
+        )
     except Exception:
         logger.exception("Error during get_book_codes_for_lang")
+    return book_codes_and_names
+
+
+def get_book_codes_for_lang_(
+    repo_clone_list: list[tuple[HttpUrl, str]],
+    augmented_repos_info: list[RepoEntry],
+    lang_code: str,
+    usfm_only: bool,
+    book_names: Mapping[str, str] = BOOK_NAMES,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
+    book_id_map: dict[str, int] = BOOK_ID_MAP,
+) -> list[tuple[str, str]]:
+    book_codes_and_names_localized: list[tuple[str, str]] = []
+    book_codes_and_names: list[tuple[str, str]] = []
+    for url, resource_filepath in repo_clone_list:
+        for repo_info in augmented_repos_info:
+            if repo_info.repo_url == url:
+                last_segment = get_last_segment(url, lang_code)
+                repo_components = last_segment.split("_")
+                resource_type = repo_components[-1]
+                if (
+                    use_localized_book_name
+                    and len(repo_components) == 2
+                    and resource_type in usfm_resource_types
+                ):
+                    book_codes_and_names_localized.extend(
+                        get_maybe_localized_book_names_from_usfm_metadata(
+                            resource_filepath, lang_code, resource_type
+                        )
+                    )
+                elif (
+                    use_localized_book_name
+                    and len(repo_components) > 2
+                    and resource_type in usfm_resource_types
+                ):
+                    book_codes_and_names_localized.extend(
+                        get_book_name_from_title_file(
+                            resource_filepath,
+                            lang_code,
+                            repo_components,
+                        )
+                    )
+                if not usfm_only and (
+                    not book_codes_and_names_localized
+                    or any(name == "" for _, name in book_codes_and_names_localized)
+                ):  # We can get book names from TN and TQ resources too if no USFM was
+                    # available and we ask for it. No localized book name sources were
+                    # found, so use other alternatives for book name lookup
+                    book_codes_and_names = get_non_localized_book_names(
+                        repo_components,
+                        book_names,
+                        resource_type,
+                        usfm_resource_types,
+                        resource_filepath,
+                    )
     if not book_codes_and_names_localized or any(
         name == "" for _, name in book_codes_and_names_localized
     ):
-        book_codes_and_names.extend(book_codes_and_names2)
         unique_values = unique_tuples(book_codes_and_names)
     else:
         unique_values = unique_tuples(book_codes_and_names_localized)
     return sorted(
         unique_values, key=lambda book_code_and_name: book_id_map[book_code_and_name[0]]
     )
+
+
+def get_non_localized_book_names(
+    repo_components: list[str],
+    book_names: Mapping[str, str],
+    resource_type: str,
+    usfm_resource_types: Sequence[str],
+    resource_filepath: str,
+) -> list[tuple[str, str]]:
+    book_codes_and_names: list[tuple[str, str]] = []
+    book_codes_and_names2: list[tuple[str, str]] = []
+    if len(repo_components) > 2:
+        # Get book code from repo URL components and then lookup in English book names
+        book_code = repo_components[1]
+        if book_code in book_names:
+            book_codes_and_names.append((book_code, book_names[book_code]))
+    elif len(repo_components) == 2 and not book_codes_and_names:
+        if (
+            not book_codes_and_names2
+        ):  # TODO Is this needed any longer now that local var is used?
+            # Get book code from USFM file name and then lookup name in English book names
+            if resource_type in usfm_resource_types:
+                usfm_files = parsing.find_usfm_files(resource_filepath)
+                for usfm_file in usfm_files:
+                    book_code = Path(usfm_file).stem.lower().split("-")[1]
+                    book_codes_and_names2.append((book_code, book_names[book_code]))
+            elif resource_type in ["tn", "tq"]:
+                # Get book code from TN and TQ repo book sub-directory names and use to lookup in English book names
+                subdirs = [
+                    file
+                    for file in scandir(resource_filepath)
+                    if file.is_dir() and file.name in book_names
+                ]
+                for subdir in subdirs:
+                    book_codes_and_names2.append(
+                        (
+                            subdir.name.lower(),
+                            book_names[subdir.name.lower()],
+                        )
+                    )
+    book_codes_and_names.extend(book_codes_and_names2)
+    return book_codes_and_names
+
+
+def get_book_name_from_title_file(
+    resource_filepath: str,
+    lang_code: str,
+    repo_components: list[str],
+) -> list[tuple[str, str]]:
+    book_codes_and_names_localized: list[tuple[str, str]] = []
+    book_name_file = join(resource_filepath, "front", "title.txt")
+    if exists(book_name_file):
+        with open(book_name_file, "r") as fin:
+            book_name = fin.read()
+            localized_book_name_ = normalize_localized_book_name(book_name)
+            localized_book_name = maybe_correct_book_name(
+                lang_code, localized_book_name_
+            )
+            book_code = repo_components[1]
+            book_codes_and_names_localized.append(
+                (
+                    book_code,
+                    localized_book_name,
+                )
+            )
+    return book_codes_and_names_localized
+
+
+def get_maybe_localized_book_names_from_usfm_metadata(
+    resource_filepath: str, lang_code: str, resource_type: str
+) -> list[tuple[str, str]]:
+    book_codes_and_names_localized = []
+    usfm_files = parsing.find_usfm_files(resource_filepath)
+    for usfm_file in usfm_files:
+        usfm_file_components = Path(usfm_file).stem.lower().split("-")
+        book_code = usfm_file_components[1]
+        usfm = read_file(usfm_file) if usfm_file else ""
+        frontmatter, _, _ = parsing.split_usfm_by_chapters(
+            lang_code, resource_type, book_code, usfm
+        )
+        localized_book_name = parsing.maybe_localized_book_name(frontmatter)
+        localized_book_name = maybe_correct_book_name(lang_code, localized_book_name)
+        book_codes_and_names_localized.append((book_code, localized_book_name))
+    return book_codes_and_names_localized
 
 
 @worker.app.task
@@ -1013,7 +1076,6 @@ def book_codes_for_lang(
     return get_book_codes_for_lang(
         lang_code,
         usfm_only=False,
-        check_usfm=False,
     )
 
 
@@ -1031,7 +1093,6 @@ def book_codes_for_lang_from_usfm_only(
     return get_book_codes_for_lang(
         lang_code,
         usfm_only=True,
-        check_usfm=False,
     )
 
 

@@ -18,7 +18,6 @@ class Settings(BaseSettings):
     (which have higher priority).
     """
 
-    # GITHUB_API_TOKEN: str = "FOO"  # This might be used in a later version
     DATA_API_URL: HttpUrl
 
     USFM_RESOURCE_TYPES: Sequence[str] = [

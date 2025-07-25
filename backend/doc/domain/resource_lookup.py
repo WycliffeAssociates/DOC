@@ -938,8 +938,10 @@ def get_book_codes_for_lang_(
                     and resource_type in usfm_resource_types
                 ):
                     book_codes_and_names_localized.extend(
-                        get_maybe_localized_book_names_from_usfm_metadata(
-                            resource_filepath, lang_code, resource_type
+                        get_book_names_from_usfm_metadata(
+                            resource_filepath,
+                            lang_code,
+                            resource_type,
                         )
                     )
                 elif (
@@ -960,12 +962,14 @@ def get_book_codes_for_lang_(
                 ):  # We can get book names from TN and TQ resources too if no USFM was
                     # available and we ask for it. No localized book name sources were
                     # found, so use other alternatives for book name lookup
-                    book_codes_and_names = get_non_localized_book_names(
-                        repo_components,
-                        book_names,
-                        resource_type,
-                        usfm_resource_types,
-                        resource_filepath,
+                    book_codes_and_names.extend(
+                        get_non_localized_book_names(
+                            repo_components,
+                            book_names,
+                            resource_type,
+                            usfm_resource_types,
+                            resource_filepath,
+                        )
                     )
     if not book_codes_and_names_localized or any(
         name == "" for _, name in book_codes_and_names_localized
@@ -985,38 +989,38 @@ def get_non_localized_book_names(
     usfm_resource_types: Sequence[str],
     resource_filepath: str,
 ) -> list[tuple[str, str]]:
+    """
+    Get English book names
+    """
     book_codes_and_names: list[tuple[str, str]] = []
-    book_codes_and_names2: list[tuple[str, str]] = []
     if len(repo_components) > 2:
         # Get book code from repo URL components and then lookup in English book names
         book_code = repo_components[1]
         if book_code in book_names:
             book_codes_and_names.append((book_code, book_names[book_code]))
-    elif len(repo_components) == 2 and not book_codes_and_names:
-        if (
-            not book_codes_and_names2
-        ):  # TODO Is this needed any longer now that local var is used?
-            # Get book code from USFM file name and then lookup name in English book names
-            if resource_type in usfm_resource_types:
-                usfm_files = parsing.find_usfm_files(resource_filepath)
-                for usfm_file in usfm_files:
-                    book_code = Path(usfm_file).stem.lower().split("-")[1]
-                    book_codes_and_names2.append((book_code, book_names[book_code]))
-            elif resource_type in ["tn", "tq"]:
-                # Get book code from TN and TQ repo book sub-directory names and use to lookup in English book names
-                subdirs = [
-                    file
-                    for file in scandir(resource_filepath)
-                    if file.is_dir() and file.name in book_names
-                ]
-                for subdir in subdirs:
-                    book_codes_and_names2.append(
-                        (
-                            subdir.name.lower(),
-                            book_names[subdir.name.lower()],
-                        )
+    elif len(repo_components) == 2:
+        # if resource_type in usfm_resource_types:
+        #     logger.debug("FUBAR")  # DEBUG This case happened
+        #     # Get book code from USFM file name and then lookup name in English book names
+        #     usfm_files = parsing.find_usfm_files(resource_filepath)
+        #     for usfm_file in usfm_files:
+        #         book_code = Path(usfm_file).stem.lower().split("-")[1]
+        #         book_codes_and_names.append((book_code, book_names[book_code]))
+        if resource_type in ["tn", "tq"]:
+            # Get book code from TN and TQ repo book sub-directory
+            # names and use to lookup in English book names
+            subdirs = [
+                file
+                for file in scandir(resource_filepath)
+                if file.is_dir() and file.name in book_names
+            ]
+            for subdir in subdirs:
+                book_codes_and_names.append(
+                    (
+                        subdir.name.lower(),
+                        book_names[subdir.name.lower()],
                     )
-    book_codes_and_names.extend(book_codes_and_names2)
+                )
     return book_codes_and_names
 
 
@@ -1025,6 +1029,10 @@ def get_book_name_from_title_file(
     lang_code: str,
     repo_components: list[str],
 ) -> list[tuple[str, str]]:
+    """
+    Book names in front/title.txt files may or may not be localized,
+    it depends on the translation work done for lang_code.
+    """
     book_codes_and_names_localized: list[tuple[str, str]] = []
     book_name_file = join(resource_filepath, "front", "title.txt")
     if exists(book_name_file):
@@ -1044,10 +1052,17 @@ def get_book_name_from_title_file(
     return book_codes_and_names_localized
 
 
-def get_maybe_localized_book_names_from_usfm_metadata(
-    resource_filepath: str, lang_code: str, resource_type: str
+def get_book_names_from_usfm_metadata(
+    resource_filepath: str,
+    lang_code: str,
+    resource_type: str,
 ) -> list[tuple[str, str]]:
-    book_codes_and_names_localized = []
+    """
+    Book names obtained from USFM frontmatter/metadata may or may not
+    be localized, it depends on the translation work done for language
+    lang_code.
+    """
+    book_codes_and_names_localized: list[tuple[str, str]] = []
     usfm_files = parsing.find_usfm_files(resource_filepath)
     for usfm_file in usfm_files:
         usfm_file_components = Path(usfm_file).stem.lower().split("-")

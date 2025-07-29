@@ -115,5 +115,3 @@ USER appuser
 
 # Expose necessary ports (if any)
 EXPOSE 8000
-
-# Command to run the application

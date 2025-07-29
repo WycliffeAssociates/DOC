@@ -607,10 +607,13 @@ def assemble_docx_content(
 
 
 # HTML to PDF converters:
-# princexml ($$$$) (fastest); also available through docraptor api ($$) but slow,
+# princexml ($$$$ or non-commercial with watermark) (fastest); we use
+# with non-commercial license (watermark on 1st page of pdf). Handles
+# layout flawlessly and is dramatically faster than weasyprint and
+# all other solutions.
+# weasyprint (does a nice job, we also use this),
 # wkhtmltopdf via pdfkit (can't handle column-count directive so can't use due to
 # multi-column layouts requirement),
-# weasyprint (does a nice job, we use this),
 # pagedjs-cli (does a really nice job, but is really slow - uses puppeteer underneath),
 # electron-pdf (similar speed to wkhtmltopdf) which uses chrome underneath the hood,
 # gotenburg which uses chrome under the hood and provides a nice api in Docker (untested),
@@ -627,12 +630,6 @@ def convert_html_to_pdf(
     assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
     t0 = time.time()
-    # command = [
-    #     "ebook-convert",
-    #     html_filepath,
-    #     pdf_filepath,
-    #     "--disable-font-rescaling",
-    # ]
     command = [
         "weasyprint",
         html_filepath,

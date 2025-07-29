@@ -225,7 +225,12 @@ def generate_document(
     # generated and is fresh enough.
     if document_request.generate_pdf and file_needs_update(pdf_filepath_):
         current_task.update_state(state="Converting to PDF")
-        convert_html_to_pdf(html_filepath_, pdf_filepath_, document_request_key_)
+        convert_html_to_pdf(
+            html_filepath_,
+            pdf_filepath_,
+            document_request_key_,
+            document_request.use_prince,
+        )
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(filepath=pdf_filepath_, mime_type=("application", "pdf"))
@@ -623,6 +628,9 @@ def convert_html_to_pdf(
     html_filepath: str,
     pdf_filepath: str,
     document_request_key: str,
+    use_prince: bool,
+    default_converter: str = "weasyprint",
+    alternative_converter: str = "prince",
 ) -> None:
     """
     Generate PDF from HTML and copy it to output directory.
@@ -630,11 +638,15 @@ def convert_html_to_pdf(
     assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
     t0 = time.time()
-    command = [
-        "weasyprint",
-        html_filepath,
-        pdf_filepath,
-    ]
+    if use_prince:
+        command = [
+            alternative_converter,
+            html_filepath,
+            "-o",
+            pdf_filepath,
+        ]
+    else:
+        command = [default_converter, html_filepath, pdf_filepath]
     logger.info("Generate PDF command: %s", " ".join(command))
     subprocess.run(
         command,

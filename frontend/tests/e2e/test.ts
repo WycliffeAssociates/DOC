@@ -136,7 +136,9 @@ test('test that reviewers guide is only shown when book is chosen that it includ
     await page.getByRole('button', { name: 'Next' }).click()
     await expect(
         page.locator('span').filter({ hasText: "NT Survey Reviewers' Guide" })
-    ).toBeVisible({ timeout: 5800000 })
+    ).toBeVisible({
+        timeout: 5800000
+    })
 })
 
 test('test that you can select gateway tab after first selecting heart language and hitting next', async ({
@@ -254,8 +256,8 @@ test('test ordering of books in document title(s) and body', async ({ page }) =>
     await page.getByText('Mak').click()
     await page.getByText('Luk', { exact: true }).click()
     await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByText('Unlocked Literal Bible').click()
-    await page.getByText('Regular').click()
+    await page.getByText('Unlocked Literal Bible').first().click()
+    await page.getByText('Unlocked Literal Bible').nth(1).click()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByText('PDF').click()
     await page.getByText('Interleave content by chapter').click()
@@ -271,7 +273,7 @@ test('test ordering of books in document title(s) and body', async ({ page }) =>
     const page1 = await page1Promise
     // Perform text expectations on the popup page
     await expect(page1.locator('body')).toContainText(
-        'Ontenu (Ontenu): Regular for Matthew, Maki, Luk'
+        'Ontenu (Ontenu): Unlocked Literal Bible for Matthew, Maki, Luk'
     )
     await expect(page1.locator('body')).toContainText(
         'Tok Pisin (Tok Pisin): Unlocked Literal Bible for Matyu, Mak, Luk'
@@ -311,4 +313,28 @@ test('test ordering of books in document title(s) and body', async ({ page }) =>
     expect(index2).toBeLessThan(index5)
     expect(index3).toBeLessThan(index5)
     expect(index4).toBeLessThan(index5)
+})
+
+test('test use prince with lots of books', async ({ page }) => {
+    await page.goto('http://localhost:8001/')
+    await page.getByPlaceholder('Search Gateway Languages').click()
+    await page.getByPlaceholder('Search Gateway Languages').fill('tpi')
+    await page.getByText('Tok Pisin').click()
+    await page.getByRole('button', { name: 'Heart' }).click()
+    await page.getByPlaceholder('Search Heart Languages').click()
+    await page.getByPlaceholder('Search Heart Languages').fill('ont')
+    await page.getByText('Ontenu').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('Select all').click()
+    await page.getByRole('button', { name: 'Old Testament' }).click()
+    await page.getByRole('button', { name: 'New Testament' }).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('Unlocked Literal Bible').first().click()
+    await page.getByText('Unlocked Literal Bible').nth(1).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('PDF').click()
+    await page.getByText('Interleave content by chapter').click()
+    await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+    await page.getByText('Use PrinceXml to produce the').click()
+    await page.getByRole('button', { name: 'Generate File' }).click()
 })

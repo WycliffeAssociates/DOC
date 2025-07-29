@@ -13,7 +13,8 @@
     documentRequestKeyStore,
     settingsUpdated,
     useChapterLabelsStore,
-    useSectionVisualSeparatorStore
+    useSectionVisualSeparatorStore,
+    usePrinceStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
   import {
@@ -160,6 +161,19 @@
               <span class="text-xl text-[#33445C]">PDF</span>
             </label>
           </div>
+          {#if $docTypeStore === 'pdf'}
+            <div class="mb-2 mt-6 flex">
+              <Switch bind:checked={$usePrinceStore} id="use-prince" />
+              <span class="ml-2 text-xl text-[#33445C]"
+                >Use <a
+                  class="text-blue-600 visited:text-purple-600"
+                  href="https://www.princexml.com"
+                  target="_blank">PrinceXml</a
+                > to produce the PDF (much faster and better quality, but with Prince's 'P' logo at top
+                right of first page of PDF)</span
+              >
+            </div>
+          {/if}
         {/if}
       </div>
       <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Layout</h3>

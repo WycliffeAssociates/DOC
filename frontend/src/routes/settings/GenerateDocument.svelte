@@ -20,7 +20,8 @@
     documentRequestKeyStore,
     settingsUpdated,
     useChapterLabelsStore,
-    useSectionVisualSeparatorStore
+    useSectionVisualSeparatorStore,
+    usePrinceStore
   } from '$lib/stores/SettingsStore'
   import { taskStateStore } from '$lib/stores/TaskStore'
   import { getCode, getResourceTypeLangCode, getResourceTypeCode } from '$lib/utils'
@@ -88,7 +89,8 @@
       document_request_source: 'ui',
       limit_words: $limitTwStore,
       use_chapter_labels: $useChapterLabelsStore,
-      use_section_visual_separator: $useSectionVisualSeparatorStore
+      use_section_visual_separator: $useSectionVisualSeparatorStore,
+      use_prince: $usePrinceStore
     }
     console.log('document request: ', JSON.stringify(documentRequest, null, 2))
     $errorStore = null

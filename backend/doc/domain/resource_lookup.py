@@ -47,7 +47,7 @@ from doc.utils.file_utils import (
 from doc.utils.list_utils import unique_tuples, unique_book_codes
 from doc.utils.text_utils import normalize_localized_book_name
 from fastapi import HTTPException, status
-from pydantic import HttpUrl
+from pydantic import HttpUrl, ValidationError
 
 logger = settings.logger(__name__)
 
@@ -250,6 +250,14 @@ query MyQuery {
     except requests.RequestException as e:
         logger.exception("Request failed: %s", e)
         logger.info("Failed to get data from data API, API might be down...")
+        return SourceData(git_repo=[])
+    except ValidationError as e:
+        logger.exception(
+            "Request failed due to invalid data returned from data API: %s", e
+        )
+        logger.info(
+            "Some of the data returned by data API is invalid, check logs for details"
+        )
         return SourceData(git_repo=[])
 
 

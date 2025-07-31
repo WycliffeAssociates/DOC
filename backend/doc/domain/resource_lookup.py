@@ -913,6 +913,7 @@ def get_book_codes_for_lang(
     if data is None:
         return []
     repo_clone_list: list[tuple[HttpUrl, str]] = []
+    book_codes_and_names: list[tuple[str, str]] = []
     try:
         repos_info = data.git_repo
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)

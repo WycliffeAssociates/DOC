@@ -51,9 +51,7 @@ from pydantic import HttpUrl
 
 logger = settings.logger(__name__)
 
-SOURCE_DATA_JSON_FILENAME = "resources.json"
 
-SOURCE_GATEWAY_LANGUAGES_FILENAME = "gateway_languages.json"
 
 # This can be expanded to include any additional types (if
 # there are any) that we want to be available to users. These are all

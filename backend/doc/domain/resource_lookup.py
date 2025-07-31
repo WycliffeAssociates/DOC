@@ -517,41 +517,41 @@ def batch_clone_git_repos(
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.
-    - If a repository already exists and is fully cloned, it is skipped.
-    - If a repository exists but is a partial clone (corrupt or missing key files), it is removed first.
-    - If asset_caching_enabled is False, repositories are always deleted and re-cloned.
+    - If a repository already exists, is fully cloned, and not stale (with respect to cache period), it is skipped.
+      Conversely, if a repository is fully cloned, but stale then it is removed before (re)cloning.
+    - If a repository exists but is a partial clone (corrupt or missing key files), it is removed before (re)cloning.
+    - If asset_caching_enabled is False, repositories are always removed and re-cloned.
     """
     clone_commands = []
     for url, resource_filepath in repos:
+        if asset_caching_enabled:
+            try:
+                git_dir = join(resource_filepath, ".git")
+                stat_ = stat(git_dir)
+                mod_time = datetime.fromtimestamp(stat_.st_mtime)
+                expiry = timedelta(minutes=asset_caching_period)
+                if (
+                    all(
+                        exists(join(git_dir, filename))
+                        for filename in ["config", "HEAD", "objects"]
+                    )
+                    and any(scandir(resource_filepath))
+                    and datetime.now() - mod_time <= expiry
+                ):
+                    logger.info(
+                        f"Skipping clone: {resource_filepath} already exists, is a valid git repo, and is not stale."
+                    )
+                    continue  # ✅ Fully cloned and not stale, reuse
+            except FileNotFoundError:
+                logger.warning(f"Git directory, {git_dir}, not found")
+            logger.info(
+                f"Removing stale, incomplete, or corrupt repository: {resource_filepath}"
+            )
+        else:
+            logger.info(
+                f"Asset caching disabled: forcibly removing {resource_filepath}"
+            )
         if isdir(resource_filepath):
-            git_dir = join(resource_filepath, ".git")
-            if asset_caching_enabled:
-                if isdir(git_dir):
-                    try:
-                        stat_ = stat(git_dir)
-                        mod_time = datetime.fromtimestamp(stat_.st_mtime)
-                        expiry = timedelta(minutes=asset_caching_period)
-                        if (
-                            all(
-                                exists(join(git_dir, filename))
-                                for filename in ["config", "HEAD", "objects"]
-                            )
-                            and datetime.now() - mod_time <= expiry
-                            and any(scandir(resource_filepath))
-                        ):
-                            logger.info(
-                                f"Skipping clone: {resource_filepath} already exists and is a full repo."
-                            )
-                            continue  # ✅ Fully cloned, reuse
-                    except FileNotFoundError:
-                        logger.warning(f"Git directory not found: {git_dir}")
-                logger.info(
-                    f"Removing stale, incomplete, or corrupt repository: {resource_filepath}"
-                )
-            else:
-                logger.info(
-                    f"Asset caching disabled: forcibly removing {resource_filepath}"
-                )
             shutil.rmtree(resource_filepath)
         clone_command = (
             f"git -c http.userAgent='{user_agent_str}' "

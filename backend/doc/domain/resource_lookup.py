@@ -238,7 +238,13 @@ query MyQuery {
         if response.status_code == 200:
             data_payload = response.json().get("data", {})
             if "git_repo" in data_payload:
-                return SourceData.model_validate(data_payload)
+                # return SourceData.model_validate(data_payload)
+                valid_repos = [
+                    repo
+                    for repo in data_payload["git_repo"]
+                    if repo.get("content", {}).get("resource_type") is not None
+                ]
+                return SourceData.model_validate({"git_repo": valid_repos})
             else:
                 logger.info("Invalid payload structure, no data.")
                 return SourceData(git_repo=[])

@@ -4,6 +4,7 @@ resource's asset files in the cloud and acquiring said resource
 assets.
 """
 
+from cachetools import TTLCache, cached
 from datetime import datetime, timedelta
 import json
 import re
@@ -51,6 +52,7 @@ from pydantic import HttpUrl, ValidationError
 
 logger = settings.logger(__name__)
 
+fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(maxsize=1, ttl=180)
 
 
 # This can be expanded to include any additional types (if
@@ -199,6 +201,7 @@ USER_AGENT_STR: str = "wa-doc"
 X_REQUESTED_WITH_VALUE: str = "WA-Tool-Doc"
 
 
+@cached(fetch_source_data_cache)
 def fetch_source_data(
     data_api_url: HttpUrl = settings.DATA_API_URL,
     user_agent_str: str = USER_AGENT_STR,

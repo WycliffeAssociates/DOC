@@ -484,20 +484,18 @@ def assemble_content(
     logger.info("Time for interleaving document: %s", t1 - t0)
     t0 = time.time()
     # Add the translation words definition section for each language requested.
-    unique_lang_codes = set()
-    for tw_book in tw_books:
-        if tw_book.lang_code not in unique_lang_codes:
-            unique_lang_codes.add(tw_book.lang_code)
-            content.extend(
-                translation_words_section(
-                    tw_book,
-                    usfm_books,
-                    document_request.limit_words,
-                    document_request.resource_requests,
-                )
+    unique_tw_books = filter_unique_by_lang_code(tw_books)
+    for tw_book in unique_tw_books:
+        content.extend(
+            translation_words_section(
+                tw_book,
+                usfm_books,
+                document_request.limit_words,
+                document_request.resource_requests,
             )
-            if document_request.use_section_visual_separator:
-                content.append(hr)
+        )
+        if document_request.use_section_visual_separator:
+            content.append(hr)
     t1 = time.time()
     logger.info("Time for add TW content to document: %s", t1 - t0)
     return content

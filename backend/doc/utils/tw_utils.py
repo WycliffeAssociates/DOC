@@ -158,6 +158,7 @@ def filter_name_content_pairs(
     tw_book: TWBook, usfm_books: Optional[Sequence[USFMBook]]
 ) -> list[TWNameContentPair]:
     selected_name_content_pairs = []
+    added_pairs = set()
     if usfm_books:
         for name_content_pair in tw_book.name_content_pairs:
             for usfm_book in usfm_books:
@@ -166,7 +167,9 @@ def filter_name_content_pairs(
                         re.escape(name_content_pair.localized_word),
                         chapter.content,
                     ):
-                        selected_name_content_pairs.append(name_content_pair)
+                        if name_content_pair not in added_pairs:
+                            selected_name_content_pairs.append(name_content_pair)
+                            added_pairs.add(name_content_pair)
                         break
     return selected_name_content_pairs
 

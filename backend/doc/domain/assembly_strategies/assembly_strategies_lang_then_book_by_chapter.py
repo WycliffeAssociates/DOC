@@ -29,8 +29,6 @@ from doc.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
 
-END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
-
 
 def assemble_content_by_lang_then_book(
     usfm_books: Sequence[USFMBook],
@@ -183,7 +181,7 @@ def assemble_usfm_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     hr: str = "<hr/>",
     close_direction_html: str = "</div>",
     fmt_str: str = settings.BOOK_NAME_FMT_STR,
@@ -245,7 +243,7 @@ def assemble_tn_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     content = []
@@ -283,7 +281,7 @@ def assemble_tq_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     content = []
@@ -313,7 +311,7 @@ def assemble_rg_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     """
@@ -373,7 +371,7 @@ def assemble_tw_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     content = []

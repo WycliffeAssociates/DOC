@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
     BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+    END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
 
     DOWNLOAD_ASSETS: bool  # If true then download assets, else clone assets
 

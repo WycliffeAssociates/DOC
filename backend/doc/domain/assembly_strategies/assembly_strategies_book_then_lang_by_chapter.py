@@ -37,7 +37,6 @@ HTML_COLUMN_BEGIN: str = "<div class='column'>"
 HTML_COLUMN_END: str = "</div>"
 HTML_COLUMN_LEFT_BEGIN: str = "<div class='column-left'>"
 HTML_COLUMN_RIGHT_BEGIN: str = "<div class='column-right'>"
-END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
 
 
 def assemble_content_by_book_then_lang(
@@ -194,7 +193,7 @@ def assemble_usfm_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     hr: str = "<hr/>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
@@ -327,7 +326,7 @@ def assemble_tn_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
@@ -430,7 +429,7 @@ def assemble_tq_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> list[str]:
@@ -507,7 +506,7 @@ def assemble_tw_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
 ) -> list[str]:
     content = []
 

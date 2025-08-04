@@ -38,7 +38,6 @@ HTML_COLUMN_END: str = "</div>"
 HTML_COLUMN_LEFT_BEGIN: str = "<div class='column-left'>"
 HTML_COLUMN_RIGHT_BEGIN: str = "<div class='column-right'>"
 END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
-BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
 
 
 def assemble_content_by_book_then_lang(
@@ -200,7 +199,7 @@ def assemble_usfm_by_chapter(
     hr: str = "<hr/>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[str]:
     """
     Construct the HTML wherein at least one USFM resource exists, one column
@@ -542,7 +541,7 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     html_row_end: str = HTML_ROW_END,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> list[str]:
     """

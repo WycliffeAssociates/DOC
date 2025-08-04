@@ -27,8 +27,6 @@ from doc.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
 
-BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
-
 
 def assemble_content_by_lang_then_book(
     usfm_books: Sequence[USFMBook],
@@ -189,7 +187,7 @@ def assemble_usfm_by_book(
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     """
     Construct the HTML for a 'by book' strategy wherein at least

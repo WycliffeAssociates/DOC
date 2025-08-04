@@ -41,6 +41,8 @@ class Settings(BaseSettings):
     USE_LOCALIZED_BOOK_NAME: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
+    BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+
     DOWNLOAD_ASSETS: bool  # If true then download assets, else clone assets
 
     def logger(self, name: str) -> logging.Logger:

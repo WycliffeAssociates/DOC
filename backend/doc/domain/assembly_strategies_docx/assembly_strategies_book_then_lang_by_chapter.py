@@ -27,8 +27,6 @@ from doc.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
 
-BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
-
 
 def assemble_content_by_book_then_lang(
     usfm_books: Sequence[USFMBook],
@@ -148,7 +146,7 @@ def assemble_usfm_by_chapter(
     use_section_visual_separator: bool,
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     """
     Construct the Docx wherein at least one USFM resource exists, one column

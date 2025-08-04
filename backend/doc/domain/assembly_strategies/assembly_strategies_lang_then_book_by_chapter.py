@@ -30,7 +30,6 @@ from doc.reviewers_guide.model import RGBook
 logger = settings.logger(__name__)
 
 END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
-BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
 
 
 def assemble_content_by_lang_then_book(
@@ -187,7 +186,7 @@ def assemble_usfm_by_book(
     end_of_chapter_html: str = END_OF_CHAPTER_HTML,
     hr: str = "<hr/>",
     close_direction_html: str = "</div>",
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[str]:
     content = []
     content.append(usfm_language_direction_html(usfm_book))

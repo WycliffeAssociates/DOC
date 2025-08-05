@@ -680,7 +680,7 @@ def convert_html_to_epub(
     logger.info("Time for converting HTML to ePub: %s", t1 - t0)
 
 
-def compose_document(
+def compose_docx_document(
     document_parts: list[DocumentPart], use_section_visual_separator: bool
 ) -> Document:
     doc = Document()
@@ -739,7 +739,7 @@ def convert_html_to_docx(
     new_section = doc.add_section(WD_SECTION.CONTINUOUS)
     new_section.start_type
     master = Composer(doc)
-    master.append(compose_document(document_parts, use_section_visual_separator))
+    master.append(compose_docx_document(document_parts, use_section_visual_separator))
     master.save(docx_filepath)
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %s", t1 - t0)

@@ -77,7 +77,7 @@ RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
     "ulb": "Unlocked Literal Bible",
 }
 
-# NOTE This is only used to see if a lang_code is in the collection
+# This is only used to see if a lang_code is in the collection
 # otherwise it is a heart language. Eventually the graphql data api may
 # provide gateway/heart boolean value.
 GATEWAY_LANGUAGES: Sequence[str] = [
@@ -179,10 +179,6 @@ GATEWAY_LANGUAGES: Sequence[str] = [
     "zlm",
 ]
 
-# The book name in the tuple key is what
-# resource_lookup.get_book_codes_for_lang is returning for lang_code in
-# the tuple key and the associated value is what we would prefer to
-# use.
 BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
     ("pt-br", "1 Corintios"): "1 Coríntios",
     ("es-419", "I juan"): "1 Juan",
@@ -461,6 +457,8 @@ def resource_types(
     return sorted(unique_values, key=lambda value: value[1])
 
 
+# We found that there are fewer downloads available than clonable repos,
+# so we don't currently have the system configured to use this.
 def batch_download_repos(
     repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
@@ -675,7 +673,7 @@ REPLACEMENTS_BY_LANG_CODE_AND_LAST_SEGMENT = {
     ("zmq", "faustin_azaza"): "zmq_mrk_text_reg",
 }
 
-# Prefixes to remove regardless of lang code
+# Prefixes to remove in last repo URL segment regardless of lang code
 PREFIXES_TO_REMOVE = [
     "Dawit-Dessie_",
     "Jordan_",

@@ -123,9 +123,8 @@ def translation_words_section(
     the list of all translation words for this language, book combination.
     Limit the translation words to only those that appear in the USFM
     resouce chosen if limit_words is True and a USFM resource was also
-    chosen.
+    chosen otherwise include all the translation words for the language.
     """
-
     content = []
     if tw_book.name_content_pairs:
         content.append(resource_type_name_fmt_str.format(tw_book.resource_type_name))

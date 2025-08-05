@@ -108,7 +108,6 @@
         </div>
       </button>
     </div>
-    <!-- main content -->
     <main class="flex-1 overflow-y-auto p-4">
       <h3 class="mb-2 mt-2 text-2xl text-[#33445C]">File type</h3>
       <div class="ml-4">

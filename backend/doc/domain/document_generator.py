@@ -107,12 +107,7 @@ def locate_acquire_and_build_resource_objects(
     Sequence[BCBook],
     Sequence[RGBook],
 ]:
-    # Update the state of the worker process. This is used by the
-    # UI to report status.
     current_task.update_state(state="Locating assets")
-    # Docx didn't exist in cache so go ahead and start by getting the
-    # resource lookup DTOs for each resource request in the document
-    # request.
     resource_lookup_dtos = []
     for resource_request in document_request.resource_requests:
         resource_lookup_dto = resource_lookup.resource_lookup_dto(
@@ -122,16 +117,11 @@ def locate_acquire_and_build_resource_objects(
         )
         if resource_lookup_dto:
             resource_lookup_dtos.append(resource_lookup_dto)
-    # Determine which resource URLs were actually found.
     found_resource_lookup_dtos = [
         resource_lookup_dto
         for resource_lookup_dto in resource_lookup_dtos
         if resource_lookup_dto.url is not None
     ]
-    # if not found_resource_lookup_dtos:
-    #     raise exceptions.ResourceAssetFileNotFoundError(
-    #         message="No supported resource assets were found"
-    #     )
     current_task.update_state(state="Provisioning asset files")
     t0 = time.time()
     resource_dirs = [
@@ -145,7 +135,6 @@ def locate_acquire_and_build_resource_objects(
         "Time to provision asset files (acquire and write to disk): %s", t1 - t0
     )
     current_task.update_state(state="Parsing asset files")
-    # Initialize found resources from their provisioned assets.
     t0 = time.time()
     usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
         found_resource_lookup_dtos,

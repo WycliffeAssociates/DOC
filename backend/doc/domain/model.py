@@ -214,6 +214,11 @@ class DocumentRequest(BaseModel):
     # choose to use Princexml rather than Weasyprint by setting use_prince
     # to True.
     use_prince: bool = False
+    # Some languages, e.g., Khmer, don't layout well in 2 column
+    use_two_column_layout_for_tn_notes: bool = False
+    # Some languages, e.g., Khmer, don't layout well in 2 column
+    use_two_column_layout_for_tq_notes: bool = False
+
     # Indicate whether to show visual separator between sections, e.g., hr element
     use_section_visual_separator: bool = False
     # Indicate whether TN book intros should be included. Currently,

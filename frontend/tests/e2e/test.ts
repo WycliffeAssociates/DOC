@@ -337,4 +337,53 @@ test('test use prince with lots of books', async ({ page }) => {
     await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
     await page.getByText('Use PrinceXml to produce the').click()
     await page.getByRole('button', { name: 'Generate File' }).click()
+test('test visibility of optional settings based on resources chosen', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await page.getByText('Français (French)').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Select all').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Unlocked Literal Bible').click()
+  await page.getByText('Translation Notes').click()
+  await page.getByText('Translation Questions').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('PDF').click()
+  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+  await expect(page.getByRole('main')).toContainText(
+    "Use chapter labels, e.g., 'Chapter 1' instead of '1'"
+  )
+  await page.getByRole('button', { name: 'Edit' }).nth(2).click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+  await expect(page.getByRole('main')).toContainText(
+    "Use 2 column layout for translation notes resource (note: some languages don't layout well with this setting, e.g., Khmer)"
+  )
+  await expect(page.getByRole('main')).toContainText(
+    "Use 2 column layout for translation questions resource (note: some languages don't layout well with this setting, e.g., Khmer)"
+  )
+  await page.getByRole('button', { name: 'Edit' }).nth(2).click()
+  await page.getByLabel('Translation Questions tq').uncheck()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+  await expect(page.getByRole('main')).not.toContainText(
+    "Use 2 column layout for translation questions resource (note: some languages don't layout well with this setting, e.g., Khmer)"
+  )
+  await page.getByRole('button', { name: 'Edit' }).nth(2).click()
+  await page.getByLabel('Translation Notes tn').uncheck()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+  await expect(page.getByRole('main')).not.toContainText(
+    "Use 2 column layout for translation notes resource (note: some languages don't layout well with this setting, e.g., Khmer)"
+  )
+  await page.getByRole('button', { name: 'Edit' }).nth(2).click()
+  await page.getByText('Translation Notes').click()
+  await page.getByText('Unlocked Literal Bible', { exact: true }).click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
+  await expect(page.getByRole('main')).not.toContainText(
+    "Use chapter labels, e.g., 'Chapter 1' instead of '1'"
+  )
+  await expect(page.getByRole('main')).toContainText(
+    "Use 2 column layout for translation notes resource (note: some languages don't layout well with this setting, e.g., Khmer)"
+  )
 })

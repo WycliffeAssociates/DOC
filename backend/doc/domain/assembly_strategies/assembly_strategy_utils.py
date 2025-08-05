@@ -16,10 +16,6 @@ H1, H2, H3, H4, H5, H6 = "h1", "h2", "h3", "h4", "h5", "h6"
 
 LTR_DIRECTION_HTML: str = "<div style='direction: ltr;'>"
 RTL_DIRECTION_HTML: str = "<div style='direction: rtl;'>"
-TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR: str = "<div style='column-count: 2;'>{}</div>"
-TQ_HEADING_AND_QUESTIONS_FMT_STR: str = (
-    "<h3>{}</h3>\n<div style='column-count: 2;'>{}</div>"
-)
 CHAPTER_HEADER_FMT_STR: str = '<h2 class="chapter">Chapter {}</h2>'
 
 
@@ -68,7 +64,7 @@ def chapter_intro(
     tn_book: Optional[TNBook],
     chapter_num: int,
     use_section_visual_separator: bool,
-    hr: str = "<hr/>",
+    hr: str = settings.HR,
 ) -> str:
     """Get the chapter intro."""
     content = []
@@ -90,7 +86,7 @@ def has_footnotes(html_content: str) -> bool:
 def bc_book_intro(
     bc_book: Optional[BCBook],
     use_section_visual_separator: bool,
-    hr: str = "<hr/>",
+    hr: str = settings.HR,
 ) -> str:
     content = []
     if bc_book and bc_book.book_intro:
@@ -103,7 +99,7 @@ def bc_book_intro(
 def tn_book_intro(
     tn_book: Optional[TNBook],
     use_section_visual_separator: bool,
-    hr: str = "<hr/>",
+    hr: str = settings.HR,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> str:
     content = []
@@ -118,7 +114,7 @@ def chapter_commentary(
     bc_book: Optional[BCBook],
     chapter_num: int,
     use_section_visual_separator: bool,
-    hr: str = "<hr/>",
+    hr: str = settings.HR,
 ) -> str:
     """Get the chapter commentary."""
     content = []
@@ -181,17 +177,24 @@ def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,
     use_section_visual_separator: bool,
-    fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
-    hr: str = "<hr/>",
+    use_two_column_layout_for_tn_notes: bool,
+    hr: str = settings.HR,
 ) -> str:
     """
     Return the HTML for verses that are in the chapter with
     chapter_num.
     """
+    tn_verse_notes_enclosing_div_fmt_str: str = (
+        "<div style='column-count: 2; padding-top: 2px; padding-bottom: 4px;'>{}</div>"
+        if use_two_column_layout_for_tn_notes
+        else "<div>{}</div>"
+    )
     content = []
     if tn_book and chapter_num in tn_book.chapters:
         tn_verses = tn_book.chapters[chapter_num].verses
-        content.append(fmt_str.format("".join(tn_verses.values())))
+        content.append(
+            tn_verse_notes_enclosing_div_fmt_str.format("".join(tn_verses.values()))
+        )
         if use_section_visual_separator:
             content.append(hr)
     return "".join(content)
@@ -201,16 +204,21 @@ def tq_chapter_verses(
     tq_book: Optional[TQBook],
     chapter_num: int,
     use_section_visual_separator: bool,
-    fmt_str: str = TQ_HEADING_AND_QUESTIONS_FMT_STR,
-    hr: str = "<hr/>",
+    use_two_column_layout_for_tq_notes: bool,
+    hr: str = settings.HR,
 ) -> str:
     """Return the HTML for verses in chapter_num."""
+    tq_verse_notes_enclosing_div_fmt_str: str = (
+        "<div style='column-count: 2; padding-top: 2px; padding-bottom: 4px;'>{}</div>"
+        if use_two_column_layout_for_tq_notes
+        else "<div>{}</div>"
+    )
     content = []
     if tq_book and chapter_num in tq_book.chapters:
         tq_verses = tq_book.chapters[chapter_num].verses
         content.append(
-            fmt_str.format(
-                tq_book.resource_type_name,
+            tq_verse_notes_enclosing_div_fmt_str.format(
+                # tq_book.resource_type_name,
                 "".join(tq_verses.values()),
             )
         )
@@ -223,7 +231,7 @@ def rg_chapter_verses(
     rg_book: Optional[RGBook],
     chapter_num: int,
     use_section_visual_separator: bool,
-    hr: str = "<hr/>",
+    hr: str = settings.HR,
 ) -> str:
     """
     Return the HTML for verses that are in the chapter with

@@ -14,10 +14,6 @@ from docx.enum.text import WD_BREAK  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
 from docx.oxml.shared import OxmlElement  # type: ignore
 from docx.text.paragraph import Paragraph  # type: ignore
-from doc.domain.assembly_strategies.assembly_strategy_utils import (
-    TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
-    TQ_HEADING_AND_QUESTIONS_FMT_STR,
-)
 
 logger = settings.logger(__name__)
 
@@ -126,30 +122,44 @@ def chapter_intro(
 def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,
-    fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
+    use_two_column_layout_for_tn_notes: bool,
+    # fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
 ) -> str:
     """
     Return the HTML for verses that are in the chapter with
     chapter_num.
     """
+    tn_verse_notes_enclosing_div_fmt_str: str = (
+        "<div style='column-count: 2;'>{}</div>"
+        if use_two_column_layout_for_tn_notes
+        else "<div>{}</div>"
+    )
     content = []
     if tn_book and chapter_num in tn_book.chapters:
         tn_verses = tn_book.chapters[chapter_num].verses
-        content.append(fmt_str.format("".join(tn_verses.values())))
+        content.append(
+            tn_verse_notes_enclosing_div_fmt_str.format("".join(tn_verses.values()))
+        )
     return "".join(content)
 
 
 def tq_chapter_verses(
     tq_book: Optional[TQBook],
     chapter_num: int,
-    fmt_str: str = TQ_HEADING_AND_QUESTIONS_FMT_STR,
+    use_two_column_layout_for_tq_notes: bool,
+    # fmt_str: str = TQ_HEADING_AND_QUESTIONS_FMT_STR,
 ) -> str:
     """Return the HTML for verses in chapter_num."""
+    tq_verse_notes_enclosing_div_fmt_str: str = (
+        "<div style='column-count: 2;'>{}</div>"
+        if use_two_column_layout_for_tq_notes
+        else "<div>{}</div>"
+    )
     content = []
     if tq_book and chapter_num in tq_book.chapters:
         tq_verses = tq_book.chapters[chapter_num].verses
         content.append(
-            fmt_str.format(
+            tq_verse_notes_enclosing_div_fmt_str.format(
                 tq_book.resource_type_name,
                 "".join(tq_verses.values()),
             )

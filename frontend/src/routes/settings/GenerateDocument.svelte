@@ -21,7 +21,9 @@
     settingsUpdated,
     useChapterLabelsStore,
     useSectionVisualSeparatorStore,
-    usePrinceStore
+    usePrinceStore,
+    useTwoColumnLayoutForTnNotesStore,
+    useTwoColumnLayoutForTqNotesStore
   } from '$lib/stores/SettingsStore'
   import { taskStateStore } from '$lib/stores/TaskStore'
   import { getCode, getResourceTypeLangCode, getResourceTypeCode } from '$lib/utils'
@@ -90,7 +92,9 @@
       limit_words: $limitTwStore,
       use_chapter_labels: $useChapterLabelsStore,
       use_section_visual_separator: $useSectionVisualSeparatorStore,
-      use_prince: $usePrinceStore
+      use_prince: $usePrinceStore,
+      use_two_column_layout_for_tn_notes: $useTwoColumnLayoutForTnNotesStore,
+      use_two_column_layout_for_tq_notes: $useTwoColumnLayoutForTqNotesStore
     }
     console.log('document request: ', JSON.stringify(documentRequest, null, 2))
     $errorStore = null

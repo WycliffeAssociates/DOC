@@ -39,6 +39,8 @@ def assemble_content_by_lang_then_book(
     rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[str]:
@@ -123,6 +125,8 @@ def assemble_content_by_lang_then_book(
                         bc_book,
                         rg_book,
                         use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
+                        use_two_column_layout_for_tq_notes,
                     )
                 )
             elif usfm_book is None and tn_book is not None:
@@ -136,6 +140,8 @@ def assemble_content_by_lang_then_book(
                         bc_book,
                         rg_book,
                         use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
+                        use_two_column_layout_for_tq_notes,
                     )
                 )
             elif usfm_book is None and tn_book is None and tq_book is not None:
@@ -149,6 +155,7 @@ def assemble_content_by_lang_then_book(
                         bc_book,
                         rg_book,
                         use_section_visual_separator,
+                        use_two_column_layout_for_tq_notes,
                     )
                 )
             elif (
@@ -181,8 +188,10 @@ def assemble_usfm_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
-    hr: str = "<hr/>",
+    hr: str = settings.HR,
     close_direction_html: str = "</div>",
     fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[str]:
@@ -216,10 +225,20 @@ def assemble_usfm_by_book(
                 chapter_commentary(bc_book, chapter_num, use_section_visual_separator)
             )
             content.append(
-                tn_chapter_verses(tn_book, chapter_num, use_section_visual_separator)
+                tn_chapter_verses(
+                    tn_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                )
             )
             content.append(
-                tq_chapter_verses(tq_book, chapter_num, use_section_visual_separator)
+                tq_chapter_verses(
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
+                )
             )
             content.append(
                 rg_chapter_verses(rg_book, chapter_num, use_section_visual_separator)
@@ -243,6 +262,8 @@ def assemble_tn_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
@@ -259,10 +280,20 @@ def assemble_tn_by_book(
                 chapter_commentary(bc_book, chapter_num, use_section_visual_separator)
             )
             content.append(
-                tn_chapter_verses(tn_book, chapter_num, use_section_visual_separator)
+                tn_chapter_verses(
+                    tn_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                )
             )
             content.append(
-                tq_chapter_verses(tq_book, chapter_num, use_section_visual_separator)
+                tq_chapter_verses(
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
+                )
             )
             content.append(
                 rg_chapter_verses(rg_book, chapter_num, use_section_visual_separator)
@@ -281,6 +312,7 @@ def assemble_tq_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tq_notes: bool,
     end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
@@ -293,7 +325,12 @@ def assemble_tq_by_book(
             )
             content.append(chapter_heading(chapter_num))
             content.append(
-                tq_chapter_verses(tq_book, chapter_num, use_section_visual_separator)
+                tq_chapter_verses(
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
+                )
             )
             content.append(
                 rg_chapter_verses(rg_book, chapter_num, use_section_visual_separator)

@@ -92,6 +92,8 @@ def initialize_document_request_and_key(
         document_request.limit_words,
         document_request.use_chapter_labels,
         document_request.use_section_visual_separator,
+        document_request.use_two_column_layout_for_tn_notes,
+        document_request.use_two_column_layout_for_tq_notes,
     )
     return document_request, document_request_key_
 
@@ -332,6 +334,8 @@ def document_request_key(
     limit_words: bool,
     use_chapter_labels: bool,
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -364,9 +368,9 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}'
     else:
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}'
     if len(document_request_key) >= max_filename_len:
         # The generated filename could be too long for the OS where this is
         # running. Therefore, use the current time as a document_request_key
@@ -462,6 +466,8 @@ def assemble_content(
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
                 document_request.use_section_visual_separator,
+                document_request.use_two_column_layout_for_tn_notes,
+                document_request.use_two_column_layout_for_tq_notes,
             )
         )
     elif (
@@ -478,6 +484,8 @@ def assemble_content(
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
                 document_request.use_section_visual_separator,
+                document_request.use_two_column_layout_for_tn_notes,
+                document_request.use_two_column_layout_for_tq_notes,
             )
         )
     t1 = time.time()
@@ -553,6 +561,8 @@ def assemble_docx_content(
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
             document_request.use_section_visual_separator,
+            document_request.use_two_column_layout_for_tn_notes,
+            document_request.use_two_column_layout_for_tq_notes,
         )
     elif (
         document_request.assembly_strategy_kind
@@ -568,6 +578,8 @@ def assemble_docx_content(
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
             document_request.use_section_visual_separator,
+            document_request.use_two_column_layout_for_tn_notes,
+            document_request.use_two_column_layout_for_tq_notes,
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)

@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     USE_LOCALIZED_BOOK_NAME: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
-    BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+    BOOK_NAME_FMT_STR: str = "<h2 class='book-name' style='text-align: center;'>{}</h2>"
     END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
     HR: str = "<hr/>"
 

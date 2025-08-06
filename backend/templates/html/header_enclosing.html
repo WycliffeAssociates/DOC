@@ -4,19 +4,24 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Bible</title>
     <style media="all" type="text/css">
-      /* Weasyprint page directives for headers and footers */
+      /* Weasyprint/princexml page directives for headers and footers */
       @page {
         size: letter;
         @top-center {
+          content: string(bookstring);
+          font-size: 0.8em;
+          color: gray;
+        }
+        @top-right {
           content: string(chapterstring);
           font-size: 0.8em;
           color: gray;
         }
-        /*
-        @top-right {
-          content: string(subchapterstring);
-        }
-        */
+        /* @top-right {
+           content: string(subchapterstring);
+           font-size: 0.8em;
+           color: gray;
+           } */
         @bottom-center {
           content: "Page " counter(page) " of " counter(pages);
           font-size: 0.7em;
@@ -34,18 +39,20 @@
         width: 100px;
       }
 
-      .chapterlabel {
-        /* page-break-before: always; */
-        string-set: chapterstring content();
+      /* .chapterlabel { */
+      /* page-break-before: always; */
+      /* string-set: chapterstring content(); */
+      /* } */
+
+      .book-name {
+        string-set: bookstring content();
       }
 
-
-      /* h4 {
+      h4 {
         string-set: subchapterstring content();
       }
-      */
 
-      /* End of Weasy page directives for headers and footers */
+      /* End of Weasyprint/Princexml page directives for headers and footers */
 
       body {
         /* Browsers typically default to 16px, let's make our default 12px */
@@ -367,6 +374,7 @@
         display: block;
         float: left;
         margin-right: 0.25em;
+        string-set: chapterstring "§ " content();
       }
 
       /* Poetry */

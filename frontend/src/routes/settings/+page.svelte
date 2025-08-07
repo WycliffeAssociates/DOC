@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SelectElement } from './types'
-  import Switch from './Switch.svelte'
+  import Switch from '$lib/Switch.svelte'
   import WizardBreadcrumb from '$lib/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/WizardBasket.svelte'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'

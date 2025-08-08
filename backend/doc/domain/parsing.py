@@ -1037,34 +1037,67 @@ def assemble_chapter_usfm(
     use_chapter_labels: bool,
 ) -> list[str]:
     chapter_usfm_content = []
-    try:
-        chapter_num = int(str(chapter_dir.name))
-    except ValueError:
-        logger.info(
-            "%s is not a valid chapter number, assigning -1 as chapter number",
-            str(chapter_dir.name),
-        )
-        chapter_num = -1  # use this as a sentinal
+    chapter_num = get_chapter_number(chapter_dir.name)
     chapter_usfm_content.append("\n" + rf"\c {chapter_num}" + "\n")
     if use_chapter_labels:
         chapter_word_file = join(chapter_dir.path, "title.txt")
-        try:
-            with open(chapter_word_file, "r") as fin:
-                chapter_word = fin.read()
-                chapter_word = chapter_word.strip()
-                chapter_word = chapter_label_sans_numeric_part(chapter_word)
-                chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
-                chapter_usfm_content.append(chapter_label)
-        except FileNotFoundError:
-            pass  # No file containing chapter label
-            # In ensure_chapter_label an English chapter label will be
-            # inserted if a chapter label is missing and
-            # use_chapter_labels is True
+        chapter_word = read_chapter_label(chapter_word_file)
+        if chapter_word is not None:
+            chapter_label = "\n" + rf"\cl {chapter_word} {chapter_num}" + "\n"
+            chapter_usfm_content.append(chapter_label)
     logger.info(
         "Adding a USFM chapter marker for chapter: %s",
         chapter_num,
     )
-    chapter_verse_files = sorted(
+    chapter_verse_files = get_chapter_verse_files(chapter_dir)
+    for usfm_file in chapter_verse_files:
+        verse_content = read_verse_file(usfm_file)
+        cleaned_verse_content = clean_verse_content(verse_content)
+        verse_content = ensure_paragraph_before_verses(usfm_file, cleaned_verse_content)
+        chapter_usfm_content.append(cleaned_verse_content)
+        chapter_usfm_content.append("\n")
+    return chapter_usfm_content
+
+
+def get_chapter_number(chapter_dir_name: str) -> int:
+    try:
+        return int(chapter_dir_name)
+    except ValueError:
+        logger.info(
+            "%s is not a valid chapter number, assigning -1 as chapter number",
+            chapter_dir_name,
+        )
+        return -1  # Sentinel value
+
+
+def read_chapter_label(chapter_word_file: str) -> Optional[str]:
+    try:
+        with open(chapter_word_file, "r") as fin:
+            chapter_word = fin.read().strip()
+            return chapter_label_sans_numeric_part(chapter_word)
+    except FileNotFoundError:
+        return None
+
+
+def read_verse_file(usfm_file: str) -> str:
+    with open(usfm_file, "r") as fin:
+        return fin.read()
+
+
+def clean_verse_content(verse_content: str) -> str:
+    """
+    Some languages put a chapter marker in front of verse 1 in the
+    verse file which covers a verse span which includes verse 1. Since we
+    ensure chapter markers ourselves when assembling multiple verse files
+    into a chapter this ends up creating a duplicate chapter marker.
+    We deal with that here.
+    """
+    cleaned_verse_content = re.sub(r"^\\c\s+\d+", "", verse_content)
+    return cleaned_verse_content
+
+
+def get_chapter_verse_files(chapter_dir: DirEntry[str]) -> Sequence[str]:
+    return sorted(
         [
             file.path
             for file in scandir(chapter_dir)
@@ -1074,19 +1107,6 @@ def assemble_chapter_usfm(
             and (file.name.endswith(".usfm") or file.name.endswith(".txt"))
         ]
     )
-    for usfm_file in chapter_verse_files:
-        with open(usfm_file, "r") as fin:
-            # logger.debug("usfm_file: %s", usfm_file)
-            verse_content = fin.read()
-            # Some languages put a chapter marker in front of verse 1 in the verse
-            # file which covers a verse span which includes verse 1 . Since we
-            # ensure chapter markers ourselves when assembling multiple verse files
-            # into a chapter this ends up creating a duplicate chapter marker.
-            verse_content = re.sub(r"^\\c\s+\d+", "", verse_content)
-            verse_content = ensure_paragraph_before_verses(usfm_file, verse_content)
-            chapter_usfm_content.append(verse_content)
-            chapter_usfm_content.append("\n")
-    return chapter_usfm_content
 
 
 def combine_usfm_files(

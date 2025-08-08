@@ -93,7 +93,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("byn", "reg", "2pe"),
     ("bzu", "reg", "tit"),
     ("cbt", "reg", "jos"),
-    ("cbt", "reg", "rut"),
+    # ("cbt", "reg", "rut"), # unavailable from data API
     ("cbt", "reg", "est"),
     ("ccp", "reg", "mat"),
     ("ccp", "reg", "gal"),
@@ -140,12 +140,12 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("kng-x-kilemfu", "reg", "eph"),
     ("kod", "reg", "2ti"),
     ("kod", "reg", "phm"),
-    ("kqi", "reg", "2th"),
-    ("kqi", "reg", "2ti"),
+    # ("kqi", "reg", "2th"), # unavailable from data API
+    # ("kqi", "reg", "2ti"), # unavailable from data API
     # ("kqi", "reg", "mrk"), # book no longer available from data api
     ("kqi", "reg", "heb"),
-    ("kqi", "reg", "1pe"),
-    ("kqi", "reg", "tit"),
+    # ("kqi", "reg", "1pe"), # unavailable from data API
+    # ("kqi", "reg", "tit"), # unavailable from data API
     ("ksm", "reg", "rom"),
     ("ksm", "reg", "1pe"),
     ("ksm", "reg", "2ti"),
@@ -173,7 +173,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("mhi-x-burolo", "reg", "2th"),
     ("mhy-x-benualima", "reg", "mrk"),
     # ("mwe", "reg", "tit"),  # book is available as choice, but resource not cloned?
-    ("mxo", "reg", "mrk"),
+    # ("mxo", "reg", "mrk"), # unavailable from data API
     ("nak-x-bileki", "reg", "mat"),
     ("nak-x-bileki", "reg", "1ti"),
     ("nak-x-bileki", "reg", "eph"),
@@ -187,7 +187,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("nfd", "reg", "2th"),
     ("nfd", "reg", "2ti"),
     ("nfd", "reg", "heb"),
-    ("nhx", "reg", "jos"),
+    # ("nhx", "reg", "jos"), # unavailable from data API
     ("nnb-x-kishula", "reg", "mrk"),
     ("not", "reg", "jos"),
     ("now", "reg", "mic"),
@@ -254,7 +254,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("spy-x-pok", "reg", "3jn"),
     ("ssc-x-kine", "reg", "2jn"),
     ("ssn-x-sanye", "reg", "col"),
-    ("tar-x-ralamuli", "reg", "mrk"),
+    # ("tar-x-ralamuli", "reg", "mrk"), # unavailable from data API
     ("tbp-x-airo", "reg", "php"),
     ("thr", "reg", "tit"),
     ("ttl-x-totelnamib", "reg", "3jn"),

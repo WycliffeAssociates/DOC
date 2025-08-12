@@ -559,6 +559,8 @@ def transform_ta_wiki_rc_links(source: str) -> str:
     return source
 
 
+# TODO zh gen, e.g., 1:20 you end up with things like:（参：）. We
+# should probably remove the whole parenthesized expression.
 def transform_ta_star_rc_links(source: str) -> str:
     """
     Transform the translation academy rc wikilink into source anchor link
@@ -573,6 +575,8 @@ def transform_ta_star_rc_links(source: str) -> str:
     return source
 
 
+# TODO zh gen, e.g., 1:20 you end up with things like:（参：）. We
+# should probably remove the whole parenthesized expression.
 def transform_ta_markdown_links(source: str) -> str:
     """
     Transform the translation academy markdown link into source anchor link

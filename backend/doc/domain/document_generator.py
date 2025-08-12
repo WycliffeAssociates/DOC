@@ -689,10 +689,16 @@ def compose_docx_document(
     for part in document_parts:
         if part.contained_in_two_column_section:
             add_two_column_section(doc)
-            html_to_docx.add_html_to_document(part.content, doc)
+            try:
+                html_to_docx.add_html_to_document(part.content, doc)
+            except ValueError as e:
+                logger.exception(e)
         else:
             add_one_column_section(doc)
-            html_to_docx.add_html_to_document(part.content, doc)
+            try:
+                html_to_docx.add_html_to_document(part.content, doc)
+            except ValueError as e:
+                logger.exception(e)
         # Set the language for spellcheck
         # set_docx_language(doc, lang_code)
         if use_section_visual_separator and part.add_hr_p:

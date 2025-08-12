@@ -896,7 +896,7 @@ def get_languages_title_page_strings(
             return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(resource_type_names)} for {', '.join(book_names_)}"
         return ""
 
-    lang0_title = get_language_details(lang_codes[0])
+    lang0_title = get_language_details(lang_codes[0]) if lang_codes else ""
     lang1_title = get_language_details(lang_codes[1]) if len(lang_codes) > 1 else ""
     return lang0_title, lang1_title
 

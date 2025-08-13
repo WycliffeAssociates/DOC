@@ -1,14 +1,26 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Bible</title>
     <style media="all" type="text/css">
       /* Weasyprint/princexml page directives for headers and footers */
+      :root {
+        /* Universal fallback stack for body text + margin boxes */
+        --universal-font:
+          "Noto Sans", "Noto Serif", "Noto Sans Tibetan", "Noto Serif Tibetan",
+          "Noto Sans Lao", "Noto Serif Lao", "Noto Sans Devanagari",
+          "Noto Serif Devanagari", "Noto Sans Arabic", "Noto Naskh Arabic",
+          "Noto Sans Khmer", "Noto Serif Khmer", "Noto Sans Thai",
+          "Noto Serif Thai", "Noto Sans Myanmar", "Noto Serif Myanmar",
+          "Noto Sans Ethiopic", "Noto Serif Ethiopic", "Noto Sans CJK SC",
+          "Noto Serif CJK SC", serif, sans-serif;
+      }
       @page {
         size: letter;
         @top-center {
           content: string(bookstring);
+          font-family: var(--universal-font);
           font-size: 0.8em;
           color: gray;
         }
@@ -57,6 +69,8 @@
       body {
         /* Browsers typically default to 16px, let's make our default 12px */
         font-size: 75%;
+        /* Set font fallback for Princexml (bo language is the case that prompted this) */
+        font-family: var(--universal-font);
       }
 
       /*

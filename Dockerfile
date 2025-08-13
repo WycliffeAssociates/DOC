@@ -40,6 +40,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-lohit-guru \
     fonts-lohit-beng-bengali \
     fonts-lohit-deva \
+    fonts-noto \
+    # fonts-noto-core \
+    # fonts-noto-unhinted \
+    fonts-noto-cjk \
+    fonts-dzongkha \
+    fonts-tibetan-machine \
     fonts-baekmuk \
     fonts-ipafont-mincho \
     fonts-arphic-uming \
@@ -52,10 +58,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblcms2-2 \
     libtiff6 \
     libwebp7 \
-    libwebpdemux2
+    libwebpdemux2 \
+ && fc-cache -f -v
 
-
-# Download the PrinceXML .deb file
+# Download and install the PrinceXML .deb file
 RUN wget https://www.princexml.com/download/prince_16.1-1_debian12_amd64.deb \
     && dpkg -i prince_16.1-1_debian12_amd64.deb || apt-get install -fy
 

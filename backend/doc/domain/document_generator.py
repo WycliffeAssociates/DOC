@@ -283,11 +283,6 @@ def generate_docx_document(
             bc_books,
             rg_books,
         )
-        # TODO At this point, like in generate_document, we should check the
-        # underlying HTML content to see if it contains verses and display a
-        # message in the document to the end user if it does not (so that they
-        # get some indication of why the scripture is missing).
-        #
         # Construct sensical phrases to display for title1 and title2 on first
         # page of Word document.
         title1, title2 = get_languages_title_page_strings(

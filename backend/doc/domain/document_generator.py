@@ -283,8 +283,6 @@ def generate_docx_document(
             bc_books,
             rg_books,
         )
-        # Construct sensical phrases to display for title1 and title2 on first
-        # page of Word document.
         title1, title2 = get_languages_title_page_strings(
             found_resource_lookup_dtos, usfm_books
         )
@@ -855,6 +853,10 @@ def get_languages_title_page_strings(
     book_names: dict[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> tuple[str, str]:
+    """
+    Construct sensical phrases to display for title1 and title2 for
+    first page of Word document.
+    """
     lang_codes = list({dto.lang_code for dto in resource_lookup_dtos})
 
     def get_language_details(lang_code: str) -> str:

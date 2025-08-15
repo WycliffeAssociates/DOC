@@ -146,9 +146,17 @@ def get_selected_name_content_pairs(
     selected_name_content_pairs = []
     if usfm_books and limit_words:
         selected_name_content_pairs = filter_name_content_pairs(tw_book, usfm_books)
-    elif not usfm_books and limit_words:
+    elif (
+        not usfm_books and limit_words
+    ):  # This branch is necessarily expensive computationally and in IO
+        t0 = time.time()
         usfm_books = fetch_usfm_book_content_units(resource_requests)
         selected_name_content_pairs = filter_name_content_pairs(tw_book, usfm_books)
+        t1 = time.time()
+        logger.info(
+            "Time for acquiring and filtering TW content based on books chosen: %s",
+            t1 - t0,
+        )
     else:
         selected_name_content_pairs = tw_book.name_content_pairs
     return selected_name_content_pairs

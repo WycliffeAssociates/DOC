@@ -4,36 +4,31 @@ resource's asset files in the cloud and acquiring said resource
 assets.
 """
 
-from cachetools import TTLCache, cached
-from datetime import datetime, timedelta
-import json
 import re
 import shutil
 import subprocess
-from glob import glob
+from datetime import datetime, timedelta
 from os import scandir, stat
 from os.path import exists, isdir, join
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
-from urllib.parse import urlparse
 
 import requests
-import yaml
+from cachetools import TTLCache, cached
 from doc.config import settings
-from doc.domain import parsing, worker
+from doc.domain import worker
 from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     NON_USFM_RESOURCE_TYPES,
     Content,
-    Data,
-    JsonManifestBook,
-    JsonManifestData,
     LangDirEnum,
     Language,
     RepoEntry,
     ResourceLookupDto,
     SourceData,
 )
+from doc.domain import parsing
+
 from doc.reviewers_guide.model import BibleReference
 from doc.reviewers_guide.parser import (
     find_bible_references,
@@ -47,8 +42,14 @@ from doc.utils.file_utils import (
 )
 from doc.utils.list_utils import unique_tuples, unique_book_codes
 from doc.utils.text_utils import normalize_localized_book_name
+from doc.utils.url_utils import (
+    get_last_segment,
+    get_book_names_from_title_file,
+    book_codes_and_names_from_manifest,
+)
 from fastapi import HTTPException, status
 from pydantic import HttpUrl, ValidationError
+
 
 logger = settings.logger(__name__)
 
@@ -688,120 +689,6 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     ]
 
 
-def get_last_segment(url: HttpUrl, lang_code: str) -> str:
-    """
-    Extract the last segment of the URL path and normalize it
-    according to known anomalies and naming patterns.
-    """
-    parsed_url = urlparse(str(url))
-    path_segments = parsed_url.path.strip("/").split("/")
-    last_segment = path_segments[-1] if path_segments else ""
-    return normalize_last_segment(lang_code, last_segment)
-
-
-# Specific replacements: lang code, last_segment -> replacement last_segment
-REPLACEMENTS_BY_LANG_CODE_AND_LAST_SEGMENT = {
-    ("fa", "fa_opv"): "fa_ulb",
-    ("my", "my_juds"): "my_ulb",
-    ("zmq", "faustin_azaza"): "zmq_mrk_text_reg",
-}
-
-# Prefixes to remove in last repo URL segment regardless of lang code
-PREFIXES_TO_REMOVE = [
-    "Jordan_",
-    "alexandre_brazil_",
-    "azz_athan_",
-    "bayan_",
-    "botsw01_",
-    "danjuma_alfred_h_",
-    "dijim1_",
-    "ezekieldabere_",
-    "gravy_",
-    "jdwood_",
-    "jks222111_",
-    "jonathan_",
-    "krispy_",
-    "lversaw_",
-    "michael_",
-    "mitikiwostky_",
-    "moufida_",
-    "mushohe-25nb_63.kum_",
-    "nbtt_",
-    "ngamo1_",
-    "ngamo_",
-    "oratab01_",
-    "otlaadisa_",
-    "parfait-ayanou_",
-    "romantts2_",
-    "sambadanum_",
-    "timothydanjuma_",
-    "tom-88pn_0003.machinga_",
-    "translator09_",
-    "ukum1_",
-    "vere3_",
-    "yukuben1_",
-]
-
-# lang code -> prefixes to remove
-LANG_SPECIFIC_PREFIXES_TO_REMOVE = {
-    "acq": ["Dawit-Dessie_", "burje_duro_", "tersitzewde_"],
-    "arb": ["burje_duro_"],
-    "byn": ["Dawit-Dessie_", "burje_duro_"],
-    "dz": ["Dzongkha_", "chuck_"],
-    "iba-x-ketungau": ["dayakketungau_", "lawadinusah_", "Lawadinusah_"],
-    "kcn": ["mvccbtt_"],
-    "kmq": ["Dawit-Dessie_"],
-    "knx-x-bajanya": ["bajanya_knx"],
-    "kun": ["Dawit-Dessie_"],
-    "kxh": ["burje_duro_"],
-    "kxv": ["jathapu_"],
-    "ndh": ["chindali_"],
-    "sbx": ["faustin-azaza_"],
-    "scg-x-dayakkatarak": ["yustius_"],
-    "sdm-x-pangkalsuka": ["dayaksuka_"],
-    "svr": ["billburns58_"],
-    "sze": ["Dawit-Dessie_", "burje_duro_"],
-    "xdy-x-dayakpunti": ["anselmus_"],
-    "xdy-x-mentebah": ["dayakfdkj_", "lawadinusah_", "Lawadinusah_"],
-    "xdy-x-senduruhan": ["dayaksenduruhan_", "Lawadinusah_"],
-    "xsr-x-shyarpa": ["shyarpa_"],
-    "xwg": ["Dawit-Dessie_", "burje_duro_"],
-}
-
-
-def normalize_last_segment(
-    lang_code: str,
-    last_segment: str,
-    hardcoded_replacements: dict[
-        tuple[str, str], str
-    ] = REPLACEMENTS_BY_LANG_CODE_AND_LAST_SEGMENT,
-    universal_prefixes: list[str] = PREFIXES_TO_REMOVE,
-    lang_specific_prefixes: dict[str, list[str]] = LANG_SPECIFIC_PREFIXES_TO_REMOVE,
-    en_rg_dir: str = settings.EN_RG_DIR,
-) -> str:
-    """
-    Handle special cases where git repo URL does not follow the expected pattern.
-    Ideally these repos URLs would have their last segment renamed
-    properly, e.g.,
-    'https://content.bibletranslationtools.org/faustin_azaza/faustin_azaza'
-    renamed to
-    'https://content.bibletranslationtools.org/faustin_azaza/zmq_mrk_text_reg',
-    but since we don't have control over that, we handle these anomalies
-    here.
-    """
-    if lang_code == "en" and last_segment.endswith(".docx"):
-        return en_rg_dir
-    if (lang_code, last_segment) in hardcoded_replacements:
-        return hardcoded_replacements[(lang_code, last_segment)]
-    for prefix in universal_prefixes:
-        if last_segment.startswith(prefix):
-            return re.sub(f"^{re.escape(prefix)}", "", last_segment)
-    for lang, prefixes in lang_specific_prefixes.items():
-        if lang_code == lang:
-            for prefix in prefixes:
-                if last_segment.startswith(prefix):
-                    return re.sub(f"^{re.escape(prefix)}", "", last_segment)
-    return last_segment
 
 
 def update_repo_components(
@@ -959,31 +846,76 @@ def get_book_codes_for_lang_(
             and len(repo_components) == 2
             and resource_type in usfm_resource_types
         ):
-            book_codes_and_names_localized.extend(
+            book_codes_and_names_localized_from_metadata = (
                 get_book_names_from_usfm_metadata(
                     resource_filepath,
                     lang_code,
                     resource_type,
                 )
             )
+            book_codes_and_names_localized_from_manifest = (
+                book_codes_and_names_from_manifest(resource_filepath)
+            )
+            logger.debug(
+                "book_codes_and_names_localized_from_metadata: %s",
+                book_codes_and_names_localized_from_metadata,
+            )
+            logger.debug(
+                "book_codes_and_names_localized_from_manifest: %s",
+                book_codes_and_names_localized_from_manifest,
+            )
+            for code, name in book_codes_and_names_localized_from_metadata.items():
+                manifest_name = book_codes_and_names_localized_from_manifest.get(
+                    code, ""
+                )
+                if not name and manifest_name:
+                    book_codes_and_names_localized.append(
+                        (
+                            code,
+                            maybe_correct_book_name(
+                                lang_code, normalize_localized_book_name(manifest_name)
+                            ),
+                        )
+                    )
+                else:
+                    book_codes_and_names_localized.append(
+                        (
+                            code,
+                            maybe_correct_book_name(
+                                lang_code, normalize_localized_book_name(name)
+                            ),
+                        )
+                    )
         elif (
             use_localized_book_name
             and len(repo_components) > 2
             and resource_type in usfm_resource_types
         ):
-            book_codes_and_names_localized.extend(
-                get_book_name_from_title_file(
+            book_codes_and_names_localized_from_title_file = (
+                get_book_names_from_title_file(
                     resource_filepath,
                     lang_code,
                     repo_components,
                 )
             )
-        if not usfm_only and (
-            not book_codes_and_names_localized
+            logger.debug(
+                "book_codes_and_names_localized_from_title_file: %s",
+                book_codes_and_names_localized_from_title_file,
+            )
+            for code, name in book_codes_and_names_localized_from_title_file.items():
+                book_codes_and_names_localized.append(
+                    (
+                        code,
+                        maybe_correct_book_name(
+                            lang_code, normalize_localized_book_name(name)
+                        ),
+                    )
+                )
+        if (
+            not usfm_only
+            or not book_codes_and_names_localized
             or any(name == "" for _, name in book_codes_and_names_localized)
-        ):  # We can get book names from TN and TQ resources too if no USFM was
-            # available and we ask for it. No localized book name sources were
-            # found, so use other alternatives for book name lookup
+        ):  # No localized book name sources were found, so use other alternatives for book name lookup
             book_codes_and_names.extend(
                 get_non_localized_book_names(
                     repo_components,
@@ -993,6 +925,8 @@ def get_book_codes_for_lang_(
                     resource_filepath,
                 )
             )
+    logger.debug("book_codes_and_names: %s", book_codes_and_names)
+    logger.debug("book_codes_and_names_localized: %s", book_codes_and_names_localized)
     if not book_codes_and_names_localized or any(
         name == "" for _, name in book_codes_and_names_localized
     ):
@@ -1024,7 +958,7 @@ def get_non_localized_book_names(
         # if resource_type in usfm_resource_types:
         #     logger.debug("FUBAR")  # DEBUG This case happened
         #     # Get book code from USFM file name and then lookup name in English book names
-        #     usfm_files = parsing.find_usfm_files(resource_filepath)
+        #     usfm_files = find_usfm_files(resource_filepath)
         #     for usfm_file in usfm_files:
         #         book_code = Path(usfm_file).stem.lower().split("-")[1]
         #         book_codes_and_names.append((book_code, book_names[book_code]))
@@ -1046,45 +980,19 @@ def get_non_localized_book_names(
     return book_codes_and_names
 
 
-def get_book_name_from_title_file(
-    resource_filepath: str,
-    lang_code: str,
-    repo_components: list[str],
-) -> list[tuple[str, str]]:
-    """
-    Book names in front/title.txt files may or may not be localized,
-    it depends on the translation work done for lang_code.
-    """
-    book_codes_and_names_localized: list[tuple[str, str]] = []
-    book_name_file = join(resource_filepath, "front", "title.txt")
-    if exists(book_name_file):
-        with open(book_name_file, "r") as fin:
-            book_name = fin.read()
-            localized_book_name_ = normalize_localized_book_name(book_name)
-            localized_book_name = maybe_correct_book_name(
-                lang_code, localized_book_name_
-            )
-            book_code = repo_components[1]
-            book_codes_and_names_localized.append(
-                (
-                    book_code,
-                    localized_book_name,
-                )
-            )
-    return book_codes_and_names_localized
 
 
 def get_book_names_from_usfm_metadata(
     resource_filepath: str,
     lang_code: str,
     resource_type: str,
-) -> list[tuple[str, str]]:
+) -> dict[str, str]:
     """
     Book names obtained from USFM frontmatter/metadata may or may not
     be localized, it depends on the translation work done for language
     lang_code.
     """
-    book_codes_and_names_localized: list[tuple[str, str]] = []
+    book_codes_and_names_localized: dict[str, str] = {}
     usfm_files = parsing.find_usfm_files(resource_filepath)
     for usfm_file in usfm_files:
         usfm_file_components = Path(usfm_file).stem.lower().split("-")
@@ -1094,8 +1002,9 @@ def get_book_names_from_usfm_metadata(
             lang_code, resource_type, book_code, usfm
         )
         localized_book_name = parsing.maybe_localized_book_name(frontmatter)
-        localized_book_name = maybe_correct_book_name(lang_code, localized_book_name)
-        book_codes_and_names_localized.append((book_code, localized_book_name))
+        # localized_book_name = maybe_correct_book_name(lang_code, localized_book_name)
+        book_codes_and_names_localized[book_code] = localized_book_name
+    logger.debug("book_codes_and_names_localized: %s", book_codes_and_names_localized)
     return book_codes_and_names_localized
 
 
@@ -1143,61 +1052,6 @@ def chapters_in_books(
     return chapters_in_book
 
 
-def load_manifest(file_path: str) -> str:
-    with open(file_path, "r") as file:
-        return file.read()
-
-
-def book_codes_and_names_from_manifest(
-    resource_dir: str,
-    manifest_glob_fmt_str: str = "{}/**/manifest.{}",
-    manifest_glob_alt_fmt_str: str = "{}/manifest.{}",
-) -> list[tuple[str, str]]:
-    """
-    Look up the language direction in the manifest file if one is
-    available for this resource.
-    """
-    # Try to find manifest yaml at typical directory
-    manifest_candidates = glob(manifest_glob_fmt_str.format(resource_dir, "yaml"))
-    if not manifest_candidates:
-        # Now try to find manifest yaml at parent directory of typical directory
-        manifest_candidates = glob(
-            manifest_glob_alt_fmt_str.format(resource_dir, "yaml")
-        )
-        if not manifest_candidates:
-            # Some languages provide their manifest in json format.
-            # Try to find manifest json at typical directory
-            manifest_candidates = glob(
-                manifest_glob_fmt_str.format(resource_dir, "json")
-            )
-            if not manifest_candidates:
-                # Try to find manifest json at parent directory of typical directory
-                manifest_candidates = glob(
-                    manifest_glob_alt_fmt_str.format(resource_dir, "json")
-                )
-    # logger.debug("manifest_candidates: %s", manifest_candidates)
-    if manifest_candidates:
-        # logger.debug("len(manifest_candidates): %s", len(manifest_candidates))
-        candidate = manifest_candidates[0]
-        suffix = str(Path(candidate).suffix)
-        book_codes_and_names: list[tuple[str, str]] = []
-        # Get localized book names
-        manifest_data = load_manifest(candidate)
-        # logger.debug("manifest_data: %s", manifest_data)
-        if suffix == ".yaml":
-            data: Data = yaml.safe_load(manifest_data)
-            book_codes_and_names = [
-                (book["identifier"], book["title"]) for book in data["projects"]
-            ]
-        # Heart languages often have .json manifest files
-        # per book and not per language.
-        elif suffix == ".json":
-            json_data: JsonManifestData = json.loads(manifest_data)
-            logger.debug("json_data: %s", json_data)
-            project: JsonManifestBook = json_data["project"]
-            book_codes_and_names = [(project["id"], project["name"])]
-            # logger.debug("book_codes_and_names from json: %s", book_codes_and_names)
-    return book_codes_and_names
 
 
 def resource_lookup_dto(

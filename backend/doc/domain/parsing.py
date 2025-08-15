@@ -3,21 +3,20 @@ This module provides an API for parsing content.
 """
 
 import re
-import requests
 import time
 from glob import glob
 from os import DirEntry, scandir, walk
 from os.path import exists, join, split
 from pathlib import Path
-from typing import Mapping, Optional, Sequence
+from typing import Mapping, Optional, Sequence, cast
 
 import mistune
+import requests
 from doc.config import settings
 from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
 )
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
-from doc.domain.exceptions import MissingChapterMarkerError
 from doc.domain.model import (
     BC_RESOURCE_TYPE,
     EN_TN_CONDENSED_RESOURCE_TYPE,
@@ -40,6 +39,11 @@ from doc.domain.model import (
     USFMChapter,
     VerseRef,
 )
+from doc.utils.url_utils import (
+    get_last_segment,
+    get_book_names_from_title_file,
+    book_codes_and_names_from_manifest,
+)
 from doc.domain.usfm_error_detection_and_fixes import (
     RESOURCES_WITH_USFM_DEFECTS,
     fix_usfm,
@@ -59,6 +63,8 @@ from doc.utils.tw_utils import (
     translation_words_dict,
     tw_resource_dir,
 )
+from pydantic import HttpUrl
+
 
 logger = settings.logger(__name__)
 
@@ -392,11 +398,15 @@ def maybe_localized_book_name(frontmatter: str) -> str:
     localized_book_name = (
         frontmatter_data.get("h")
         or frontmatter_data.get("mt")
+        or frontmatter_data.get("mt1")
         or frontmatter_data.get("toc1")
         or frontmatter_data.get("toc2")
         or ""
     )
-    localized_book_name = normalize_localized_book_name(localized_book_name)
+    logger.debug("localized_book_name: %s", localized_book_name)
+    if localized_book_name:
+        localized_book_name = normalize_localized_book_name(localized_book_name)
+        logger.debug("normalized localized_book_name: %s", localized_book_name)
     return localized_book_name
 
 
@@ -430,6 +440,8 @@ def usfm_book_content(
     use_chapter_labels: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     working_dir: str = settings.WORKING_DIR,
+    use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
@@ -451,7 +463,33 @@ def usfm_book_content(
         resource_lookup_dto.book_code,
         content,
     )
-    localized_book_name = maybe_localized_book_name(frontmatter)
+    localized_book_name = ""
+    if use_localized_book_name:
+        localized_book_name = maybe_localized_book_name(frontmatter)
+        if not localized_book_name:
+            book_codes_and_names_from_manifest_ = book_codes_and_names_from_manifest(
+                resource_dir
+            )
+            localized_book_name = book_codes_and_names_from_manifest_.get(
+                resource_lookup_dto.book_code, ""
+            )
+            if not localized_book_name:
+                last_segment = get_last_segment(
+                    # We know that url is not null because of how we got here
+                    cast(HttpUrl, resource_lookup_dto.url),
+                    resource_lookup_dto.lang_code,
+                )
+                repo_components = last_segment.split("_")
+                if (
+                    len(repo_components) > 2
+                    and resource_lookup_dto.resource_type in usfm_resource_types
+                ):
+                    book_names_from_title_file = get_book_names_from_title_file(
+                        resource_dir, resource_lookup_dto.lang_code, repo_components
+                    )
+                    localized_book_name = book_names_from_title_file.get(
+                        resource_lookup_dto.book_code, ""
+                    )
     for chapter_marker, chapter_usfm in zip(chapter_markers, chapters_usfm):
         chapter_num = get_chapter_num(chapter_usfm)
         if chapter_num == -1:
@@ -658,6 +696,19 @@ def tn_book_content(
     )
 
 
+def clean_numeric_string(s: str) -> str:
+    """
+    Removes all non-numeric characters from the input string.
+
+    Args:
+        s (str): Input string that may contain non-numeric characters.
+
+    Returns:
+        str: String containing only numeric characters.
+    """
+    return "".join(c for c in s if c.isdigit())
+
+
 def tq_chapter_verses(
     resource_dir: str,
     lang_code: str,
@@ -677,6 +728,9 @@ def tq_chapter_verses(
         verses_html: dict[VerseRef, str] = {}
         for filepath in verse_paths:
             verse_ref = Path(filepath).stem
+            # There was a case of a verse file being named '18.txt, so we handle
+            # such cases since we need to cast to int below:
+            verse_ref = clean_numeric_string(verse_ref)
             verse_md_content = read_file(filepath)
             verse_md_content = markdown_transformer.transform_ta_and_tn_links(
                 verse_md_content,

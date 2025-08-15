@@ -19,7 +19,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("ach-SS-acholi", "reg", "gal"),
     ("adh", "reg", "1th"),
     ("adn", "reg", "mat"),
-    ("aec", "reg", "mat"),
+    # ("aec", "reg", "mat"), # unavailable from data API
     ("agd-x-namel", "reg", "2th"),
     ("ahm", "reg", "php"),
     ("ahm", "reg", "php"),
@@ -44,17 +44,17 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bi", "reg", "act"),
     ("bji", "reg", "mat"),
     ("bji", "reg", "1co"),
-    ("bji", "reg", "jud"),
+    # ("bji", "reg", "jud"), # unavailable from data API
     ("bji", "reg", "1co"),
     ("bji", "reg", "luk"),
-    ("bji", "reg", "gal"),
-    ("bji", "reg", "col"),
+    # ("bji", "reg", "gal"), # unavailable from data API
+    # ("bji", "reg", "col"), # unavailable from data API
     ("bji", "reg", "2pe"),
     ("bji", "reg", "luk"),
-    ("bji", "reg", "col"),
+    # ("bji", "reg", "col"), # unavailable from data API
     ("bji", "reg", "php"),
     ("bji", "reg", "heb"),
-    ("bji", "reg", "1jn"),
+    # ("bji", "reg", "1jn"), # unavailable from data API
     ("bji", "reg", "col"),
     ("bjz", "reg", "eph"),
     ("blo", "reg", "rom"),

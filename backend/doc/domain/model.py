@@ -6,7 +6,7 @@ validation and JSON serialization.
 """
 
 from enum import Enum
-from typing import Any, NamedTuple, Optional, Sequence, TypedDict, final
+from typing import NamedTuple, Optional, Sequence, TypedDict, final
 
 from doc.config import settings
 from doc.domain.bible_books import BOOK_NAMES

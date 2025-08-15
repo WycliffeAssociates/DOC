@@ -29,6 +29,7 @@ from doc.domain.model import (
 from doc.reviewers_guide.model import RGBook
 from doc.utils.number_utils import is_even
 
+
 logger = settings.logger(__name__)
 
 HTML_ROW_BEGIN: str = "<div class='row'>"

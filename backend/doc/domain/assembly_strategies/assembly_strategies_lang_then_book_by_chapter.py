@@ -27,6 +27,7 @@ from doc.domain.model import (
 )
 from doc.reviewers_guide.model import RGBook
 
+
 logger = settings.logger(__name__)
 
 

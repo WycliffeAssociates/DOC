@@ -1,11 +1,11 @@
-from pathlib import Path
 import json
 import re
+from glob import glob
 from os.path import exists, join
+from pathlib import Path
 from urllib.parse import urlparse
 
 import yaml
-from glob import glob
 from doc.config import settings
 from doc.domain.model import Data, JsonManifestBook, JsonManifestData
 from pydantic import HttpUrl

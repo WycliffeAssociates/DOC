@@ -1,18 +1,19 @@
 """This module provides the FastAPI API definition."""
 
+import shutil
 from os import makedirs
 from os.path import join, exists
-import shutil
 
 from doc.config import settings
 from doc.domain import exceptions
 from doc.entrypoints.routes import router as doc_router
-from stet.entrypoints.routes import router as stet_router
-from passages.entrypoints.routes import router as passages_router
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from passages.entrypoints.routes import router as passages_router
+from stet.entrypoints.routes import router as stet_router
+
 
 # Docker container paths
 DOCKER_BASE_DIR = "/app"

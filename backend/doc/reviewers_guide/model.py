@@ -1,7 +1,8 @@
 """Models for reviewer's guide"""
 
-from typing import Optional, final
 from pprint import pformat
+from typing import Optional, final
+
 from doc.domain.model import ChapterNum, LangDirEnum
 from pydantic import BaseModel
 

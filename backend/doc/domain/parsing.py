@@ -39,11 +39,6 @@ from doc.domain.model import (
     USFMChapter,
     VerseRef,
 )
-from doc.utils.url_utils import (
-    get_last_segment,
-    get_book_names_from_title_file,
-    book_codes_and_names_from_manifest,
-)
 from doc.domain.usfm_error_detection_and_fixes import (
     RESOURCES_WITH_USFM_DEFECTS,
     fix_usfm,
@@ -62,6 +57,11 @@ from doc.utils.tw_utils import (
     translation_word_filepaths,
     translation_words_dict,
     tw_resource_dir,
+)
+from doc.utils.url_utils import (
+    get_last_segment,
+    get_book_names_from_title_file,
+    book_codes_and_names_from_manifest,
 )
 from pydantic import HttpUrl
 

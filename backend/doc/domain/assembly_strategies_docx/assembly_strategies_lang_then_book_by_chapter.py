@@ -9,7 +9,6 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     tn_chapter_verses,
     tq_chapter_verses,
 )
-
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     AssemblyLayoutEnum,

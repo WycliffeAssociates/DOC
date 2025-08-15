@@ -10,6 +10,7 @@ from doc.domain.model import BCBook, LangDirEnum, TNBook, TQBook, USFMBook
 from doc.reviewers_guide.model import RGBook
 from doc.reviewers_guide.render_to_html import render_chapter
 
+
 logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5, H6 = "h1", "h2", "h3", "h4", "h5", "h6"

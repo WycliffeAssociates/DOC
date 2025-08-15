@@ -15,6 +15,7 @@ from docx.oxml.ns import qn  # type: ignore
 from docx.oxml.shared import OxmlElement  # type: ignore
 from docx.text.paragraph import Paragraph  # type: ignore
 
+
 logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5, H6 = "h1", "h2", "h3", "h4", "h5", "h6"

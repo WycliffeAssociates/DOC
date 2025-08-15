@@ -14,6 +14,7 @@ from doc.config import settings
 from doc.domain import parsing, resource_lookup
 from doc.domain.model import ResourceRequest, TWBook, TWNameContentPair, USFMBook
 
+
 logger = settings.logger(__name__)
 
 TW = "tw"

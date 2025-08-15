@@ -16,7 +16,7 @@ from typing import Mapping, Optional, Sequence
 import requests
 from cachetools import TTLCache, cached
 from doc.config import settings
-from doc.domain import worker
+from doc.domain import worker, parsing
 from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     NON_USFM_RESOURCE_TYPES,
@@ -27,8 +27,6 @@ from doc.domain.model import (
     ResourceLookupDto,
     SourceData,
 )
-from doc.domain import parsing
-
 from doc.reviewers_guide.model import BibleReference
 from doc.reviewers_guide.parser import (
     find_bible_references,
@@ -690,8 +688,6 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     ]
 
 
-
-
 def update_repo_components(
     repo_components: list[str],
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
@@ -981,8 +977,6 @@ def get_non_localized_book_names(
     return book_codes_and_names
 
 
-
-
 def get_book_names_from_usfm_metadata(
     resource_filepath: str,
     lang_code: str,
@@ -1052,8 +1046,6 @@ def chapters_in_books(
         for book_code, num_of_chapters in book_chapters.items()
     }
     return chapters_in_book
-
-
 
 
 def resource_lookup_dto(

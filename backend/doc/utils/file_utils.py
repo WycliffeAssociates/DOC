@@ -10,11 +10,12 @@ from contextlib import closing
 from datetime import datetime, timedelta
 from os.path import join
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional
 from urllib.request import urlopen
 
 import yaml
 from doc.config import settings
+
 
 logger = settings.logger(__name__)
 

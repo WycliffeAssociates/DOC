@@ -1,9 +1,8 @@
-from pprint import pprint
-from collections import defaultdict
 import re
+from collections import defaultdict
+from pprint import pprint
 
 from doc.config import settings
-from docx import Document  # type: ignore
 from doc.domain.bible_books import BOOK_NAMES
 from doc.domain.model import ChapterNum, LangDirEnum
 from doc.reviewers_guide.model import (
@@ -14,6 +13,7 @@ from doc.reviewers_guide.model import (
     BibleReference,
     ParsedText,
 )
+from docx import Document  # type: ignore
 
 
 # Pattern for chapter and verse references after Bible books

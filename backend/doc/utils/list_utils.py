@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+
 T = TypeVar("T", tuple[str, str], tuple[str, str, bool])
 
 

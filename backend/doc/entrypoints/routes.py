@@ -1,15 +1,13 @@
 from typing import Sequence
-from fastapi import APIRouter
 
 import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
 from doc.domain import document_generator, model, resource_lookup
 from doc.reviewers_guide.model import BibleReference
-
-from fastapi import HTTPException, status
-
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
+
 
 router = APIRouter()
 

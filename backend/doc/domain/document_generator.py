@@ -20,8 +20,6 @@ from doc.domain.assembly_strategies.assembly_strategies_lang_then_book_by_chapte
 )
 from doc.domain.assembly_strategies_docx import (
     assembly_strategies_book_then_lang_by_chapter as book_then_lang,
-)
-from doc.domain.assembly_strategies_docx import (
     assembly_strategies_lang_then_book_by_chapter as lang_then_book,
 )
 from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
@@ -29,7 +27,6 @@ from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
     add_one_column_section,
     add_page_break,
     add_two_column_section,
-    set_docx_language,
 )
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
@@ -70,6 +67,7 @@ from docx.enum.section import WD_SECTION  # type: ignore
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
+
 
 logger = settings.logger(__name__)
 

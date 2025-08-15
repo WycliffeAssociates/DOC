@@ -1,5 +1,7 @@
 import re
+
 from doc.config import settings
+
 
 logger = settings.logger(__name__)
 

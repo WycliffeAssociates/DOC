@@ -372,7 +372,7 @@ Pengajar Ti Pelesu
         """,
         )
 
-    @pytest.mark.focus
+    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_number_and_period(self) -> None:
         self.assertEqual(

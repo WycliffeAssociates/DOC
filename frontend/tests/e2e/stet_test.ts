@@ -18,6 +18,27 @@ test.describe('Desktop Tests', () => {
     await page.getByRole('button', { name: 'Generate File' }).click()
   })
 
+  test('test french stet', async ({ page }) => {
+    await page.goto('http://localhost:8001/stet')
+    await page.getByText('Français (French)').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByText('Cebuano ceb').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Generate File' }).click()
+  })
+
+  test('test search by language code', async ({ page }) => {
+    await page.goto('http://localhost:8001/stet')
+    await page.getByText('Português Brasileiro (').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Heart' }).click()
+    await page.getByPlaceholder('Search Heart Languages').click()
+    await page.getByPlaceholder('Search Heart Languages').fill('sxw')
+    await page.getByText('Sègbé').click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.locator('body')).toContainText('Sègbé(sxw-x-segbe)')
+  })
+
   test('test next back and edit', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByText('English').click()
@@ -88,16 +109,4 @@ test.describe('Mobile Tests', () => {
     await page.getByRole('button').first().click()
     await expect(page.getByLabel('Abé aba')).toBeChecked({ timeout: 1200000 })
   })
-})
-
-test('test search by language code', async ({ page }) => {
-  await page.goto('http://localhost:8001/stet')
-  await page.getByText('Português Brasileiro (').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('button', { name: 'Heart' }).click()
-  await page.getByPlaceholder('Search Heart Languages').click()
-  await page.getByPlaceholder('Search Heart Languages').fill('sxw')
-  await page.getByText('Sègbé').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('body')).toContainText('Sègbé(sxw-x-segbe)')
 })

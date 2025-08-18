@@ -190,7 +190,6 @@ def book_codes_and_names_from_manifest(
                 )
     # logger.debug("manifest_candidates: %s", manifest_candidates)
     if manifest_candidates:
-        # logger.debug("len(manifest_candidates): %s", len(manifest_candidates))
         candidate = manifest_candidates[0]
         suffix = str(Path(candidate).suffix)
         # book_codes_and_names: dict[str, str] = {}
@@ -209,7 +208,6 @@ def book_codes_and_names_from_manifest(
             json_data: JsonManifestData = json.loads(manifest_data)
             logger.debug("json_data: %s", json_data)
             project: JsonManifestBook = json_data["project"]
-            # TODO I think this needs modification
             book_codes_and_names = {project["id"]: project["name"]}
             logger.debug("book_codes_and_names from json: %s", book_codes_and_names)
     return book_codes_and_names

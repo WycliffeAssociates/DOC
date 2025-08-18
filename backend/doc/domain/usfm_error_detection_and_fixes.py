@@ -19,7 +19,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("ach-SS-acholi", "reg", "gal"),
     ("adh", "reg", "1th"),
     ("adn", "reg", "mat"),
-    # ("aec", "reg", "mat"), # unavailable from data API
     ("agd-x-namel", "reg", "2th"),
     ("ahm", "reg", "php"),
     ("ahm", "reg", "php"),
@@ -44,17 +43,12 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bi", "reg", "act"),
     ("bji", "reg", "mat"),
     ("bji", "reg", "1co"),
-    # ("bji", "reg", "jud"), # unavailable from data API
     ("bji", "reg", "1co"),
     ("bji", "reg", "luk"),
-    # ("bji", "reg", "gal"), # unavailable from data API
-    # ("bji", "reg", "col"), # unavailable from data API
     ("bji", "reg", "2pe"),
     ("bji", "reg", "luk"),
-    # ("bji", "reg", "col"), # unavailable from data API
     ("bji", "reg", "php"),
     ("bji", "reg", "heb"),
-    # ("bji", "reg", "1jn"), # unavailable from data API
     ("bji", "reg", "col"),
     ("bjz", "reg", "eph"),
     ("blo", "reg", "rom"),
@@ -67,7 +61,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bne", "reg", "gal"),
     ("bof", "reg", "mat"),
     ("bou", "reg", "gen"),
-    # ("btd-x-boang", "reg", "mat"), #  unavailable from data API as of 6/13/2025
     ("btd-x-boang", "reg", "1ti"),
     ("btd-x-boang", "reg", "phm"),
     ("btm", "reg", "phm"),
@@ -93,7 +86,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("byn", "reg", "2pe"),
     ("bzu", "reg", "tit"),
     ("cbt", "reg", "jos"),
-    # ("cbt", "reg", "rut"), # unavailable from data API
     ("cbt", "reg", "est"),
     ("ccp", "reg", "mat"),
     ("ccp", "reg", "gal"),
@@ -106,7 +98,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("erk-x-epang", "reg", "php"),
     ("eyo", "reg", "2jn"),
     ("eyo", "reg", "php"),
-    # ("gow", "reg", "3jn"), # 3jn is given as choice, but it is not cloned, so does it exist?
     ("gux-x-gourmantche", "reg", "deu"),
     ("gux-x-gourmantche", "reg", "jon"),
     ("gux-x-gourmantche", "reg", "jos"),
@@ -220,7 +211,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("pip", "reg", "rom"),
     ("pip", "reg", "mat"),
     ("pse-x-riauasli", "reg", "luk"),
-    # ("rmn-x-yerliroman", "reg", "mat"), # Feb 20, 2025: This language seems to not be served by data API. More investigation needed.
     # ("rmp", "ulb", "jas"),  # failed to fix; repo is cloned and source looks good other than duplicate \c markers, but we handle those (BUG?)
     ("ruc", "reg", "jhn"),
     ("ruc", "reg", "1ti"),
@@ -254,7 +244,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("spy-x-pok", "reg", "3jn"),
     ("ssc-x-kine", "reg", "2jn"),
     ("ssn-x-sanye", "reg", "col"),
-    # ("tar-x-ralamuli", "reg", "mrk"), # unavailable from data API
     ("tbp-x-airo", "reg", "php"),
     ("thr", "reg", "tit"),
     ("ttl-x-totelnamib", "reg", "3jn"),

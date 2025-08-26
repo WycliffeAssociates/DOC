@@ -5,6 +5,7 @@
 # cython # For pydantic: https://pydantic-docs.helpmanual.io/install/
 # TODO do we still need aiofiles?
 aiofiles
+cachetools
 celery
 celery-types
 docxtpl
@@ -29,6 +30,7 @@ termcolor
 uvicorn
 weasyprint
 
+types-cachetools
 types-PyYAML
 types-beautifulsoup4
 types-orjson

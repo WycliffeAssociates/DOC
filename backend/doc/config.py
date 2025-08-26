@@ -18,7 +18,6 @@ class Settings(BaseSettings):
     (which have higher priority).
     """
 
-    # GITHUB_API_TOKEN: str = "FOO"  # This might be used in a later version
     DATA_API_URL: HttpUrl
 
     USFM_RESOURCE_TYPES: Sequence[str] = [
@@ -41,6 +40,10 @@ class Settings(BaseSettings):
     CHECK_USFM: bool
     USE_LOCALIZED_BOOK_NAME: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
+
+    BOOK_NAME_FMT_STR: str = "<h2 class='book-name' style='text-align: center;'>{}</h2>"
+    END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
+    HR: str = "<hr/>"
 
     DOWNLOAD_ASSETS: bool  # If true then download assets, else clone assets
 

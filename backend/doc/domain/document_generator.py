@@ -20,8 +20,6 @@ from doc.domain.assembly_strategies.assembly_strategies_lang_then_book_by_chapte
 )
 from doc.domain.assembly_strategies_docx import (
     assembly_strategies_book_then_lang_by_chapter as book_then_lang,
-)
-from doc.domain.assembly_strategies_docx import (
     assembly_strategies_lang_then_book_by_chapter as lang_then_book,
 )
 from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
@@ -29,7 +27,6 @@ from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
     add_one_column_section,
     add_page_break,
     add_two_column_section,
-    set_docx_language,
 )
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
@@ -71,6 +68,7 @@ from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
 
+
 logger = settings.logger(__name__)
 
 
@@ -92,6 +90,8 @@ def initialize_document_request_and_key(
         document_request.limit_words,
         document_request.use_chapter_labels,
         document_request.use_section_visual_separator,
+        document_request.use_two_column_layout_for_tn_notes,
+        document_request.use_two_column_layout_for_tq_notes,
     )
     return document_request, document_request_key_
 
@@ -107,12 +107,7 @@ def locate_acquire_and_build_resource_objects(
     Sequence[BCBook],
     Sequence[RGBook],
 ]:
-    # Update the state of the worker process. This is used by the
-    # UI to report status.
     current_task.update_state(state="Locating assets")
-    # Docx didn't exist in cache so go ahead and start by getting the
-    # resource lookup DTOs for each resource request in the document
-    # request.
     resource_lookup_dtos = []
     for resource_request in document_request.resource_requests:
         resource_lookup_dto = resource_lookup.resource_lookup_dto(
@@ -122,16 +117,11 @@ def locate_acquire_and_build_resource_objects(
         )
         if resource_lookup_dto:
             resource_lookup_dtos.append(resource_lookup_dto)
-    # Determine which resource URLs were actually found.
     found_resource_lookup_dtos = [
         resource_lookup_dto
         for resource_lookup_dto in resource_lookup_dtos
         if resource_lookup_dto.url is not None
     ]
-    # if not found_resource_lookup_dtos:
-    #     raise exceptions.ResourceAssetFileNotFoundError(
-    #         message="No supported resource assets were found"
-    #     )
     current_task.update_state(state="Provisioning asset files")
     t0 = time.time()
     resource_dirs = [
@@ -145,7 +135,6 @@ def locate_acquire_and_build_resource_objects(
         "Time to provision asset files (acquire and write to disk): %s", t1 - t0
     )
     current_task.update_state(state="Parsing asset files")
-    # Initialize found resources from their provisioned assets.
     t0 = time.time()
     usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
         found_resource_lookup_dtos,
@@ -225,7 +214,12 @@ def generate_document(
     # generated and is fresh enough.
     if document_request.generate_pdf and file_needs_update(pdf_filepath_):
         current_task.update_state(state="Converting to PDF")
-        convert_html_to_pdf(html_filepath_, pdf_filepath_, document_request_key_)
+        convert_html_to_pdf(
+            html_filepath_,
+            pdf_filepath_,
+            document_request_key_,
+            document_request.use_prince,
+        )
         if should_send_email(document_request.email_address):
             attachments = [
                 Attachment(filepath=pdf_filepath_, mime_type=("application", "pdf"))
@@ -289,13 +283,6 @@ def generate_docx_document(
             bc_books,
             rg_books,
         )
-        # TODO At this point, like in generate_document, we should check the
-        # underlying HTML content to see if it contains verses and display a
-        # message in the document to the end user if it does not (so that they
-        # get some indication of why the scripture is missing).
-        #
-        # Construct sensical phrases to display for title1 and title2 on first
-        # page of Word document.
         title1, title2 = get_languages_title_page_strings(
             found_resource_lookup_dtos, usfm_books
         )
@@ -338,6 +325,8 @@ def document_request_key(
     limit_words: bool,
     use_chapter_labels: bool,
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -370,9 +359,9 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}'
     else:
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}'
     if len(document_request_key) >= max_filename_len:
         # The generated filename could be too long for the OS where this is
         # running. Therefore, use the current time as a document_request_key
@@ -468,6 +457,8 @@ def assemble_content(
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
                 document_request.use_section_visual_separator,
+                document_request.use_two_column_layout_for_tn_notes,
+                document_request.use_two_column_layout_for_tq_notes,
             )
         )
     elif (
@@ -484,26 +475,26 @@ def assemble_content(
                 rg_books,
                 cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
                 document_request.use_section_visual_separator,
+                document_request.use_two_column_layout_for_tn_notes,
+                document_request.use_two_column_layout_for_tq_notes,
             )
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)
     t0 = time.time()
     # Add the translation words definition section for each language requested.
-    unique_lang_codes = set()
-    for tw_book in tw_books:
-        if tw_book.lang_code not in unique_lang_codes:
-            unique_lang_codes.add(tw_book.lang_code)
-            content.extend(
-                translation_words_section(
-                    tw_book,
-                    usfm_books,
-                    document_request.limit_words,
-                    document_request.resource_requests,
-                )
+    unique_tw_books = filter_unique_by_lang_code(tw_books)
+    for tw_book in unique_tw_books:
+        content.extend(
+            translation_words_section(
+                tw_book,
+                usfm_books,
+                document_request.limit_words,
+                document_request.resource_requests,
             )
-            if document_request.use_section_visual_separator:
-                content.append(hr)
+        )
+        if document_request.use_section_visual_separator:
+            content.append(hr)
     t1 = time.time()
     logger.info("Time for add TW content to document: %s", t1 - t0)
     return content
@@ -561,6 +552,8 @@ def assemble_docx_content(
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
             document_request.use_section_visual_separator,
+            document_request.use_two_column_layout_for_tn_notes,
+            document_request.use_two_column_layout_for_tq_notes,
         )
     elif (
         document_request.assembly_strategy_kind
@@ -576,6 +569,8 @@ def assemble_docx_content(
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.chunk_size,
             document_request.use_section_visual_separator,
+            document_request.use_two_column_layout_for_tn_notes,
+            document_request.use_two_column_layout_for_tq_notes,
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)
@@ -607,10 +602,13 @@ def assemble_docx_content(
 
 
 # HTML to PDF converters:
-# princexml ($$$$) (fastest); also available through docraptor api ($$) but slow,
+# princexml ($$$$ or non-commercial with watermark) (fastest); we use
+# with non-commercial license (watermark on 1st page of pdf). Handles
+# layout flawlessly and is dramatically faster than weasyprint and
+# all other solutions.
+# weasyprint (does a nice job, we also use this),
 # wkhtmltopdf via pdfkit (can't handle column-count directive so can't use due to
 # multi-column layouts requirement),
-# weasyprint (does a nice job, we use this),
 # pagedjs-cli (does a really nice job, but is really slow - uses puppeteer underneath),
 # electron-pdf (similar speed to wkhtmltopdf) which uses chrome underneath the hood,
 # gotenburg which uses chrome under the hood and provides a nice api in Docker (untested),
@@ -620,6 +618,9 @@ def convert_html_to_pdf(
     html_filepath: str,
     pdf_filepath: str,
     document_request_key: str,
+    use_prince: bool,
+    default_converter: str = "weasyprint",
+    alternative_converter: str = "prince",
 ) -> None:
     """
     Generate PDF from HTML and copy it to output directory.
@@ -627,17 +628,15 @@ def convert_html_to_pdf(
     assert exists(html_filepath)
     logger.info("Generating PDF %s...", pdf_filepath)
     t0 = time.time()
-    # command = [
-    #     "ebook-convert",
-    #     html_filepath,
-    #     pdf_filepath,
-    #     "--disable-font-rescaling",
-    # ]
-    command = [
-        "weasyprint",
-        html_filepath,
-        pdf_filepath,
-    ]
+    if use_prince:
+        command = [
+            alternative_converter,
+            html_filepath,
+            "-o",
+            pdf_filepath,
+        ]
+    else:
+        command = [default_converter, html_filepath, pdf_filepath]
     logger.info("Generate PDF command: %s", " ".join(command))
     subprocess.run(
         command,
@@ -672,24 +671,33 @@ def convert_html_to_epub(
     logger.info("Time for converting HTML to ePub: %s", t1 - t0)
 
 
-def compose_document(
+def compose_docx_document(
     document_parts: list[DocumentPart], use_section_visual_separator: bool
 ) -> Document:
     doc = Document()
     html_to_docx = HtmlToDocx()
+    t0 = time.time()
     for part in document_parts:
         if part.contained_in_two_column_section:
             add_two_column_section(doc)
-            html_to_docx.add_html_to_document(part.content, doc)
+            try:
+                html_to_docx.add_html_to_document(part.content, doc)
+            except ValueError as e:
+                logger.exception(e)
         else:
             add_one_column_section(doc)
-            html_to_docx.add_html_to_document(part.content, doc)
+            try:
+                html_to_docx.add_html_to_document(part.content, doc)
+            except ValueError as e:
+                logger.exception(e)
         # Set the language for spellcheck
         # set_docx_language(doc, lang_code)
         if use_section_visual_separator and part.add_hr_p:
             add_hr(doc.paragraphs[-1])
         if part.add_page_break:
             add_page_break(doc)
+    t1 = time.time()
+    logger.info("Time for converting HTML to Docx: %s", t1 - t0)
     return doc
 
 
@@ -728,7 +736,7 @@ def convert_html_to_docx(
     new_section = doc.add_section(WD_SECTION.CONTINUOUS)
     new_section.start_type
     master = Composer(doc)
-    master.append(compose_document(document_parts, use_section_visual_separator))
+    master.append(compose_docx_document(document_parts, use_section_visual_separator))
     master.save(docx_filepath)
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %s", t1 - t0)
@@ -845,6 +853,10 @@ def get_languages_title_page_strings(
     book_names: dict[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> tuple[str, str]:
+    """
+    Construct sensical phrases to display for title1 and title2 for
+    first page of Word document.
+    """
     lang_codes = list({dto.lang_code for dto in resource_lookup_dtos})
 
     def get_language_details(lang_code: str) -> str:
@@ -879,7 +891,7 @@ def get_languages_title_page_strings(
             return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(resource_type_names)} for {', '.join(book_names_)}"
         return ""
 
-    lang0_title = get_language_details(lang_codes[0])
+    lang0_title = get_language_details(lang_codes[0]) if lang_codes else ""
     lang1_title = get_language_details(lang_codes[1]) if len(lang_codes) > 1 else ""
     return lang0_title, lang1_title
 

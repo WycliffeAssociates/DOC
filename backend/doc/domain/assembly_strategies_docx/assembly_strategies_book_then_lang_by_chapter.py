@@ -27,8 +27,6 @@ from doc.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
 
-BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
-
 
 def assemble_content_by_book_then_lang(
     usfm_books: Sequence[USFMBook],
@@ -40,6 +38,8 @@ def assemble_content_by_book_then_lang(
     assembly_layout_kind: AssemblyLayoutEnum,
     chunk_size: ChunkSizeEnum,
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[DocumentPart]:
@@ -92,6 +92,8 @@ def assemble_content_by_book_then_lang(
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                    use_two_column_layout_for_tq_notes,
                 )
             )
         elif not selected_usfm_books and selected_tn_books:
@@ -104,6 +106,8 @@ def assemble_content_by_book_then_lang(
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                    use_two_column_layout_for_tq_notes,
                 )
             )
         elif not selected_usfm_books and not selected_tn_books and selected_tq_books:
@@ -116,6 +120,7 @@ def assemble_content_by_book_then_lang(
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
                 )
             )
         elif (
@@ -146,9 +151,11 @@ def assemble_usfm_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     """
     Construct the Docx wherein at least one USFM resource exists, one column
@@ -254,7 +261,10 @@ def assemble_usfm_by_chapter(
             ]:
                 if chapter_num in tn_book.chapters:
                     tn_verses = tn_chapter_verses(
-                        tn_book, chapter_num, use_section_visual_separator
+                        tn_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
                     )
                     if tn_verses:
                         document_parts.append(
@@ -262,7 +272,7 @@ def assemble_usfm_by_chapter(
                                 content=tn_verses,
                                 is_rtl=tn_book
                                 and tn_book.lang_direction == LangDirEnum.RTL,
-                                contained_in_two_column_section=True,
+                                contained_in_two_column_section=use_two_column_layout_for_tn_notes,
                                 add_hr_p=False,
                                 use_section_visual_separator=use_section_visual_separator,
                             )
@@ -280,7 +290,10 @@ def assemble_usfm_by_chapter(
             ]:
                 if chapter_num in tq_book.chapters:
                     tq_verses = tq_chapter_verses(
-                        tq_book, chapter_num, use_section_visual_separator
+                        tq_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tq_notes,
                     )
                     if tq_verses:
                         document_parts.append(
@@ -288,7 +301,7 @@ def assemble_usfm_by_chapter(
                                 content=tq_verses,
                                 is_rtl=tq_book
                                 and tq_book.lang_direction == LangDirEnum.RTL,
-                                contained_in_two_column_section=True,
+                                contained_in_two_column_section=use_two_column_layout_for_tq_notes,
                                 add_hr_p=False,
                                 use_section_visual_separator=use_section_visual_separator,
                             )
@@ -332,6 +345,8 @@ def assemble_tn_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> list[DocumentPart]:
@@ -418,7 +433,10 @@ def assemble_tn_by_chapter(
             ]:
                 if chapter_num in tn_book.chapters:
                     tn_verses = tn_chapter_verses(
-                        tn_book, chapter_num, use_section_visual_separator
+                        tn_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
                     )
                     if tn_verses:
                         document_parts.append(
@@ -426,7 +444,7 @@ def assemble_tn_by_chapter(
                                 content=tn_verses,
                                 is_rtl=tn_book
                                 and tn_book.lang_direction == LangDirEnum.RTL,
-                                contained_in_two_column_section=True,
+                                contained_in_two_column_section=use_two_column_layout_for_tn_notes,
                                 add_hr_p=False,
                                 use_section_visual_separator=use_section_visual_separator,
                             )
@@ -441,7 +459,10 @@ def assemble_tn_by_chapter(
                 tq_book for tq_book in tq_books if tq_book.book_code == book_code
             ]:
                 tq_verses = tq_chapter_verses(
-                    tq_book, chapter_num, use_section_visual_separator
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
                 )
                 if tq_verses:
                     document_parts.append(
@@ -449,7 +470,7 @@ def assemble_tn_by_chapter(
                             content=tq_verses,
                             is_rtl=tq_book
                             and tq_book.lang_direction == LangDirEnum.RTL,
-                            contained_in_two_column_section=True,
+                            contained_in_two_column_section=use_two_column_layout_for_tq_notes,
                             add_hr_p=False,
                             use_section_visual_separator=use_section_visual_separator,
                         )
@@ -496,6 +517,7 @@ def assemble_tq_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tq_notes: bool,
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> list[DocumentPart]:
     """
@@ -538,7 +560,10 @@ def assemble_tq_by_chapter(
                 if tq_book.book_code == tq_book.book_code
             ]:
                 tq_verses = tq_chapter_verses(
-                    tq_book, chapter_num, use_section_visual_separator
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
                 )
                 if tq_verses:
                     document_parts.append(
@@ -546,7 +571,7 @@ def assemble_tq_by_chapter(
                             content=tq_verses,
                             is_rtl=tq_book
                             and tq_book.lang_direction == LangDirEnum.RTL,
-                            contained_in_two_column_section=True,
+                            contained_in_two_column_section=use_two_column_layout_for_tq_notes,
                             add_hr_p=False,
                             use_section_visual_separator=use_section_visual_separator,
                         )

@@ -1,5 +1,6 @@
 from typing import TypeVar
 
+
 T = TypeVar("T", tuple[str, str], tuple[str, str, bool])
 
 
@@ -11,3 +12,17 @@ def unique_tuples(lst: list[T]) -> list[T]:
     >>> assert unique_tuples(data_3) == [('x', 'y', True), ('x', 'y', False), ('a', 'b', True)]
     """
     return list(dict.fromkeys(lst))
+
+
+def unique_book_codes(lst: list[T]) -> list[T]:
+    """
+    >>> input_list = [("lev", "value1"), ("lev", "value2", True), ("abc", "value3"), ("abc", "value4", False)]
+    >>> result = unique_tuples(input_list)
+    [('lev', 'value1'), ('abc', 'value3')]
+    """
+    seen = {}
+    for item in lst:
+        key = item[0]
+        if key not in seen:
+            seen[key] = item
+    return list(seen.values())

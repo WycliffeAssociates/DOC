@@ -75,7 +75,7 @@ BOOK_NAMES: dict[str, str] = {
 }
 
 
-# Sort the books in canonical order so that groupby does what we want.
+# Establish a map by which books can be sorted in bible book order
 BOOK_ID_MAP = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
 
 BOOK_NUMBERS: Mapping[str, str] = {

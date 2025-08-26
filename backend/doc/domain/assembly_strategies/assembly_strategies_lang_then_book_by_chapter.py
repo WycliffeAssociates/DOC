@@ -27,10 +27,8 @@ from doc.domain.model import (
 )
 from doc.reviewers_guide.model import RGBook
 
-logger = settings.logger(__name__)
 
-END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
-BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
+logger = settings.logger(__name__)
 
 
 def assemble_content_by_lang_then_book(
@@ -42,6 +40,8 @@ def assemble_content_by_lang_then_book(
     rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[str]:
@@ -126,6 +126,8 @@ def assemble_content_by_lang_then_book(
                         bc_book,
                         rg_book,
                         use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
+                        use_two_column_layout_for_tq_notes,
                     )
                 )
             elif usfm_book is None and tn_book is not None:
@@ -139,6 +141,8 @@ def assemble_content_by_lang_then_book(
                         bc_book,
                         rg_book,
                         use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
+                        use_two_column_layout_for_tq_notes,
                     )
                 )
             elif usfm_book is None and tn_book is None and tq_book is not None:
@@ -152,6 +156,7 @@ def assemble_content_by_lang_then_book(
                         bc_book,
                         rg_book,
                         use_section_visual_separator,
+                        use_two_column_layout_for_tq_notes,
                     )
                 )
             elif (
@@ -184,10 +189,12 @@ def assemble_usfm_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
-    hr: str = "<hr/>",
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
+    hr: str = settings.HR,
     close_direction_html: str = "</div>",
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[str]:
     content = []
     content.append(usfm_language_direction_html(usfm_book))
@@ -219,10 +226,20 @@ def assemble_usfm_by_book(
                 chapter_commentary(bc_book, chapter_num, use_section_visual_separator)
             )
             content.append(
-                tn_chapter_verses(tn_book, chapter_num, use_section_visual_separator)
+                tn_chapter_verses(
+                    tn_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                )
             )
             content.append(
-                tq_chapter_verses(tq_book, chapter_num, use_section_visual_separator)
+                tq_chapter_verses(
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
+                )
             )
             content.append(
                 rg_chapter_verses(rg_book, chapter_num, use_section_visual_separator)
@@ -246,7 +263,9 @@ def assemble_tn_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     content = []
@@ -262,10 +281,20 @@ def assemble_tn_by_book(
                 chapter_commentary(bc_book, chapter_num, use_section_visual_separator)
             )
             content.append(
-                tn_chapter_verses(tn_book, chapter_num, use_section_visual_separator)
+                tn_chapter_verses(
+                    tn_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                )
             )
             content.append(
-                tq_chapter_verses(tq_book, chapter_num, use_section_visual_separator)
+                tq_chapter_verses(
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
+                )
             )
             content.append(
                 rg_chapter_verses(rg_book, chapter_num, use_section_visual_separator)
@@ -284,7 +313,8 @@ def assemble_tq_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    use_two_column_layout_for_tq_notes: bool,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     content = []
@@ -296,7 +326,12 @@ def assemble_tq_by_book(
             )
             content.append(chapter_heading(chapter_num))
             content.append(
-                tq_chapter_verses(tq_book, chapter_num, use_section_visual_separator)
+                tq_chapter_verses(
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
+                )
             )
             content.append(
                 rg_chapter_verses(rg_book, chapter_num, use_section_visual_separator)
@@ -314,7 +349,7 @@ def assemble_rg_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     """
@@ -374,7 +409,7 @@ def assemble_tw_by_book(
     bc_book: Optional[BCBook],
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
 ) -> list[str]:
     content = []

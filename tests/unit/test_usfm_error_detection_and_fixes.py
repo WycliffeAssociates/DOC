@@ -372,7 +372,7 @@ Pengajar Ti Pelesu
         """,
         )
 
-    @pytest.mark.focus
+    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_number_and_period(self) -> None:
         self.assertEqual(
@@ -623,6 +623,36 @@ Pengajar Ti Pelesu
 \v 16 Amin'izay gny hahafatarasika gny fitiava, satria Kristy nanolosy gny ainy hi asika. Isika avo koa dra tokony manolosy gny aisika ho an'ireo rahalahy. \v 17 Fa dre iza dre iza mana gny hanagnan'izao totolo zao zao, dra mahita gny fahasahiragnan'gny rahalahiny, dra mandrindry gny fony fangorahany anazy, amin'gny fomba manao akory gny hipetraran'gny fitiavan'Agnahary ao aminazy? \v 18 Ry zanako malalako, ao isika sy hitia amin'gny zaka dre koa amy vava, fa amin'gny asa vo fahamarigna.
 \v 19 Avy amin'izay gny hahafatarasika fa avy amin'gny fahamarina isika, dra mampatoky gny fosika eo anatrehany isika. \v 20 Fa raha magnahy asika gny fosika, Zagnahary dra lahibe noho gny fosika,dra mahafatasy gny raha-iaby Izy. \v 21 Ry malala, raha sy magnahy asika gny fosika, dra mana fahatokisa amin'Agnahary isika. \v 22 Dre ino dre ino angatahisika dra ho azosika laha taminazy, satria isika mitandry reo didiny vo manao ze tiany eo anatrehany.
 \v 23 Zao gny didiny: tokony mino gny agnaran'gny Zanany Jesosy Kristy dra mifakatia isika, tahaky gny fa nagnomezany asika ze didy zay. \v 24 Gny raiky ze mita reo didin'Agnahary dra mitoesy ao aminazy, dra Zagnahary mitoesy ao aminazy. Amin'izay gny hahafatarasika fa izy dra mitoera ao amisika, amin'gny Fagnahy ze nomeny asika.
+        """,
+        )
+
+    @pytest.mark.focus
+    @pytest.mark.usfm_fixes
+    def test_fix_missing_space_before_verse_marker5(self) -> None:
+        self.assertEqual(
+            fix_missing_space_before_verse_marker(
+                r"""
+\c 3
+\v 1 ጃላናታኖ፥ታኔ ሽንሳጋ ሺቻ አርጌ ካንእሽ ላምሴታቃ።\v 2 ጌሽ ራጎናሽን አቻም እምቼታ ቃሌ አርጌና ጋብ አንጋልአንችንኮታ ላሲንካያ ዻሌንካ አጃጃን ሄዳችንኩዋሴ ላምንታም ሽንስ ሄድሳምቃ ሲሮ ዎዳና ሽንካን ሻሻሳ።
+\v 3 ኦሎባንካ በሪድ ኢሳካ ሙግ ዺዻች ማራሃ ቆሳ ሜን ኢሳካ ቆሴች እንቴያ የቄ ካንታ ዱርካ ቤሄ፤\v 4 እስኑን፦እሳታ እንቶካ አብዴንኩ ሺድ ሃን?አባካ ሉብ ሬኖ ዎጋ፥ኡሞዴን አቻካ ጋጋር ቡብንኩ የዻሃናምና የዻቃ እይንንኮ።
+\v 5 ሕልአሌሁ ወይዳም አች ዻዹሁን ዎንታንታ ቃሌች ወይሁን ጋጋርማዽ ወይንታ ሀዳ የዻሃና ሃያዽንክ ሁባዽንኬይእ፤\v 6 ካ ማሮጋ ኦንእ ኦራ የዻኖ ዻዽ ወይሁን ዼማምቃ ቤኖ፤\v 7 ታኔ የዻ ሕልአሌሁያ ዻዹሁ አሞ ዎንቶ ዎንትሴይ ሜን በያ ሙሬንት ላሳካ ጋባላ ኤጋምንክቃ ኤቃሌች ጂራጋ ሆቄዽንኮ።
+\v 8  አሽኑ አሞ ቤላናታኖ፥ዎንታ ቃሩ ዼች ላሳ ኩማ ቤር፥ኩማ ቤርን ዼት ላሳና እሃ የቄ ካ ዼክ ባስ ሃባኬ።\v 9 ዼክዼካናጋ ዎልአሃና እሃኖና እሃኖናን ልሱሁ እሳታ እብድንታ ቃሌጋ ዎልኤይእ።እቶን ማሌ ቡብንካ ባዞጋ ዻቃቦንታ ማሌ አይንም ቤዬ የቄ ሀያዽቃ ሽንካ ማሮጋ ኦሳ።
+\v 10 ላስንች ላሳንኮ አሞ ሞርጋና እችቃ እንቴይታ ኤንእ ላሳን ሕልአሌሁ ጋናኔ ሆልችቃ ፍሌያ፥ሕልአለይ ኡሙን ጋናኔ ኦይዽችቃ ሙጅታ፥ዻዹሁን እሳድ ጎዻማኖ ባስን ቡባምቃ ቡቃ።
+\v 11 ኩባስ ቡባ ኡንጉ ሙጂያሃ እሃኖና ዎንታንታ ላሳታ እንቶን ኤጋችንኮምያ ሙዳንስሽንኮም፥ጌሽ የዽዮች ዎንቶ ፋካዻሽን ምይና እሃታ ሽንሳ ማልታ?\v 12 ኤ ላሳጋ ሕልአልሁን ቡቅቃ ሙጅያ፤ሕልአሌ ኡሞሽን ጋናኔ ኦይዽችቃ ህርአታ፤\v 13 እቶን ማሌ ጌሹንታሽ ግድ የታ ሃሬያ ሕልአሌያ ሀሬያ ዻዾቃ እሳታ አብዴንታ ቃሌና ኤጋና።
+\v 14 ታናጋ ቤላናታኖ ካንእታን ኤጋችንኮም ጨራ ማሌያ ቱፌማሌ እችንክ ናጌያሽን እሳድ አንጋርሳችንኩዋ ጄባኔ፥\v 15 ንንካ ላስ ኦሳንኮ ሽንታ ሁርስኔጋ እታ የቄ ዽጋኔ።ኦናናም ሃያዻሜዻ ሩዳ ንንኩ ጳውሎሴንኮ ቃድ እሳጋ ኡዋማኖ ቤካታ የቄናቃ ሽንሳጋ ሽቻኖ፥\v 16 ኢሳታ አርጌ ቡብንታና ቃድ ዋሬኖሃና ካባስ ማሩቃ ሽዳኖ።ኦንእ ሜና ቃሩ ሁባዻጋ ዽባ ባስቃ የዻ፥አካንአኔሃያ ጄባዴ ሜን ሕጋ ሺቻኖን ዶንስንኮሃና ካንእሃን ቃድ ኢሳታ ቤዮጋቃ ዶንስንኮ።
+\v 17 ኤናጋ አሽኑ ቤላናታኖ ካንእታን አችሽንኮም ቤችንኮ ማሮ ሙጫቴንካ ሜን የሩታሽን ድዻንችንክ ሽንታ ጀቡንታዴ ሃልችንኬ የቄ እስ ኤጋኔ፤\v 18 እቶን ማሌ ንንካ ላስያ ንንታ ዻሌ የሱስ ክርስቶሳታ ባዻሳድያ ቤካድ ዎዴ።እሳጋ ታኔን ኤሎባ ቃቴ ላሳካ ጋላ ጋንሶ እቶን አሜን።
+        """
+            ),
+            r"""
+\c 3
+\v 1 ጃላናታኖ፥ታኔ ሽንሳጋ ሺቻ አርጌ ካንእሽ ላምሴታቃ። \v 2 ጌሽ ራጎናሽን አቻም እምቼታ ቃሌ አርጌና ጋብ አንጋልአንችንኮታ ላሲንካያ ዻሌንካ አጃጃን ሄዳችንኩዋሴ ላምንታም ሽንስ ሄድሳምቃ ሲሮ ዎዳና ሽንካን ሻሻሳ።
+\v 3 ኦሎባንካ በሪድ ኢሳካ ሙግ ዺዻች ማራሃ ቆሳ ሜን ኢሳካ ቆሴች እንቴያ የቄ ካንታ ዱርካ ቤሄ፤ \v 4 እስኑን፦እሳታ እንቶካ አብዴንኩ ሺድ ሃን?አባካ ሉብ ሬኖ ዎጋ፥ኡሞዴን አቻካ ጋጋር ቡብንኩ የዻሃናምና የዻቃ እይንንኮ።
+\v 5 ሕልአሌሁ ወይዳም አች ዻዹሁን ዎንታንታ ቃሌች ወይሁን ጋጋርማዽ ወይንታ ሀዳ የዻሃና ሃያዽንክ ሁባዽንኬይእ፤ \v 6 ካ ማሮጋ ኦንእ ኦራ የዻኖ ዻዽ ወይሁን ዼማምቃ ቤኖ፤ \v 7 ታኔ የዻ ሕልአሌሁያ ዻዹሁ አሞ ዎንቶ ዎንትሴይ ሜን በያ ሙሬንት ላሳካ ጋባላ ኤጋምንክቃ ኤቃሌች ጂራጋ ሆቄዽንኮ።
+\v 8  አሽኑ አሞ ቤላናታኖ፥ዎንታ ቃሩ ዼች ላሳ ኩማ ቤር፥ኩማ ቤርን ዼት ላሳና እሃ የቄ ካ ዼክ ባስ ሃባኬ። \v 9 ዼክዼካናጋ ዎልአሃና እሃኖና እሃኖናን ልሱሁ እሳታ እብድንታ ቃሌጋ ዎልኤይእ።እቶን ማሌ ቡብንካ ባዞጋ ዻቃቦንታ ማሌ አይንም ቤዬ የቄ ሀያዽቃ ሽንካ ማሮጋ ኦሳ።
+\v 10 ላስንች ላሳንኮ አሞ ሞርጋና እችቃ እንቴይታ ኤንእ ላሳን ሕልአሌሁ ጋናኔ ሆልችቃ ፍሌያ፥ሕልአለይ ኡሙን ጋናኔ ኦይዽችቃ ሙጅታ፥ዻዹሁን እሳድ ጎዻማኖ ባስን ቡባምቃ ቡቃ።
+\v 11 ኩባስ ቡባ ኡንጉ ሙጂያሃ እሃኖና ዎንታንታ ላሳታ እንቶን ኤጋችንኮምያ ሙዳንስሽንኮም፥ጌሽ የዽዮች ዎንቶ ፋካዻሽን ምይና እሃታ ሽንሳ ማልታ? \v 12 ኤ ላሳጋ ሕልአልሁን ቡቅቃ ሙጅያ፤ሕልአሌ ኡሞሽን ጋናኔ ኦይዽችቃ ህርአታ፤ \v 13 እቶን ማሌ ጌሹንታሽ ግድ የታ ሃሬያ ሕልአሌያ ሀሬያ ዻዾቃ እሳታ አብዴንታ ቃሌና ኤጋና።
+\v 14 ታናጋ ቤላናታኖ ካንእታን ኤጋችንኮም ጨራ ማሌያ ቱፌማሌ እችንክ ናጌያሽን እሳድ አንጋርሳችንኩዋ ጄባኔ፥ \v 15 ንንካ ላስ ኦሳንኮ ሽንታ ሁርስኔጋ እታ የቄ ዽጋኔ።ኦናናም ሃያዻሜዻ ሩዳ ንንኩ ጳውሎሴንኮ ቃድ እሳጋ ኡዋማኖ ቤካታ የቄናቃ ሽንሳጋ ሽቻኖ፥ \v 16 ኢሳታ አርጌ ቡብንታና ቃድ ዋሬኖሃና ካባስ ማሩቃ ሽዳኖ።ኦንእ ሜና ቃሩ ሁባዻጋ ዽባ ባስቃ የዻ፥አካንአኔሃያ ጄባዴ ሜን ሕጋ ሺቻኖን ዶንስንኮሃና ካንእሃን ቃድ ኢሳታ ቤዮጋቃ ዶንስንኮ።
+\v 17 ኤናጋ አሽኑ ቤላናታኖ ካንእታን አችሽንኮም ቤችንኮ ማሮ ሙጫቴንካ ሜን የሩታሽን ድዻንችንክ ሽንታ ጀቡንታዴ ሃልችንኬ የቄ እስ ኤጋኔ፤ \v 18 እቶን ማሌ ንንካ ላስያ ንንታ ዻሌ የሱስ ክርስቶሳታ ባዻሳድያ ቤካድ ዎዴ።እሳጋ ታኔን ኤሎባ ቃቴ ላሳካ ጋላ ጋንሶ እቶን አሜን።
         """,
         )
 

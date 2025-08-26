@@ -23,6 +23,8 @@ billiard==4.2.1
     # via celery
 brotli==1.1.0
     # via fonttools
+cachetools==6.1.0
+    # via -r ./backend/requirements.in
 celery==5.4.0
     # via
     #   -r ./backend/requirements.in
@@ -203,6 +205,8 @@ tornado==6.4.2
 typer==0.13.1
     # via fastapi-cli
 types-beautifulsoup4==4.12.0.20241020
+    # via -r ./backend/requirements.in
+types-cachetools==6.1.0.20250717
     # via -r ./backend/requirements.in
 types-html5lib==1.1.11.20241018
     # via types-beautifulsoup4

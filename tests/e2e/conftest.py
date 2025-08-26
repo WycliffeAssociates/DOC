@@ -55,7 +55,7 @@ def random_non_english_lang_code2() -> str:
 
 @pytest.fixture(params=bible_books.BOOK_NAMES.keys())
 def book_code(request: Any) -> Any:
-    """All book names sequentially, but one at a time."""
+    """All book codes sequentially, but one at a time."""
     return request.param
 
 

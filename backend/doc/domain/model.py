@@ -6,7 +6,7 @@ validation and JSON serialization.
 """
 
 from enum import Enum
-from typing import Any, NamedTuple, Optional, Sequence, TypedDict, final
+from typing import NamedTuple, Optional, Sequence, TypedDict, final
 
 from doc.config import settings
 from doc.domain.bible_books import BOOK_NAMES
@@ -201,7 +201,25 @@ class DocumentRequest(BaseModel):
     # is True, then the chapter label will be localized to the language(s)
     # requested.
     use_chapter_labels: bool = False
-    # Indiciate whether to show visual separator between sections, e.g., hr element
+    # We have two PDF processors that we can use: Weasyprint and Princexml.
+    # Weasyprint is an open source project and produces decent PDFs, but is
+    # slow and doesn't always obey the HTML and CSS formatting exactly,
+    # e.g., sometimes text is flowed around chapter numbers as it should be
+    # and sometimes it isn't (when CSS dictates it). It is a bug in
+    # weasyprint. Princexml is a top of class closed source solution.
+    # Princexml is the fastest HTML to PDF converter known and its fidelity
+    # to CSS is best in class. We are able to use Princexml under a
+    # non-commercial license since it leaves a Princexml logo on the first
+    # page of the generated PDF. The logo isn't too obtrusive. One may
+    # choose to use Princexml rather than Weasyprint by setting use_prince
+    # to True.
+    use_prince: bool = False
+    # Some languages, e.g., Khmer, don't layout well in 2 column
+    use_two_column_layout_for_tn_notes: bool = False
+    # Some languages, e.g., Khmer, don't layout well in 2 column
+    use_two_column_layout_for_tq_notes: bool = False
+
+    # Indicate whether to show visual separator between sections, e.g., hr element
     use_section_visual_separator: bool = False
     # Indicate whether TN book intros should be included. Currently,
     # the content team does not want them included.

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SelectElement } from './types'
-  import Switch from './Switch.svelte'
+  import Switch from '$lib/Switch.svelte'
   import WizardBreadcrumb from '$lib/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/WizardBasket.svelte'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
@@ -13,7 +13,10 @@
     documentRequestKeyStore,
     settingsUpdated,
     useChapterLabelsStore,
-    useSectionVisualSeparatorStore
+    useSectionVisualSeparatorStore,
+    usePrinceStore,
+    useTwoColumnLayoutForTnNotesStore,
+    useTwoColumnLayoutForTqNotesStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
   import {
@@ -28,6 +31,8 @@
   import GenerateDocument from './GenerateDocument.svelte'
   import LogRocket from 'logrocket'
   import CheckIcon from '$lib/CheckIcon.svelte'
+  import OneColumnLayoutIcon from '$lib/OneColumnLayoutIcon.svelte'
+  import TwoColumnLayoutIcon from '$lib/TwoColumnLayoutIcon.svelte'
 
   let showAdvanced = false // Show optional/advanced settings flag
 
@@ -38,23 +43,30 @@
   // Set default value of chapter
   $assemblyStrategyChunkSizeStore = chapter.id
 
-  // The 3rd party HTML to PDF conversion library we use, weasyprint,
-  // doesn't seem to be able to handle line length for the Khmer language
-  // which results in words overlapping each other when two column
-  // layout of Khmer content is displayed. Only TN and TQ resource types
-  // use two column layout and thus if those are selected by the user
-  // then the UI will exclude PDF as an output format choice for
-  // Khmer.
-  let kmRegexp = new RegExp('km, tn, .*|km, tq, .*')
-  let showPdfAsOption: boolean = true
-  // $: console.log(`showPdfAsOption: ${showPdfAsOption}`)
+  // Only show optional settings that are relevant to the resources
+  // the user has chosen.
+  let usfmRegex = new RegExp(
+    'avd,.*|ayt,.*|blv,.*|cuv,.*|f10,.*|nav,.*|reg,.*|ugnt,.*|uhb,.*|ulb,.*|usfm,.*'
+  )
+  let tnRegex = new RegExp('tn, .*')
+  let tqRegex = new RegExp('tq, .*')
+  let showUsfmSettingsAsOption: boolean = false
+  let showTnTwoColAsOption: boolean = false
+  let showTqTwoColAsOption: boolean = false
   $: {
     if ($resourceTypesStore) {
-      if ($resourceTypesStore.some((item) => kmRegexp.test(item))) {
-        showPdfAsOption = false
+      if ($resourceTypesStore.some((item) => usfmRegex.test(item))) {
+        showUsfmSettingsAsOption = true
+      }
+      if ($resourceTypesStore.some((item) => tnRegex.test(item))) {
+        showTnTwoColAsOption = true
+      }
+      if ($resourceTypesStore.some((item) => tqRegex.test(item))) {
+        showTqTwoColAsOption = true
       }
     }
   }
+  $: console.log(`resourceTypesStore: ${$resourceTypesStore}`)
 
   $: showEmail = false
   $: showEmailCaptured = false
@@ -107,7 +119,6 @@
         </div>
       </button>
     </div>
-    <!-- main content -->
     <main class="flex-1 overflow-y-auto p-4">
       <h3 class="mb-2 mt-2 text-2xl text-[#33445C]">File type</h3>
       <div class="ml-4">
@@ -143,22 +154,33 @@
             <span class="text-xl text-[#33445C]">ePub</span>
           </label>
         </div>
-        {#if showPdfAsOption}
-          <div class="mb-2">
-            <label>
-              <input
-                name="docType"
-                value={'pdf'}
-                bind:group={$docTypeStore}
-                type="radio"
-                on:change={() => {
-                  $settingsUpdated = true
-                  $errorStore = ''
-                }}
-                class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-              />
-              <span class="text-xl text-[#33445C]">PDF</span>
-            </label>
+        <div class="mb-2">
+          <label>
+            <input
+              name="docType"
+              value={'pdf'}
+              bind:group={$docTypeStore}
+              type="radio"
+              on:change={() => {
+                $settingsUpdated = true
+                $errorStore = ''
+              }}
+              class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+            />
+            <span class="text-xl text-[#33445C]">PDF</span>
+          </label>
+        </div>
+        {#if $docTypeStore === 'pdf'}
+          <div class="mb-2 mt-6 flex">
+            <Switch bind:checked={$usePrinceStore} id="use-prince" />
+            <span class="ml-2 text-xl text-[#33445C]"
+              >Use <a
+                class="text-blue-600 visited:text-purple-600"
+                href="https://www.princexml.com"
+                target="_blank">PrinceXml</a
+              > to produce the PDF (much faster and better quality, but with Prince's 'P' logo at top
+              right of first page of PDF)</span
+            >
           </div>
         {/if}
       </div>
@@ -231,12 +253,14 @@
       {#if showAdvanced}
         <h3 class="mb-2 mt-2 text-2xl text-[#33445C]">Optional Settings</h3>
         <div class="ml-4">
-          <div class="mb-2 mt-6 flex">
-            <Switch bind:checked={$useChapterLabelsStore} id="use-chapter-labels" />
-            <span class="ml-2 text-xl text-[#33445C]"
-              >Use chapter labels, e.g., 'Chapter 1' instead of '1'</span
-            >
-          </div>
+          {#if showUsfmSettingsAsOption}
+            <div class="mb-2 mt-6 flex">
+              <Switch bind:checked={$useChapterLabelsStore} id="use-chapter-labels" />
+              <span class="ml-2 text-xl text-[#33445C]"
+                >Use chapter labels, e.g., 'Chapter 1' instead of '1'</span
+              >
+            </div>
+          {/if}
           <div class="mb-2 mt-6 flex">
             <Switch
               bind:checked={$useSectionVisualSeparatorStore}
@@ -246,6 +270,64 @@
               >Show visual separator (horizontal line) between sections</span
             >
           </div>
+          {#if showTnTwoColAsOption}
+            <div class="mb-2 mt-6 flex items-center">
+              <Switch
+                bind:checked={$useTwoColumnLayoutForTnNotesStore}
+                id="use-two-column-layout-for-tn"
+              />
+              {#if $useTwoColumnLayoutForTnNotesStore}
+                <span class="ml-2 text-xl text-[#33445C]">Translation notes layout:</span>
+                <TwoColumnLayoutIcon />
+                <div
+                  class="tooltip tooltip-info"
+                  data-tip="A few
+                                                            languages,
+                                                            e.g.,
+                                                            Khmer,
+                                                            don't
+                                                            render
+                                                            well in
+                                                            two
+                                                            columns."
+                >
+                  ℹ️
+                </div>
+              {:else}
+                <span class="ml-2 text-xl text-[#33445C]">Translation notes layout:</span>
+                <OneColumnLayoutIcon />
+              {/if}
+            </div>
+          {/if}
+          {#if showTqTwoColAsOption}
+            <div class="mb-2 mt-6 flex items-center">
+              <Switch
+                bind:checked={$useTwoColumnLayoutForTqNotesStore}
+                id="use-two-column-layout-for-tq"
+              />
+              {#if $useTwoColumnLayoutForTqNotesStore}
+                <span class="ml-2 text-xl text-[#33445C]">Translation questions layout:</span>
+                <TwoColumnLayoutIcon />
+                <div
+                  class="tooltip tooltip-info"
+                  data-tip="A few
+                                                            languages,
+                                                            e.g.,
+                                                            Khmer,
+                                                            don't
+                                                            render
+                                                            well in
+                                                            two
+                                                            columns."
+                >
+                  ℹ️
+                </div>
+              {:else}
+                <span class="ml-2 text-xl text-[#33445C]">Translation questions layout:</span>
+                <OneColumnLayoutIcon />
+              {/if}
+            </div>
+          {/if}
         </div>
       {/if}
       <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Notification</h3>

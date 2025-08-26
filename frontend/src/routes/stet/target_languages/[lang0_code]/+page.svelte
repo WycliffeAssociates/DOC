@@ -112,17 +112,23 @@
   }
 
   let gatewaySearchTerm: string = ''
-  let heartSearchTerm: string = ''
   let filteredGatewayCodeAndNames: Array<string> = []
-  let filteredHeartCodeAndNames: Array<string> = []
-  // Reactive search filtering
   $: {
-    filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item) =>
-      getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
-    )
-    filteredHeartCodeAndNames = heartCodesAndNames.filter((item) =>
-      getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
-    )
+    if (gatewayCodesAndNames) {
+      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item: string) =>
+        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
+      )
+    }
+  }
+
+  let heartSearchTerm: string = ''
+  let filteredHeartCodeAndNames: Array<string> = []
+  $: {
+    if (heartCodesAndNames) {
+      filteredHeartCodeAndNames = heartCodesAndNames.filter((item: string) =>
+        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
+      )
+    }
   }
 
   let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0

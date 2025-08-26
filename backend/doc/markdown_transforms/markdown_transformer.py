@@ -1,14 +1,11 @@
-from os.path import exists, join
 import re
+from os.path import exists, join
 from re import finditer, search
 from typing import Sequence
 
 from doc.config import settings
 from doc.domain.bible_books import BOOK_NUMBERS
 from doc.domain.model import ResourceRequest
-from doc.markdown_transforms.model import (
-    WikiLink,
-)
 from doc.markdown_transforms.link_regexes import (
     TA_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_HTTPS_LINK_RE,
@@ -29,8 +26,12 @@ from doc.markdown_transforms.link_regexes import (
     TW_WIKI_RC_LINK_RE2,
     WIKI_LINK_RE,
 )
+from doc.markdown_transforms.model import (
+    WikiLink,
+)
 from doc.utils.file_utils import read_file
 from doc.utils.tw_utils import localized_translation_word
+
 
 logger = settings.logger(__name__)
 
@@ -559,6 +560,8 @@ def transform_ta_wiki_rc_links(source: str) -> str:
     return source
 
 
+# TODO zh gen, e.g., 1:20 you end up with things like:（参：）. We
+# should probably remove the whole parenthesized expression.
 def transform_ta_star_rc_links(source: str) -> str:
     """
     Transform the translation academy rc wikilink into source anchor link
@@ -573,6 +576,8 @@ def transform_ta_star_rc_links(source: str) -> str:
     return source
 
 
+# TODO zh gen, e.g., 1:20 you end up with things like:（参：）. We
+# should probably remove the whole parenthesized expression.
 def transform_ta_markdown_links(source: str) -> str:
     """
     Transform the translation academy markdown link into source anchor link

@@ -29,6 +29,7 @@ from doc.domain.model import (
 from doc.reviewers_guide.model import RGBook
 from doc.utils.number_utils import is_even
 
+
 logger = settings.logger(__name__)
 
 HTML_ROW_BEGIN: str = "<div class='row'>"
@@ -37,8 +38,6 @@ HTML_COLUMN_BEGIN: str = "<div class='column'>"
 HTML_COLUMN_END: str = "</div>"
 HTML_COLUMN_LEFT_BEGIN: str = "<div class='column-left'>"
 HTML_COLUMN_RIGHT_BEGIN: str = "<div class='column-right'>"
-END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
-BOOK_NAME_FMT_STR: str = "<h2 style='text-align: center;'>{}</h2>"
 
 
 def assemble_content_by_book_then_lang(
@@ -50,6 +49,8 @@ def assemble_content_by_book_then_lang(
     rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> str:
@@ -105,6 +106,8 @@ def assemble_content_by_book_then_lang(
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                    use_two_column_layout_for_tq_notes,
                 )
             )
         elif (
@@ -124,6 +127,8 @@ def assemble_content_by_book_then_lang(
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                    use_two_column_layout_for_tq_notes,
                 )
             )
         elif (
@@ -144,6 +149,7 @@ def assemble_content_by_book_then_lang(
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
                 )
             )
         elif (
@@ -182,6 +188,8 @@ def assemble_content_by_book_then_lang(
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
+                    use_two_column_layout_for_tq_notes,
                 )
             )
     return "".join(content)
@@ -195,12 +203,14 @@ def assemble_usfm_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
-    hr: str = "<hr/>",
+    hr: str = settings.HR,
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
 ) -> list[str]:
     """
     Construct the HTML wherein at least one USFM resource exists, one column
@@ -282,7 +292,10 @@ def assemble_usfm_by_chapter(
             ]:
                 if chapter_num in tn_book.chapters:
                     tn_verses = tn_chapter_verses(
-                        tn_book, chapter_num, use_section_visual_separator
+                        tn_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
                     )
                     if tn_verses:
                         content.append(tn_language_direction_html(tn_book))
@@ -294,7 +307,10 @@ def assemble_usfm_by_chapter(
             ]:
                 if chapter_num in tq_book.chapters:
                     tq_verses = tq_chapter_verses(
-                        tq_book, chapter_num, use_section_visual_separator
+                        tq_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tq_notes,
                     )
                     if tq_verses:
                         content.append(tq_language_direction_html(tq_book))
@@ -328,7 +344,9 @@ def assemble_tn_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
@@ -393,7 +411,10 @@ def assemble_tn_by_chapter(
             ]:
                 if chapter_num in tn_book.chapters:
                     tn_verses = tn_chapter_verses(
-                        tn_book, chapter_num, use_section_visual_separator
+                        tn_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tn_notes,
                     )
                     content.append(tn_language_direction_html(tn_book))
                     content.append(tn_verses)
@@ -403,7 +424,10 @@ def assemble_tn_by_chapter(
             ]:
                 if chapter_num in tq_book.chapters:
                     tq_verses = tq_chapter_verses(
-                        tq_book, chapter_num, use_section_visual_separator
+                        tq_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tq_notes,
                     )
                     content.append(tq_language_direction_html(tq_book))
                     content.append(tq_verses)
@@ -431,7 +455,8 @@ def assemble_tq_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    use_two_column_layout_for_tq_notes: bool,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> list[str]:
@@ -472,7 +497,10 @@ def assemble_tq_by_chapter(
             ]:
                 if chapter_num in tq_book.chapters:
                     tq_verses = tq_chapter_verses(
-                        tq_book, chapter_num, use_section_visual_separator
+                        tq_book,
+                        chapter_num,
+                        use_section_visual_separator,
+                        use_two_column_layout_for_tq_notes,
                     )
                     if tq_verses:
                         content.append(tq_language_direction_html(tq_book))
@@ -508,7 +536,7 @@ def assemble_tw_by_chapter(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
-    end_of_chapter_html: str = END_OF_CHAPTER_HTML,
+    end_of_chapter_html: str = settings.END_OF_CHAPTER_HTML,
 ) -> list[str]:
     content = []
 
@@ -534,6 +562,8 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
     use_section_visual_separator: bool,
+    use_two_column_layout_for_tn_notes: bool,
+    use_two_column_layout_for_tq_notes: bool,
     html_row_begin: str = HTML_ROW_BEGIN,
     html_column_begin: str = HTML_COLUMN_BEGIN,
     html_column_left_begin: str = HTML_COLUMN_LEFT_BEGIN,
@@ -542,7 +572,7 @@ def assemble_usfm_by_chapter_2c_sl_sr(
     html_row_end: str = HTML_ROW_END,
     close_direction_html: str = "</div>",
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
-    fmt_str: str = BOOK_NAME_FMT_STR,
+    fmt_str: str = settings.BOOK_NAME_FMT_STR,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> list[str]:
     """
@@ -745,7 +775,10 @@ def assemble_usfm_by_chapter_2c_sl_sr(
             tn_verses = None
             for idx, tn_book in enumerate(tn_books):
                 tn_verses = tn_chapter_verses(
-                    tn_book, chapter_num, use_section_visual_separator
+                    tn_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tn_notes,
                 )
                 if tn_verses:
                     if is_even(idx):
@@ -761,7 +794,10 @@ def assemble_usfm_by_chapter_2c_sl_sr(
             tq_verses = None
             for idx, tq_book in enumerate(tq_books):
                 tq_verses = tq_chapter_verses(
-                    tq_book, chapter_num, use_section_visual_separator
+                    tq_book,
+                    chapter_num,
+                    use_section_visual_separator,
+                    use_two_column_layout_for_tq_notes,
                 )
                 if tq_verses:
                     if is_even(idx):

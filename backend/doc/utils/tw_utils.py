@@ -14,6 +14,7 @@ from doc.config import settings
 from doc.domain import parsing, resource_lookup
 from doc.domain.model import ResourceRequest, TWBook, TWNameContentPair, USFMBook
 
+
 logger = settings.logger(__name__)
 
 TW = "tw"
@@ -123,9 +124,8 @@ def translation_words_section(
     the list of all translation words for this language, book combination.
     Limit the translation words to only those that appear in the USFM
     resouce chosen if limit_words is True and a USFM resource was also
-    chosen.
+    chosen otherwise include all the translation words for the language.
     """
-
     content = []
     if tw_book.name_content_pairs:
         content.append(resource_type_name_fmt_str.format(tw_book.resource_type_name))
@@ -147,9 +147,17 @@ def get_selected_name_content_pairs(
     selected_name_content_pairs = []
     if usfm_books and limit_words:
         selected_name_content_pairs = filter_name_content_pairs(tw_book, usfm_books)
-    elif not usfm_books and limit_words:
+    elif (
+        not usfm_books and limit_words
+    ):  # This branch is necessarily expensive computationally and in IO
+        t0 = time.time()
         usfm_books = fetch_usfm_book_content_units(resource_requests)
         selected_name_content_pairs = filter_name_content_pairs(tw_book, usfm_books)
+        t1 = time.time()
+        logger.info(
+            "Time for acquiring and filtering TW content based on books chosen: %s",
+            t1 - t0,
+        )
     else:
         selected_name_content_pairs = tw_book.name_content_pairs
     return selected_name_content_pairs
@@ -159,6 +167,7 @@ def filter_name_content_pairs(
     tw_book: TWBook, usfm_books: Optional[Sequence[USFMBook]]
 ) -> list[TWNameContentPair]:
     selected_name_content_pairs = []
+    added_pairs = set()
     if usfm_books:
         for name_content_pair in tw_book.name_content_pairs:
             for usfm_book in usfm_books:
@@ -167,7 +176,9 @@ def filter_name_content_pairs(
                         re.escape(name_content_pair.localized_word),
                         chapter.content,
                     ):
-                        selected_name_content_pairs.append(name_content_pair)
+                        if name_content_pair not in added_pairs:
+                            selected_name_content_pairs.append(name_content_pair)
+                            added_pairs.add(name_content_pair)
                         break
     return selected_name_content_pairs
 

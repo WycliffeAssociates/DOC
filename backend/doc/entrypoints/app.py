@@ -1,18 +1,19 @@
 """This module provides the FastAPI API definition."""
 
+import shutil
 from os import makedirs
 from os.path import join, exists
-import shutil
 
 from doc.config import settings
 from doc.domain import exceptions
 from doc.entrypoints.routes import router as doc_router
-from stet.entrypoints.routes import router as stet_router
-from passages.entrypoints.routes import router as passages_router
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from passages.entrypoints.routes import router as passages_router
+from stet.entrypoints.routes import router as stet_router
+
 
 # Docker container paths
 DOCKER_BASE_DIR = "/app"
@@ -82,10 +83,7 @@ async def validation_exception_handler(
     )
 
 
-# Until reviewer's guides can be accessed via data API, create their
-# directory and copy them into place
-@app.on_event("startup")
-async def initialize_assets() -> None:
+def initialize_assets() -> None:
     """
     Ensures the en_rg directory and the .docx file exist in the assets_download volume.
     """
@@ -95,7 +93,9 @@ async def initialize_assets() -> None:
             if not exists(DOCKER_DOCX_FILE_DEST):
                 shutil.copy(DOCKER_DOCX_FILE_SRC, DOCKER_DOCX_FILE_DEST)
                 if not exists(DOCKER_DOCX_FILE_DEST):
-                    raise AssertionError("en_rg_nt_survey.docx not copied into place at startup!")
+                    raise AssertionError(
+                        "en_rg_nt_survey.docx not copied into place at startup!"
+                    )
         elif exists(LOCAL_ASSETS_DOWNLOAD_DIR):  # Executing outside Docker container
             makedirs(LOCAL_EN_RG_DIR, exist_ok=True)
             if not exists(LOCAL_DOCX_FILE_DEST):
@@ -103,6 +103,13 @@ async def initialize_assets() -> None:
         print("Assets initialized successfully.")
     except Exception as e:
         print(f"Error initializing assets: {e}")
+
+
+# Until reviewer's guides can be accessed via data API, create their
+# directory and copy them into place
+@app.on_event("startup")
+async def startup() -> None:
+    initialize_assets()
 
 
 app.include_router(doc_router)

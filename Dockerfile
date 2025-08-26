@@ -26,7 +26,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # For weasyprint
     pango1.0-tools \
     # For fc-cache
-    fontconfig
+    fontconfig \
+    # For princexml
+    fonts-khmeros \
+    fonts-lklug-sinhala \
+    fonts-tlwg-garuda-otf \
+    fonts-lohit-orya \
+    fonts-lohit-mlym \
+    fonts-lohit-knda \
+    fonts-lohit-telu \
+    fonts-lohit-taml \
+    fonts-lohit-gujr \
+    fonts-lohit-guru \
+    fonts-lohit-beng-bengali \
+    fonts-lohit-deva \
+    fonts-noto \
+    # fonts-noto-core \
+    # fonts-noto-unhinted \
+    fonts-noto-cjk \
+    fonts-dzongkha \
+    fonts-tibetan-machine \
+    fonts-baekmuk \
+    fonts-ipafont-mincho \
+    fonts-arphic-uming \
+    fonts-opensymbol \
+    fonts-liberation2 \
+    libaom3 \
+    libavif15 \
+    libgif7 \
+    libjpeg62-turbo \
+    liblcms2-2 \
+    libtiff6 \
+    libwebp7 \
+    libwebpdemux2 \
+ && fc-cache -f -v
+
+# Download and install the PrinceXML .deb file
+RUN wget https://www.princexml.com/download/prince_16.1-1_debian12_amd64.deb \
+    && dpkg -i prince_16.1-1_debian12_amd64.deb || apt-get install -fy
 
 # Get and install needed fonts.
 RUN cd /tmp \
@@ -115,6 +152,3 @@ USER appuser
 
 # Expose necessary ports (if any)
 EXPOSE 8000
-
-# Command to run the application
-CMD ["python", "backend/main.py"]

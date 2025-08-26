@@ -19,7 +19,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("ach-SS-acholi", "reg", "gal"),
     ("adh", "reg", "1th"),
     ("adn", "reg", "mat"),
-    ("aec", "reg", "mat"),
     ("agd-x-namel", "reg", "2th"),
     ("ahm", "reg", "php"),
     ("ahm", "reg", "php"),
@@ -44,18 +43,8 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bi", "reg", "act"),
     ("bji", "reg", "mat"),
     ("bji", "reg", "1co"),
-    ("bji", "reg", "jud"),
-    ("bji", "reg", "1co"),
     ("bji", "reg", "luk"),
-    ("bji", "reg", "gal"),
-    ("bji", "reg", "col"),
-    ("bji", "reg", "2pe"),
-    ("bji", "reg", "luk"),
-    ("bji", "reg", "col"),
-    ("bji", "reg", "php"),
     ("bji", "reg", "heb"),
-    ("bji", "reg", "1jn"),
-    ("bji", "reg", "col"),
     ("bjz", "reg", "eph"),
     ("blo", "reg", "rom"),
     ("blo", "reg", "act"),
@@ -67,7 +56,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bne", "reg", "gal"),
     ("bof", "reg", "mat"),
     ("bou", "reg", "gen"),
-    # ("btd-x-boang", "reg", "mat"), #  unavailable from data API as of 6/13/2025
+    ("btd-x-boang", "reg", "mat"),
     ("btd-x-boang", "reg", "1ti"),
     ("btd-x-boang", "reg", "phm"),
     ("btm", "reg", "phm"),
@@ -93,7 +82,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("byn", "reg", "2pe"),
     ("bzu", "reg", "tit"),
     ("cbt", "reg", "jos"),
-    ("cbt", "reg", "rut"),
     ("cbt", "reg", "est"),
     ("ccp", "reg", "mat"),
     ("ccp", "reg", "gal"),
@@ -106,7 +94,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("erk-x-epang", "reg", "php"),
     ("eyo", "reg", "2jn"),
     ("eyo", "reg", "php"),
-    # ("gow", "reg", "3jn"), # 3jn is given as choice, but it is not cloned, so does it exist?
     ("gux-x-gourmantche", "reg", "deu"),
     ("gux-x-gourmantche", "reg", "jon"),
     ("gux-x-gourmantche", "reg", "jos"),
@@ -140,12 +127,12 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("kng-x-kilemfu", "reg", "eph"),
     ("kod", "reg", "2ti"),
     ("kod", "reg", "phm"),
-    ("kqi", "reg", "2th"),
-    ("kqi", "reg", "2ti"),
+    # ("kqi", "reg", "2th"), # unavailable from data API
+    # ("kqi", "reg", "2ti"), # unavailable from data API
     # ("kqi", "reg", "mrk"), # book no longer available from data api
     ("kqi", "reg", "heb"),
-    ("kqi", "reg", "1pe"),
-    ("kqi", "reg", "tit"),
+    # ("kqi", "reg", "1pe"), # unavailable from data API
+    # ("kqi", "reg", "tit"), # unavailable from data API
     ("ksm", "reg", "rom"),
     ("ksm", "reg", "1pe"),
     ("ksm", "reg", "2ti"),
@@ -173,7 +160,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("mhi-x-burolo", "reg", "2th"),
     ("mhy-x-benualima", "reg", "mrk"),
     # ("mwe", "reg", "tit"),  # book is available as choice, but resource not cloned?
-    ("mxo", "reg", "mrk"),
+    # ("mxo", "reg", "mrk"), # unavailable from data API
     ("nak-x-bileki", "reg", "mat"),
     ("nak-x-bileki", "reg", "1ti"),
     ("nak-x-bileki", "reg", "eph"),
@@ -187,7 +174,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("nfd", "reg", "2th"),
     ("nfd", "reg", "2ti"),
     ("nfd", "reg", "heb"),
-    ("nhx", "reg", "jos"),
+    # ("nhx", "reg", "jos"), # unavailable from data API
     ("nnb-x-kishula", "reg", "mrk"),
     ("not", "reg", "jos"),
     ("now", "reg", "mic"),
@@ -220,7 +207,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("pip", "reg", "rom"),
     ("pip", "reg", "mat"),
     ("pse-x-riauasli", "reg", "luk"),
-    # ("rmn-x-yerliroman", "reg", "mat"), # Feb 20, 2025: This language seems to not be served by data API. More investigation needed.
     # ("rmp", "ulb", "jas"),  # failed to fix; repo is cloned and source looks good other than duplicate \c markers, but we handle those (BUG?)
     ("ruc", "reg", "jhn"),
     ("ruc", "reg", "1ti"),
@@ -253,8 +239,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("spy-x-pok", "reg", "jud"),
     ("spy-x-pok", "reg", "3jn"),
     ("ssc-x-kine", "reg", "2jn"),
-    ("ssn-x-sanye", "reg", "col"),
-    ("tar-x-ralamuli", "reg", "mrk"),
     ("tbp-x-airo", "reg", "php"),
     ("thr", "reg", "tit"),
     ("ttl-x-totelnamib", "reg", "3jn"),

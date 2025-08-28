@@ -420,3 +420,14 @@ test('test burmese', async ({ page }) => {
   await page.getByText('Use PrinceXml to produce the').click()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
+
+test('test merge of data API data and DOC only data', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await expect(page.getByRole('main')).toContainText('Bahasa Indonesia (Indonesian)')
+  await page.getByLabel('Bahasa Indonesia (Indonesian').check()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Matius').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.locator('body')).toContainText('Bahasa Indonesian Bible')
+  await expect(page.locator('body')).toContainText('Translation Notes')
+})

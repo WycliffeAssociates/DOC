@@ -723,7 +723,8 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
     """
     DOC needs to support some resources which are not supplied by the
     data API so we augment the data returned from the data API to include
-    them here.
+    them here. If a (language code, resource type) pair already exists in
+    repos_info, do not add it again.
     """
 
     def make_entry(url: HttpUrl, resource_type: str, lang: Language) -> RepoEntry:
@@ -774,7 +775,15 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
             en_lang,
         ),
     ]
-    repos_info.extend(extra_entries)
+    existing_pairs = {
+        (entry.content.language.ietf_code, entry.content.resource_type)
+        for entry in repos_info
+    }
+    for entry in extra_entries:
+        key = (entry.content.language.ietf_code, entry.content.resource_type)
+        if key not in existing_pairs:
+            repos_info.append(entry)
+            existing_pairs.add(key)
     return repos_info
 
 

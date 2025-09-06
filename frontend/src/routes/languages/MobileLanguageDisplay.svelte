@@ -5,9 +5,11 @@
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore,
     langCountStore,
-    langCodesStore
+    langCodesStore,
+    languagesClickedOrderStore
   } from '$lib/stores/LanguagesStore'
 
+  export let handleLangChange: (e: Event, lang: string) => void
   export let showGatewayLanguages: boolean
   export let gatewayCodesAndNames: Array<string>
   export let heartCodesAndNames: Array<string>
@@ -29,8 +31,9 @@
               <input
                 id="lang-code-{index}"
                 type="checkbox"
-                bind:group={$gatewayCodeAndNamesStore}
                 value={langCodeAndName}
+                checked={$languagesClickedOrderStore.includes(langCodeAndName)}
+                on:change={(e) => handleLangChange(e, langCodeAndName)}
                 class="checkbox-target checkbox-style"
                 disabled={$langCountStore == maxLanguages &&
                   !$langCodesStore.includes(getCode(langCodeAndName))}
@@ -54,8 +57,9 @@
               <input
                 id="lang-code-{index}"
                 type="checkbox"
-                bind:group={$heartCodeAndNamesStore}
                 value={langCodeAndName}
+                checked={$languagesClickedOrderStore.includes(langCodeAndName)}
+                on:change={(e) => handleLangChange(e, langCodeAndName)}
                 class="checkbox-target checkbox-style"
                 disabled={$langCountStore == maxLanguages &&
                   !$langCodesStore.includes(getCode(langCodeAndName))}

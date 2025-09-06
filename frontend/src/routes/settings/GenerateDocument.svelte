@@ -57,21 +57,12 @@
     $settingsUpdated = false
     let resourceRequests = []
     let bookCodes = [...$otBookStore, ...$ntBookStore]
-    for (let bookCode of bookCodes) {
-      for (let resourceType of $resourceTypesStore) {
-        if (getResourceTypeLangCode(resourceType) === $langCodesStore[0]) {
-          // Create resource request for lang0
-          resourceRequests.push({
-            lang_code: $langCodesStore[0],
-            resource_type: getResourceTypeCode(resourceType),
-            book_code: getCode(bookCode)
-          })
-        }
-        if ($langCountStore > 1) {
-          if (getResourceTypeLangCode(resourceType) === $langCodesStore[1]) {
-            // Create resource request for lang1
+    for (let langCode of $langCodesStore) {
+      for (let bookCode of bookCodes) {
+        for (let resourceType of $resourceTypesStore) {
+          if (getResourceTypeLangCode(resourceType) === langCode) {
             resourceRequests.push({
-              lang_code: $langCodesStore[1],
+              lang_code: langCode,
               resource_type: getResourceTypeCode(resourceType),
               book_code: getCode(bookCode)
             })
@@ -230,7 +221,7 @@
       </div>
     {:else}
       <div class="pb-4">
-        <button class="btn-disabled gray-gradiant w-1/2 rounded-md p-4 text-center">
+        <button class="gray-gradiant btn-disabled w-1/2 rounded-md p-4 text-center">
           <span class="text-xl text-[#b3b9c2]" style="color: #140e0866">Generate File</span>
         </button>
       </div>

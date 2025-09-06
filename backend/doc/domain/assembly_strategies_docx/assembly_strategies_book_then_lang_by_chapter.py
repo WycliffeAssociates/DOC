@@ -162,26 +162,11 @@ def assemble_usfm_by_chapter(
     layout.
     """
 
-    def sort_key(resource: USFMBook) -> str:
-        return resource.lang_code
 
-    def tn_sort_key(resource: TNBook) -> str:
-        return resource.lang_code
 
-    def tq_sort_key(resource: TQBook) -> str:
-        return resource.lang_code
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    usfm_books = sorted(usfm_books, key=sort_key)
-    tn_books = sorted(tn_books, key=tn_sort_key)
-    tq_books = sorted(tq_books, key=tq_sort_key)
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     document_parts: list[DocumentPart] = []
     if show_tn_book_intro:
         for tn_book in tn_books:
@@ -355,22 +340,10 @@ def assemble_tn_by_chapter(
     tn_book_content_units exists.
     """
 
-    def tn_sort_key(resource: TNBook) -> str:
-        return resource.lang_code
 
-    def tq_sort_key(resource: TQBook) -> str:
-        return resource.lang_code
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    tn_books = sorted(tn_books, key=tn_sort_key)
-    tq_books = sorted(tq_books, key=tq_sort_key)
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     document_parts: list[DocumentPart] = []
     if show_tn_book_intro:
         # Add book intros for each tn_book
@@ -525,18 +498,9 @@ def assemble_tq_by_chapter(
     tq_book_content_units exists.
     """
 
-    def tq_sort_key(resource: TQBook) -> str:
-        return resource.lang_code
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    tq_books = sorted(tq_books, key=tq_sort_key)
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     document_parts: list[DocumentPart] = []
     book_codes = {tq_book.book_code for tq_book in tq_books}
     for book_code in book_codes:
@@ -623,14 +587,8 @@ def assemble_tw_by_chapter(
     """Construct the HTML for BC and TW."""
     document_parts: list[DocumentPart] = []
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     for bc_book in bc_books:
         document_parts.append(
             DocumentPart(

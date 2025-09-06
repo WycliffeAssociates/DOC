@@ -11,6 +11,7 @@
   import {
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore,
+    languagesClickedOrderStore,
     langCodesStore,
     langNamesStore,
     langCountStore
@@ -22,10 +23,7 @@
   import ntBooks from '$lib/nt-books'
   import { booksMap } from '$lib/bible-books'
   import { routeToPage } from '$lib/utils'
-  import {
-    PUBLIC_LANG_CODES_NAMES_URL,
-    PUBLIC_SHARED_RESOURCE_TYPES_URL,
-  } from '$env/static/public'
+  import { PUBLIC_LANG_CODES_NAMES_URL, PUBLIC_SHARED_RESOURCE_TYPES_URL } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import { getCode, getName } from '$lib/utils'
 
@@ -52,7 +50,7 @@
   ): Promise<Array<[string, string, string]>> {
     // Form the URL to ultimately invoke
     // resource_lookup.resource_types.
-    let book_codes = bookCodeAndNames.map(bookCodeAndName => bookCodeAndName[0]).join(",")
+    let book_codes = bookCodeAndNames.map((bookCodeAndName) => bookCodeAndName[0]).join(',')
     const url_ = `${apiRootUrl}${sharedResourceTypesUrl}${langCode}/${book_codes}`
     const url = new URL(url_)
     const response = await fetch(url)
@@ -98,15 +96,9 @@
         if (filteredLangCodeNameAndTypes.length > 0) {
           $langCodesStore.push(filteredLangCodeNameAndTypes[0][0])
           $langNamesStore.push(filteredLangCodeNameAndTypes[0][1])
-          if (filteredLangCodeNameAndTypes[0][2]) {
-            $gatewayCodeAndNamesStore.push(
-              `${filteredLangCodeNameAndTypes[0][0]}, ${filteredLangCodeNameAndTypes[0][1]}`
-            )
-          } else {
-            $heartCodeAndNamesStore.push(
-              `${filteredLangCodeNameAndTypes[0][0]}, ${filteredLangCodeNameAndTypes[0][1]}`
-            )
-          }
+          $languagesClickedOrderStore.push(
+            `${filteredLangCodeNameAndTypes[0][0]}, ${filteredLangCodeNameAndTypes[0][1]}`
+          )
           $langCountStore = 1
           // console.log(`$langCodesStore: ${$langCodesStore}`)
           // console.log(`$gatewayCodeAndNamesStore: ${$gatewayCodeAndNamesStore}`)
@@ -179,15 +171,9 @@
         if (filteredLangCodeNameAndTypes.length > 0) {
           $langCodesStore.push(filteredLangCodeNameAndTypes[0][0])
           $langNamesStore.push(filteredLangCodeNameAndTypes[0][1])
-          if (filteredLangCodeNameAndTypes[0][2]) {
-            $gatewayCodeAndNamesStore.push(
-              `${filteredLangCodeNameAndTypes[0][0]}, ${filteredLangCodeNameAndTypes[0][1]}`
-            )
-          } else {
-            $heartCodeAndNamesStore.push(
-              `${filteredLangCodeNameAndTypes[0][0]}, ${filteredLangCodeNameAndTypes[0][1]}`
-            )
-          }
+          $languagesClickedOrderStore.push(
+            `${filteredLangCodeNameAndTypes[0][0]}, ${filteredLangCodeNameAndTypes[0][1]}`
+          )
           $langCountStore = 1
           // Add all Old Testament books to ot book store
           for (var bookCode of otBooks) {
@@ -216,7 +202,7 @@
             // really long. Such a long URL was working but is stylistically
             // not preferred and it /could/, for some browsers, potentially
             // cause an issue.
-            getResourceTypesAndNames($langCodesStore[0], [["all","all"]]).then(
+            getResourceTypesAndNames($langCodesStore[0], [['all', 'all']]).then(
               (resourceTypesAndNames) => {
                 // Filter down to the resource type provided by the user
                 filteredResourceTypesAndNames = resourceTypesAndNames.filter(

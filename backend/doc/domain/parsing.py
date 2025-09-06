@@ -972,10 +972,7 @@ def books(
     bc_books = []
     rg_books = []
     filtered_rg_books = []
-    for resource_lookup_dto, resource_dir in sorted(
-        zip(resource_lookup_dtos, resource_dirs),
-        key=lambda dto_with_dir: book_id_map[dto_with_dir[0].book_code],
-    ):
+    for resource_lookup_dto, resource_dir in zip(resource_lookup_dtos, resource_dirs):
         if resource_lookup_dto.resource_type in usfm_resource_types:
             usfm_book = usfm_book_content(
                 resource_lookup_dto,

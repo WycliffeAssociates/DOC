@@ -5,7 +5,8 @@
     langCodesStore,
     langCountStore,
     gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore
+    heartCodeAndNamesStore,
+    languagesClickedOrderStore
   } from '$lib/stores/LanguagesStore'
   import { resourceTypesStore } from '$lib/stores/ResourceTypesStore'
   import { langRegExp, getCode, getName, getResourceTypeLangCode } from '$lib/utils'
@@ -13,23 +14,15 @@
   import EditIcon from '$lib/EditIcon.svelte'
   import CloseIcon from '$lib/CloseIcon.svelte'
 
-  function uncheckGatewayLanguage(langCodeAndName: string) {
-    $gatewayCodeAndNamesStore = $gatewayCodeAndNamesStore.filter((item) => item != langCodeAndName)
+  function uncheckLanguage(langCodeAndName: string) {
+    $languagesClickedOrderStore = $languagesClickedOrderStore.filter(
+      (item) => item != langCodeAndName
+    )
     $langCodesStore = $langCodesStore.filter((item) => item != getCode(langCodeAndName))
     $langCountStore = $langCodesStore.length
     if ($resourceTypesStore.length > 0) {
       $resourceTypesStore = $resourceTypesStore.filter((item) => {
         return getCode(item) != getCode(langCodeAndName)
-      })
-    }
-  }
-  function uncheckHeartLanguage(langCodeAndName: string) {
-    $heartCodeAndNamesStore = $heartCodeAndNamesStore.filter((item) => item != langCodeAndName)
-    $langCodesStore = $langCodesStore.filter((item) => item != getCode(langCodeAndName))
-    $langCountStore = $langCodesStore.length
-    if ($resourceTypesStore.length > 0) {
-      $resourceTypesStore = $resourceTypesStore.filter((item) => {
-        return getResourceTypeLangCode(item) != getCode(langCodeAndName)
       })
     }
   }
@@ -55,8 +48,8 @@
     </button>
   </div>
 {/if}
-{#if ($gatewayCodeAndNamesStore && $gatewayCodeAndNamesStore.length > 0) || ($heartCodeAndNamesStore && $heartCodeAndNamesStore.length > 0)}
-  {#each $gatewayCodeAndNamesStore as langCodeAndName}
+{#if $languagesClickedOrderStore && $languagesClickedOrderStore.length > 0}
+  {#each $languagesClickedOrderStore as langCodeAndName}
     {#if langRegExp.test($page.url.pathname)}
       <div
         class="mt-2 flex w-full items-center justify-between
@@ -67,35 +60,7 @@
             >({getCode(langCodeAndName)})</span
           >
         </div>
-        <button on:click={() => uncheckGatewayLanguage(langCodeAndName)}>
-          <CloseIcon />
-        </button>
-      </div>
-    {:else}
-      <div
-        class="mt-2 flex w-full items-center justify-between
-                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
-      >
-        <div>
-          <span>{getName(langCodeAndName)}</span><span class="ml-2"
-            >({getCode(langCodeAndName)})</span
-          >
-        </div>
-      </div>
-    {/if}
-  {/each}
-  {#each $heartCodeAndNamesStore as langCodeAndName}
-    {#if langRegExp.test($page.url.pathname)}
-      <div
-        class="mt-2 flex w-full items-center justify-between
-                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
-      >
-        <div>
-          <span>{getName(langCodeAndName)}</span><span class="ml-2"
-            >({getCode(langCodeAndName)})</span
-          >
-        </div>
-        <button on:click={() => uncheckHeartLanguage(langCodeAndName)}>
+        <button on:click={() => uncheckLanguage(langCodeAndName)}>
           <CloseIcon />
         </button>
       </div>

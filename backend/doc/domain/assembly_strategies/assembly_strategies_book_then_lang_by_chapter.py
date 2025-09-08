@@ -219,26 +219,11 @@ def assemble_usfm_by_chapter(
 
     content = []
 
-    def sort_key(resource: USFMBook) -> str:
-        return resource.lang_code
 
-    def tn_sort_key(resource: TNBook) -> str:
-        return resource.lang_code
 
-    def tq_sort_key(resource: TQBook) -> str:
-        return resource.lang_code
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    usfm_books = sorted(usfm_books, key=sort_key)
-    tn_books = sorted(tn_books, key=tn_sort_key)
-    tq_books = sorted(tq_books, key=tq_sort_key)
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     if show_tn_book_intro:
         for tn_book in tn_books:
             content.append(tn_language_direction_html(tn_book))
@@ -357,22 +342,10 @@ def assemble_tn_by_chapter(
     """
     content = []
 
-    def sort_key(resource: TNBook) -> str:
-        return resource.lang_code
 
-    def tq_sort_key(resource: TQBook) -> str:
-        return resource.lang_code
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    tn_books = sorted(tn_books, key=sort_key)
-    tq_books = sorted(tq_books, key=tq_sort_key)
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     if show_tn_book_intro:
         for tn_book in tn_books:
             content.append(tn_language_direction_html(tn_book))
@@ -466,18 +439,9 @@ def assemble_tq_by_chapter(
     """
     content = []
 
-    def sort_key(resource: TQBook) -> str:
-        return resource.lang_code
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    tq_books = sorted(tq_books, key=sort_key)
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     book_codes = {tq_book.book_code for tq_book in tq_books}
     for book_code in book_codes:
         num_chapters = book_chapters[book_code]
@@ -540,10 +504,7 @@ def assemble_tw_by_chapter(
 ) -> list[str]:
     content = []
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    bc_books = sorted(bc_books, key=bc_sort_key)
     for bc_book in bc_books:
         content.append(bc_book_intro(bc_book, use_section_visual_separator))
         for chapter_num, chapter in bc_book.chapters.items():
@@ -675,26 +636,11 @@ def assemble_usfm_by_chapter_2c_sl_sr(
 
     content = []
 
-    def sort_key(resource: USFMBook) -> str:
-        return resource.lang_code
 
-    def tn_sort_key(resource: TNBook) -> str:
-        return resource.lang_code
 
-    def tq_sort_key(resource: TQBook) -> str:
-        return resource.lang_code
 
-    def bc_sort_key(resource: BCBook) -> str:
-        return resource.lang_code
 
-    def rg_sort_key(resource: RGBook) -> str:
-        return resource.lang_code
 
-    usfm_books = sorted(usfm_books, key=sort_key)
-    tn_books = sorted(tn_books, key=tn_sort_key)
-    tq_books = sorted(tq_books, key=tq_sort_key)
-    bc_books = sorted(bc_books, key=bc_sort_key)
-    rg_books = sorted(rg_books, key=rg_sort_key)
     # Order USFM book content units so that they are in language pairs
     # for side by side display.
     zipped_usfm_books = ensure_primary_usfm_books_for_different_languages_are_adjacent(

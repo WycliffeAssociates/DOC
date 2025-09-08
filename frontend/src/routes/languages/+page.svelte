@@ -1,11 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { PUBLIC_LANGUAGE_BOOK_ORDER } from '$env/static/public'
-  import {
-    PUBLIC_LANG_CODES_NAMES_URL,
-    PUBLIC_TAILWIND_SM_MIN_WIDTH,
-    PUBLIC_MAX_LANGUAGES
-  } from '$env/static/public'
+  import { PUBLIC_LANG_CODES_NAMES_URL, PUBLIC_TAILWIND_SM_MIN_WIDTH } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
   import MobileLanguageDisplay from './MobileLanguageDisplay.svelte'
@@ -14,16 +10,30 @@
   import LanguageSearch from '$lib/LanguageSearch.svelte'
   import WizardBasket from '$lib/WizardBasket.svelte'
   import {
-    langCodesStore,
-    langNamesStore,
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore,
-    langCountStore
+    langCodesStore,
+    langCountStore,
+    langNamesStore,
+    languagesClickedOrderStore
   } from '$lib/stores/LanguagesStore'
   import { ntBookStore, otBookStore, bookCountStore } from '$lib/stores/BooksStore'
   import { getCode, getName, getResourceTypeLangCode } from '$lib/utils'
   import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
   import { assemblyStrategyKindStore } from '$lib/stores/SettingsStore'
+
+  function handleLangChange(e: Event, lang: string) {
+    const input = e.currentTarget as HTMLInputElement
+    languagesClickedOrderStore.update((arr) => {
+      if (input.checked) {
+        // append only if not already present
+        return arr.includes(lang) ? arr : [...arr, lang]
+      } else {
+        // remove if unchecked
+        return arr.filter((v) => v !== lang)
+      }
+    })
+  }
 
   let showGatewayLanguages = true
   // Track if the user manually changed the tab:
@@ -89,24 +99,16 @@
     await loadLanguageCodesAndNames()
   })
 
-  let nonEmptyGatewayLanguages: boolean
-  $: nonEmptyGatewayLanguages = $gatewayCodeAndNamesStore.every((item) => item.length > 0)
 
-  let nonEmptyHeartLanguages: boolean
-  $: nonEmptyHeartLanguages = $heartCodeAndNamesStore.every((item) => item.length > 0)
+  $: $langCountStore = $languagesClickedOrderStore ? $languagesClickedOrderStore.length : 0
 
-  $: $langCountStore =
-    (nonEmptyGatewayLanguages ? $gatewayCodeAndNamesStore.length : 0) +
-    (nonEmptyHeartLanguages ? $heartCodeAndNamesStore.length : 0)
 
   $: $langCodesStore = [
-    ...(nonEmptyGatewayLanguages ? $gatewayCodeAndNamesStore.map(getCode) : []),
-    ...(nonEmptyHeartLanguages ? $heartCodeAndNamesStore.map(getCode) : [])
+    ...($languagesClickedOrderStore ? $languagesClickedOrderStore.map(getCode) : [])
   ]
 
   $: $langNamesStore = [
-    ...(nonEmptyGatewayLanguages ? $gatewayCodeAndNamesStore.map(getName) : []),
-    ...(nonEmptyHeartLanguages ? $heartCodeAndNamesStore.map(getName) : [])
+    ...($languagesClickedOrderStore ? $languagesClickedOrderStore.map(getName) : [])
   ]
 
   $: {
@@ -129,14 +131,15 @@
     }
   }
 
-
   // Search field handling for gateway languages
   let gatewaySearchTerm: string = ''
   let filteredGatewayCodeAndNames: Array<string> = []
   $: {
     if (gatewayCodesAndNames) {
-      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
+      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
       )
     }
   }
@@ -146,13 +149,15 @@
   let filteredHeartCodeAndNames: Array<string> = []
   $: {
     if (heartCodesAndNames) {
-      filteredHeartCodeAndNames = heartCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
+      filteredHeartCodeAndNames = heartCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
       )
     }
   }
 
-  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
@@ -183,6 +188,7 @@
     {#if gatewayCodesAndNames.length > 0 && heartCodesAndNames.length > 0}
       {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
         <MobileLanguageDisplay
+          {handleLangChange}
           {showGatewayLanguages}
           {gatewayCodesAndNames}
           {heartCodesAndNames}
@@ -191,7 +197,8 @@
         />
       {:else}
         <DesktopLanguageDisplay
-          bind:showGatewayLanguages
+          {handleLangChange}
+          {showGatewayLanguages}
           {gatewayCodesAndNames}
           {heartCodesAndNames}
           {filteredHeartCodeAndNames}

@@ -857,21 +857,12 @@ def get_languages_title_page_strings(
     Construct sensical phrases to display for title1 and title2 for
     first page of Word document.
     """
-    lang_codes = list({dto.lang_code for dto in resource_lookup_dtos})
+    lang_codes = list(dict.fromkeys(dto.lang_code for dto in resource_lookup_dtos))
 
     def get_language_details(lang_code: str) -> str:
         book_names_ = []
         resource_type_names = []
-        dtos = [
-            dto
-            for dto in sorted(
-                resource_lookup_dtos,
-                key=lambda resource_lookup_dto: book_id_map[
-                    resource_lookup_dto.book_code
-                ],
-            )
-            if dto.lang_code == lang_code
-        ]
+        dtos = [dto for dto in resource_lookup_dtos if dto.lang_code == lang_code]
         for dto in dtos:
             usfm_books_ = [
                 usfm_book

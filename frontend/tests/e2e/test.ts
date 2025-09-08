@@ -139,6 +139,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   })
 })
 
+
 test('test that you can select gateway tab after first selecting heart language and hitting next', async ({
   page
 }) => {
@@ -146,19 +147,17 @@ test('test that you can select gateway tab after first selecting heart language 
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Adhola').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('1 Thesalonika').click({ timeout: 580000 })
+  await page.getByLabel('Thesalonika 1th').check()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('link', { name: 'Languages' }).click()
-  await page.getByRole('button', { name: 'Gateway' }).click()
   await page.getByText('Cebuano').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Mga taga tesalonica 1th').click({ timeout: 580000 })
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Regular').click()
   await page.getByText('Unlocked Literal Bible').click()
-  await page.getByText('Regular', { exact: true }).click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('PDF').click()
-  await page.getByText('Interleave content by chapter').click()
+  await page.getByLabel('PDF').check()
+  await page.getByLabel('Interleave content by chapter').check()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
@@ -271,26 +270,26 @@ test('test ordering of books in document title(s) and body', async ({ page }) =>
   const page1 = await page1Promise
   // Perform text expectations on the popup page
   await expect(page1.locator('body')).toContainText(
-    'Ontenu (Ontenu): Regular for Matthew, Maki, Luk'
+    'Tok Pisin (Tok Pisin): Unlocked Literal Bible for Matyu, Mak, Luk'
   )
   await expect(page1.locator('body')).toContainText(
-    'Tok Pisin (Tok Pisin): Unlocked Literal Bible for Matyu, Mak, Luk'
+    'Ontenu (Ontenu): Regular for Matthew, Maki, Luk'
   )
 
   // Order assertions
   const headings = await page1.locator('h2').allTextContents()
   // Ensure expected headings are present
-  expect(headings).toContain('Matthew')
   expect(headings).toContain('Matyu')
-  expect(headings).toContain('Maki')
+  expect(headings).toContain('Matthew')
   expect(headings).toContain('Mak')
+  expect(headings).toContain('Maki')
   expect(headings).toContain('Luk')
 
   // Find the positions of each
-  const index1 = headings.indexOf('Matthew')
-  const index2 = headings.indexOf('Matyu')
-  const index3 = headings.indexOf('Maki')
-  const index4 = headings.indexOf('Mak')
+  const index1 = headings.indexOf('Matyu')
+  const index2 = headings.indexOf('Matthew')
+  const index3 = headings.indexOf('Mak')
+  const index4 = headings.indexOf('Maki')
   const index5 = headings.indexOf('Luk')
 
   // Ensure all were found
@@ -311,6 +310,36 @@ test('test ordering of books in document title(s) and body', async ({ page }) =>
   expect(index2).toBeLessThan(index5)
   expect(index3).toBeLessThan(index5)
   expect(index4).toBeLessThan(index5)
+})
+
+test('test languages are sorted in clicked order', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await page.getByText('Français (French)').click()
+  await page.getByText('Cebuano').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.locator('.w-full > div:nth-child(3)')).toContainText('Français (French)')
+  await expect(page.locator('.w-full > div:nth-child(4)')).toContainText('Cebuano')
+  await page.getByText('Matthieu').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Unlocked Literal Bible ulb').first().click()
+  await page.getByText('Unlocked Literal Bible').nth(1).click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('PDF').click()
+  await page.getByText('Use PrinceXml to produce the').click()
+  await page.getByRole('button', { name: 'Generate File' }).click()
+  const viewHtmlButton = page.getByRole('button', { name: 'View HTML Online' })
+  await viewHtmlButton.waitFor({ state: 'visible' })
+  // Start waiting for the popup BEFORE clicking
+  const page1Promise = page.waitForEvent('popup')
+  // Click to trigger the popup
+  await viewHtmlButton.click()
+  // Get the new popup page
+  const page1 = await page1Promise
+  // French was clicked before Cebuano and we see this order is
+  // retained into the resulting document.
+  await expect(page1.locator('body')).toContainText(
+    'French (Français): Unlocked Literal Bible for Matthieu Cebuano (Cebuano): Unlocked Literal Bible for Mateo'
+  )
 })
 
 test('test use prince with lots of books', async ({ page }) => {

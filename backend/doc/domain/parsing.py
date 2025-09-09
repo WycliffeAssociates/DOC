@@ -1111,8 +1111,8 @@ def assemble_chapter_usfm(
         "Adding a USFM chapter marker for chapter: %s",
         chapter_num,
     )
-    chapter_verse_files = get_chapter_verse_files(chapter_dir)
-    for usfm_file in chapter_verse_files:
+    chapter_verse_chunk_files = get_chapter_verse_chunk_files(chapter_dir)
+    for usfm_file in chapter_verse_chunk_files:
         verse_content = read_verse_file(usfm_file)
         cleaned_verse_content = clean_verse_content(verse_content)
         verse_content = ensure_paragraph_before_verses(usfm_file, cleaned_verse_content)
@@ -1158,7 +1158,7 @@ def clean_verse_content(verse_content: str) -> str:
     return cleaned_verse_content
 
 
-def get_chapter_verse_files(chapter_dir: DirEntry[str]) -> Sequence[str]:
+def get_chapter_verse_chunk_files(chapter_dir: DirEntry[str]) -> Sequence[str]:
     return sorted(
         [
             file.path

@@ -441,7 +441,6 @@ def usfm_book_content(
     book_names: Mapping[str, str] = BOOK_NAMES,
     working_dir: str = settings.WORKING_DIR,
     use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 ) -> USFMBook:
     """
     First produce HTML content from USFM content and then break the
@@ -465,31 +464,9 @@ def usfm_book_content(
     )
     localized_book_name = ""
     if use_localized_book_name:
-        localized_book_name = maybe_localized_book_name(frontmatter)
-        if not localized_book_name:
-            book_codes_and_names_from_manifest_ = book_codes_and_names_from_manifest(
-                resource_dir
-            )
-            localized_book_name = book_codes_and_names_from_manifest_.get(
-                resource_lookup_dto.book_code, ""
-            )
-            if not localized_book_name:
-                last_segment = get_last_segment(
-                    # We know that url is not null because of how we got here
-                    cast(HttpUrl, resource_lookup_dto.url),
-                    resource_lookup_dto.lang_code,
-                )
-                repo_components = last_segment.split("_")
-                if (
-                    len(repo_components) > 2
-                    and resource_lookup_dto.resource_type in usfm_resource_types
-                ):
-                    book_names_from_title_file = get_book_names_from_title_file(
-                        resource_dir, resource_lookup_dto.lang_code, repo_components
-                    )
-                    localized_book_name = book_names_from_title_file.get(
-                        resource_lookup_dto.book_code, ""
-                    )
+        localized_book_name = get_localized_book_name(
+            frontmatter, resource_dir, resource_lookup_dto
+        )
     for chapter_marker, chapter_usfm in zip(chapter_markers, chapters_usfm):
         chapter_num = get_chapter_num(chapter_usfm)
         if chapter_num == -1:
@@ -534,6 +511,40 @@ def usfm_book_content(
         chapters=usfm_chapters if usfm_chapters else {},
         lang_direction=resource_lookup_dto.lang_direction,
     )
+
+
+def get_localized_book_name(
+    frontmatter: str,
+    resource_dir: str,
+    resource_lookup_dto: ResourceLookupDto,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> str:
+    localized_book_name = maybe_localized_book_name(frontmatter)
+    if not localized_book_name:
+        book_codes_and_names_from_manifest_ = book_codes_and_names_from_manifest(
+            resource_dir
+        )
+        localized_book_name = book_codes_and_names_from_manifest_.get(
+            resource_lookup_dto.book_code, ""
+        )
+        if not localized_book_name:
+            last_segment = get_last_segment(
+                # We know that url is not null because of how we got here
+                cast(HttpUrl, resource_lookup_dto.url),
+                resource_lookup_dto.lang_code,
+            )
+            repo_components = last_segment.split("_")
+            if (
+                len(repo_components) > 2
+                and resource_lookup_dto.resource_type in usfm_resource_types
+            ):
+                book_names_from_title_file = get_book_names_from_title_file(
+                    resource_dir, resource_lookup_dto.lang_code, repo_components
+                )
+                localized_book_name = book_names_from_title_file.get(
+                    resource_lookup_dto.book_code, ""
+                )
+    return localized_book_name
 
 
 def load_manifest(file_path: str) -> str:
@@ -1100,13 +1111,15 @@ def assemble_chapter_usfm(
         "Adding a USFM chapter marker for chapter: %s",
         chapter_num,
     )
-    chapter_verse_files = get_chapter_verse_files(chapter_dir)
-    for usfm_file in chapter_verse_files:
+    chapter_verse_chunk_files = get_chapter_verse_chunk_files(chapter_dir)
+    for usfm_file in chapter_verse_chunk_files:
         verse_content = read_verse_file(usfm_file)
         cleaned_verse_content = clean_verse_content(verse_content)
         verse_content = ensure_paragraph_before_verses(usfm_file, cleaned_verse_content)
         chapter_usfm_content.append(cleaned_verse_content)
-        chapter_usfm_content.append("\n")
+        chapter_usfm_content.append(
+            " \n"
+        )  # Make sure a space before next chunk, e.g., auh, mat, ch 9, v 14
     return chapter_usfm_content
 
 
@@ -1147,7 +1160,7 @@ def clean_verse_content(verse_content: str) -> str:
     return cleaned_verse_content
 
 
-def get_chapter_verse_files(chapter_dir: DirEntry[str]) -> Sequence[str]:
+def get_chapter_verse_chunk_files(chapter_dir: DirEntry[str]) -> Sequence[str]:
     return sorted(
         [
             file.path

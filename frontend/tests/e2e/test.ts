@@ -139,7 +139,6 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   })
 })
 
-
 test('test that you can select gateway tab after first selecting heart language and hitting next', async ({
   page
 }) => {
@@ -459,4 +458,34 @@ test('test merge of data API data and DOC only data', async ({ page }) => {
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.locator('body')).toContainText('Bahasa Indonesian Bible')
   await expect(page.locator('body')).toContainText('Translation Notes')
+})
+
+test('test space between end of chunk and beginning of another', async ({ page }) => {
+  await page.goto('http://localhost:8001/')
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByPlaceholder('Search Heart Languages').click()
+  await page.getByPlaceholder('Search Heart Languages').fill('Aushi')
+  await page.getByLabel('Aushi auh').check()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByLabel('Mateo mat').check()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByLabel('Regular reg').check()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByLabel('PDF').check()
+  await page.getByText('Use PrinceXml to produce the').click()
+  await page.getByRole('button', { name: 'Generate File' }).click()
+  const viewHtmlButton = page.getByRole('button', { name: 'View HTML Online' })
+  await viewHtmlButton.waitFor({ state: 'visible' })
+  // Start waiting for the popup BEFORE clicking
+  const page1Promise = page.waitForEvent('popup')
+  // Click to trigger the popup
+  await viewHtmlButton.click()
+  // Get the new popup page
+  const page1 = await page1Promise
+  // Ensure there is a space between the end of a verse span chunk and
+  // the verse number for the start of the next chunk, i.e., check
+  // spacing at chunk boundaries
+  await expect(page1.locator('body')).toContainText("bembu?'' 12Ulo")
+  await expect(page1.locator('body')).toContainText("lelo ababembu.'' 14Nolu abasambi")
+  await expect(page1.locator('body')).toContainText('ukulya. 16Takuli')
 })

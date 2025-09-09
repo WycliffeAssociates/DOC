@@ -1117,7 +1117,9 @@ def assemble_chapter_usfm(
         cleaned_verse_content = clean_verse_content(verse_content)
         verse_content = ensure_paragraph_before_verses(usfm_file, cleaned_verse_content)
         chapter_usfm_content.append(cleaned_verse_content)
-        chapter_usfm_content.append("\n")
+        chapter_usfm_content.append(
+            " \n"
+        )  # Make sure a space before next chunk, e.g., auh, mat, ch 9, v 14
     return chapter_usfm_content
 
 

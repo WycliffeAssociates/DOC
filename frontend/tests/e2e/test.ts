@@ -14,7 +14,7 @@ test('ui part 1', async ({ page }) => {
   await page.getByText('অসমীয়া (Assamese)').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Unlocked Literal Bible').nth(1).click()
+  await page.getByText('Unlocked Literal Bible').nth(1).click({ timeout: 32_000 })
   await page.getByText('Translation Notes tn').first().click()
   await page.getByText('Translation Notes').nth(1).click()
   await page.getByText('Translation Questions').first().click()

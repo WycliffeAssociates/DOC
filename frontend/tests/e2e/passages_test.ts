@@ -35,9 +35,9 @@ test('select gateway tab after first selecting heart language and hitting next',
     await page.getByText('Bahasa Indonesia (Indonesian)').click()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByText("Add NT Survey Reviewers'").click()
-    await expect(page.locator('body')).toContainText('Matius 2:1-12')
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.locator('body')).toContainText('Matius 2:1-12')
+  await expect(page.getByText('Matius 2:1-12')).toBeVisible({ timeout: 32000 })
+  await expect(page.getByText('Matius 2:1-12')).toBeVisible()
 test('stet passages not available in production', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, 'location', {

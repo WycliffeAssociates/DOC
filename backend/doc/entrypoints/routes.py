@@ -144,6 +144,42 @@ async def nt_survey_rg_passages(lang_code: str) -> Sequence[BibleReference]:
     return bible_references
 
 
+@router.get("/ot_survey_rg1_passages/{lang_code}")
+async def ot_survey_rg1_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 1 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg1_passages(lang_code)
+    return bible_references
+
+
+@router.get("/ot_survey_rg2_passages/{lang_code}")
+async def ot_survey_rg2_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 2 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg2_passages(lang_code)
+    return bible_references
+
+
+@router.get("/ot_survey_rg3_passages/{lang_code}")
+async def ot_survey_rg3_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 3 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg3_passages(lang_code)
+    return bible_references
+
+
+@router.get("/ot_survey_rg4_passages/{lang_code}")
+async def ot_survey_rg4_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 4 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg4_passages(lang_code)
+    return bible_references
+
+
 # @router.get("/chapters_in_book/{book_code}")
 # async def chapters_in_book(book_code: str) -> list[int]:
 #     return resource_lookup.chapters_in_book(book_code)

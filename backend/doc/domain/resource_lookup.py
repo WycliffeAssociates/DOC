@@ -1295,6 +1295,198 @@ def nt_survey_rg_passages(
     return bible_references
 
 
+def ot_survey_rg1_passages(
+    lang_code: str = "en",
+    lang_name: str = "English",
+    docx_file_path: str = "en_ot_survey_rg1_gen_deu.docx",
+    resource_type_name: str = "OT Survey Reviewers' Guide (Genesis to Deuteronomy)",
+    lang_direction: LangDirEnum = LangDirEnum.LTR,
+    resource_dir: str = settings.EN_RG_DIR,
+) -> list[BibleReference]:
+    """
+    >>> from doc.domain import resource_lookup
+    >>> rg_books = resource_lookup.ot_survey_rg1_passages()
+    >>> rg_books[0]
+    BibleReference(book_code='gen', book_name='Genesis', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    """
+    path = join(resource_dir, docx_file_path)
+    # logger.debug("path: %s exists: %s", path, exists(path))
+    # TODO Check if resource_dir exists and if it doesn't then submit
+    # a document request to DOC API to make sure it is cloned.
+    # Currently we don't have to do this because at startup we copy
+    # English OT Survey RG1 doc into place.
+    # assert exists(path)
+    rg_books = get_rg_books(
+        path,
+        lang_code,
+        lang_name,
+        resource_type_name,
+        lang_direction,
+    )
+    rg_book_chapters = [
+        chapter for rg_book in rg_books for chapter in rg_book.chapters.values()
+    ]
+    bible_references = [
+        pt.bible_reference for chapter in rg_book_chapters for pt in chapter.content
+    ]
+    # Localize the book names since they are provided in English from en_ot_survey_rg1_gen_deu.docx
+    book_name_map = {
+        book_code_and_name[0]: book_code_and_name[1]
+        for book_code_and_name in book_codes_for_lang_from_usfm_only(lang_code)
+    }
+    for bible_reference in bible_references:
+        maybe_localized_book_name = book_name_map.get(
+            bible_reference.book_code, bible_reference.book_name
+        )
+        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
+        bible_reference.book_name = maybe_localized_book_name
+    return bible_references
+
+
+def ot_survey_rg2_passages(
+    lang_code: str = "en",
+    lang_name: str = "English",
+    docx_file_path: str = "en_ot_survey_rg2_jos_est.docx",
+    resource_type_name: str = "OT Survey Reviewers' Guide (Joshua to Esther)",
+    lang_direction: LangDirEnum = LangDirEnum.LTR,
+    resource_dir: str = settings.EN_RG_DIR,
+) -> list[BibleReference]:
+    """
+    >>> from doc.domain import resource_lookup
+    >>> rg_books = resource_lookup.ot_survey_rg2_passages()
+    >>> rg_books[0]
+    BibleReference(book_code='jos', book_name='Joshua', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    """
+    path = join(resource_dir, docx_file_path)
+    # logger.debug("path: %s exists: %s", path, exists(path))
+    # TODO Check if resource_dir exists and if it doesn't then submit
+    # a document request to DOC API to make sure it is cloned.
+    # Currently we don't have to do this because at startup we copy
+    # English OT Survey RG2 doc into place.
+    # assert exists(path)
+    rg_books = get_rg_books(
+        path,
+        lang_code,
+        lang_name,
+        resource_type_name,
+        lang_direction,
+    )
+    rg_book_chapters = [
+        chapter for rg_book in rg_books for chapter in rg_book.chapters.values()
+    ]
+    bible_references = [
+        pt.bible_reference for chapter in rg_book_chapters for pt in chapter.content
+    ]
+    # Localize the book names since they are provided in English from en_ot_survey_rg2_jos_est.docx
+    book_name_map = {
+        book_code_and_name[0]: book_code_and_name[1]
+        for book_code_and_name in book_codes_for_lang_from_usfm_only(lang_code)
+    }
+    for bible_reference in bible_references:
+        maybe_localized_book_name = book_name_map.get(
+            bible_reference.book_code, bible_reference.book_name
+        )
+        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
+        bible_reference.book_name = maybe_localized_book_name
+    return bible_references
+
+
+def ot_survey_rg3_passages(
+    lang_code: str = "en",
+    lang_name: str = "English",
+    docx_file_path: str = "en_ot_survey_rg3_job_sng.docx",
+    resource_type_name: str = "OT Survey Reviewers' Guide (Job to Song of Songs)",
+    lang_direction: LangDirEnum = LangDirEnum.LTR,
+    resource_dir: str = settings.EN_RG_DIR,
+) -> list[BibleReference]:
+    """
+    >>> from doc.domain import resource_lookup
+    >>> rg_books = resource_lookup.ot_survey_rg3_passages()
+    >>> rg_books[0]
+    BibleReference(book_code='job', book_name='Job', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    """
+    path = join(resource_dir, docx_file_path)
+    # logger.debug("path: %s exists: %s", path, exists(path))
+    # TODO Check if resource_dir exists and if it doesn't then submit
+    # a document request to DOC API to make sure it is cloned.
+    # Currently we don't have to do this because at startup we copy
+    # English OT Survey RG3 doc into place.
+    # assert exists(path)
+    rg_books = get_rg_books(
+        path,
+        lang_code,
+        lang_name,
+        resource_type_name,
+        lang_direction,
+    )
+    rg_book_chapters = [
+        chapter for rg_book in rg_books for chapter in rg_book.chapters.values()
+    ]
+    bible_references = [
+        pt.bible_reference for chapter in rg_book_chapters for pt in chapter.content
+    ]
+    # Localize the book names since they are provided in English from en_ot_survey_rg3_job_sng.docx
+    book_name_map = {
+        book_code_and_name[0]: book_code_and_name[1]
+        for book_code_and_name in book_codes_for_lang_from_usfm_only(lang_code)
+    }
+    for bible_reference in bible_references:
+        maybe_localized_book_name = book_name_map.get(
+            bible_reference.book_code, bible_reference.book_name
+        )
+        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
+        bible_reference.book_name = maybe_localized_book_name
+    return bible_references
+
+
+def ot_survey_rg4_passages(
+    lang_code: str = "en",
+    lang_name: str = "English",
+    docx_file_path: str = "en_ot_survey_rg4_isa_mal.docx",
+    resource_type_name: str = "OT Survey Reviewers' Guide (Isaiah to Malachi)",
+    lang_direction: LangDirEnum = LangDirEnum.LTR,
+    resource_dir: str = settings.EN_RG_DIR,
+) -> list[BibleReference]:
+    """
+    >>> from doc.domain import resource_lookup
+    >>> rg_books = resource_lookup.ot_survey_rg4_passages()
+    >>> rg_books[0]
+    BibleReference(book_code='isa', book_name='Isaiah', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    """
+    path = join(resource_dir, docx_file_path)
+    # logger.debug("path: %s exists: %s", path, exists(path))
+    # TODO Check if resource_dir exists and if it doesn't then submit
+    # a document request to DOC API to make sure it is cloned.
+    # Currently we don't have to do this because at startup we copy
+    # English OT Survey RG4 doc into place.
+    # assert exists(path)
+    rg_books = get_rg_books(
+        path,
+        lang_code,
+        lang_name,
+        resource_type_name,
+        lang_direction,
+    )
+    rg_book_chapters = [
+        chapter for rg_book in rg_books for chapter in rg_book.chapters.values()
+    ]
+    bible_references = [
+        pt.bible_reference for chapter in rg_book_chapters for pt in chapter.content
+    ]
+    # Localize the book names since they are provided in English from en_ot_survey_rg4_isa_mal.docx
+    book_name_map = {
+        book_code_and_name[0]: book_code_and_name[1]
+        for book_code_and_name in book_codes_for_lang_from_usfm_only(lang_code)
+    }
+    for bible_reference in bible_references:
+        maybe_localized_book_name = book_name_map.get(
+            bible_reference.book_code, bible_reference.book_name
+        )
+        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
+        bible_reference.book_name = maybe_localized_book_name
+    return bible_references
+
+
 if __name__ == "__main__":
 
     # To run the doctests in this module, in the root of the project do:

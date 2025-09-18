@@ -27,69 +27,133 @@ def get_book_code(book_name: str, book_names: dict[str, str] = BOOK_NAMES) -> st
 
 
 def parse_bible_reference(
-    raw_bible_reference: str, book_names: dict[str, str] = BOOK_NAMES
+    raw_bible_reference: str, book_names: list[str] = list(BOOK_NAMES.values())
 ) -> BibleReference:
     bible_reference_components = raw_bible_reference.split()
-    if len(bible_reference_components) == 3:
+    if (
+        bible_reference_components
+        and len(bible_reference_components) == 3
+        and (
+            f"{bible_reference_components[0]} {bible_reference_components[1]}"
+            in book_names
+        )
+        and ":" in bible_reference_components[2]
+        and bible_reference_components[2][0].isdigit()
+    ):
         book_name = f"{bible_reference_components[0]} {bible_reference_components[1]}"
         book_code = get_book_code(book_name)
-        temp_components = bible_reference_components[2].split(":")
-        if len(temp_components) == 3 and "-" in temp_components[1]:
-            start_chapter = temp_components[0]
-            temp_components_ = temp_components[1].split("-")
-            start_chapter_verse_ref = temp_components_[0]
-            end_chapter = temp_components_[1]
-            end_chapter_verse_ref = temp_components[2]
-            bible_reference = BibleReference(
-                book_code=book_code,
-                book_name=book_name,
-                start_chapter=int(start_chapter),
-                start_chapter_verse_ref=start_chapter_verse_ref,
-                end_chapter=int(end_chapter),
-                end_chapter_verse_ref=end_chapter_verse_ref,
+        chapter_verse_components = bible_reference_components[2].split(":")
+        logger.debug("chapter_verse_components: %s", chapter_verse_components)
+        if len(chapter_verse_components) == 3 and "-" in chapter_verse_components[1]:
+            # e.g., 1 Corinthians 3:4-4:12 -> chapter_verse_components = ["3", "4-4", "12"]
+            bible_reference = get_bible_reference_spanning_chapter_boundary(
+                chapter_verse_components, book_code, book_name
             )
-        # elif len(temp_components) == 2:
         else:
-            start_chapter = temp_components[0]
-            start_chapter_verse_ref = temp_components[1]
-            bible_reference = BibleReference(
-                book_code=book_code,
-                book_name=book_name,
-                start_chapter=int(start_chapter),
-                start_chapter_verse_ref=start_chapter_verse_ref,
-                end_chapter=None,
-                end_chapter_verse_ref=None,
+            # e.g., 1 Corinthians 3:12-14 -> chapter_verse_components = ["3", "12-14"]
+            # or
+            # e.g., 1 Corinthians 3:12 -> chapter_verse_components = ["3", "12"]
+            bible_reference = get_ordinal_bible_reference(
+                chapter_verse_components, book_code, book_name
             )
-    else:  # if len(bible_reference_components) == 2:
+    elif (
+        bible_reference_components
+        and len(bible_reference_components) == 2
+        and bible_reference_components[0] in book_names
+        and ":" in bible_reference_components[1]
+        and bible_reference_components[1][0].isdigit()
+    ):
         book_name = bible_reference_components[0]
         book_code = get_book_code(book_name)
-        temp_components = bible_reference_components[1].split(":")
-        if len(temp_components) == 3 and "-" in temp_components[1]:
-            start_chapter = temp_components[0]
-            temp_components_ = temp_components[1].split("-")
-            start_chapter_verse_ref = temp_components_[0]
-            end_chapter = temp_components_[1]
-            end_chapter_verse_ref = temp_components[2]
-            bible_reference = BibleReference(
-                book_code=book_code,
-                book_name=book_name,
-                start_chapter=int(start_chapter),
-                start_chapter_verse_ref=start_chapter_verse_ref,
-                end_chapter=int(end_chapter),
-                end_chapter_verse_ref=end_chapter_verse_ref,
+        chapter_verse_components = bible_reference_components[1].split(":")
+        if len(chapter_verse_components) == 3 and "-" in chapter_verse_components[1]:
+            # e.g., Samuel 4:3-6:10 -> chapter_verse_components = ["4", "3-6", "10"]
+            bible_reference = get_bible_reference_spanning_chapter_boundary(
+                chapter_verse_components, book_code, book_name
             )
         else:
-            start_chapter = temp_components[0]
-            start_chapter_verse_ref = temp_components[1]
-            bible_reference = BibleReference(
-                book_code=book_code,
-                book_name=book_name,
-                start_chapter=int(start_chapter),
-                start_chapter_verse_ref=start_chapter_verse_ref,
-                end_chapter=None,
-                end_chapter_verse_ref=None,
+            # e.g., Samuel 4:3-6 -> chapter_verse_components = ["4", "3-6"]
+            bible_reference = get_ordinal_bible_reference(
+                chapter_verse_components, book_code, book_name
             )
-    logger.debug("bible_reference: %s", bible_reference)
+    else:
+        logger.info("Likely parsing an OT rg bible reference")
+        if len(bible_reference_components) >= 3:
+            if bible_reference_components[2][0].isdigit():
+                # Likely an OT reviewer's guide reference which sometimes looks like ['1', 'Samuel', '1:1-2:3', 'foo', 'bar']
+                bible_reference_components = bible_reference_components[0:3]
+                logger.debug(
+                    "1. Updated bible_reference_components: %s",
+                    bible_reference_components,
+                )
+                book_name = (
+                    f"{bible_reference_components[0]} {bible_reference_components[1]}"
+                )
+                book_code = get_book_code(book_name)
+                chapter_verse_components = bible_reference_components[2].split(":")
+                bible_reference = get_bible_reference_spanning_chapter_boundary(
+                    chapter_verse_components, book_code, book_name
+                )
+            elif bible_reference_components[1][
+                0
+            ].isdigit() and not bible_reference_components[2].endswith("continued"):
+                # Likely an OT reviewer's guide reference which sometimes looks like ['Genesis', '1:1-2:3', 'God', 'creates', 'everything']
+                bible_reference_components = bible_reference_components[0:2]
+                logger.debug(
+                    "2. Updated bible_reference_components: %s",
+                    bible_reference_components,
+                )
+                book_name = bible_reference_components[0]
+                book_code = get_book_code(book_name)
+                chapter_verse_components = bible_reference_components[1].split(":")
+                bible_reference = get_ordinal_bible_reference(
+                    chapter_verse_components, book_code, book_name
+                )
+    return bible_reference
+
+
+def get_ordinal_bible_reference(
+    chapter_verse_components: list[str], book_code: str, book_name: str
+) -> BibleReference:
+    start_chapter = chapter_verse_components[0]
+    start_chapter_verse_ref = chapter_verse_components[1]
+    bible_reference = BibleReference(
+        book_code=book_code,
+        book_name=book_name,
+        start_chapter=int(start_chapter),
+        start_chapter_verse_ref=start_chapter_verse_ref,
+        end_chapter=None,
+        end_chapter_verse_ref=None,
+    )
+    return bible_reference
+
+
+def get_bible_reference_spanning_chapter_boundary(
+    chapter_verse_components: list[str], book_code: str, book_name: str
+) -> BibleReference:
+    # e.g., Samuel 4:3-6:10 -> chapter_verse_components = ["4", "3-6", "10"]
+    start_chapter = chapter_verse_components[0]
+    verse_chapter_components = chapter_verse_components[1].split("-")
+    # e.g., verse_chapter_components = ["3", "6"]
+    start_chapter_verse_ref = (
+        verse_chapter_components[0]
+        if len(chapter_verse_components) >= 3
+        else chapter_verse_components[1]
+    )
+    end_chapter = (
+        verse_chapter_components[1] if len(chapter_verse_components) >= 3 else None
+    )
+    end_chapter_verse_ref = (
+        chapter_verse_components[2] if len(chapter_verse_components) >= 3 else None
+    )
+    bible_reference = BibleReference(
+        book_code=book_code,
+        book_name=book_name,
+        start_chapter=int(start_chapter),
+        start_chapter_verse_ref=start_chapter_verse_ref,
+        end_chapter=int(end_chapter) if end_chapter else None,
+        end_chapter_verse_ref=end_chapter_verse_ref,
+    )
     return bible_reference
 
 
@@ -117,29 +181,59 @@ def find_bible_references(
     bible_references: list[str] = []
     current_text: list[str] = []
     inside_bible_reference: bool = False
-    for paragraph in doc.paragraphs:
-        # Check if the paragraph is a potential Bible reference
-        paragraph_text = paragraph.text.strip()
-        words = paragraph_text.split()
-        if (
-            words
-            and len(words) > 1
-            and len(words) < 5
-            and (words[0] in book_names or (f"{words[0]} {words[1]}" in book_names))
-        ):
+    testament_paragraph = doc.paragraphs[2]
+    if "Old Testament" in testament_paragraph.text.strip():
+        logger.info("Parsing Old Testament rg document")
+        for paragraph in doc.paragraphs:
+            # Check if the paragraph is a potential Bible reference
+            paragraph_text = paragraph.text.strip()
+            words = paragraph_text.split()
             if (
-                paragraph_text.endswith("continued") or "\t" in paragraph_text
-            ):  # \t is in paragraph_text when it is a TOC entry
+                words
+                and len(words) > 1
+                and (words[0] in book_names or (f"{words[0]} {words[1]}" in book_names))
+                and (
+                    words[1][0].isdigit() or (len(words) > 2 and words[2][0].isdigit())
+                )
+            ):
+                if paragraph_text.endswith(
+                    "continued"
+                ):  # or "\t" in paragraph_text  # \t is in paragraph_text when it is a TOC entry
+                    continue
+                if inside_bible_reference:
+                    if current_text:
+                        between_texts.append(" ".join(current_text))
+                        current_text = []
+                bible_references.append(paragraph_text)
+                inside_bible_reference = True
                 continue
             if inside_bible_reference:
-                if current_text:
-                    between_texts.append(" ".join(current_text))
-                    current_text = []
-            bible_references.append(paragraph_text)
-            inside_bible_reference = True
-            continue
-        if inside_bible_reference:
-            current_text.append(paragraph_text)
+                current_text.append(paragraph_text)
+    else:
+        logger.info("Parsing New Testament rg document")
+        for paragraph in doc.paragraphs:
+            # Check if the paragraph is a potential Bible reference
+            paragraph_text = paragraph.text.strip()
+            words = paragraph_text.split()
+            if (
+                words
+                and len(words) > 1
+                and len(words) < 5
+                and (words[0] in book_names or (f"{words[0]} {words[1]}" in book_names))
+            ):
+                if (
+                    paragraph_text.endswith("continued") or "\t" in paragraph_text
+                ):  # \t is in paragraph_text when it is a TOC entry
+                    continue
+                if inside_bible_reference:
+                    if current_text:
+                        between_texts.append(" ".join(current_text))
+                        current_text = []
+                bible_references.append(paragraph_text)
+                inside_bible_reference = True
+                continue
+            if inside_bible_reference:
+                current_text.append(paragraph_text)
     if current_text:
         between_texts.append(" ".join(current_text))
     return between_texts, bible_references
@@ -174,6 +268,8 @@ def parse_text(text: str, raw_bible_reference: str) -> ParsedText:
     sections = re.split(r"(Background:|Part 1|Part 2|Comment Section:)", text)
     current_section = None
     background = None
+    directive = ""
+    comment_section = None
     for section in sections:
         section = section.strip()
         if section == "Background:":
@@ -296,6 +392,46 @@ if __name__ == "__main__":
     docx_file_path = "en_rg_nt_survey.docx"
     rg_books = get_rg_books(
         docx_file_path, "en", "English", "Reviewers' Guide NT Survey", LangDirEnum.LTR
+    )
+    for rg_book in rg_books:
+        pprint(rg_book)
+    docx_file_path = "en_ot_survey_rg1_gen_deu.docx"
+    rg_books = get_rg_books(
+        docx_file_path,
+        "en",
+        "English",
+        "Reviewers' Guide OT Survey RG1",
+        LangDirEnum.LTR,
+    )
+    for rg_book in rg_books:
+        pprint(rg_book)
+    docx_file_path = "en_ot_survey_rg2_jos_est.docx"
+    rg_books = get_rg_books(
+        docx_file_path,
+        "en",
+        "English",
+        "Reviewers' Guide OT Survey RG2",
+        LangDirEnum.LTR,
+    )
+    for rg_book in rg_books:
+        pprint(rg_book)
+    docx_file_path = "en_ot_survey_rg3_job_sng.docx"
+    rg_books = get_rg_books(
+        docx_file_path,
+        "en",
+        "English",
+        "Reviewers' Guide OT Survey RG3",
+        LangDirEnum.LTR,
+    )
+    for rg_book in rg_books:
+        pprint(rg_book)
+    docx_file_path = "en_ot_survey_rg4_isa_mal.docx"
+    rg_books = get_rg_books(
+        docx_file_path,
+        "en",
+        "English",
+        "Reviewers' Guide OT Survey RG4",
+        LangDirEnum.LTR,
     )
     for rg_book in rg_books:
         pprint(rg_book)

@@ -53,7 +53,7 @@
         <div class="ml-2 flex sm:hidden">
           <button on:click={() => (showFilterMenu = true)}>
             {#if showFilterMenu}
-              <BlueSquareIcon />
+              <BlueSquareWithWhiteFillIcon />
             {:else}
               <BlueSquareIcon />
             {/if}

@@ -26,18 +26,20 @@ test('add passages', async ({ page }) => {
 test('select gateway tab after first selecting heart language and hitting next', async ({
   page
 }) => {
-    await page.goto('http://localhost:8001/passages')
-    await page.getByRole('button', { name: 'Heart' }).click()
-    await page.getByText('Abure abu').click()
-    await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByRole('link', { name: 'Language' }).click()
-    await page.getByRole('button', { name: 'Gateway' }).click()
-    await page.getByText('Bahasa Indonesia (Indonesian)').click()
-    await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByText("Add NT Survey Reviewers'").click()
-    await page.getByRole('button', { name: 'Next' }).click()
+  await page.goto('http://localhost:8001/passages')
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByText('Abure abu').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('link', { name: 'Language' }).click()
+  await page.getByRole('button', { name: 'Gateway' }).click()
+  await page.getByText('Bahasa Indonesia (Indonesian)').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText("Add NT Survey Reviewers'").click()
   await expect(page.getByText('Matius 2:1-12')).toBeVisible({ timeout: 32000 })
+  await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.getByText('Matius 2:1-12')).toBeVisible()
+})
+
 test('stet passages not available in production', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, 'location', {

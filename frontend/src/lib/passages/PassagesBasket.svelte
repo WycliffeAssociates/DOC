@@ -8,6 +8,7 @@
   import BookIcon from '$lib/BookIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'
   import CloseIcon from '$lib/CloseIcon.svelte'
+  import { bookCodes } from '$lib/bible-books'
 
   let size = 5 // Number of passages to show initially
 
@@ -16,8 +17,27 @@
   }
 
   $: allPassages = $passagesStore || []
-  $: shownPassages = allPassages.slice(0, size)
-  $: hiddenPassages = allPassages.slice(size)
+  $: sortedPassages = allPassages?.slice().sort((a: BibleReference, b: BibleReference) => {
+    const indexA = bookCodes.indexOf(a.bookCode)
+    const indexB = bookCodes.indexOf(b.bookCode)
+    if (indexA !== indexB) return indexA - indexB
+    // Compare startChapter
+    if (a.startChapter !== b.startChapter) return a.startChapter - b.startChapter
+    // Compare start chapter's verse ref
+    const startVerseA = parseInt(a.startChapterVerseRef, 10)
+    const startVerseB = parseInt(b.startChapterVerseRef, 10)
+    if (startVerseA !== startVerseB) return startVerseA - startVerseB
+    // Compare endChapter (if present, otherwise use startChapter)
+    const endChapterA = a.endChapter ?? a.startChapter
+    const endChapterB = b.endChapter ?? b.startChapter
+    if (endChapterA !== endChapterB) return endChapterA - endChapterB
+    // Compare end chapter's verse ref (if present, otherwise use startChapterVerseRef)
+    const endVerseA = parseInt(a.endChapterVerseRef ?? a.startChapterVerseRef, 10)
+    const endVerseB = parseInt(b.endChapterVerseRef ?? b.startChapterVerseRef, 10)
+    return endVerseA - endVerseB
+  })
+  $: shownPassages = sortedPassages?.slice(0, size)
+  $: hiddenPassages = sortedPassages?.slice(size)
 </script>
 
 {#if passagesRegExp.test($page.url.pathname)}

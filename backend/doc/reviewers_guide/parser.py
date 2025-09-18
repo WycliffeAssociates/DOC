@@ -22,8 +22,8 @@ CHAPTER_VERSE_PATTERN = re.compile(r"^\d+:\d+(-\d+(:\d+)?)?$")
 logger = settings.logger(__name__)
 
 
-def get_book_code(book_name: str) -> str:
-    return next(key for key, name in BOOK_NAMES.items() if name == book_name)
+def get_book_code(book_name: str, book_names: dict[str, str] = BOOK_NAMES) -> str:
+    return next(key for key, name in book_names.items() if name == book_name)
 
 
 def parse_bible_reference(

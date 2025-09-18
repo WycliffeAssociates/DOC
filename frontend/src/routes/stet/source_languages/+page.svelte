@@ -17,48 +17,12 @@
     lang0CodeAndNameStore,
     lang1CodeAndNameStore,
     langCodesStore,
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore,
     langCountStore
   } from '$lib/stet/stores/LanguagesStore'
   import { getCode, getName } from '$lib/stet/utils'
 
   let showGatewayLanguages = true
-  // Track if the user manually changed the tab:
-  let userInteracted = false
 
-  function selectGatewayTab() {
-    userInteracted = true
-    showGatewayLanguages = true
-  }
-
-  function selectHeartTab() {
-    userInteracted = true
-    showGatewayLanguages = false
-  }
-  // If user has previously chosen (during this session, i.e., prior
-  // to browser reload) any heart languages and no gateway languages then default to
-  // showing the heart languages, otherwise the default stands of
-  // showing the gateway languages.
-  $: {
-    if (
-      !userInteracted &&
-      $heartCodeAndNamesStore.length > 0 &&
-      $gatewayCodeAndNamesStore.length === 0
-    ) {
-      showGatewayLanguages = false
-    }
-  }
-
-  // If user has previously chosen (during this session, i.e., prior
-  // to browser reload) any heart languages and no gateway languages then default to
-  // showing the heart languages, otherwise the default stands of
-  // showing the gateway languages.
-  $: {
-    if ($lang0CodeAndNameStore && heartCodesAndNames.includes($lang0CodeAndNameStore)) {
-      showGatewayLanguages = false
-    }
-  }
   // For use by Mobile UI
   let showFilterMenu = false
   let showWizardBasketModal = false
@@ -164,13 +128,10 @@
     <LanguageSearch
       {langCodeNameAndTypes}
       bind:showGatewayLanguages
-      bind:userInteracted
       bind:gatewaySearchTerm
       bind:showFilterMenu
       bind:showWizardBasketModal
       bind:heartSearchTerm
-      {selectGatewayTab}
-      {selectHeartTab}
     />
     {#if (gatewayCodesAndNames && gatewayCodesAndNames.length > 0) || (heartCodesAndNames && heartCodesAndNames.length > 0)}
       {#if windowWidth < TAILWIND_SM_MIN_WIDTH}

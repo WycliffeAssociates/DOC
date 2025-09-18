@@ -6,15 +6,20 @@
   import BlueSquareWithWhiteFillIcon from '$lib/BlueSquareWithWhiteFillIcon.svelte'
   import CheckIcon from '$lib/CheckIcon.svelte'
 
+  function selectGatewayTab() {
+    showGatewayLanguages = true
+  }
+
+  function selectHeartTab() {
+    showGatewayLanguages = false
+  }
+
   export let langCodeNameAndTypes: Array<[string, string, boolean]>
   export let showGatewayLanguages: boolean
-  export let userInteracted: boolean
   export let gatewaySearchTerm: string
   export let showFilterMenu: boolean
   export let showWizardBasketModal: boolean
   export let heartSearchTerm: string
-  export let selectGatewayTab: () => void
-  export let selectHeartTab: () => void
 </script>
 
 <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">

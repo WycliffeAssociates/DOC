@@ -1,10 +1,10 @@
 import { writable } from 'svelte/store'
-import type { PassageReferenceDto } from '../models/passage'
+import type { BibleReference } from '../models/passage'
 
 // Define the passages store
-export const passagesStore = writable<PassageReferenceDto[]>([])
+export const passagesStore = writable<BibleReference[]>([])
 
-export const addPassageReference = (
+export const addBibleReference = (
   langCode: string,
   bookCode: string,
   bookName: string,
@@ -19,10 +19,10 @@ export const addPassageReference = (
       (p) =>
         p.langCode === langCode &&
         p.bookCode === bookCode &&
-        p.startChapterNum === startChapterNum &&
-        p.startChapterVerseReference === startChapterVerseReference &&
-        p.endChapterNum === endChapterNum &&
-        p.endChapterVerseReference === endChapterVerseReference
+        p.startChapter === startChapterNum &&
+        p.startChapterVerseRef === startChapterVerseReference &&
+        p.endChapter === endChapterNum &&
+        p.endChapterVerseRef === endChapterVerseReference
     )
     if (exists) {
       return currentPassages // Return unchanged if passage exists
@@ -34,16 +34,16 @@ export const addPassageReference = (
         langCode,
         bookCode,
         bookName,
-        startChapterNum,
-        startChapterVerseReference,
-        endChapterNum,
-        endChapterVerseReference
+        startChapter: startChapterNum,
+        startChapterVerseRef: startChapterVerseReference,
+        endChapter: endChapterNum,
+        endChapterVerseRef: endChapterVerseReference
       }
     ]
   })
 }
 
-export const removePassageReference = (
+export const removeBibleReference = (
   langCode: string,
   bookCode: string,
   startChapterNum: number,
@@ -57,10 +57,10 @@ export const removePassageReference = (
         !(
           p.langCode === langCode &&
           p.bookCode === bookCode &&
-          p.startChapterNum === startChapterNum &&
-          p.startChapterVerseReference === startChapterVerseReference &&
-          p.endChapterNum === endChapterNum &&
-          p.endChapterVerseReference === endChapterVerseReference
+          p.startChapter === startChapterNum &&
+          p.startChapterVerseRef === startChapterVerseReference &&
+          p.endChapter === endChapterNum &&
+          p.endChapterVerseRef === endChapterVerseReference
         )
     )
   })

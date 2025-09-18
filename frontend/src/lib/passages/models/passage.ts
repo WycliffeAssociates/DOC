@@ -1,17 +1,17 @@
 export type PassagesDocumentRequest = {
   langCode: string
   langName: string
-  passageReferences: Array<PassageReferenceDto>
+  bibleReferences: Array<BibleReference>
   emailAddress: string | null
 }
 
-export type PassageReferenceDto = {
+export type BibleReference = {
   id: number
   langCode: string
   bookCode: string
   bookName: string
-  startChapterNum: number
-  startChapterVerseReference: string
-  endChapterNum?: number | null
-  endChapterVerseReference?: string | null
+  startChapter: number
+  startChapterVerseRef: string
+  endChapter?: number | null
+  endChapterVerseRef?: string | null
 }

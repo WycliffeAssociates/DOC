@@ -3,7 +3,7 @@
   import { page } from '$app/stores'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
-  import type { PassageReferenceDto } from '$lib/passages/models'
+  import type { BibleReference } from '$lib/passages/models'
   import { passagesRegExp } from '$lib/passages/utils'
   import BookIcon from '$lib/BookIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'
@@ -12,7 +12,7 @@
   let size = 5 // Number of passages to show initially
 
   function uncheckPassage(id: number) {
-    $passagesStore = $passagesStore.filter((item: PassageReferenceDto) => item.id != id)
+    $passagesStore = $passagesStore.filter((item: BibleReference) => item.id != id)
   }
 
   $: allPassages = $passagesStore || []
@@ -50,15 +50,15 @@
                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
       >
         <div>
-          {#if passage.endChapterNum != null && passage.endChapterNum > 0 && passage.endChapterVerseReference != null}
+          {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
             <span
               >{passage.bookName}
-              {passage.startChapterNum}:{passage.startChapterVerseReference}-{passage.endChapterNum}:{passage.endChapterVerseReference}</span
+              {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
             >
           {:else}
             <span
               >{passage.bookName}
-              {passage.startChapterNum}:{passage.startChapterVerseReference}</span
+              {passage.startChapter}:{passage.startChapterVerseRef}</span
             >
           {/if}
         </div>
@@ -72,15 +72,15 @@
                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
       >
         <div>
-          {#if passage.endChapterNum != null && passage.endChapterNum > 0 && passage.endChapterVerseReference != null}
+          {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
             <span
               >{passage.bookName}
-              {passage.startChapterNum}:{passage.startChapterVerseReference}-{passage.endChapterNum}:{passage.endChapterVerseReference}</span
+              {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
             >
           {:else}
             <span
               >{passage.bookName}
-              {passage.startChapterNum}:{passage.startChapterVerseReference}</span
+              {passage.startChapter}:{passage.startChapterVerseRef}</span
             >
           {/if}
         </div>
@@ -105,15 +105,15 @@
                       rounded-lg bg-white p-2 text-xl text-[#66768B]"
             >
               <div>
-                {#if passage.endChapterNum != null && passage.endChapterNum > 0 && passage.endChapterVerseReference != null}
+                {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
                   <span
                     >{passage.bookName}
-                    {passage.startChapterNum}:{passage.startChapterVerseReference}-{passage.endChapterNum}:{passage.endChapterVerseReference}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
                   >
                 {:else}
                   <span
                     >{passage.bookName}
-                    {passage.startChapterNum}:{passage.startChapterVerseReference}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef}</span
                   >
                 {/if}
               </div>
@@ -127,15 +127,15 @@
                       rounded-lg bg-white p-2 text-xl text-[#66768B]"
             >
               <div>
-                {#if passage.endChapterNum != null && passage.endChapterNum > 0 && passage.endChapterVerseReference != null}
+                {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
                   <span
                     >{passage.bookName}
-                    {passage.startChapterNum}:{passage.startChapterVerseReference}-{passage.endChapterNum}:{passage.endChapterVerseReference}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
                   >
                 {:else}
                   <span
                     >{passage.bookName}
-                    {passage.startChapterNum}:{passage.startChapterVerseReference}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef}</span
                   >
                 {/if}
               </div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PassageReferenceDto } from '$lib/passages/models'
+  import type { BibleReference } from '$lib/passages/models'
   import BibleReferenceSelector from './BibleReferenceSelector.svelte'
   import { onMount } from 'svelte'
   import {
@@ -12,7 +12,7 @@
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
-  import { passagesStore, addPassageReference } from '$lib/passages/stores/PassagesStore'
+  import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import CheckIcon from '$lib/CheckIcon.svelte'
 
   // For use by Mobile UI
@@ -48,7 +48,7 @@
   })
 
   function removePassage(id: number) {
-    $passagesStore = $passagesStore.filter((item: PassageReferenceDto) => item.id != id)
+    $passagesStore = $passagesStore.filter((item: BibleReference) => item.id != id)
   }
 
   $: if (bookCodesAndNames && bookCodesAndNames.length > 0) {

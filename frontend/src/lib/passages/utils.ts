@@ -51,6 +51,6 @@ export function routeToPage(url: string): void {
 export function omitIdFromPassageReferences(documentRequest: PassagesDocumentRequest) {
   return {
     ...documentRequest,
-    passageReferences: documentRequest.passageReferences.map(({ id, ...rest }) => rest) // Omit 'id'
+    bibleReferences: documentRequest.bibleReferences.map(({ id, ...rest }) => rest) // Omit 'id'
   }
 }

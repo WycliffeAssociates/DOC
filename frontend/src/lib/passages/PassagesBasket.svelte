@@ -118,7 +118,7 @@
                 {/if}
               </div>
               <button on:click={() => uncheckPassage(passage.id)}>
-                <CloseIcon />
+                <span class="ml-2"><CloseIcon /></span>
               </button>
             </div>
           {:else}

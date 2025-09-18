@@ -47,7 +47,7 @@
           on:click={() => dialog.close()}
         >
           <div class="flex items-center">
-            <CloseIcon />
+            <span class="ml-2"><CloseIcon /></span>
             <span class="ml-2">Close</span>
           </div>
         </button>

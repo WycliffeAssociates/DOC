@@ -97,7 +97,7 @@
             uncheckHeartLanguage($lang1CodeAndNameStore)
           }}
         >
-          <CloseIcon />
+          <span class="ml-2"><CloseIcon /></span>
         </button>
       </div>
     {:else}

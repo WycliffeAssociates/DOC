@@ -128,12 +128,13 @@ COPY template_compact.docx .
 # COPY resources.json assets_download/resources.json
 # RUN touch assets_download/resources.json
 
-# We copy this into its final place using a FastAPI initialization hook. We
-# can't do it in Dockerfile because of the volumes definition that we
-# need which overshadows /app/assets_download directory. It is not yet
-# available through the data API or at a reasonably sized clonable
-# github repo.
+# We copy these files into their final place using a FastAPI
+# initialization hook. We can't do it in Dockerfile because of the
+# volumes definition that we need which overshadows /app/assets_download
+# directory and these files are not yet available through the data API
+# or at a reasonably sized clonable github repo.
 COPY en_rg_nt_survey.docx .
+COPY en_ot_survey_rg* .
 
 # Make sure Python can find the code to run
 ENV PYTHONPATH=/app/backend:/app/tests

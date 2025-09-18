@@ -15,17 +15,6 @@ from passages.entrypoints.routes import router as passages_router
 from stet.entrypoints.routes import router as stet_router
 
 
-# Docker container paths
-DOCKER_BASE_DIR = "/app"
-DOCKER_EN_RG_DIR = join(DOCKER_BASE_DIR, settings.EN_RG_DIR)
-DOCKER_DOCX_FILE_SRC = join(DOCKER_BASE_DIR, "en_rg_nt_survey.docx")
-DOCKER_DOCX_FILE_DEST = join(DOCKER_EN_RG_DIR, "en_rg_nt_survey.docx")
-# Local filesystem paths
-LOCAL_ASSETS_DOWNLOAD_DIR = settings.RESOURCE_ASSETS_DIR
-LOCAL_EN_RG_DIR = settings.EN_RG_DIR
-LOCAL_DOCX_FILE_SRC = "en_rg_nt_survey.docx"
-LOCAL_DOCX_FILE_DEST = join(LOCAL_EN_RG_DIR, "en_rg_nt_survey.docx")
-
 app = FastAPI()
 
 
@@ -83,26 +72,71 @@ async def validation_exception_handler(
     )
 
 
-def initialize_assets() -> None:
+DOCKER_BASE_DIR = "/app"
+
+
+SURVEY_FILES = {
+    "nt": "en_rg_nt_survey.docx",
+    "ot_rg1": "en_ot_survey_rg1_gen_deu.docx",
+    "ot_rg2": "en_ot_survey_rg2_jos_est.docx",
+    "ot_rg3": "en_ot_survey_rg3_job_sng.docx",
+    "ot_rg4": "en_ot_survey_rg4_isa_mal.docx",
+}
+
+
+def build_paths(base_dir: str, en_rg_dir: str) -> dict[str, tuple[str, str]]:
+    """
+    Build src/dest pairs for each survey file.
+    Returns a dict where key is 'nt', 'ot_rg1', etc.
+    Each value is (src, dest).
+    """
+    return {
+        key: (
+            join(base_dir, filename),
+            join(en_rg_dir, filename),
+        )
+        for key, filename in SURVEY_FILES.items()
+    }
+
+
+DOCKER_PATHS = build_paths(DOCKER_BASE_DIR, join(DOCKER_BASE_DIR, settings.EN_RG_DIR))
+LOCAL_PATHS = build_paths("", settings.EN_RG_DIR)  # src is just filename in local case
+
+
+def initialize_assets(
+    docker_base_dir: str = DOCKER_BASE_DIR,
+    docker_paths: dict[str, tuple[str, str]] = DOCKER_PATHS,
+    survey_files: dict[str, str] = SURVEY_FILES,
+    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
+    local_paths: dict[str, tuple[str, str]] = LOCAL_PATHS,
+) -> None:
     """
     Ensures the en_rg directory and the .docx file exist in the assets_download volume.
     """
     try:
-        if exists(DOCKER_BASE_DIR):  # Executing inside Docker container
-            makedirs(DOCKER_EN_RG_DIR, exist_ok=True)
-            if not exists(DOCKER_DOCX_FILE_DEST):
-                shutil.copy(DOCKER_DOCX_FILE_SRC, DOCKER_DOCX_FILE_DEST)
-                if not exists(DOCKER_DOCX_FILE_DEST):
-                    raise AssertionError(
-                        "en_rg_nt_survey.docx not copied into place at startup!"
-                    )
-        elif exists(LOCAL_ASSETS_DOWNLOAD_DIR):  # Executing outside Docker container
-            makedirs(LOCAL_EN_RG_DIR, exist_ok=True)
-            if not exists(LOCAL_DOCX_FILE_DEST):
-                shutil.copy(LOCAL_DOCX_FILE_SRC, LOCAL_DOCX_FILE_DEST)
-        print("Assets initialized successfully.")
+        if exists(docker_base_dir):  # inside Docker
+            makedirs(docker_paths["nt"][1].rsplit("/", 1)[0], exist_ok=True)
+            for key, (src, dest) in docker_paths.items():
+                if not exists(dest):
+                    shutil.copy(src, dest)
+                    if not exists(dest):
+                        raise AssertionError(
+                            f"{survey_files[key]} not copied into place!"
+                        )
+        elif exists(resource_assets_dir):  # outside Docker
+            makedirs(local_paths["nt"][1].rsplit("/", 1)[0], exist_ok=True)
+            for src, dest in local_paths.values():
+                if not exists(dest):
+                    shutil.copy(src, dest)
+                    if not exists(dest):
+                        raise AssertionError(
+                            f"{survey_files[key]} not copied into place!"
+                        )
+        logger.info("Assets initialized successfully.")
     except Exception as e:
-        print(f"Error initializing assets: {e}")
+        logger.info(f"Error initializing assets: {e}")
+
+
 
 
 # Until reviewer's guides can be accessed via data API, create their

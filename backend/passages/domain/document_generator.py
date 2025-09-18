@@ -26,7 +26,7 @@ from docx.oxml import parse_xml
 from docx.shared import Inches  # type: ignore
 from docx.table import _Cell  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
-from passages.domain.model import PassageDto, PassageReferenceDto
+from passages.domain.model import Passage, BibleReference as PassageReference
 from passages.domain.parser import verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
 from passages.utils.docx_utils import add_footer, add_header
@@ -38,7 +38,7 @@ logger = settings.logger(__name__)
 def generate_docx_document(
     lang_code: str,
     lang_name: str,
-    passage_reference_dtos: list[PassageReferenceDto],
+    passage_reference_dtos: list[PassageReference],
     document_request_key_: str,
     docx_filepath_: str,
     working_dir: str = settings.WORKING_DIR,
@@ -122,30 +122,30 @@ def generate_docx_document(
             verse_text_html_ = ""
         non_book_name_portion_of_reference = ""
         if (
-            passage_ref_dto.end_chapter_num
-            and passage_ref_dto.end_chapter_num > 0
-            and passage_ref_dto.end_chapter_verse_reference
+            passage_ref_dto.end_chapter
+            and passage_ref_dto.end_chapter > 0
+            and passage_ref_dto.end_chapter_verse_ref
         ):
-            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter_num}:{passage_ref_dto.start_chapter_verse_reference}-{passage_ref_dto.end_chapter_num}:{passage_ref_dto.end_chapter_verse_reference}"
+            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}-{passage_ref_dto.end_chapter}:{passage_ref_dto.end_chapter_verse_ref}"
         else:
-            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter_num}:{passage_ref_dto.start_chapter_verse_reference}"
-        nationalized_reference = (
+            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}"
+        localized_reference = (
             f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
             if selected_usfm_book and non_book_name_portion_of_reference
-            else passage_ref_dto.start_chapter_verse_reference
+            else passage_ref_dto.start_chapter_verse_ref
         )
-        passage_dto = PassageDto(
-            passage_reference=nationalized_reference,
+        passage = Passage(
+            bible_reference=localized_reference,
             passage_text=verse_text_html_,
         )
-        passages.append(passage_dto)
+        passages.append(passage)
     current_task.update_state(state="Converting to Docx")
     generate_docx(passages, docx_filepath_, lang_code, lang_name)
     return docx_filepath_
 
 
 def generate_docx(
-    passage_dtos: list[PassageDto],
+    passage_dtos: list[Passage],
     docx_filepath: str,
     lang_code: str,
     lang_name: str,
@@ -173,7 +173,7 @@ def generate_docx(
             tcPr.append(tcW)
         # Fill left cell
         cell_left = table.cell(0, 0)
-        html_to_docx.add_html_to_document(passage_dto.passage_reference, cell_left)
+        html_to_docx.add_html_to_document(passage_dto.bible_reference, cell_left)
         html_to_docx.add_html_to_document(passage_dto.passage_text, cell_left)
         # Fill right cell (empty, just add vertical line)
         cell_right = table.cell(0, 1)
@@ -207,7 +207,7 @@ def add_vertical_line(cell: _Cell) -> None:
 
 def document_request_key(
     lang_code: str,
-    passage_reference_dtos: list[PassageReferenceDto],
+    passage_reference_dtos: list[PassageReference],
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -231,7 +231,7 @@ def document_request_key(
     translation_table = str.maketrans(":;,-", "____")
     passages_key = underscore.join(
         [
-            f"{passage_reference.book_code}_{passage_reference.start_chapter_num}_{passage_reference.start_chapter_verse_reference.translate(translation_table)}"
+            f"{passage_reference.book_code}_{passage_reference.start_chapter}_{passage_reference.start_chapter_verse_ref.translate(translation_table)}"
             for passage_reference in passage_reference_dtos
         ]
     )
@@ -258,7 +258,7 @@ def generate_passages_docx_document(
 ) -> Json[str]:
     passage_reference_dtos_list = json.loads(passage_reference_dtos_json)
     passage_reference_dtos = [
-        PassageReferenceDto(**d) for d in passage_reference_dtos_list
+        PassageReference(**d) for d in passage_reference_dtos_list
     ]
     # logger.debug(
     #     "passed args: lang_code: %s, passage_references: %s, email_adress: %s",

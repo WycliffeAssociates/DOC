@@ -27,7 +27,7 @@ async def generate_passages_docx_document(
                 passages_document_request.lang_name,
                 # Serialize the list of objects to a JSON string
                 json.dumps(
-                    passages_document_request.passage_references,
+                    passages_document_request.bible_references,
                     default=lambda obj: obj.model_dump(),
                 ),
                 passages_document_request.email_address,

@@ -115,8 +115,10 @@
   let filteredGatewayCodeAndNames: Array<string> = []
   $: {
     if (gatewayCodesAndNames) {
-      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
+      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
       )
     }
   }
@@ -125,8 +127,10 @@
   let filteredHeartCodeAndNames: Array<string> = []
   $: {
     if (heartCodesAndNames) {
-      filteredHeartCodeAndNames = heartCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
+      filteredHeartCodeAndNames = heartCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
       )
     }
   }

@@ -61,9 +61,11 @@
   async function loadLangCodeNameAndTypes() {
     try {
       langCodeNameAndTypes = await getLangCodesNames()
-      gatewayCodesAndNames = langCodeNameAndTypes.filter(([ , , isGateway]) => isGateway)
+      gatewayCodesAndNames = langCodeNameAndTypes
+        .filter(([, , isGateway]) => isGateway)
         .map(([code, name]) => `${code}, ${name}`)
-      heartCodesAndNames = langCodeNameAndTypes.filter(([ , , isGateway]) => !isGateway)
+      heartCodesAndNames = langCodeNameAndTypes
+        .filter(([, , isGateway]) => !isGateway)
         .map(([code, name]) => `${code}, ${name}`)
     } catch (error) {
       console.error(error)
@@ -90,8 +92,10 @@
   let filteredGatewayCodeAndNames: Array<string> = []
   $: {
     if (gatewayCodesAndNames) {
-      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
+      filteredGatewayCodeAndNames = gatewayCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(gatewaySearchTerm.toLowerCase())
       )
     }
   }
@@ -101,13 +105,15 @@
   let filteredHeartCodeAndNames: Array<string> = []
   $: {
     if (heartCodesAndNames) {
-      filteredHeartCodeAndNames = heartCodesAndNames.filter((item: string) =>
-        getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) || getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
+      filteredHeartCodeAndNames = heartCodesAndNames.filter(
+        (item: string) =>
+          getName(item.toLowerCase()).includes(heartSearchTerm.toLowerCase()) ||
+          getCode(item.toLowerCase()).includes(heartSearchTerm.toLowerCase())
       )
     }
   }
 
-  let windowWidth: number = typeof window !== "undefined" ? window.innerWidth : 0
+  let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   $: console.log(`windowWidth: ${windowWidth}`)
 
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number

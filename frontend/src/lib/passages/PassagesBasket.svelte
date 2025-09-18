@@ -110,7 +110,7 @@
 
   {#if hiddenPassages.length > 0}
     <div
-      class="collapse-arrow collapse mt-2 w-full rounded-lg
+      class="collapse collapse-arrow mt-2 w-full rounded-lg
                 bg-white text-xl text-[#66768B]"
     >
       <input type="checkbox" />

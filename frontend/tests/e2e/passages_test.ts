@@ -23,8 +23,8 @@ test('add passages', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test that you can select gateway tab after first selecting heart language and hitting next', async ({
-    page
+test('select gateway tab after first selecting heart language and hitting next', async ({
+  page
 }) => {
     await page.goto('http://localhost:8001/passages')
     await page.getByRole('button', { name: 'Heart' }).click()

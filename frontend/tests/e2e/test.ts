@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('test ui part 1', async ({ page }) => {
+test('ui part 1', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Tiếng Việt (Vietnamese)').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -25,7 +25,7 @@ test('test ui part 1', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test ui part 2', async ({ page }) => {
+test('ui part 2', async ({ page }) => {
   await page.goto('http://localhost:8001')
   await page.getByText('English').click()
   await page.getByText('Español Latin America (Latin').click()
@@ -54,9 +54,7 @@ test('test ui part 2', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test books retained in basket on back button to languages and then forward', async ({
-  page
-}) => {
+test('books retained in basket on back button to languages and then forward', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByPlaceholder('Search Gateway Languages').click()
   await page.getByPlaceholder('Search Gateway Languages').fill('Amh')
@@ -82,7 +80,7 @@ test('test books retained in basket on back button to languages and then forward
   await page.getByPlaceholder('Search NT books').fill('2 ኛ ዮሐንስ')
 })
 
-test('test transfer from biel', async ({ page }) => {
+test('transfer from biel', async ({ page }) => {
   await page.goto(
     'http://localhost:8001/transfer/repo_url=https%3A%2F%2Fcontent.bibletranslationtools.org%2Fchunga_moses%2Fleb-x-bisa_col_text_reg&book_name=Colossians'
   )
@@ -90,7 +88,7 @@ test('test transfer from biel', async ({ page }) => {
   await expect(page.getByText('Colossians')).toBeVisible({ timeout: 1200000 })
 })
 
-test('test transfer from biel 2', async ({ page }) => {
+test('transfer from biel 2', async ({ page }) => {
   await page.goto(
     'http://localhost:8001/transfer/repo_url=https:%2F%2Fcontent.bibletranslationtools.org%2FWycliffeAssociates%2Fen_ulb'
   )
@@ -100,7 +98,7 @@ test('test transfer from biel 2', async ({ page }) => {
   await expect(page.getByText('(60) items hidden')).toBeVisible()
 })
 
-test('test es-419 resource types', async ({ page }) => {
+test('es-419 resource types', async ({ page }) => {
   await page.goto('http://localhost:8001')
   await page.getByText(/.*Español.*/).click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -113,9 +111,7 @@ test('test es-419 resource types', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test that reviewers guide is only shown when book is chosen that it includes', async ({
-  page
-}) => {
+test('reviewers guide is only shown when book is chosen that it includes', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('English').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -126,7 +122,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   ).not.toBeVisible({ timeout: 580000 })
 })
 
-test('test that reviewers guide is only shown when book is chosen that it includes - part 2', async ({
+test('reviewers guide is only shown when book is chosen that it includes - part 2', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/languages')
@@ -139,7 +135,7 @@ test('test that reviewers guide is only shown when book is chosen that it includ
   })
 })
 
-test('test that you can select gateway tab after first selecting heart language and hitting next', async ({
+test('can select gateway tab after first selecting heart language and hitting next', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/')
@@ -160,7 +156,7 @@ test('test that you can select gateway tab after first selecting heart language 
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test optional settings', async ({ page }) => {
+test('optional settings', async ({ page }) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('Bichelamar (Bislama)').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -176,7 +172,7 @@ test('test optional settings', async ({ page }) => {
   )
 })
 
-test.skip('test aba philemon', async ({ page }) => {
+test.skip('aba philemon', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByText('Abé aba').click()
@@ -191,7 +187,7 @@ test.skip('test aba philemon', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Regular (aba)')
 })
 
-test('test that book name correction happened for pt-br, 1co', async ({ page }) => {
+test('book name correction happened for pt-br, 1co', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Português Brasileiro (').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -199,7 +195,7 @@ test('test that book name correction happened for pt-br, 1co', async ({ page }) 
   await expect(page.locator('body')).toContainText('1 Coríntios')
 })
 
-test('test limit tw words switch', async ({ page }) => {
+test('limit tw words switch', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Cebuano').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -225,7 +221,7 @@ test('test limit tw words switch', async ({ page }) => {
   await expect(page.getByRole('main')).toContainText('Limit TW words')
 })
 
-test('test use section visual separator setting', async ({ page }) => {
+test('use section visual separator setting', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Español Latin America (Latin').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -238,7 +234,7 @@ test('test use section visual separator setting', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test ordering of books in document title(s) and body', async ({ page }) => {
+test('ordering of books in document title(s) and body', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByPlaceholder('Search Gateway Languages').click()
   await page.getByPlaceholder('Search Gateway Languages').fill('tpi')
@@ -311,7 +307,7 @@ test('test ordering of books in document title(s) and body', async ({ page }) =>
   expect(index4).toBeLessThan(index5)
 })
 
-test('test languages are sorted in clicked order', async ({ page }) => {
+test('languages are sorted in clicked order', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Français (French)').click()
   await page.getByText('Cebuano').click()
@@ -341,7 +337,7 @@ test('test languages are sorted in clicked order', async ({ page }) => {
   )
 })
 
-test('test use prince with lots of books', async ({ page }) => {
+test('use prince with lots of books', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByPlaceholder('Search Gateway Languages').click()
   await page.getByPlaceholder('Search Gateway Languages').fill('tpi')
@@ -365,7 +361,7 @@ test('test use prince with lots of books', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test acq', async ({ page }) => {
+test('acq', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Heart Languages').click()
@@ -385,7 +381,7 @@ test('test acq', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test visibility of optional settings based on resources chosen', async ({ page }) => {
+test('visibility of optional settings based on resources chosen', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Français (French)').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -426,7 +422,7 @@ test('test visibility of optional settings based on resources chosen', async ({ 
   )
 })
 
-test('test burmese', async ({ page }) => {
+test('burmese', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByPlaceholder('Search Gateway Languages').click()
   await page.getByPlaceholder('Search Gateway Languages').fill('my')
@@ -449,7 +445,7 @@ test('test burmese', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('test merge of data API data and DOC only data', async ({ page }) => {
+test('merge of data API data and DOC only data', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await expect(page.getByRole('main')).toContainText('Bahasa Indonesia (Indonesian)')
   await page.getByLabel('Bahasa Indonesia (Indonesian').check()
@@ -460,7 +456,7 @@ test('test merge of data API data and DOC only data', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Translation Notes')
 })
 
-test('test space between end of chunk and beginning of another', async ({ page }) => {
+test('space between end of chunk and beginning of another', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Heart Languages').click()

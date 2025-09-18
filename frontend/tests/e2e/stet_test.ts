@@ -9,7 +9,7 @@ test.describe('Desktop Tests', () => {
     }
   })
 
-  test('test stet', async ({ page }) => {
+  test('stet', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByLabel('English en').check()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -18,7 +18,7 @@ test.describe('Desktop Tests', () => {
     await page.getByRole('button', { name: 'Generate File' }).click()
   })
 
-  test('test french stet', async ({ page }) => {
+  test('french stet', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByText('Français (French)').click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -27,7 +27,7 @@ test.describe('Desktop Tests', () => {
     await page.getByRole('button', { name: 'Generate File' }).click()
   })
 
-  test('test search by language code', async ({ page }) => {
+  test('search by language code', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByText('Português Brasileiro (').click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -39,7 +39,7 @@ test.describe('Desktop Tests', () => {
     await expect(page.locator('body')).toContainText('Sègbé(sxw-x-segbe)')
   })
 
-  test('test next back and edit', async ({ page }) => {
+  test('next then back and edit', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByText('English').click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -64,7 +64,7 @@ test.describe('Desktop Tests', () => {
     await page.getByRole('button', { name: 'Generate File' }).click()
   })
 
-  test('test tok pisin input language', async ({ page }) => {
+  test('tok pisin input language', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByText('Tok Pisin').click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -83,7 +83,7 @@ test.describe('Mobile Tests', () => {
     }
   })
 
-  test('test mobile', async ({ page }) => {
+  test('mobile', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByLabel('English en').check()
     await page.getByRole('button').nth(1).click()
@@ -95,7 +95,7 @@ test.describe('Mobile Tests', () => {
     await page.getByRole('button', { name: 'Generate File' }).click()
   })
 
-  test('test mobile 2', async ({ page }) => {
+  test('mobile 2', async ({ page }) => {
     await page.goto('http://localhost:8001/stet')
     await page.getByText('English').click()
     await page.getByRole('button').nth(1).click()

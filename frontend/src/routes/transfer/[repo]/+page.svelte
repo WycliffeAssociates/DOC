@@ -9,8 +9,6 @@
 
   import type { PageData } from './$types'
   import {
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore,
     languagesClickedOrderStore,
     langCodesStore,
     langNamesStore,

@@ -4,12 +4,10 @@
   import {
     langCodesStore,
     langCountStore,
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore,
     languagesClickedOrderStore
   } from '$lib/stores/LanguagesStore'
   import { resourceTypesStore } from '$lib/stores/ResourceTypesStore'
-  import { langRegExp, getCode, getName, getResourceTypeLangCode } from '$lib/utils'
+  import { langRegExp, getCode, getName } from '$lib/utils'
   import GlobeIcon from '$lib/GlobeIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'
   import CloseIcon from '$lib/CloseIcon.svelte'

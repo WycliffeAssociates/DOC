@@ -69,3 +69,20 @@ def test_lookup_failures() -> None:
 def test_nt_survey_rg_passages() -> None:
     bible_references = resource_lookup.nt_survey_rg_passages()
     assert bible_references
+
+
+def test_en_ot_survey_rg1_passages() -> None:
+    bible_references = resource_lookup.ot_survey_rg1_passages()
+    assert bible_references
+
+def test_en_ot_survey_rg2_passages() -> None:
+    bible_references = resource_lookup.ot_survey_rg2_passages()
+    assert bible_references
+
+def test_en_ot_survey_rg3_passages() -> None:
+    bible_references = resource_lookup.ot_survey_rg3_passages()
+    assert bible_references
+
+def test_en_ot_survey_rg4_passages() -> None:
+    bible_references = resource_lookup.ot_survey_rg4_passages()
+    assert bible_references

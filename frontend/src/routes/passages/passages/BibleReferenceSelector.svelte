@@ -15,8 +15,6 @@
   export let chapters: Record<string, number[]> = {}
   export let bookCodesAndNames: [string, string][]
 
-  $: console.log(`is_production: ${is_production}`)
-
   onMount(() => {
     getChaptersInBooks()
       .then((chaptersInBooks_) => {

@@ -1,16 +1,15 @@
 from os import scandir
 from typing import Sequence
-from fastapi import APIRouter
 
 import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
-from stet.domain import document_generator, model
 from doc.domain import resource_lookup
-
-from fastapi import HTTPException, status
-
+from docx import Document  # type: ignore
+from fastapi import APIRouter, Request, HTTPException, status
 from fastapi.responses import JSONResponse
+from stet.domain import document_generator, model
+
 
 router = APIRouter()
 
@@ -19,11 +18,14 @@ logger = settings.logger(__name__)
 
 @router.get("/stet/source_languages")
 async def source_lang_codes_and_names(
+    request: Request,
     stet_dir: str = settings.STET_DIR,
 ) -> Sequence[tuple[str, str, bool]]:
     """
     Return list of all available language code, name tuples for which Translation Services has provided a source document.
     """
+    is_production = request.headers.get("x-is-production") == "true"
+    logger.debug("is_production: %s", is_production)
     # Scan what source docs are available and make sure to filter
     # source language candidates to only those languages.
     ietf_codes = [
@@ -34,11 +36,23 @@ async def source_lang_codes_and_names(
         and entry.name.endswith(".docx")
     ]
     # logger.debug("source ietf_codes: %s", ietf_codes)
-    languages = [
-        lang_code_and_name
-        for lang_code_and_name in resource_lookup.lang_codes_and_names_having_usfm()
-        if lang_code_and_name[0] in ietf_codes
-    ]
+    ietf_codes_for_docs_with_fourth_column = []
+    for ietf_code in ietf_codes:
+        doc = Document(f"{stet_dir}/stet_{ietf_code}.docx")
+        for table in doc.tables:
+            for row in table.rows:
+                # If 4th column exists, get bolded words from it
+                if len(row.cells) > 3 and row.cells[3].text:
+                    if ietf_code not in ietf_codes_for_docs_with_fourth_column:
+                        ietf_codes_for_docs_with_fourth_column.append(ietf_code)
+    languages = []
+    for lang_code_and_name in resource_lookup.lang_codes_and_names_having_usfm():
+        if is_production:
+            if lang_code_and_name[0] in ietf_codes_for_docs_with_fourth_column:
+                languages.append(lang_code_and_name)
+        else:
+            if lang_code_and_name[0] in ietf_codes:
+                languages.append(lang_code_and_name)
     # logger.debug("source languages: %s", languages)
     return languages
 

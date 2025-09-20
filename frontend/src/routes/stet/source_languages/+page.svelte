@@ -2,7 +2,8 @@
   import { onMount } from 'svelte'
   import {
     PUBLIC_STET_SOURCE_LANG_CODES_NAMES_URL,
-    PUBLIC_TAILWIND_SM_MIN_WIDTH
+    PUBLIC_TAILWIND_SM_MIN_WIDTH,
+    PUBLIC_PRODUCTION_DOMAIN
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
@@ -21,6 +22,9 @@
   } from '$lib/stet/stores/LanguagesStore'
   import { getCode, getName } from '$lib/stet/utils'
 
+  const isProduction = () =>
+    window.location.hostname.includes(PUBLIC_PRODUCTION_DOMAIN) ? true : false
+
   let showGatewayLanguages = true
 
   // For use by Mobile UI
@@ -31,7 +35,10 @@
     apiRootUrl: string = env.PUBLIC_BACKEND_API_URL,
     langCodesAndNamesUrl: string = <string>PUBLIC_STET_SOURCE_LANG_CODES_NAMES_URL
   ): Promise<Array<[string, string, boolean]>> {
-    const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
+    console.log('frontend sees hostname:', window.location.hostname)
+    const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`, {
+      headers: { 'X-Is-Production': isProduction() ? 'true' : 'false' }
+    })
     if (!response.ok) {
       console.log(`Error: ${response.statusText}`)
       throw new Error(response.statusText)

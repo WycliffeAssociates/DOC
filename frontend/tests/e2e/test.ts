@@ -172,21 +172,6 @@ test('optional settings', async ({ page }) => {
   )
 })
 
-test.skip('aba philemon', async ({ page }) => {
-  await page.goto('http://localhost:8001/')
-  await page.getByRole('button', { name: 'Heart' }).click()
-  await page.getByText('Abé aba').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Philémon').click({ timeout: 580000 })
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Regular').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('PDF').click()
-  await page.getByRole('button', { name: 'Generate File' }).click()
-  await expect(page.locator('body')).toContainText('Philémon')
-  await expect(page.locator('body')).toContainText('Regular (aba)')
-})
-
 test('book name correction happened for pt-br, 1co', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Português Brasileiro (').click()

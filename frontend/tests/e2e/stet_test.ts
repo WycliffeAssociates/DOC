@@ -36,7 +36,7 @@ test.describe('Desktop Tests', () => {
     await page.getByPlaceholder('Search Heart Languages').fill('sxw')
     await page.getByText('Sègbé').click()
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.locator('body')).toContainText('Sègbé(sxw-x-segbe)')
+    await expect(page.getByText('Sègbé(sxw-x-segbe)')).toBeVisible()
   })
 
   test('next then back and edit', async ({ page }) => {

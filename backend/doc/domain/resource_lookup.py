@@ -182,6 +182,9 @@ BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
     ("es-419", "I juan"): "1 Juan",
     ("fr", "Ephésiens"): "Éphésiens",
     ("pt-br", "1 Corintios"): "1 Coríntios",
+    ("sw", "Matendo ya mitume"): "Matendo ya Mitume",
+    ("sw", "Luke"): "Luka",
+    ("sw", "Waraka wa yakobo"): "Yakobo",
 }
 
 # List of languages which do not have USFM available for any books. We use this

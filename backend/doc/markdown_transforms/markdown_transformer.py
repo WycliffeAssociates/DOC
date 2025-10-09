@@ -162,6 +162,7 @@ def transform_tw_rc_link(
     translation_words_dict: dict[str, str],
     tw: str = "tw",
     fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    tw_rc_link_re: re.Pattern[str] = TW_RC_LINK_RE,
 ) -> str:
     """
     Transform the translation word rc wikilink into a Markdown
@@ -169,7 +170,7 @@ def transform_tw_rc_link(
     the translation word definition if it exists or replace the
     link with the non-localized word if it doesn't.
     """
-    match = search(TW_RC_LINK_RE, wikilink.url)
+    match = search(tw_rc_link_re, wikilink.url)
     if match:
         # Determine if resource_type TW was one of the requested
         # resources.
@@ -223,6 +224,7 @@ def transform_tw_markdown_links(
     translation_words_dict: dict[str, str],
     tw: str = "tw",
     fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    tw_markdown_link_re: re.Pattern[str] = TW_MARKDOWN_LINK_RE,
 ) -> str:
     """
     Transform the translation word relative file link into a
@@ -234,18 +236,20 @@ def transform_tw_markdown_links(
         for resource_request in resource_requests
         if tw in resource_request.resource_type
     ]
-    for match in finditer(TW_MARKDOWN_LINK_RE, source):
+    for match in finditer(tw_markdown_link_re, source):
         match_text = match.group(0)
         filename_sans_suffix = match.group("word")
         if filename_sans_suffix in translation_words_dict and tw_resources_requests:
             file_content = read_file(translation_words_dict[filename_sans_suffix])
             localized_translation_word_ = localized_translation_word(file_content)
+            logger.debug("filename_sans_suffix: %s", filename_sans_suffix)
             source = source.replace(
                 match_text,
                 fmt_str.format(
                     localized_translation_word_,
                     lang_code,
-                    localized_translation_word_,
+                    filename_sans_suffix,
+                    # "".join(localized_translation_word_.split()),
                 ),
             )
         else:
@@ -272,6 +276,7 @@ def transform_tw_wiki_rc_links(
     translation_words_dict: dict[str, str],
     tw: str = "tw",
     fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    tw_wiki_rc_link_re: re.Pattern[str] = TW_WIKI_RC_LINK_RE,
 ) -> str:
     """
     Transform the translation word rc link into source anchor link
@@ -285,7 +290,7 @@ def transform_tw_wiki_rc_links(
         for resource_request in resource_requests
         if tw in resource_request.resource_type
     ]
-    for match in finditer(TW_WIKI_RC_LINK_RE, source):
+    for match in finditer(tw_wiki_rc_link_re, source):
         filename_sans_suffix = match.group("word")
         if filename_sans_suffix in translation_words_dict and tw_resources_requests:
             # Localize non-English languages.
@@ -324,6 +329,7 @@ def transform_tw_wiki_rc_links2(
     translation_words_dict: dict[str, str],
     tw: str = "tw",
     fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    tw_wiki_rc_link_re2: re.Pattern[str] = TW_WIKI_RC_LINK_RE2,
 ) -> str:
     """
     Transform the translation word rc link into source anchor link
@@ -337,7 +343,7 @@ def transform_tw_wiki_rc_links2(
         for resource_request in resource_requests
         if tw in resource_request.resource_type
     ]
-    for match in finditer(TW_WIKI_RC_LINK_RE2, source):
+    for match in finditer(tw_wiki_rc_link_re2, source):
         filename_sans_suffix = match.group("word")
         if filename_sans_suffix in translation_words_dict and tw_resources_requests:
             # Localize non-English languages.
@@ -377,6 +383,7 @@ def transform_tw_star_rc_link(
     translation_words_dict: dict[str, str],
     tw: str = "tw",
     fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    tw_star_rc_link_re: re.Pattern[str] = TW_STAR_RC_LINK_RE,
 ) -> str:
     """
     Transform the translation word rc wikilink into a Markdown
@@ -384,7 +391,7 @@ def transform_tw_star_rc_link(
     the translation word definition if it exists or replace the
     link with the non-localized word if it doesn't.
     """
-    match = search(TW_STAR_RC_LINK_RE, wikilink.url)
+    match = search(tw_star_rc_link_re, wikilink.url)
     if match:
         # Determine if resource_type TW was one of the requested
         # resources.
@@ -484,6 +491,7 @@ def transform_tw_wiki_prefixed_rc_links(
     translation_words_dict: dict[str, str],
     tw: str = "tw",
     fmt_str: str = TRANSLATION_WORD_PREFIX_ANCHOR_LINK_FMT_STR,
+    tw_wiki_prefixed_rc_link_re: re.Pattern[str] = TW_WIKI_PREFIXED_RC_LINK_RE,
 ) -> str:
     """
     Transform the translation word rc TW wikilink into source anchor link
@@ -497,7 +505,7 @@ def transform_tw_wiki_prefixed_rc_links(
         for resource_request in resource_requests
         if tw in resource_request.resource_type
     ]
-    for match in finditer(TW_WIKI_PREFIXED_RC_LINK_RE, source):
+    for match in finditer(tw_wiki_prefixed_rc_link_re, source):
         filename_sans_suffix = match.group("word")
         if filename_sans_suffix in translation_words_dict and tw_resources_requests:
             # Need to localize non-English languages.
@@ -526,7 +534,10 @@ def transform_tw_wiki_prefixed_rc_links(
     return source
 
 
-def transform_ta_prefixed_wiki_rc_links(source: str) -> str:
+def transform_ta_prefixed_wiki_rc_links(
+    source: str,
+    ta_wiki_prefixed_rc_link_re: re.Pattern[str] = TA_WIKI_PREFIXED_RC_LINK_RE,
+) -> str:
     """
     Transform the translation academy rc wikilink into source anchor link
     pointing to a destination anchor link for the translation academy
@@ -534,13 +545,15 @@ def transform_ta_prefixed_wiki_rc_links(source: str) -> str:
     """
     # FIXME When TA gets implemented we'll need to actually build
     # the anchor link.
-    for match in finditer(TA_WIKI_PREFIXED_RC_LINK_RE, source):
+    for match in finditer(ta_wiki_prefixed_rc_link_re, source):
         # For now, remove match text
         source = source.replace(match.group(0), "")
     return source
 
 
-def transform_ta_wiki_rc_links(source: str) -> str:
+def transform_ta_wiki_rc_links(
+    source: str, ta_wiki_rc_link_re: re.Pattern[str] = TA_WIKI_RC_LINK_RE
+) -> str:
     """
     Transform the translation academy rc wikilink into source anchor link
     pointing to a destination anchor link for the translation academy
@@ -548,7 +561,7 @@ def transform_ta_wiki_rc_links(source: str) -> str:
     """
     # FIXME When TA gets implemented we'll need to actually build
     # the anchor link.
-    for match in finditer(TA_WIKI_RC_LINK_RE, source):
+    for match in finditer(ta_wiki_rc_link_re, source):
         # For now, remove match text the source text.
         source = source.replace(match.group(0), "")
     return source
@@ -556,7 +569,9 @@ def transform_ta_wiki_rc_links(source: str) -> str:
 
 # TODO zh gen, e.g., 1:20 you end up with things like:（参：）. We
 # should probably remove the whole parenthesized expression.
-def transform_ta_star_rc_links(source: str) -> str:
+def transform_ta_star_rc_links(
+    source: str, ta_star_rc_link_re: re.Pattern[str] = TA_STAR_RC_LINK_RE
+) -> str:
     """
     Transform the translation academy rc wikilink into source anchor link
     pointing to a destination anchor link for the translation academy
@@ -572,7 +587,10 @@ def transform_ta_star_rc_links(source: str) -> str:
 
 # TODO zh gen, e.g., 1:20 you end up with things like:（参：）. We
 # should probably remove the whole parenthesized expression.
-def transform_ta_markdown_links(source: str) -> str:
+def transform_ta_markdown_links(
+    source: str,
+    ta_prefixed_markdown_link_re: re.Pattern[str] = TA_PREFIXED_MARKDOWN_LINK_RE,
+) -> str:
     """
     Transform the translation academy markdown link into source anchor link
     pointing to a destination anchor link for the translation
@@ -580,13 +598,18 @@ def transform_ta_markdown_links(source: str) -> str:
     """
     # FIXME When TA gets implemented we'll need to actually build
     # the anchor link.
-    for match in finditer(TA_PREFIXED_MARKDOWN_LINK_RE, source):
+    for match in finditer(ta_prefixed_markdown_link_re, source):
         # For now, remove match text the source text.
         source = source.replace(match.group(0), "")
     return source
 
 
-def transform_ta_prefixed_markdown_https_links(source: str) -> str:
+def transform_ta_prefixed_markdown_https_links(
+    source: str,
+    ta_prefixed_markdown_https_link_re: re.Pattern[
+        str
+    ] = TA_PREFIXED_MARKDOWN_HTTPS_LINK_RE,
+) -> str:
     """
     Transform the translation academy markdown link into source anchor link
     pointing to a destination anchor link for the translation
@@ -594,13 +617,15 @@ def transform_ta_prefixed_markdown_https_links(source: str) -> str:
     """
     # FIXME When TA gets implemented we'll need to actually build
     # the anchor link.
-    for match in finditer(TA_PREFIXED_MARKDOWN_HTTPS_LINK_RE, source):
+    for match in finditer(ta_prefixed_markdown_https_link_re, source):
         # For now, remove match text the source text.
         source = source.replace(match.group(0), "")
     return source
 
 
-def transform_ta_markdown_https_links(source: str) -> str:
+def transform_ta_markdown_https_links(
+    source: str, ta_markdown_https_link_re: re.Pattern[str] = TA_MARKDOWN_HTTPS_LINK_RE
+) -> str:
     """
     Transform the translation academy markdown link into source anchor link
     pointing to a destination anchor link for the translation
@@ -608,7 +633,7 @@ def transform_ta_markdown_https_links(source: str) -> str:
     """
     # FIXME When TA gets implemented we'll need to actually build
     # the anchor link.
-    for match in finditer(TA_MARKDOWN_HTTPS_LINK_RE, source):
+    for match in finditer(ta_markdown_https_link_re, source):
         # For now, remove match text the source text.
         source = source.replace(match.group(0), "")
     return source
@@ -620,6 +645,7 @@ def transform_tn_prefixed_markdown_links(
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
     tn: str = "tn",
     fmt_str: str = TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
+    tn_markdown_scripture_link_re: re.Pattern[str] = TN_MARKDOWN_SCRIPTURE_LINK_RE,
 ) -> str:
     """
     Transform the translation note rc link into a link pointing to
@@ -693,6 +719,9 @@ def transform_tn_markdown_links(
     tn: str = "tn",
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
     fmt_str: str = TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
+    tn_markdown_relative_scripture_link_re: re.Pattern[
+        str
+    ] = TN_MARKDOWN_RELATIVE_SCRIPTURE_LINK_RE,
 ) -> str:
     """
     Transform the translation note rc link into a link pointing to
@@ -701,7 +730,7 @@ def transform_tn_markdown_links(
     """
     matching_resource_requests: list[ResourceRequest]
     matching_resource_request: ResourceRequest
-    for match in finditer(TN_MARKDOWN_RELATIVE_SCRIPTURE_LINK_RE, source):
+    for match in finditer(tn_markdown_relative_scripture_link_re, source):
         scripture_ref = match.group("scripture_ref")
         book_code = match.group("book_code")
         chapter_num = match.group("chapter_num")
@@ -768,6 +797,9 @@ def transform_tn_missing_book_code_markdown_links(
     tn: str = "tn",
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
     fmt_str: str = TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR,
+    tn_markdown_relative_to_current_book_scripture_link_re: re.Pattern[
+        str
+    ] = TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE,
 ) -> str:
     """
     Transform the translation note rc link into a link pointing to
@@ -777,7 +809,7 @@ def transform_tn_missing_book_code_markdown_links(
     matching_resource_requests: list[ResourceRequest]
     matching_resource_request: ResourceRequest
     for match in finditer(
-        TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE, source
+        tn_markdown_relative_to_current_book_scripture_link_re, source
     ):
         scripture_ref = match.group("scripture_ref")
         chapter_num = match.group("chapter_num")
@@ -841,6 +873,9 @@ def transform_tn_missing_book_code_markdown_links_no_paren(
     source: str,
     # tn: str = "tn",
     # working_dir: str = settings.RESOURCE_ASSETS_DIR,
+    tn_markdown_relative_to_current_book_scripture_link_re_no_parens: re.Pattern[
+        str
+    ] = TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE_NO_PARENS,
 ) -> str:
     """
     Transform the translation note rc link into a non-linked scripture reference only.
@@ -850,7 +885,7 @@ def transform_tn_missing_book_code_markdown_links_no_paren(
     # resource_requests = self._resource_requests
     # lang_code = self._lang_code
     for match in finditer(
-        TN_MARKDOWN_RELATIVE_TO_CURRENT_BOOK_SCRIPTURE_LINK_RE_NO_PARENS, source
+        tn_markdown_relative_to_current_book_scripture_link_re_no_parens, source
     ):
         scripture_ref = match.group("scripture_ref")
         # chapter_num = match.group("chapter_num")
@@ -908,12 +943,14 @@ def transform_tn_missing_book_code_markdown_links_no_paren(
     return source
 
 
-def transform_tn_obs_markdown_links(source: str) -> str:
+def transform_tn_obs_markdown_links(
+    source: str, tn_obs_markdown_link_re: re.Pattern[str] = TN_OBS_MARKDOWN_LINK_RE
+) -> str:
     """
     Until OBS is supported, replace OBS TN link with just its link
     text.
     """
-    for match in finditer(TN_OBS_MARKDOWN_LINK_RE, source):
+    for match in finditer(tn_obs_markdown_link_re, source):
         # Build the anchor links
         # FIXME Actually create a meaningful link rather than just
         # link text
@@ -921,12 +958,14 @@ def transform_tn_obs_markdown_links(source: str) -> str:
     return source
 
 
-def wiki_link_parser(source: str) -> list[WikiLink]:
+def wiki_link_parser(
+    source: str, wiki_link_re: re.Pattern[str] = WIKI_LINK_RE
+) -> list[WikiLink]:
     """Return a list of all Wiki links in source."""
     links = [
         WikiLink(
             url=link.group("url"),
         )
-        for link in finditer(WIKI_LINK_RE, source)
+        for link in finditer(wiki_link_re, source)
     ]
     return links

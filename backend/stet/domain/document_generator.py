@@ -328,7 +328,7 @@ def generate_docx(
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.bolded_phrases
                 )
-            else:  # Bolded phrases in 3rd column were not provided
+            else:  # Bolded phrases in 4th column were not provided
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.words
                 )

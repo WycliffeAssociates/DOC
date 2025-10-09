@@ -1180,9 +1180,7 @@ def prepare_resource_filepath(
     working_dir: str = settings.RESOURCE_ASSETS_DIR,
 ) -> str:
     resource_filepath = ""
-    if (
-        resource_lookup_dto.url is not None
-    ):  # We know that resource_url is not None because of how we got here, but mypy isn't convinced. Let's convince mypy.
+    if resource_lookup_dto.url is not None:
         resource_filepath = join(
             working_dir,
             get_last_segment(resource_lookup_dto.url, resource_lookup_dto.lang_code),

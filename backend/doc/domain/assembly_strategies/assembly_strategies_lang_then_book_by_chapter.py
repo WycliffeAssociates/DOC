@@ -45,11 +45,6 @@ def assemble_content_by_lang_then_book(
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[str]:
-    """
-    Assemble by language then by book in lexicographical order before
-    delegating more atomic ordering/interleaving to an assembly
-    sub-strategy.
-    """
     content = []
     # Collect and deduplicate language codes
     all_lang_codes = (

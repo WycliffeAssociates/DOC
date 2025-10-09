@@ -97,8 +97,7 @@ def transform_tw_links(
     # Transform the '...PREFIXED...' version of regexes in each
     # resource_type group first before its non-'...PREFIXED...' version
     # of regex otherwise we could orphan the prefix portion of the
-    # phrase, e.g., you could be left with (Veja: ) or (See: ) or
-    # (Blah blah blah: ).
+    # phrase, e.g., you could be left with (Veja: ) or (See: ).
     for wiki_link in wiki_link_parser(source):
         source = transform_tw_rc_link(
             wiki_link, source, lang_code, resource_requests, translation_words_dict
@@ -230,8 +229,6 @@ def transform_tw_markdown_links(
     source anchor link pointing to a destination anchor link for
     the translation word definition.
     """
-    # Determine if resource_type TW was one of the requested
-    # resources.
     tw_resources_requests = [
         resource_request
         for resource_request in resource_requests
@@ -241,11 +238,8 @@ def transform_tw_markdown_links(
         match_text = match.group(0)
         filename_sans_suffix = match.group("word")
         if filename_sans_suffix in translation_words_dict and tw_resources_requests:
-            # Localize non-English languages.
             file_content = read_file(translation_words_dict[filename_sans_suffix])
-            # Get the localized name for the translation word
             localized_translation_word_ = localized_translation_word(file_content)
-            # Build the anchor links
             source = source.replace(
                 match_text,
                 fmt_str.format(

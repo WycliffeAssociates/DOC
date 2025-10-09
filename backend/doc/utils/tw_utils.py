@@ -123,7 +123,7 @@ def translation_words_section(
     Build and return the translation words definition section, i.e.,
     the list of all translation words for this language, book combination.
     Limit the translation words to only those that appear in the USFM
-    resouce chosen if limit_words is True and a USFM resource was also
+    resource chosen if limit_words is True and a USFM resource was also
     chosen otherwise include all the translation words for the language.
     """
     content = []

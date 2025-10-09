@@ -42,12 +42,6 @@ def assemble_content_by_lang_then_book(
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[DocumentPart]:
-    """
-    Group content by language and then by book and then pass content
-    and a couple other parameters, assembly_layout_kind and
-    chunk_size, to interleaving strategy to do the actual
-    interleaving.
-    """
     document_parts: list[DocumentPart] = []
     all_lang_codes = (
         {usfm_book.lang_code for usfm_book in usfm_books}
@@ -58,7 +52,6 @@ def assemble_content_by_lang_then_book(
         .union(rg_book.lang_code for rg_book in rg_books)
     )
     most_lang_codes = list(all_lang_codes)
-    # Collect and deduplicate book codes
     all_book_codes = (
         {usfm_book.book_code for usfm_book in usfm_books}
         .union(tn_book.book_code for tn_book in tn_books)
@@ -96,7 +89,7 @@ def assemble_content_by_lang_then_book(
                 if tq_book.lang_code == lang_code and tq_book.book_code == book_code
             ]
             tq_book = selected_tq_books[0] if selected_tq_books else None
-            # TWBook doesn't really need to have a book_code attribute
+            # TODO TWBook doesn't really need to have a book_code attribute
             # because TW resources are language centric not book centric.
             # We could do something about that later if desired for
             # design cleanness sake.
@@ -324,13 +317,7 @@ def assemble_usfm_by_book(
                         use_section_visual_separator=use_section_visual_separator,
                     )
                 )
-            # TODO Get feedback on whether we should allow a user to select a primary _and_
-            # a secondary USFM resource. If we want to limit the user to only one USFM per
-            # document then we would want to control that in the UI and maybe also at the API
-            # level. The API level control would be implemented in the DocumentRequest
-            # validation.
             if usfm_book2:
-                # Here we add the whole chapter's worth of verses for the secondary usfm
                 document_parts.append(
                     DocumentPart(
                         content=usfm_book2.chapters[chapter_num].content,
@@ -364,10 +351,6 @@ def assemble_tn_by_book(
     use_two_column_layout_for_tq_notes: bool,
     show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
 ) -> list[DocumentPart]:
-    """
-    Construct the HTML for a 'by book' strategy wherein at least
-    tn_book exists.
-    """
     document_parts: list[DocumentPart] = []
     if tn_book:
         if show_tn_book_intro and tn_book.book_intro:
@@ -476,10 +459,6 @@ def assemble_tq_by_book(
     use_section_visual_separator: bool,
     use_two_column_layout_for_tq_notes: bool,
 ) -> list[DocumentPart]:
-    """
-    Construct the HTML for a 'by book' strategy wherein at least
-    tq_book exists.
-    """
     document_parts: list[DocumentPart] = []
     if tq_book:
         for chapter_num in tq_book.chapters:
@@ -546,10 +525,6 @@ def assemble_tw_by_book(
     rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
 ) -> list[DocumentPart]:
-    """
-    TW is handled outside this module, that is why no
-    code for TW is explicitly included here.
-    """
     document_parts: list[DocumentPart] = []
     if bc_book:
         document_parts.append(DocumentPart(content=bc_book.book_intro))

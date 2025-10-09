@@ -37,17 +37,6 @@ NON_USFM_RESOURCE_TYPES: Sequence[str] = [
 
 @final
 class AssemblyStrategyEnum(str, Enum):
-    """
-    * LANGUAGE_BOOK_ORDER
-      - This enum value signals to use the high level strategy that orders
-        by language and then by book before delegating to an assembly
-        sub-strategy.
-    * BOOK_LANGUAGE_ORDER
-      - This enum value signals to use the high level strategy that orders
-        by book and then by language before delegating to an assembly
-        sub-strategy.
-    """
-
     LANGUAGE_BOOK_ORDER = "lbo"
     BOOK_LANGUAGE_ORDER = "blo"
     STET_STRATEGY = "stet"

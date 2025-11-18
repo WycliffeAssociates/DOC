@@ -46,6 +46,7 @@ TRANSLATION_NOTE_ANCHOR_LINK_FMT_STR: str = "[{}](#{}-{}-ch-{}-v-{})"
 MARKDOWN_SECTIONS_TO_REMOVE: list[str] = [
     "Examples from the Bible stories",
     "Links",
+    "Tautan",  # Links in bi language
     "Picture of",
     "Pictures",
 ]

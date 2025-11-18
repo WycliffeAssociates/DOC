@@ -1,5 +1,6 @@
 import json
 import re
+
 from doc.domain.bible_books import BOOK_NAMES
 
 

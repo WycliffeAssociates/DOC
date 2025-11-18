@@ -280,7 +280,7 @@ def english_document_request(
     """Build one English language document request."""
     return model.DocumentRequest(
         email_address=email_address,
-        assembly_strategy_kind=model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+        assembly_strategy_kind=model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
         assembly_layout_kind=assembly_layout_kind,
         layout_for_print=layout_for_print,
         generate_pdf=generate_pdf,
@@ -403,7 +403,7 @@ def random_english_and_non_english_document_request(
         )
     return model.DocumentRequest(
         email_address=email_address,
-        assembly_strategy_kind=model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+        assembly_strategy_kind=model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
         assembly_layout_kind=assembly_layout_kind,
         layout_for_print=layout_for_print,
         generate_pdf=generate_pdf,
@@ -489,12 +489,12 @@ def random_two_non_english_languages_document_request(
     return model.DocumentRequest(
         email_address=email_address,
         assembly_strategy_kind=(
-            model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+            model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
             if random_non_english_lang_code
             and random_non_english_lang_code2
             and random_non_english_lang_code != random_non_english_lang_code2
             and len(resource_requests) > 1
-            else model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
+            else model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK
         ),
         assembly_layout_kind=assembly_layout_kind,
         layout_for_print=layout_for_print,

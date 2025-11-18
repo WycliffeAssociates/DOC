@@ -5,6 +5,7 @@
 # cython # For pydantic: https://pydantic-docs.helpmanual.io/install/
 # TODO do we still need aiofiles?
 aiofiles
+beautifulsoup4
 cachetools
 celery
 celery-types

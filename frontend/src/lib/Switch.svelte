@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { settingsUpdated } from '$lib/stores/SettingsStore'
+  import { settingsUpdatedStore } from '$lib/stores/SettingsStore'
   import { errorStore } from '$lib/stores/NotificationStore'
   export let id = ''
   export let checked = false
@@ -16,7 +16,7 @@
       {disabled}
       bind:checked
       on:change={() => {
-        $settingsUpdated = true
+        $settingsUpdatedStore = true
         $errorStore = ''
       }}
     />
@@ -40,8 +40,8 @@
   }
   input[type='checkbox']:checked ~ .track {
     @apply transform transition-colors;
-    background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%),
-                linear-gradient(0deg, #343434, #343434);
+    background:
+      linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #343434, #343434);
   }
   input[type='checkbox']:disabled ~ .track {
     @apply bg-gray-500;

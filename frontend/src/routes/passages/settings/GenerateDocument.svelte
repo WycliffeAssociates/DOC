@@ -7,7 +7,7 @@
   import {
     emailStore,
     documentRequestKeyStore,
-    settingsUpdated
+    settingsUpdatedStore
   } from '$lib/passages/stores/SettingsStore'
   import { taskIdStore, taskStateStore } from '$lib/passages/stores/TaskStore'
   import { getCode, getName } from '$lib/passages/utils'
@@ -63,7 +63,7 @@
   async function generateDocument() {
     // Update some UI-related state
     generatingDocument = true
-    $settingsUpdated = false
+    $settingsUpdatedStore = false
     const documentRequest: PassagesDocumentRequest = {
       langCode: getCode($langCodeAndNameStore),
       langName: getName($langCodeAndNameStore),
@@ -171,7 +171,7 @@
         </p>
       </div>
     </div>
-  {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdated}
+  {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdatedStore}
     {#if $langCodeAndNameStore}
       <div class="pb-4">
         <button

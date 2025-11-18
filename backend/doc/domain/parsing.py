@@ -12,6 +12,7 @@ from typing import Mapping, Optional, Sequence, cast
 
 import mistune
 import requests
+from bs4 import BeautifulSoup
 from doc.config import settings
 from doc.domain.assembly_strategies.assembly_strategy_utils import (
     adjust_commentary_headings,
@@ -46,8 +47,10 @@ from doc.domain.usfm_error_detection_and_fixes import (
 from doc.markdown_transforms import markdown_transformer
 from doc.reviewers_guide.model import RGBook
 from doc.reviewers_guide.parser import get_rg_books
+from doc.utils.docx_util import preprocess_html_for_internal_docx_links
 from doc.utils.file_utils import read_file
 from doc.utils.text_utils import (
+    maybe_correct_book_name,
     chapter_label_numeric_part,
     chapter_label_sans_numeric_part,
     normalize_localized_book_name,
@@ -60,7 +63,7 @@ from doc.utils.tw_utils import (
 )
 from doc.utils.url_utils import (
     get_last_segment,
-    get_book_names_from_title_file,
+    get_book_name_from_title_file,
     book_codes_and_names_from_manifest,
 )
 from pydantic import HttpUrl
@@ -69,6 +72,7 @@ from pydantic import HttpUrl
 logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
+
 
 # fmt: off
 BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
@@ -467,6 +471,10 @@ def usfm_book_content(
         localized_book_name = get_localized_book_name(
             frontmatter, resource_dir, resource_lookup_dto
         )
+        localized_book_name = maybe_correct_book_name(
+            resource_lookup_dto.lang_code, localized_book_name
+        )
+        logger.debug("localized_book_name: %s", localized_book_name)
     for chapter_marker, chapter_usfm in zip(chapter_markers, chapters_usfm):
         chapter_num = get_chapter_num(chapter_usfm)
         if chapter_num == -1:
@@ -538,11 +546,8 @@ def get_localized_book_name(
                 len(repo_components) > 2
                 and resource_lookup_dto.resource_type in usfm_resource_types
             ):
-                book_names_from_title_file = get_book_names_from_title_file(
+                localized_book_name = get_book_name_from_title_file(
                     resource_dir, resource_lookup_dto.lang_code, repo_components
-                )
-                localized_book_name = book_names_from_title_file.get(
-                    resource_lookup_dto.book_code, ""
                 )
     return localized_book_name
 
@@ -584,6 +589,7 @@ def tn_chapter_verses(
         chapter_intro = tn_chapter_intro(chapter_dir)
         chapter_intro_html = ""
         if chapter_intro:
+            chapter_intro = markdown_transformer.remove_sections(chapter_intro)
             tw_resource_dir_ = tw_resource_dir(lang_code)
             translation_words_dict_ = translation_words_dict(tw_resource_dir_)
             chapter_intro = markdown_transformer.transform_tw_links(
@@ -790,30 +796,55 @@ def tw_name_content_pairs(
     resource_dir: str,
     lang_code: str,
     resource_requests: Sequence[ResourceRequest],
+    generate_docx: bool,
     h1: str = H1,
     h2: str = H2,
     h3: str = H3,
     h4: str = H4,
 ) -> list[TWNameContentPair]:
-    translation_word_filepaths_: list[str] = translation_word_filepaths(resource_dir)
-    name_content_pairs: list[TWNameContentPair] = []
+    translation_word_filepaths_ = translation_word_filepaths(resource_dir)
+    name_content_pairs = []
+    translation_words_dict_ = translation_words_dict(resource_dir)
     for translation_word_filepath in translation_word_filepaths_:
         translation_word_content = read_file(translation_word_filepath)
+        # if "daughtersofzion" in translation_word_filepath:
+        #     logger.debug("translation_word_content: %s", translation_word_content)
+        # French has a single double quote at the start of some
+        # translation words which disturbs expected alphabetization,
+        # remove it if present. Other languages may have the same defect.
+        if translation_word_content.startswith('# "'):
+            translation_word_content = "# {translation_word_content[3:]}"
         localized_translation_word_ = localized_translation_word(
             translation_word_content
         )
+        if not localized_translation_word_:  # language doesn't provide data
+            continue
         translation_word_content = markdown_transformer.remove_sections(
             translation_word_content
         )
         translation_word_content = markdown_transformer.transform_ta_and_tn_links(
             translation_word_content, lang_code, resource_requests
         )
+        translation_word_content = markdown_transformer.transform_tw_links(
+            translation_word_content,
+            lang_code,
+            resource_requests,
+            translation_words_dict_,
+        )
         html_word_content = mistune.markdown(translation_word_content)
         html_word_content = re.sub(h2, h4, html_word_content)
         html_word_content = re.sub(h1, h3, html_word_content)
-        name_content_pairs.append(
-            TWNameContentPair(localized_translation_word_, html_word_content)
+        if generate_docx:
+            html_word_content = preprocess_html_for_internal_docx_links(
+                html_word_content
+            )
+        pair = TWNameContentPair(
+            localized_translation_word_,
+            translation_word_filepath,
+            html_word_content,
         )
+        # logger.debug("tw_name_content_pair: %s", f"{pair.localized_word}, {pair.path}")
+        name_content_pairs.append(pair)
     return sorted(name_content_pairs, key=tw_sort_key)
 
 
@@ -822,9 +853,10 @@ def tw_book_content(
     resource_dir: str,
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
+    generate_docx: bool,
 ) -> TWBook:
     name_content_pairs = tw_name_content_pairs(
-        resource_dir, resource_lookup_dto.lang_code, resource_requests
+        resource_dir, resource_lookup_dto.lang_code, resource_requests, generate_docx
     )
     return TWBook(
         lang_code=resource_lookup_dto.lang_code,
@@ -958,6 +990,7 @@ def books(
     resource_requests: Sequence[ResourceRequest],
     layout_for_print: bool,
     use_chapter_labels: bool,
+    generate_docx: bool,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     tn_resource_type: str = TN_RESOURCE_TYPE,
     en_tn_condensed_resource_type: str = EN_TN_CONDENSED_RESOURCE_TYPE,
@@ -1007,7 +1040,11 @@ def books(
             tq_books.append(tq_book)
         elif resource_lookup_dto.resource_type == tw_resource_type:
             tw_book = tw_book_content(
-                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+                resource_lookup_dto,
+                resource_dir,
+                resource_requests,
+                layout_for_print,
+                generate_docx,
             )
             tw_books.append(tw_book)
         elif resource_lookup_dto.resource_type == bc_resource_type:
@@ -1274,3 +1311,131 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
             # Add to the dictionary with verse number as the key and verse text as the value
             verse_dict[verse_number_] = verse_text
     return verse_dict
+
+
+def handle_split_chapter_into_verses(
+    usfm_book: USFMBook,
+    usfm_chapter: USFMChapter,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+) -> dict[VerseRef, str]:
+    if (
+        usfm_book.lang_code == "fr"
+        and usfm_book.resource_type_name == resource_type_codes_and_names["f10"]
+    ):
+        return split_chapter_into_verses_with_formatting_for_f10(usfm_chapter)
+    else:
+        return split_chapter_into_verses_with_formatting(usfm_chapter)
+
+
+def split_chapter_into_verses_with_formatting(
+    chapter: USFMChapter,
+) -> dict[VerseRef, str]:
+    """
+    Given a USFMChapter instance, return the same instance with its
+    verses attribute set to a dictionary where the key is the verse
+    number and the value is the verse HTML.
+
+    Sample HTML content with multiple verse elements:
+
+    >>> html_content = '''
+    >>> <span class="verse">
+    >>> <sup class="versemarker">19</sup>
+    >>> For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
+    >>> <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
+    >>> <div class="sectionhead-5"></div>
+    >>> </span>
+    >>> <span class="verse">
+    >>> <sup class="versemarker">20</sup>
+    >>> I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
+    >>> <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
+    >>> <div class="sectionhead-5"></div>
+    >>> </span>
+    >>> '''
+    >>> from doc.domain.parsing import split_chapter_into_verses_with_formatting
+    >>> chapter = USFMChapter(content=html_content)
+    >>> chapter.verses = split_chapter_into_verses_with_formatting(chapter)
+    >>> chapter.verses["19"]
+    <span class="verse">
+    <sup class="versemarker">19</sup>
+    For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
+    <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
+    <div class="sectionhead-5"></div>
+    </span>
+    """
+    # TODO What to do about footnote targets? Perhaps have the value be a
+    # tuple with first element of the verse HTML (which includes the
+    # footnote callers) and the second element the target footnotes HTML?
+    verse_dict = {}
+    # Find all verse spans
+    verse_spans = re.findall(
+        r'<span class="verse">(.*?)</span>', chapter.content, re.DOTALL
+    )
+    for verse_span in verse_spans:
+        # Extract the verse number from the versemarker
+        verse_number = re.search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
+        if verse_number:
+            verse_number_ = verse_number.group(1)
+            # Add to the dictionary with verse number as the key and verse text as the value
+            verse_dict[verse_number_] = verse_span
+    return verse_dict
+
+
+def split_chapter_into_verses_with_formatting_for_f10(
+    chapter: USFMChapter,
+) -> dict[str, str]:
+    """
+    Parse chapter.content as HTML, extract each <span class="verse">,
+    unwrap <span class="word-entry"> elements (preserving their text),
+    and return a dict mapping verse number -> cleaned HTML fragment for that verse.
+    """
+    soup = BeautifulSoup(chapter.content, "html.parser")
+    verse_dict: dict[str, str] = {}
+    # find all verse spans (parser handles nesting correctly)
+    for verse_span in soup.find_all("span", class_="verse"):
+        # find the verse number from <sup class="versemarker">NN</sup>
+        sup = verse_span.find("sup", class_="versemarker")
+        if not sup or not sup.string:
+            continue
+        verse_number = sup.string.strip()
+        # unwrap all word-entry spans: replace <span class="word-entry">X</span>
+        # with X (preserving whitespace/punctuation)
+        for we in verse_span.find_all("span", class_="word-entry"):
+            we.unwrap()
+        # Option: normalize whitespace (optional)
+        # If you want to preserve original spacing/punctuation exactly, skip this.
+        # cleaned_html = "".join(str(c) for c in verse_span.contents)
+        cleaned_html = str(verse_span)
+        # Fix spacing issues introduced by inner spans
+        cleaned_html = re.sub(
+            r"\s+([,;:.!?])", r"\1", cleaned_html
+        )  # remove space before punctuation
+        cleaned_html = re.sub(
+            r"\s+'", "'", cleaned_html
+        )  # remove space before apostrophe
+        cleaned_html = re.sub(
+            r"'\s+", "'", cleaned_html
+        )  # remove space after apostrophe
+        cleaned_html = re.sub(
+            r"\s*-\s*", "-", cleaned_html
+        )  # normalize spaces around hyphens
+        cleaned_html = re.sub(r"\s{2,}", " ", cleaned_html)  # collapse double spaces
+        cleaned_html = cleaned_html.strip()
+        # if you want plain text instead, use: cleaned_text = verse_span.get_text(" ", strip=True)
+        # store cleaned HTML fragment (still contains <sup> etc.)
+        verse_dict[verse_number] = cleaned_html
+    return verse_dict
+
+
+if __name__ == "__main__":
+
+    # To run the doctests in this module, in the root of the project do:
+    # python backend/document/domain/resource_lookup.py
+    # or
+    # python backend/document/domain/resource_lookup.py -v
+    # See https://docs.python.org/3/library/doctest.html
+    # for more details.
+    import doctest
+
+    doctest.testmod()

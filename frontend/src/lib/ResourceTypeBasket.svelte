@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { page, navigating } from '$app/stores'
+  import { page } from '$app/stores'
   import { resourceTypeRegExp, getResourceTypeName, getResourceTypeLangCode } from '$lib/utils'
   import { bookCountStore } from '$lib/stores/BooksStore'
   import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'

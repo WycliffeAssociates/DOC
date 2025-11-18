@@ -16,6 +16,19 @@ _ROMAN_TO_INT = {
     "III": "3",
 }
 
+BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
+    ("es-419", "I juan"): "1 Juan",
+    ("fr", "Ephésiens"): "Éphésiens",
+    ("pt-br", "1 Corintios"): "1 Coríntios",
+    (
+        "rmp",
+        "Galasians sapta 1. v/1 da-h pol. dal goad phi da-h dululan, ne dal mai-h phi da-h apostel ipais ag mayaib. phi. je-su krais mai-h mam gad pha, nug krais matmat ag mau sen pha, nug da-h ipais ag malan. v/2 da-h ayaid amayaid da-h pha dade, hit jain hen ohvu iu- an sios galesia e-h hagaug. v/3 gad mam hita, hayaug je-su krais pha, nug-te hagaug he-eh phadu ne mab hogad nauha-h da-h-du. v/4",
+    ): "Galasians",
+    ("sw", "Matendo ya mitume"): "Matendo ya Mitume",
+    ("sw", "Luke"): "Luka",
+    ("sw", "Waraka wa yakobo"): "Yakobo",
+}
+
 
 def normalize_localized_book_name(localized_book_name: str) -> str:
     """
@@ -85,6 +98,20 @@ def chapter_label_numeric_part(s: str) -> int:
     else:
         result = -1  # Sentinel
     return result
+
+
+def maybe_correct_book_name(
+    lang_code: str,
+    book_name: str,
+    book_name_correction_table: dict[tuple[str, str], str] = BOOK_NAME_CORRECTION_TABLE,
+) -> str:
+    """
+    Translate incorrect or undesirable book names to a preferred form.
+    """
+    book_name_ = BOOK_NAME_CORRECTION_TABLE.get((lang_code, book_name), "")
+    if not book_name_:
+        book_name_ = book_name
+    return book_name_
 
 
 if __name__ == "__main__":

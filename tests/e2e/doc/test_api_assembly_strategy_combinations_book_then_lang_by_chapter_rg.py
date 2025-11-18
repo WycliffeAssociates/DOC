@@ -23,7 +23,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_en_bc
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,
@@ -100,7 +100,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_en_bc_es_419_bc_en_tw_es_419_
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,
@@ -167,7 +167,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_en_tw_es_419_tw_book_language
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,
@@ -224,7 +224,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_book_language_order_1c_by_cha
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,
@@ -271,7 +271,7 @@ def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_en_rg_book_language_order_2c_sl_sr_
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
                 "layout_for_print": True,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,

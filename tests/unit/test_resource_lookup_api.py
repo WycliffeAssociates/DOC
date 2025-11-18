@@ -4,7 +4,7 @@ from doc.domain import model, resource_lookup
 
 def test_lookup_successes() -> None:
     assembly_strategy_kind: model.AssemblyStrategyEnum = (
-        model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
+        model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK
     )
     assembly_layout_kind: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN
     resource_requests: list[model.ResourceRequest] = [
@@ -39,7 +39,7 @@ def test_lookup_successes() -> None:
 # type but 'cuv' instead, i.e., zh ulb is a special case.
 def test_lookup_failures() -> None:
     assembly_strategy_kind: model.AssemblyStrategyEnum = (
-        model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER
+        model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK
     )
     assembly_layout_kind: model.AssemblyLayoutEnum = model.AssemblyLayoutEnum.ONE_COLUMN
     resource_requests: list[model.ResourceRequest] = [
@@ -75,13 +75,16 @@ def test_en_ot_survey_rg1_passages() -> None:
     bible_references = resource_lookup.ot_survey_rg1_passages()
     assert bible_references
 
+
 def test_en_ot_survey_rg2_passages() -> None:
     bible_references = resource_lookup.ot_survey_rg2_passages()
     assert bible_references
 
+
 def test_en_ot_survey_rg3_passages() -> None:
     bible_references = resource_lookup.ot_survey_rg3_passages()
     assert bible_references
+
 
 def test_en_ot_survey_rg4_passages() -> None:
     bible_references = resource_lookup.ot_survey_rg4_passages()

@@ -7,6 +7,7 @@ from doc.config import settings
 from doc.domain.bible_books import BOOK_NUMBERS
 from doc.domain.model import ResourceRequest
 from doc.markdown_transforms.link_regexes import (
+    RC_QUESTION_LINK_RE,
     TA_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_LINK_RE,
@@ -19,6 +20,7 @@ from doc.markdown_transforms.link_regexes import (
     TN_MARKDOWN_SCRIPTURE_LINK_RE,
     TN_OBS_MARKDOWN_LINK_RE,
     TW_MARKDOWN_LINK_RE,
+    TW_OBE_RC_LINK_RE,
     TW_RC_LINK_RE,
     TW_STAR_RC_LINK_RE,
     TW_WIKI_PREFIXED_RC_LINK_RE,
@@ -119,6 +121,9 @@ def transform_tw_links(
     source = transform_tw_markdown_links(
         source, lang_code, resource_requests, translation_words_dict
     )
+    source = transform_rc_obe_tw_links(
+        source, lang_code, resource_requests, translation_words_dict
+    )
     return source
 
 
@@ -152,6 +157,19 @@ def transform_ta_and_tn_links(
     )
     source = transform_tn_missing_book_code_markdown_links_no_paren(source)
     source = transform_tn_obs_markdown_links(source)
+    source = transform_rc_question_links(source)
+    return source
+
+
+def transform_rc_question_links(
+    source: str, rc_question_link_re: re.Pattern[str] = RC_QUESTION_LINK_RE
+) -> str:
+    """
+    Remove question links in CEB language (and any other languages that have them).
+    """
+    for match in finditer(rc_question_link_re, source):
+        # For now, remove match text the source text.
+        source = source.replace(match.group(0), "")
     return source
 
 
@@ -243,13 +261,14 @@ def transform_tw_markdown_links(
         if filename_sans_suffix in translation_words_dict and tw_resources_requests:
             file_content = read_file(translation_words_dict[filename_sans_suffix])
             localized_translation_word_ = localized_translation_word(file_content)
-            logger.debug("filename_sans_suffix: %s", filename_sans_suffix)
+            # logger.debug("filename_sans_suffix: %s", filename_sans_suffix)
+            # logger.debug("localized_translation_word_: %s", localized_translation_word_)
             source = source.replace(
                 match_text,
                 fmt_str.format(
-                    localized_translation_word_,
+                    localized_translation_word_,  # e.g., Jewish authorities
                     lang_code,
-                    filename_sans_suffix,
+                    filename_sans_suffix,  # e.g., jewishleaders
                     # "".join(localized_translation_word_.split()),
                 ),
             )
@@ -265,8 +284,61 @@ def transform_tw_markdown_links(
             # NOTE Theoretically, this will leave a trailing comma after the link
             # if the link is not the last link in a list of links. I haven't
             # yet seen such a case in practice though.
-            match_text_plus_preceding_dot_utf8_char = "· {}".format(match_text)
-            source = source.replace(match_text_plus_preceding_dot_utf8_char, "")
+            # match_text_plus_preceding_dot_utf8_char = "· {}".format(match_text)
+            # source = source.replace(match_text_plus_preceding_dot_utf8_char, "")
+    return source
+
+
+def transform_rc_obe_tw_links(
+    source: str,
+    lang_code: str,
+    resource_requests: Sequence[ResourceRequest],
+    translation_words_dict: dict[str, str],
+    tw: str = "tw",
+    fmt_str: str = TRANSLATION_WORD_ANCHOR_LINK_FMT_STR,
+    tw_link_re: re.Pattern[str] = TW_OBE_RC_LINK_RE,
+) -> str:
+    """
+    Transform the translation word relative file link into a
+    source anchor link pointing to a destination anchor link for
+    the translation word definition.
+    """
+    tw_resources_requests = [
+        resource_request
+        for resource_request in resource_requests
+        if tw in resource_request.resource_type
+    ]
+    for match in finditer(tw_link_re, source):
+        match_text = match.group(0)
+        filename_sans_suffix = match.group("word")
+        if filename_sans_suffix in translation_words_dict and tw_resources_requests:
+            file_content = read_file(translation_words_dict[filename_sans_suffix])
+            localized_translation_word_ = localized_translation_word(file_content)
+            # logger.debug("filename_sans_suffix: %s", filename_sans_suffix)
+            # logger.debug("localized_translation_word_: %s", localized_translation_word_)
+            source = source.replace(
+                match_text,
+                fmt_str.format(
+                    localized_translation_word_,  # e.g., Jewish authorities
+                    lang_code,
+                    filename_sans_suffix,  # e.g., jewishleaders
+                    # "".join(localized_translation_word_.split()),
+                ),
+            )
+        else:
+            logger.debug(
+                "TW file for filename_sans_suffix: %s not found for lang_code: %s",
+                filename_sans_suffix,
+                lang_code,
+            )
+            # Search for translation word relative link
+            # and remove it along with any trailing comma from
+            # the source text.
+            # NOTE Theoretically, this will leave a trailing comma after the link
+            # if the link is not the last link in a list of links. I haven't
+            # yet seen such a case in practice though.
+            # match_text_plus_preceding_dot_utf8_char = "· {}".format(match_text)
+            # source = source.replace(match_text_plus_preceding_dot_utf8_char, "")
     return source
 
 
@@ -429,7 +501,9 @@ def transform_tw_star_rc_link(
             url = url.replace(match.group(0), filename_sans_suffix)
         regexp = r"\[\[{}\]\]".format(wikilink.url)
         for match2 in finditer(regexp, source):
-            source = source.replace(match2.group(0), url)
+            source = source.replace(
+                match2.group(0), fmt_str.format("#{lang_code}-{url}")
+            )
     return source
 
 
@@ -691,6 +765,7 @@ def transform_tn_prefixed_markdown_links(
                 )
             )
             if exists(path):  # file path to TN note exists
+                # TODO Is this still good with new USFM parser?
                 # Create anchor link to translation note
                 new_link = fmt_str.format(
                     scripture_ref,

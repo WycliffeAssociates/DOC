@@ -79,7 +79,7 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
         )
         for component in components
     ]
-    assembly_strategy_kind = model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+    assembly_strategy_kind = model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
     assembly_layout_kind = model.AssemblyLayoutEnum.ONE_COLUMN
     chunk_size = model.ChunkSizeEnum.CHAPTER
     limit_words = True
@@ -95,5 +95,10 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
         use_section_visual_separator,
         use_two_column_layout_for_tn_notes=False,
         use_two_column_layout_for_tq_notes=True,
+        show_tn_book_intro=True,
+        show_bc_book_intro=True,
+        show_tn_chapter_intro=True,
+        show_bc_chapter_commentary=True,
+        show_rg_chapter_commentary=True,
     )
     assert re.search(r"[0-9]+_[0-9]+", key)

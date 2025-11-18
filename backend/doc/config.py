@@ -2,7 +2,7 @@
 
 import logging
 from logging import config as lc
-from typing import Sequence, final
+from typing import Mapping, Sequence, final
 
 import yaml
 from pydantic import EmailStr, HttpUrl
@@ -35,17 +35,55 @@ class Settings(BaseSettings):
         "usfm",
     ]
 
+    # This can be expanded to include any additional types (if
+    # there are any) that we want to be available to users. These are all
+    # that I found of relevance in the data API.
+    RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
+        "ayt": "Bahasa Indonesian Bible",
+        "bc": "Bible Commentary",
+        "blv": "Portuguese Bíblia Livre",
+        "cuv": "新标点和合本",
+        "f10": "French Louis Segond 1910 Bible",
+        "nav": "New Arabic Version (Ketab El Hayat)",
+        "reg": "Regular",
+        "rg": "NT Survey Reviewers' Guide",
+        "tn": "Translation Notes",
+        "tn-condensed": "Condensed Translation Notes",
+        "tq": "Translation Questions",
+        "tw": "Translation Words",
+        # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used TODO (just for English or ?)
+        "ugnt": "unfoldingWord® Greek New Testament",
+        "uhb": "unfoldingWord® Hebrew Bible",
+        "ulb": "Unlocked Literal Bible",
+    }
+
     SHOW_TN_BOOK_INTRO: bool = True
+    # SHOW_BC_BOOK_INTRO: bool = True
+    # SHOW_TN_CHAPTER_INTRO: bool = True
+    # SHOW_TN_BOOK_INTRO_IN_VERSIFIED_CONTEXT: bool = True
+    # SHOW_BC_BOOK_INTRO_IN_VERSIFIED_CONTEXT: bool = True
+    # SHOW_TN_CHAPTER_INTRO_IN_VERSIFIED_CONTEXT: bool = True
+    # SHOW_BC_CHAPTER_COMMENTARY_IN_VERSIFIED_CONTEXT: bool = True
+    # SHOW_RG_CHAPTER_COMMENTARY_IN_VERSIFIED_CONTEXT: bool = True
 
     CHECK_USFM: bool
     USE_LOCALIZED_BOOK_NAME: bool
     CHECK_ALL_BOOKS_FOR_LANGUAGE: bool
 
-    BOOK_NAME_FMT_STR: str = "<h2 class='book-name' style='text-align: center;'>{}</h2>"
+    TRANSLATION_WORD_VERSE_SECTION_HEADER_STR: str = "<h4>Uses:</h4>"
+    TRANSLATION_WORD_VERSE_REF_ITEM_FMT_STR: str = (
+        '<li><a href="#{}-{}-ch-{}-v-{}">{} {}:{}</a></li>'
+    )
+    UNORDERED_LIST_BEGIN_STR: str = "<ul>"
+    UNORDERED_LIST_END_STR: str = "</ul>"
+    VERSE_SPAN_FMT_STR: str = '<span class="verse">{}</span>'
+    BOOK_NAME_FMT_STR: str = "<h2 class='book-name'>{}</h2>"
+    LEFT_ALIGNED_HEADER_FMT_STR: str = "<h3 class='book-name'>{}</h3>"
     END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
     HR: str = "<hr/>"
+    TW_WORD_LIST_VERTICAL: bool = True
 
-    DOWNLOAD_ASSETS: bool  # If true then download assets, else clone assets
+    DOWNLOAD_ASSETS: bool = False  # If true then download assets, else clone assets
 
     def logger(self, name: str) -> logging.Logger:
         """

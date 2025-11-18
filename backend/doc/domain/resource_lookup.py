@@ -39,10 +39,10 @@ from doc.utils.file_utils import (
     read_file,
 )
 from doc.utils.list_utils import unique_tuples, unique_book_codes
-from doc.utils.text_utils import normalize_localized_book_name
+from doc.utils.text_utils import maybe_correct_book_name, normalize_localized_book_name
 from doc.utils.url_utils import (
     get_last_segment,
-    get_book_names_from_title_file,
+    get_book_name_from_title_file,
     book_codes_and_names_from_manifest,
 )
 from fastapi import HTTPException, status
@@ -53,28 +53,6 @@ logger = settings.logger(__name__)
 
 fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(maxsize=1, ttl=180)
 
-
-# This can be expanded to include any additional types (if
-# there are any) that we want to be available to users. These are all
-# that I found of relevance in the data API.
-RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
-    "ayt": "Bahasa Indonesian Bible",
-    "bc": "Bible Commentary",
-    "blv": "Portuguese Bíblia Livre",
-    "cuv": "新标点和合本",
-    "f10": "French Louis Segond 1910 Bible",
-    "nav": "New Arabic Version (Ketab El Hayat)",
-    "reg": "Regular",
-    "rg": "NT Survey Reviewers' Guide",
-    "tn": "Translation Notes",
-    "tn-condensed": "Condensed Translation Notes",
-    "tq": "Translation Questions",
-    "tw": "Translation Words",
-    # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used
-    "ugnt": "unfoldingWord® Greek New Testament",
-    "uhb": "unfoldingWord® Hebrew Bible",
-    "ulb": "Unlocked Literal Bible",
-}
 
 # This is only used to see if a lang_code is in the collection
 # otherwise it is a heart language. Eventually the graphql data api may
@@ -178,14 +156,6 @@ GATEWAY_LANGUAGES: Sequence[str] = [
     "zlm",
 ]
 
-BOOK_NAME_CORRECTION_TABLE: dict[tuple[str, str], str] = {
-    ("es-419", "I juan"): "1 Juan",
-    ("fr", "Ephésiens"): "Éphésiens",
-    ("pt-br", "1 Corintios"): "1 Coríntios",
-    ("sw", "Matendo ya mitume"): "Matendo ya Mitume",
-    ("sw", "Luke"): "Luka",
-    ("sw", "Waraka wa yakobo"): "Yakobo",
-}
 
 # List of languages which do not have USFM available for any books. We use this
 # to filter these out of STET's list of source and target
@@ -355,7 +325,7 @@ def repos_to_clone(
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
     dcs_mirror_git_username: str = "DCS-Mirror",
     resource_type_codes_and_names: Sequence[str] = list(
-        RESOURCE_TYPE_CODES_AND_NAMES.keys()
+        settings.RESOURCE_TYPE_CODES_AND_NAMES.keys()
     ),
 ) -> list[tuple[HttpUrl, str, str]]:
     repo_clone_list: list[tuple[HttpUrl, str, str]] = []
@@ -394,7 +364,9 @@ def get_resource_types(
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     docx_file_path: str = "en_rg_nt_survey.docx",
     en_rg: str = settings.EN_RG_DIR,
-    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[tuple[str, str]]:
     resource_types = []
     for url, resource_filepath, resource_type in repo_clone_list:
@@ -696,7 +668,9 @@ def update_repo_components(
     repo_components: list[str],
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
     non_usfm_resource_types: Sequence[str] = NON_USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[str]:
     last_component = repo_components[-1]
     # Some DCS-Mirror URLs have an unusual pattern wherein a non resource type is the last component
@@ -788,20 +762,6 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
             repos_info.append(entry)
             existing_pairs.add(key)
     return repos_info
-
-
-def maybe_correct_book_name(
-    lang_code: str,
-    book_name: str,
-    book_name_correction_table: dict[tuple[str, str], str] = BOOK_NAME_CORRECTION_TABLE,
-) -> str:
-    """
-    Translate incorrect or undesirable book names to a preferred form.
-    """
-    book_name_ = BOOK_NAME_CORRECTION_TABLE.get((lang_code, book_name), "")
-    if not book_name_:
-        book_name_ = book_name
-    return book_name_
 
 
 def get_book_codes_for_lang(
@@ -901,26 +861,28 @@ def get_book_codes_for_lang_(
             and len(repo_components) > 2
             and resource_type in usfm_resource_types
         ):
-            book_codes_and_names_localized_from_title_file = (
-                get_book_names_from_title_file(
-                    resource_filepath,
-                    lang_code,
-                    repo_components,
-                )
+            book_name_ = get_book_name_from_title_file(
+                resource_filepath,
+                lang_code,
+                repo_components,
             )
             logger.debug(
                 "book_codes_and_names_localized_from_title_file: %s",
-                book_codes_and_names_localized_from_title_file,
+                book_name_,
             )
-            for code, name in book_codes_and_names_localized_from_title_file.items():
-                book_codes_and_names_localized.append(
-                    (
-                        code,
-                        maybe_correct_book_name(
-                            lang_code, normalize_localized_book_name(name)
-                        ),
-                    )
+            logger.debug("book_code: %s", repo_components[1])
+            logger.debug(
+                "normalize_localized_book_name(book_name_): %s",
+                normalize_localized_book_name(book_name_),
+            )
+            book_codes_and_names_localized.append(
+                (
+                    repo_components[1],
+                    maybe_correct_book_name(
+                        lang_code, normalize_localized_book_name(book_name_)
+                    ),
                 )
+            )
         if (
             not usfm_only
             or not book_codes_and_names_localized
@@ -1067,7 +1029,9 @@ def resource_lookup_dto(
     book_code: str,
     dcs_mirror_git_username: str = "DCS-Mirror",
     zmq_git_username: str = "faustin_azaza",
-    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> Optional[ResourceLookupDto]:
     """
     >>> from doc.domain import resource_lookup

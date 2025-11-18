@@ -129,30 +129,31 @@ def get_last_segment(url: HttpUrl, lang_code: str) -> str:
     return normalize_last_segment(lang_code, last_segment)
 
 
-def get_book_names_from_title_file(
+def get_book_name_from_title_file(
     resource_filepath: str,
     lang_code: str,
     repo_components: list[str],
-) -> dict[str, str]:
+) -> str:
     """
     Book names in front/title.txt files may or may not be localized,
     it depends on the translation work done for lang_code.
     """
-    book_codes_and_names_localized: dict[str, str] = {}
+    # book_codes_and_names_localized: dict[str, str] = {}
+    book_name = ""
     book_name_file = join(resource_filepath, "front", "title.txt")
     if exists(book_name_file):
         with open(book_name_file, "r") as fin:
             book_name = fin.read()
             logger.debug("book_name: %s", book_name)
-            if book_name:
-                # Moved this code to the caller
-                # localized_book_name_ = normalize_localized_book_name(book_name)
-                # localized_book_name = maybe_correct_book_name(
-                #     lang_code, localized_book_name_
-                # )
-                book_code = repo_components[1]
-                book_codes_and_names_localized[book_code] = book_name
-    return book_codes_and_names_localized
+            # if book_name:
+            # Moved this code to the caller
+            # localized_book_name_ = normalize_localized_book_name(book_name)
+            # localized_book_name = maybe_correct_book_name(
+            #     lang_code, localized_book_name_
+            # )
+            # book_code = repo_components[1]
+            # book_codes_and_names_localized[book_code] = book_name
+    return book_name
 
 
 def load_manifest(file_path: str) -> str:

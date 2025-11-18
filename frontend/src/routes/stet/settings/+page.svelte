@@ -2,11 +2,7 @@
   import WizardBreadcrumb from '$lib/stet/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/stet/WizardBasket.svelte'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
-  import {
-    emailStore,
-    documentRequestKeyStore,
-    settingsUpdated
-  } from '$lib/stet/stores/SettingsStore'
+  import { emailStore, documentRequestKeyStore } from '$lib/stet/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stet/stores/NotificationStore'
   import { langCountStore } from '$lib/stet/stores/LanguagesStore'
   import GenerateDocument from './GenerateDocument.svelte'
@@ -36,24 +32,24 @@
 <WizardBreadcrumb />
 
 <!-- container for "center" div -->
-<div class="flex-grow flex flex-row overflow-hidden">
+<div class="flex flex-grow flex-row overflow-hidden">
   <!-- center -->
-  <div class="flex-1 flex flex-col sm:w-2/3 bg-white mx-4 mb-6">
-    <h3 class="bg-white text-[#33445C] text-4xl font-normal leading-[48px] mb-4">
+  <div class="mx-4 mb-6 flex flex-1 flex-col bg-white sm:w-2/3">
+    <h3 class="mb-4 bg-white text-4xl font-normal leading-[48px] text-[#33445C]">
       Generate document
     </h3>
 
     <!-- mobile basket modal launcher -->
-    <div class="sm:hidden text-right mr-4">
+    <div class="mr-4 text-right sm:hidden">
       <button on:click={() => (showWizardBasketModal = true)}>
         <div class="relative">
           <CheckIcon />
           {#if $langCountStore}
             <!-- badge -->
             <div
-              class="text-center absolute -top-0.5 -right-0.5
-                        bg-neutral-focus text-[#33445C]
-                        rounded-full w-7 h-7"
+              class="bg-neutral-focus absolute -right-0.5 -top-0.5
+                        h-7 w-7
+                        rounded-full text-center text-[#33445C]"
               style="background: linear-gradient(180deg, #1876FD 0%, #015AD9 100%);"
             >
               <span class="text-[8px] text-white">{$langCountStore}</span>

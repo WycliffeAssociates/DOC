@@ -15,7 +15,7 @@
     // generateDocxStore,
     emailStore,
     documentRequestKeyStore,
-    settingsUpdated
+    settingsUpdatedStore
   } from '$lib/stet/stores/SettingsStore'
   import { taskIdStore, taskStateStore } from '$lib/stet/stores/TaskStore'
   import { getCode } from '$lib/stet/utils'
@@ -45,7 +45,7 @@
   async function generateDocument() {
     // Update some UI-related state
     generatingDocument = true
-    $settingsUpdated = false
+    $settingsUpdatedStore = false
     // Create the JSON structure to POST.
     let documentRequest = {
       lang0_code: getCode($lang0CodeAndNameStore),
@@ -174,7 +174,7 @@
         </p>
       </div>
     </div>
-  {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdated}
+  {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdatedStore}
     {#if $lang0CodeAndNameStore && $lang1CodeAndNameStore}
       <div class="pb-4">
         <button
@@ -186,7 +186,7 @@
       </div>
     {:else}
       <div class="pb-4">
-        <button class="btn-disabled gray-gradiant w-1/2 rounded-md p-4 text-center">
+        <button class="gray-gradiant btn-disabled w-1/2 rounded-md p-4 text-center">
           <span class="text-xl text-[#b3b9c2]" style="color: #140e0866">Generate File</span>
         </button>
       </div>

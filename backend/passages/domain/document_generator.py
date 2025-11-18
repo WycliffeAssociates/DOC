@@ -10,9 +10,7 @@ from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment
 from doc.domain.parsing import split_chapter_into_verses, usfm_book_content
 from doc.domain.resource_lookup import (
-    RESOURCE_TYPE_CODES_AND_NAMES,
     book_codes_for_lang_from_usfm_only,
-    maybe_correct_book_name,
     prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
@@ -20,9 +18,9 @@ from doc.domain.resource_lookup import (
 )
 from doc.reviewers_guide.model import BibleReference
 from doc.utils.file_utils import docx_filepath, file_needs_update
+from doc.utils.text_utils import maybe_correct_book_name
 from docx import Document  # type: ignore
-from docx.oxml import OxmlElement  # type: ignore
-from docx.oxml import parse_xml
+from docx.oxml import OxmlElement, parse_xml  # type: ignore
 from docx.shared import Inches  # type: ignore
 from docx.table import _Cell  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
@@ -31,6 +29,7 @@ from passages.domain.parser import verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
 from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
+
 
 logger = settings.logger(__name__)
 
@@ -44,7 +43,9 @@ def generate_docx_document(
     working_dir: str = settings.WORKING_DIR,
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> str:
     """
     Generate the scriptural terms evaluation document.

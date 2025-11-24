@@ -67,7 +67,6 @@ def assemble_content_by_chapter(
         {usfm_book.book_code for usfm_book in usfm_books}
         .union(tn_book.book_code for tn_book in tn_books)
         .union(tq_book.book_code for tq_book in tq_books)
-        .union(tw_book.book_code for tw_book in tw_books)
         .union(bc_book.book_code for bc_book in bc_books)
         .union(rg_book.book_code for rg_book in rg_books)
     )
@@ -85,9 +84,6 @@ def assemble_content_by_chapter(
         selected_tq_books = [
             tq_book for tq_book in tq_books if tq_book.book_code == book_code
         ]
-        selected_tw_books = [
-            tw_book for tw_book in tw_books if tw_book.book_code == book_code
-        ]
         selected_bc_books = [
             bc_book for bc_book in bc_books if bc_book.book_code == book_code
         ]
@@ -103,7 +99,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -127,7 +123,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -152,7 +148,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -166,7 +162,7 @@ def assemble_content_by_chapter(
             not selected_usfm_books
             and not selected_tn_books
             and not selected_tq_books
-            and (selected_tw_books or selected_bc_books or selected_rg_books)
+            and (tw_books or selected_bc_books or selected_rg_books)
             and (
                 assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN
                 or assembly_layout_kind == AssemblyLayoutEnum.ONE_COLUMN_COMPACT
@@ -177,7 +173,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -194,7 +190,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -364,13 +360,8 @@ def assemble_usfm_by_chapter(
                     ):
                         content.append(hr)
                     # Add list of tw words used in chapter
-                    selected_tw_books = [
-                        tw_book
-                        for tw_book in tw_books
-                        if tw_book.book_code == book_code
-                    ]
-                    if selected_tw_books:
-                        tw_book = selected_tw_books[0]
+                    if tw_books:
+                        tw_book = tw_books[0]
                         words = translation_words_for_content(
                             tw_book, usfm_book.chapters[chapter_num].content
                         )
@@ -561,9 +552,7 @@ def assemble_usfm_by_verse_chapter_at_a_time(
                     if tq_book.book_code == book_code and tq_book.lang_code == lang_code
                 ]
                 selected_tw_books = [
-                    tw_book
-                    for tw_book in tw_books
-                    if tw_book.book_code == book_code and tw_book.lang_code == lang_code
+                    tw_book for tw_book in tw_books if tw_book.lang_code == lang_code
                 ]
                 usfm_book = None
                 usfm_book2 = None

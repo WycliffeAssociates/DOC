@@ -861,7 +861,6 @@ def tw_book_content(
     return TWBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
-        book_code=resource_lookup_dto.book_code,
         resource_type_name=resource_lookup_dto.resource_type_name,
         name_content_pairs=name_content_pairs,
         lang_direction=resource_lookup_dto.lang_direction,

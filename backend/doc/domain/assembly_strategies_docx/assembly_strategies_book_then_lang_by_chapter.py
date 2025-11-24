@@ -60,7 +60,6 @@ def assemble_content_by_chapter(
             [usfm_book.book_code for usfm_book in usfm_books],
             [tn_book.book_code for tn_book in tn_books],
             [tq_book.book_code for tq_book in tq_books],
-            [tw_book.book_code for tw_book in tw_books],
             [bc_book.book_code for bc_book in bc_books],
             [rg_book.book_code for rg_book in rg_books],
         ],
@@ -79,9 +78,6 @@ def assemble_content_by_chapter(
         selected_tq_books = [
             tq_book for tq_book in tq_books if tq_book.book_code == book_code
         ]
-        selected_tw_books = [
-            tw_book for tw_book in tw_books if tw_book.book_code == book_code
-        ]
         selected_bc_books = [
             bc_book for bc_book in bc_books if bc_book.book_code == book_code
         ]
@@ -94,7 +90,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -111,7 +107,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -128,7 +124,7 @@ def assemble_content_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -142,14 +138,14 @@ def assemble_content_by_chapter(
             not selected_usfm_books
             and not selected_tn_books
             and not selected_tq_books
-            and (selected_tw_books or selected_bc_books or selected_rg_books)
+            and (tw_books or selected_bc_books or selected_rg_books)
         ):
             document_parts.extend(
                 assemble_tw_by_chapter(
                     selected_usfm_books,
                     selected_tn_books,
                     selected_tq_books,
-                    selected_tw_books,
+                    tw_books,
                     selected_bc_books,
                     selected_rg_books,
                     use_section_visual_separator,
@@ -642,9 +638,7 @@ def assemble_usfm_by_verse_chapter_at_a_time(
                     if tq_book.book_code == book_code and tq_book.lang_code == lang_code
                 ]
                 selected_tw_books = [
-                    tw_book
-                    for tw_book in tw_books
-                    if tw_book.book_code == book_code and tw_book.lang_code == lang_code
+                    tw_book for tw_book in tw_books if tw_book.lang_code == lang_code
                 ]
                 usfm_book = None
                 usfm_book2 = None

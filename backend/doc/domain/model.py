@@ -448,7 +448,6 @@ class TWNameContentPair:
 class TWBook(NamedTuple):
     lang_code: str
     lang_name: str
-    book_code: str
     resource_type_name: str
     lang_direction: LangDirEnum
     name_content_pairs: list[TWNameContentPair] = []

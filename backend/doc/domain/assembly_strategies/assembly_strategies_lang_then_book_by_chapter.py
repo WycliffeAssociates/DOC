@@ -72,7 +72,6 @@ def assemble_content_by_book(
         {usfm_book.book_code for usfm_book in usfm_books}
         .union(tn_book.book_code for tn_book in tn_books)
         .union(tq_book.book_code for tq_book in tq_books)
-        .union(tw_book.book_code for tw_book in tw_books)
         .union(bc_book.book_code for bc_book in bc_books)
         .union(rg_book.book_code for rg_book in rg_books)
     )
@@ -115,9 +114,7 @@ def assemble_content_by_book(
             ]
             tq_book = selected_tq_books[0] if selected_tq_books else None
             selected_tw_books = [
-                tw_book
-                for tw_book in tw_books
-                if tw_book.lang_code == lang_code and tw_book.book_code == book_code
+                tw_book for tw_book in tw_books if tw_book.lang_code == lang_code
             ]
             tw_book = selected_tw_books[0] if selected_tw_books else None
             selected_bc_books = [
@@ -247,7 +244,6 @@ def assemble_content_by_verse_book_at_a_time(
         {usfm_book.book_code for usfm_book in usfm_books}
         .union(tn_book.book_code for tn_book in tn_books)
         .union(tq_book.book_code for tq_book in tq_books)
-        .union(tw_book.book_code for tw_book in tw_books)
         .union(bc_book.book_code for bc_book in bc_books)
         .union(rg_book.book_code for rg_book in rg_books)
     )
@@ -292,9 +288,7 @@ def assemble_content_by_verse_book_at_a_time(
             ]
             tq_book = selected_tq_books[0] if selected_tq_books else None
             selected_tw_books = [
-                tw_book
-                for tw_book in tw_books
-                if tw_book.lang_code == lang_code and tw_book.book_code == book_code
+                tw_book for tw_book in tw_books if tw_book.lang_code == lang_code
             ]
             tw_book = selected_tw_books[0] if selected_tw_books else None
             selected_bc_books = [

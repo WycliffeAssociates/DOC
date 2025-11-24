@@ -16,9 +16,6 @@
     try {
       await addNTSurveyRGPassages()
       ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -32,10 +29,7 @@
     isLoadingNTSurvey = true
     try {
       await removeNTSurveyRGPassages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -73,7 +67,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getNTSurveyRGPassages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,

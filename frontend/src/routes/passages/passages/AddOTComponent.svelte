@@ -89,7 +89,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG1Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -112,7 +111,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG2Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -135,7 +133,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG3Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -158,7 +155,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG4Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -181,7 +177,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG1Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -203,7 +198,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG2Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -225,7 +219,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG3Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -247,7 +240,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG4Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -271,9 +263,6 @@
     try {
       await addOTSurveyRG1Passages()
       otSurveyRG1SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -288,9 +277,6 @@
     try {
       await addOTSurveyRG2Passages()
       otSurveyRG2SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -305,9 +291,6 @@
     try {
       await addOTSurveyRG3Passages()
       otSurveyRG3SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -322,9 +305,6 @@
     try {
       await addOTSurveyRG4Passages()
       otSurveyRG4SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -338,10 +318,7 @@
     isLoadingOTSurveyRG1 = true
     try {
       await removeOTSurveyRG1Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG1SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -355,10 +332,7 @@
     isLoadingOTSurveyRG2 = true
     try {
       await removeOTSurveyRG2Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG2SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -372,10 +346,7 @@
     isLoadingOTSurveyRG3 = true
     try {
       await removeOTSurveyRG3Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG3SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -389,10 +360,7 @@
     isLoadingOTSurveyRG4 = true
     try {
       await removeOTSurveyRG4Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG4SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -401,7 +369,6 @@
     }
   }
 
-  // track checkbox states
   let otSurveyRG1Checked = false
   let otSurveyRG2Checked = false
   let otSurveyRG3Checked = false

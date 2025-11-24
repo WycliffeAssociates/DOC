@@ -713,12 +713,7 @@ def assemble_tn_by_chapter(
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     fmt_str: str = settings.LEFT_ALIGNED_HEADER_FMT_STR,
 ) -> list[str]:
-    """
-    Construct the HTML for a 'by chapter' strategy wherein at least
-    tn_books exists.
-    """
     content = []
-    # TODO Should we use lang_codes again here to ensure order?
     if show_tn_book_intro:
         for tn_book in tn_books:
             content.append(tn_language_direction_html(tn_book))

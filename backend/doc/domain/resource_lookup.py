@@ -1227,12 +1227,6 @@ def nt_survey_rg_passages(
     BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
-    # logger.debug("path: %s exists: %s", path, exists(path))
-    # TODO Check if resource_dir exists and if it doesn't then submit
-    # a document request to DOC API to make sure it is cloned.
-    # Currently we don't have to do this because at startup we copy
-    # English NT Survey RG doc into place.
-    # assert exists(path)
     rg_books = get_rg_books(
         path,
         lang_code,
@@ -1275,12 +1269,6 @@ def ot_survey_rg1_passages(
     BibleReference(book_code='gen', book_name='Genesis', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
-    # logger.debug("path: %s exists: %s", path, exists(path))
-    # TODO Check if resource_dir exists and if it doesn't then submit
-    # a document request to DOC API to make sure it is cloned.
-    # Currently we don't have to do this because at startup we copy
-    # English OT Survey RG1 doc into place.
-    # assert exists(path)
     rg_books = get_rg_books(
         path,
         lang_code,
@@ -1323,12 +1311,6 @@ def ot_survey_rg2_passages(
     BibleReference(book_code='jos', book_name='Joshua', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
-    # logger.debug("path: %s exists: %s", path, exists(path))
-    # TODO Check if resource_dir exists and if it doesn't then submit
-    # a document request to DOC API to make sure it is cloned.
-    # Currently we don't have to do this because at startup we copy
-    # English OT Survey RG2 doc into place.
-    # assert exists(path)
     rg_books = get_rg_books(
         path,
         lang_code,
@@ -1371,12 +1353,6 @@ def ot_survey_rg3_passages(
     BibleReference(book_code='job', book_name='Job', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
-    # logger.debug("path: %s exists: %s", path, exists(path))
-    # TODO Check if resource_dir exists and if it doesn't then submit
-    # a document request to DOC API to make sure it is cloned.
-    # Currently we don't have to do this because at startup we copy
-    # English OT Survey RG3 doc into place.
-    # assert exists(path)
     rg_books = get_rg_books(
         path,
         lang_code,
@@ -1419,12 +1395,6 @@ def ot_survey_rg4_passages(
     BibleReference(book_code='isa', book_name='Isaiah', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
-    # logger.debug("path: %s exists: %s", path, exists(path))
-    # TODO Check if resource_dir exists and if it doesn't then submit
-    # a document request to DOC API to make sure it is cloned.
-    # Currently we don't have to do this because at startup we copy
-    # English OT Survey RG4 doc into place.
-    # assert exists(path)
     rg_books = get_rg_books(
         path,
         lang_code,

@@ -30,7 +30,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getSTETPassages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -53,7 +52,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getSTETPassages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -77,9 +75,6 @@
     try {
       await addSTETPassages()
       stetSuccessMessage = '✔'
-      // setTimeout(() => {
-      //   stetSuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -93,10 +88,7 @@
     isLoadingStetPassages = true
     try {
       await removeSTETPassages()
-      // stetSuccessMessage = '✔'
-      // setTimeout(() => {
       stetSuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {

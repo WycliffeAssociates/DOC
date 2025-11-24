@@ -11,9 +11,9 @@ from doc.reviewers_guide.render_to_html import render_chapter
 from docx import Document  # type: ignore
 from docx.enum.section import WD_SECTION  # type: ignore
 from docx.enum.text import WD_BREAK  # type: ignore
+from docx.oxml import parse_xml  # type: ignore
 from docx.oxml.ns import qn  # type: ignore
 from docx.oxml.shared import OxmlElement  # type: ignore
-from docx.text.paragraph import Paragraph  # type: ignore
 
 
 logger = settings.logger(__name__)
@@ -183,47 +183,50 @@ def rg_chapter_verses(
     return "".join(content)
 
 
-def add_hr(paragraph: Paragraph) -> None:
-    """Add a horizontal line at the end of the given paragraph."""
-    p = paragraph._p  # p is the <w:p> XML element
-    pPr = p.get_or_add_pPr()
-    pBdr = OxmlElement("w:pBdr")
-    pPr.insert_element_before(
-        pBdr,
-        "w:shd",
-        "w:tabs",
-        "w:suppressAutoHyphens",
-        "w:kinsoku",
-        "w:wordWrap",
-        "w:overflowPunct",
-        "w:topLinePunct",
-        "w:autoSpaceDE",
-        "w:autoSpaceDN",
-        "w:bidi",
-        "w:adjustRightInd",
-        "w:snapToGrid",
-        "w:spacing",
-        "w:ind",
-        "w:contextualSpacing",
-        "w:mirrorIndents",
-        "w:suppressOverlap",
-        "w:jc",
-        "w:textDirection",
-        "w:textAlignment",
-        "w:textboxTightWrap",
-        "w:outlineLvl",
-        "w:divId",
-        "w:cnfStyle",
-        "w:rPr",
-        "w:sectPr",
-        "w:pPrChange",
-    )
-    bottom = OxmlElement("w:bottom")
-    bottom.set(qn("w:val"), "single")
-    bottom.set(qn("w:sz"), "6")
-    bottom.set(qn("w:space"), "1")
-    bottom.set(qn("w:color"), "auto")
-    pBdr.append(bottom)
+def add_full_width_hr(doc: Document) -> None:
+    """Add a full-width horizontal rule that spans the entire page width."""
+    p = doc.add_paragraph()
+    run = p.add_run()
+    # Adjust this width to your page layout; 6.5" = 8.5" page minus 1" margins on each side
+    width_inches = 6.5
+    hr_xml = f"""
+    <w:drawing xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+               xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+               xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+               xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+      <wp:inline distT="0" distB="0" distL="0" distR="0">
+        <wp:extent cx="{int(width_inches * 914400)}" cy="12700"/> <!-- height = 0.5pt -->
+        <wp:effectExtent l="0" t="0" r="0" b="0"/>
+        <wp:docPr id="1" name="FullWidthLine"/>
+        <a:graphic>
+          <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+            <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+              <pic:nvPicPr>
+                <pic:cNvPr id="0" name="HR"/>
+                <pic:cNvPicPr/>
+              </pic:nvPicPr>
+              <pic:blipFill>
+                <a:blip/>
+                <a:stretch><a:fillRect/></a:stretch>
+              </pic:blipFill>
+              <pic:spPr>
+                <a:xfrm>
+                  <a:off x="0" y="0"/>
+                  <a:ext cx="{int(width_inches * 914400)}" cy="12700"/>
+                </a:xfrm>
+                <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </pic:spPr>
+            </pic:pic>
+          </a:graphicData>
+        </a:graphic>
+      </wp:inline>
+    </w:drawing>
+    """
+    drawing = parse_xml(hr_xml)
+    run._r.append(drawing)
 
 
 def set_docx_language(

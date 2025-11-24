@@ -185,7 +185,7 @@ def tn_chapter_verses(
     Return the HTML for verses that are in the chapter with
     chapter_num.
     """
-    tn_verse_notes_enclosing_div_fmt_str: str = (
+    tn_verse_notes_enclosing_div_fmt_str = (
         "<div style='column-count: 2; padding-top: 2px; padding-bottom: 4px;'>{}</div>"
         if use_two_column_layout_for_tn_notes
         else "<div>{}</div>"

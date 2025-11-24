@@ -71,7 +71,7 @@ def test_all_usfm_books_for_language(lang_code: str) -> None:
                 "/documents",
                 json={
                     "email_address": settings.TO_EMAIL_ADDRESS,
-                    "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                    "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                     "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                     "layout_for_print": False,
                     "generate_pdf": True,
@@ -103,7 +103,7 @@ def test_known_defective_usfm_cases(
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "generate_pdf": True,

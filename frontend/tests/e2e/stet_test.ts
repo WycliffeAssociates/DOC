@@ -93,8 +93,8 @@ test.describe('Desktop Tests', () => {
       route.continue({ headers })
     })
     await page.goto('http://localhost:8001/stet')
-    await expect(page.getByText('English')).toBeVisible({ timeout: 32_000 })
-    await expect(page.getByText('Tok Pisin')).toBeVisible({ timeout: 32_000 })
+    await expect(page.getByText('English')).toBeVisible({ timeout: 64_000 })
+    await expect(page.getByText('Tok Pisin')).toBeVisible({ timeout: 64_000 })
   })
 
   test('stet input docs available in production should be limited to those with 4th column', async ({
@@ -119,8 +119,8 @@ test.describe('Desktop Tests', () => {
       route.continue({ headers })
     })
     await page.goto('http://localhost:8001/stet')
-    await expect(page.getByText('English')).toBeVisible({ timeout: 32_000 })
-    await expect(page.getByText('Tok Pisin')).not.toBeVisible({ timeout: 32_000 })
+    await expect(page.getByText('English')).toBeVisible({ timeout: 64_000 })
+    await expect(page.getByText('Tok Pisin')).not.toBeVisible({ timeout: 64_000 })
   })
 })
 

@@ -69,7 +69,7 @@ def test_random_non_english_document_request(
             )
         data = model.DocumentRequest(
             email_address=settings.TO_EMAIL_ADDRESS,
-            assembly_strategy_kind=model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+            assembly_strategy_kind=model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
             assembly_layout_kind=model.AssemblyLayoutEnum.ONE_COLUMN,
             layout_for_print=False,
             chunk_size=model.ChunkSizeEnum.CHAPTER,
@@ -128,7 +128,7 @@ def test_non_english_usfm_only_document_request(
                 "/documents",
                 json={
                     "email_address": settings.TO_EMAIL_ADDRESS,
-                    "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                    "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                     "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                     "layout_for_print": False,
                     "generate_pdf": True,
@@ -223,7 +223,7 @@ def test_all_non_english_document_request(non_english_lang_code: str) -> None:
                 )
             data = model.DocumentRequest(
                 email_address=settings.TO_EMAIL_ADDRESS,
-                assembly_strategy_kind=model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                assembly_strategy_kind=model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 assembly_layout_kind=model.AssemblyLayoutEnum.ONE_COLUMN,
                 layout_for_print=False,
                 chunk_size=model.ChunkSizeEnum.CHAPTER,

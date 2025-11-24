@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Sequence, TypeVar
 
 
 T = TypeVar("T", tuple[str, str], tuple[str, str, bool])
@@ -26,3 +26,15 @@ def unique_book_codes(lst: list[T]) -> list[T]:
         if key not in seen:
             seen[key] = item
     return list(seen.values())
+
+
+def unique_list_of_strings(
+    elements: Sequence[tuple[str, str]]
+) -> Sequence[tuple[str, str]]:
+    unique_strs = []
+    added_strs = set()
+    for key, val in elements:
+        if key not in added_strs:
+            unique_strs.append((key, val))
+            added_strs.add(key)
+    return unique_strs

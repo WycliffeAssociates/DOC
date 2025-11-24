@@ -99,7 +99,7 @@ def check_finished_document_with_verses_success(
         body_match = re.search(r"<body.*?>(.*?)</body>", html, re.DOTALL)
         assert body_match, "Body not found in HTML"
         body_content = body_match.group(1)
-        assert 'class="verse"' in body_content, "No verses found in HTML"
+        assert 'class="versemarker"' in body_content, "No verses found in HTML"
 
 
 def check_finished_document_without_verses_success(

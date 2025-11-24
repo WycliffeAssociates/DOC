@@ -13,6 +13,18 @@ TW_RC_LINK_RE = re.compile(
     )
 )
 
+# ceb language erroneously uses obe in its rc links in TW content
+TW_OBE_RC_LINK_RE = re.compile(
+    r"\[\[rc:\/\/(?P<lang_code>[^\[\]\(\)\/]+?)\/obe\/(?:kt|names|other)\/(?P<word>[^\[\]\(\)]+?)\]\]"
+)
+
+# RC_QUESTION_LINK_RE = re.compile(
+#     r"\[\[rc:\/\/(?P<lang_code>[^\[\]\(\)\/]+?)\/bible\/questions\/comprehension\/[^\[\]\(\)\/]+?\/[^\[\]\(\)\/]+?\]\]"
+# )
+RC_QUESTION_LINK_RE = re.compile(
+    r"\[\[rc:\/\/(?P<lang_code>[^\[\]\(\)\/]+)\/bible\/questions\/comprehension\/(?P<book>[^\[\]\(\)\/]+)\/(?P<chapter>[^\[\]\(\)\/]+)\]\]"
+)
+
 # Regex pattern to match TW STAR markdown style links and capture the last segment
 TW_STAR_RC_LINK_RE = re.compile(r"\[\[rc://[^/]+/[^/]+/[^/]+/[^/]+/(?P<word>[^/]+)\]\]")
 
@@ -51,7 +63,7 @@ TW_WIKI_PREFIXED_RC_LINK_NO_CLOSE_PAREN_RE = re.compile(
 # e.g., [foo](../kt/foo.md) links.
 # NOTE See id:regex_transformation_order above
 TW_MARKDOWN_LINK_RE = re.compile(
-    r"\[(?P<link_text>[^\[\]\(\)]+?)\]\(\.+\/(?:kt|names|other)\/(?P<word>[^\[\]\(\)]+?)\.md\)"
+    r"\[(?P<link_text>[^\]]+?)\]\(\.*/(?:kt|names|other)/(?P<word>[^\)]+?)\.md\)"
 )
 
 

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import NamedTuple, Optional, final
+
 from pydantic import BaseModel, EmailStr
 
 

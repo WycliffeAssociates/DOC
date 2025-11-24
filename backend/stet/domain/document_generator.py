@@ -13,14 +13,13 @@ from doc.domain.parsing import (
     usfm_book_content,
 )
 from doc.domain.resource_lookup import (
-    RESOURCE_TYPE_CODES_AND_NAMES,
-    maybe_correct_book_name,
     prepare_resource_filepath,
     provision_asset_files,
     resource_lookup_dto,
     resource_types,
 )
 from doc.utils.file_utils import docx_filepath, file_needs_update
+from doc.utils.text_utils import maybe_correct_book_name
 from docx import Document  # type: ignore
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT  # type: ignore
 from docx.oxml import OxmlElement  # type: ignore
@@ -46,6 +45,7 @@ from stet.utils.docx_utils import (
 )
 from stet.utils.util import extract_chapter_and_beyond
 
+
 logger = settings.logger(__name__)
 
 
@@ -57,7 +57,9 @@ def generate_docx_document(
     working_dir: str = settings.WORKING_DIR,
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> str:
     """
     Generate the scriptural terms evaluation document.
@@ -328,7 +330,7 @@ def generate_docx(
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.bolded_phrases
                 )
-            else:  # Bolded phrases in 3rd column were not provided
+            else:  # Bolded phrases in 4th column were not provided
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.words
                 )

@@ -3,7 +3,7 @@ from doc.domain import document_generator, parsing, resource_lookup
 
 
 def test_assemble_docx_content_ordering_of_books() -> None:
-    document_request_json = '{"email_address":null,"assembly_strategy_kind":"lbo","assembly_layout_kind":"1c","layout_for_print":false,"resource_requests":[{"lang_code":"tpi","resource_type":"ulb","book_code":"mat"}, {"lang_code":"tpi","resource_type":"ulb","book_code":"mrk"},{"lang_code":"tpi","resource_type":"ulb","book_code":"luk"}],"generate_pdf":true,"generate_epub":false,"generate_docx":false,"chunk_size":"chapter","limit_words":false,"include_tn_book_intros":false,"document_request_source":"ui"}'
+    document_request_json = '{"email_address":null,"assembly_strategy_kind":"lbo","assembly_layout_kind":"1c","layout_for_print":false,"resource_requests":[{"lang_code":"tpi","resource_type":"ulb","book_code":"mat"}, {"lang_code":"tpi","resource_type":"ulb","book_code":"mrk"},{"lang_code":"tpi","resource_type":"ulb","book_code":"luk"}],"generate_pdf":true,"generate_epub":false,"generate_docx":false,"chunk_size":"chapter","limit_words":false,"show_tn_book_intro":false,"document_request_source":"ui"}'
     document_request, document_request_key = (
         document_generator.initialize_document_request_and_key(document_request_json)
     )
@@ -33,6 +33,7 @@ def test_assemble_docx_content_ordering_of_books() -> None:
         document_request.resource_requests,
         document_request.layout_for_print,
         document_request.use_chapter_labels,
+        document_request.generate_docx,
     )
     document_parts = document_generator.assemble_docx_content(
         document_request_key,

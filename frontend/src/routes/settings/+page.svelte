@@ -11,7 +11,12 @@
     docTypeStore,
     emailStore,
     documentRequestKeyStore,
-    settingsUpdated,
+    settingsUpdatedStore,
+    showTnBookIntroStore,
+    showTnChapterIntroStore,
+    showBcBookIntroStore,
+    showBcChapterCommentaryStore,
+    showRgChapterCommentaryStore,
     useChapterLabelsStore,
     useSectionVisualSeparatorStore,
     usePrinceStore,
@@ -20,11 +25,11 @@
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
   import {
-    limitTwStore,
+    // limitTwStore,
     resourceTypesStore,
-    resourceTypesCountStore,
-    twResourceRequestedStore,
-    usfmAvailableStore
+    resourceTypesCountStore
+    // twResourceRequestedStore,
+    // usfmAvailableStore
   } from '$lib/stores/ResourceTypesStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { bookCountStore } from '$lib/stores/BooksStore'
@@ -50,9 +55,16 @@
   )
   let tnRegex = new RegExp('tn, .*')
   let tqRegex = new RegExp('tq, .*')
+  let bcRegex = new RegExp('bc, .*')
+  let rgRegex = new RegExp('rg, .*')
   let showUsfmSettingsAsOption: boolean = false
   let showTnTwoColAsOption: boolean = false
   let showTqTwoColAsOption: boolean = false
+  let showTnBookIntroAsOption: boolean = false
+  let showBcBookIntroAsOption: boolean = false
+  let showTnChapterIntroAsOption: boolean = false
+  let showBcChapterCommentaryAsOption: boolean = false
+  let showRgChapterCommentaryAsOption: boolean = false
   $: {
     if ($resourceTypesStore) {
       if ($resourceTypesStore.some((item) => usfmRegex.test(item))) {
@@ -60,13 +72,59 @@
       }
       if ($resourceTypesStore.some((item) => tnRegex.test(item))) {
         showTnTwoColAsOption = true
+        showTnBookIntroAsOption = true
+        showTnChapterIntroAsOption = true
       }
       if ($resourceTypesStore.some((item) => tqRegex.test(item))) {
         showTqTwoColAsOption = true
       }
+      if ($resourceTypesStore.some((item) => bcRegex.test(item))) {
+        showBcBookIntroAsOption = true
+        showBcChapterCommentaryAsOption = true
+      }
+      if ($resourceTypesStore.some((item) => rgRegex.test(item))) {
+        showRgChapterCommentaryAsOption = true
+      }
     }
   }
   $: console.log(`resourceTypesStore: ${$resourceTypesStore}`)
+
+  // If user chooses versification, they probably don't want to see
+  // the verbose parts of TN, BC, and RG resources by default. They can
+  // choose to include them via UI switches if they have chosen such resources
+  // to begin with.
+  // This variable is used to track user interacting with optional
+  // settings that would impact versification output.
+  let userInteracted = false
+  $: {
+    if (
+      !userInteracted &&
+      ($assemblyStrategyKindStore === 'lvo' || $assemblyStrategyKindStore === 'bvo')
+    ) {
+      $showTnBookIntroStore = false
+      $showBcBookIntroStore = false
+      $showTnChapterIntroStore = false
+      $showBcChapterCommentaryStore = false
+      $showRgChapterCommentaryStore = false
+    }
+  }
+  //  Make sure if the user first chooses one of the versification
+  // assembly strategies and then subsequently chooses one of the non-versification
+  // strategies, the appropriate defaults for non-versification are
+  // chosen.
+  $: {
+    if (
+      $settingsUpdatedStore &&
+      $assemblyStrategyKindStore !== 'lvo' &&
+      $assemblyStrategyKindStore !== 'bvo'
+    ) {
+      $showTnBookIntroStore = true
+      $showBcBookIntroStore = true
+      $showTnChapterIntroStore = true
+      $showBcChapterCommentaryStore = true
+      $showRgChapterCommentaryStore = true
+    }
+  }
 
   $: showEmail = false
   $: showEmailCaptured = false
@@ -91,24 +149,24 @@
 <WizardBreadcrumb />
 
 <!-- container for "center" div -->
-<div class="flex-grow flex flex-row overflow-hidden">
+<div class="flex flex-grow flex-row overflow-hidden">
   <!-- center -->
-  <div class="flex-1 flex flex-col sm:w-2/3 bg-white mx-4 mb-6">
-    <h3 class="bg-white text-[#33445C] text-4xl font-normal leading-[48px] mb-4">
+  <div class="mx-4 mb-6 flex flex-1 flex-col bg-white sm:w-2/3">
+    <h3 class="mb-4 bg-white text-4xl font-normal leading-[48px] text-[#33445C]">
       Generate document
     </h3>
 
     <!-- mobile basket modal launcher -->
-    <div class="sm:hidden text-right mr-4">
+    <div class="mr-4 text-right sm:hidden">
       <button on:click={() => (showWizardBasketModal = true)}>
         <div class="relative">
           <CheckIcon />
           {#if $langCountStore > 0 || $bookCountStore > 0 || $resourceTypesCountStore > 0}
             <!-- badge -->
             <div
-              class="text-center absolute -top-0.5 -right-0.5
-                        bg-neutral-focus text-[#33445C]
-                        rounded-full w-7 h-7"
+              class="bg-neutral-focus absolute -right-0.5 -top-0.5
+                        h-7 w-7
+                        rounded-full text-center text-[#33445C]"
               style="background: linear-gradient(180deg, #1876FD 0%, #015AD9 100%);"
             >
               <span class="text-[8px] text-white"
@@ -130,7 +188,7 @@
               bind:group={$docTypeStore}
               type="radio"
               on:change={() => {
-                $settingsUpdated = true
+                $settingsUpdatedStore = true
                 $errorStore = ''
               }}
               class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
@@ -146,7 +204,7 @@
               bind:group={$docTypeStore}
               type="radio"
               on:change={() => {
-                $settingsUpdated = true
+                $settingsUpdatedStore = true
                 $errorStore = ''
               }}
               class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
@@ -162,7 +220,7 @@
               bind:group={$docTypeStore}
               type="radio"
               on:change={() => {
-                $settingsUpdated = true
+                $settingsUpdatedStore = true
                 $errorStore = ''
               }}
               class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
@@ -186,24 +244,44 @@
       </div>
       <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Layout</h3>
       <div class="ml-4">
-        {#if $langCodesStore[1]}
+        <div class="mb-2">
+          <label>
+            <input
+              name="assemblyType"
+              value={'lbo'}
+              bind:group={$assemblyStrategyKindStore}
+              type="radio"
+              on:change={() => {
+                $settingsUpdatedStore = true
+                $errorStore = ''
+              }}
+              class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+            />
+            <span class="text-xl text-[#33445C]">Interleave content by book</span>
+          </label>
+        </div>
+        {#if showUsfmSettingsAsOption}
           <div class="mb-2">
             <label>
               <input
                 name="assemblyType"
-                value={'lbo'}
+                value={'lvo'}
                 bind:group={$assemblyStrategyKindStore}
                 type="radio"
                 on:change={() => {
-                  $settingsUpdated = true
+                  $settingsUpdatedStore = true
                   $errorStore = ''
                 }}
                 class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
               />
-              <span class="text-xl text-[#33445C]">Interleave content by book</span>
+              <span class="text-xl text-[#33445C]"
+                >Interleave content by verse one book at a time</span
+              >
             </label>
           </div>
-          <div class="mb-6">
+        {/if}
+        {#if $langCodesStore[1]}
+          <div class="mb-2">
             <label>
               <input
                 name="assemblyType"
@@ -211,7 +289,7 @@
                 bind:group={$assemblyStrategyKindStore}
                 type="radio"
                 on:change={() => {
-                  $settingsUpdated = true
+                  $settingsUpdatedStore = true
                   $errorStore = ''
                 }}
                 class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
@@ -219,6 +297,26 @@
               <span class="text-xl text-[#33445C]">Interleave content by chapter</span>
             </label>
           </div>
+          {#if showUsfmSettingsAsOption}
+            <div class="mb-6">
+              <label>
+                <input
+                  name="assemblyType"
+                  value={'bvo'}
+                  bind:group={$assemblyStrategyKindStore}
+                  type="radio"
+                  on:change={() => {
+                    $settingsUpdatedStore = true
+                    $errorStore = ''
+                  }}
+                  class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+                />
+                <span class="text-xl text-[#33445C]"
+                  >Interleave content by verse one chapter at a time</span
+                >
+              </label>
+            </div>
+          {/if}
         {/if}
         <div class="flex">
           <Switch bind:checked={$layoutForPrintStore} id="layout-for-print-store" />
@@ -229,18 +327,18 @@
             >Enabling this option will remove extra whitespace</span
           >
         </div>
-        {#if $twResourceRequestedStore && $usfmAvailableStore}
-          <div class="mb-2 mt-6 flex">
-            <Switch bind:checked={$limitTwStore} id="limit-tw-store" />
-            <span class="ml-2 text-xl text-[#33445C]">Limit TW words</span>
-          </div>
-          <div>
-            <span class="text-lg text-[#33445C]"
-              >Enabling this option will filter TW words down to only those that occur in the
-              scripture for the books chosen</span
-            >
-          </div>
-        {/if}
+        <!-- {#if $twResourceRequestedStore && $usfmAvailableStore} -->
+        <!--   <div class="mb-2 mt-6 flex"> -->
+        <!--     <Switch bind:checked={$limitTwStore} id="limit-tw-store" /> -->
+        <!--     <span class="ml-2 text-xl text-[#33445C]">Limit TW words</span> -->
+        <!--   </div> -->
+        <!--   <div> -->
+        <!--     <span class="text-lg text-[#33445C]" -->
+        <!--       >Enabling this option will filter TW words down to only those that occur in the -->
+        <!--       scripture for the books chosen</span -->
+        <!--     > -->
+        <!--   </div> -->
+        <!-- {/if} -->
       </div>
       <button
         class="mb-4 mt-2 w-1/2 rounded-md
@@ -270,7 +368,7 @@
               >Show visual separator (horizontal line) between sections</span
             >
           </div>
-          {#if showTnTwoColAsOption}
+          {#if $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTnTwoColAsOption}
             <div class="mb-2 mt-6 flex items-center">
               <Switch
                 bind:checked={$useTwoColumnLayoutForTnNotesStore}
@@ -281,7 +379,8 @@
                 <TwoColumnLayoutIcon />
                 <div
                   class="tooltip tooltip-info"
-                  data-tip="A few
+                  data-tip="This setting controls non-intro TN content
+                  layout. A few
                                                             languages,
                                                             e.g.,
                                                             Khmer,
@@ -296,10 +395,25 @@
               {:else}
                 <span class="ml-2 text-xl text-[#33445C]">Translation notes layout:</span>
                 <OneColumnLayoutIcon />
+                <div
+                  class="tooltip tooltip-info"
+                  data-tip="This setting controls non-intro TN content
+                  layout. A few
+                                                            languages,
+                                                            e.g.,
+                                                            Khmer,
+                                                            don't
+                                                            render
+                                                            well in
+                                                            two
+                                                            columns."
+                >
+                  ℹ️
+                </div>
               {/if}
             </div>
           {/if}
-          {#if showTqTwoColAsOption}
+          {#if $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTqTwoColAsOption}
             <div class="mb-2 mt-6 flex items-center">
               <Switch
                 bind:checked={$useTwoColumnLayoutForTqNotesStore}
@@ -325,7 +439,65 @@
               {:else}
                 <span class="ml-2 text-xl text-[#33445C]">Translation questions layout:</span>
                 <OneColumnLayoutIcon />
+                <div
+                  class="tooltip tooltip-info"
+                  data-tip="A few
+                                                            languages,
+                                                            e.g.,
+                                                            Khmer,
+                                                            don't
+                                                            render
+                                                            well in
+                                                            two
+                                                            columns."
+                >
+                  ℹ️
+                </div>
               {/if}
+            </div>
+          {/if}
+          {#if showTnBookIntroAsOption}
+            <div class="mb-2 mt-6 flex items-center">
+              <Switch
+                bind:checked={$showTnBookIntroStore}
+                id="show-tn-book-intro"
+                on:change={() => {
+                  userInteracted = true
+                }}
+              />
+              <span class="ml-2 text-xl text-[#33445C]">Include TN book intro</span>
+            </div>
+          {/if}
+          {#if showBcBookIntroAsOption}
+            <div class="mb-2 mt-6 flex items-center">
+              <Switch bind:checked={$showBcBookIntroStore} id="show-bc-book-intro" />
+              <span class="ml-2 text-xl text-[#33445C]">Include BC book intro</span>
+            </div>
+          {/if}
+          {#if showTnBookIntroAsOption}
+            <div class="mb-2 mt-6 flex items-center">
+              <Switch bind:checked={$showTnChapterIntroStore} id="show-tn-chapter-intro" />
+              <span class="ml-2 text-xl text-[#33445C]">Include TN chapter intro</span>
+            </div>
+          {/if}
+          {#if showBcBookIntroAsOption}
+            {#if $assemblyStrategyKindStore === 'lvo' || $assemblyStrategyKindStore === 'bvo'}
+              <div class="mb-2 mt-6 flex items-center">
+                <Switch
+                  bind:checked={$showBcChapterCommentaryStore}
+                  id="show-bc-chapter-commentary"
+                />
+                <span class="ml-2 text-xl text-[#33445C]">Include BC chapter commentary</span>
+              </div>
+            {/if}
+          {/if}
+          {#if showRgChapterCommentaryAsOption && ($assemblyStrategyKindStore === 'lvo' || $assemblyStrategyKindStore === 'bvo')}
+            <div class="mb-2 mt-6 flex items-center">
+              <Switch
+                bind:checked={$showRgChapterCommentaryStore}
+                id="show-rg-chapter-commentary"
+              />
+              <span class="ml-2 text-xl text-[#33445C]">Include RG chapter commentary</span>
             </div>
           {/if}
         </div>
@@ -372,7 +544,6 @@
           </div>
         {/if}
       </div>
-
       <GenerateDocument />
     </main>
   </div>

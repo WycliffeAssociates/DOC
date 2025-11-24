@@ -18,7 +18,12 @@
     generateDocxStore,
     emailStore,
     documentRequestKeyStore,
-    settingsUpdated,
+    settingsUpdatedStore,
+    showTnBookIntroStore,
+    showTnChapterIntroStore,
+    showBcBookIntroStore,
+    showBcChapterCommentaryStore,
+    showRgChapterCommentaryStore,
     useChapterLabelsStore,
     useSectionVisualSeparatorStore,
     usePrinceStore,
@@ -54,7 +59,7 @@
   async function generateDocument() {
     // Update some UI-related state
     generatingDocument = true
-    $settingsUpdated = false
+    $settingsUpdatedStore = false
     let resourceRequests = []
     let bookCodes = [...$otBookStore, ...$ntBookStore]
     for (let langCode of $langCodesStore) {
@@ -85,7 +90,12 @@
       use_section_visual_separator: $useSectionVisualSeparatorStore,
       use_prince: $usePrinceStore,
       use_two_column_layout_for_tn_notes: $useTwoColumnLayoutForTnNotesStore,
-      use_two_column_layout_for_tq_notes: $useTwoColumnLayoutForTqNotesStore
+      use_two_column_layout_for_tq_notes: $useTwoColumnLayoutForTqNotesStore,
+      show_tn_book_intro: $showTnBookIntroStore,
+      show_tn_chapter_intro: $showTnChapterIntroStore,
+      show_bc_book_intro: $showBcBookIntroStore,
+      show_bc_chapter_commentary: $showBcChapterCommentaryStore,
+      show_rg_chapter_commentary: $showRgChapterCommentaryStore
     }
     console.log('document request: ', JSON.stringify(documentRequest, null, 2))
     $errorStore = null
@@ -209,7 +219,7 @@
         </p>
       </div>
     </div>
-  {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdated}
+  {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdatedStore}
     {#if ($langCountStore > 0 || $langCountStore <= 2) && $assemblyStrategyKindStore && $bookCountStore > 0 && $resourceTypesCountStore > 0}
       <div class="pb-4">
         <button

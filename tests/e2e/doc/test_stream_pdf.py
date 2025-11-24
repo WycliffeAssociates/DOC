@@ -19,7 +19,7 @@ def test_stream_pdf() -> None:
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,

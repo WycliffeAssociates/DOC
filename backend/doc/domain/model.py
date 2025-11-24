@@ -14,6 +14,7 @@ from doc.utils.number_utils import is_even
 from pydantic import BaseModel, EmailStr, HttpUrl
 from pydantic.functional_validators import model_validator
 
+
 # These type aliases give us more self-documenting code, but of course
 # aren't strictly necessary.
 VerseRef = str
@@ -37,19 +38,10 @@ NON_USFM_RESOURCE_TYPES: Sequence[str] = [
 
 @final
 class AssemblyStrategyEnum(str, Enum):
-    """
-    * LANGUAGE_BOOK_ORDER
-      - This enum value signals to use the high level strategy that orders
-        by language and then by book before delegating to an assembly
-        sub-strategy.
-    * BOOK_LANGUAGE_ORDER
-      - This enum value signals to use the high level strategy that orders
-        by book and then by language before delegating to an assembly
-        sub-strategy.
-    """
-
-    LANGUAGE_BOOK_ORDER = "lbo"
-    BOOK_LANGUAGE_ORDER = "blo"
+    INTERLEAVE_BY_BOOK = "lbo"
+    INTERLEAVE_BY_CHAPTER = "blo"
+    INTERLEAVE_BY_VERSE_BOOK_AT_A_TIME = "lvo"  # Interleave by verse one book at a time
+    INTERLEAVE_BY_VERSE = "bvo"  # Interleave by verse one chapter at a time
     STET_STRATEGY = "stet"
 
 
@@ -218,12 +210,13 @@ class DocumentRequest(BaseModel):
     use_two_column_layout_for_tn_notes: bool = False
     # Some languages, e.g., Khmer, don't layout well in 2 column
     use_two_column_layout_for_tq_notes: bool = False
-
     # Indicate whether to show visual separator between sections, e.g., hr element
     use_section_visual_separator: bool = False
-    # Indicate whether TN book intros should be included. Currently,
-    # the content team does not want them included.
-    include_tn_book_intros: bool = False
+    show_tn_book_intro: bool = True
+    show_bc_book_intro: bool = True
+    show_tn_chapter_intro: bool = True
+    show_bc_chapter_commentary: bool = True
+    show_rg_chapter_commentary: bool = True
     # Indicate where the document request originated from. We default to
     # TEST so that tests don't have to specify and every other client, e.g.,
     # UI, should specify in order for
@@ -297,7 +290,7 @@ class DocumentRequest(BaseModel):
             # )
         )
         if (
-            self.assembly_strategy_kind != AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+            self.assembly_strategy_kind != AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
             and self.assembly_layout_kind
             == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
         ):
@@ -305,7 +298,7 @@ class DocumentRequest(BaseModel):
                 "Two column scripture left, scripture right layout is only compatible with book language order assembly strategy."
             )
         elif (
-            self.assembly_strategy_kind == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+            self.assembly_strategy_kind == AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
             and self.assembly_layout_kind
             == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
             # Because book content for different languages will be side by side for
@@ -318,7 +311,7 @@ class DocumentRequest(BaseModel):
                 "Two column scripture left, scripture right layout requires a non-zero even number of languages. For an uneven number of languages you'll want to use the one column layout kind."
             )
         elif (
-            self.assembly_strategy_kind == AssemblyStrategyEnum.BOOK_LANGUAGE_ORDER
+            self.assembly_strategy_kind == AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
             and self.assembly_layout_kind
             == AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT
             # Because book content for different languages will be side by side for
@@ -445,8 +438,9 @@ class TWNameContentPair:
     HTML content.
     """
 
-    def __init__(self, localized_word: str, content: str):
+    def __init__(self, localized_word: str, path: str, content: str):
         self.localized_word = localized_word
+        self.path = path
         self.content = content
 
 
@@ -458,7 +452,7 @@ class TWBook(NamedTuple):
     resource_type_name: str
     lang_direction: LangDirEnum
     name_content_pairs: list[TWNameContentPair] = []
-    # uses: dict[str, list[TWUse]] = {}
+    uses: dict[str, list[TWUse]] = {}
 
 
 @final

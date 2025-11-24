@@ -1,10 +1,7 @@
 <script lang="ts">
   import { PUBLIC_MAX_LANGUAGES } from '$env/static/public'
-
   import { getCode, getName } from '$lib/utils'
   import {
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore,
     langCountStore,
     langCodesStore,
     languagesClickedOrderStore

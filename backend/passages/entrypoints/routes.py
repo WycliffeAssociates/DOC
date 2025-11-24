@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from passages.domain import document_generator, model
 from passages.domain.document_generator import stet_exhaustive_verse_list
 
+
 router = APIRouter()
 
 logger = settings.logger(__name__)

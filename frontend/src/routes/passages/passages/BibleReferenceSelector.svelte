@@ -39,7 +39,7 @@
 
 <div class="flex flex-col">
   <AddPassageComponent {chapters} {checkIcon} {bookCodesAndNames} />
-  <AddOTComponent {checkIcon} bind:loading />
+  <!-- <AddOTComponent {checkIcon} bind:loading /> -->
   <AddNTComponent {checkIcon} bind:loading />
   {#if !isProduction}
     <AddSTETComponent {checkIcon} bind:loading />

@@ -1,6 +1,7 @@
+from typing import Optional, NamedTuple, final
+
 from doc.domain.model import ChapterNum
 from pydantic import BaseModel, EmailStr
-from typing import Optional, NamedTuple, final
 
 
 @final

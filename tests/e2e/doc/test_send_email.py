@@ -20,7 +20,7 @@ def test_send_email_with_es_419_ulb_jud_pdf() -> None:
             "/documents",
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.LANGUAGE_BOOK_ORDER,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "chunk_size": model.ChunkSizeEnum.CHAPTER,

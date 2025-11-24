@@ -10,6 +10,7 @@
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
   import { langCodeAndNameStore, langCountStore } from '$lib/passages/stores/LanguageStore'
   import { getCode, getName } from '$lib/passages/utils'
+  import { passagesStore } from '$lib/passages/stores/PassagesStore'
 
   let showGatewayLanguages = true
 
@@ -51,6 +52,13 @@
   onMount(async () => {
     await loadLangCodeNameAndTypes()
   })
+
+  function handleLangChange(e: Event, lang: string) {
+    const input = e.currentTarget as HTMLInputElement
+    if (input.checked) {
+      $passagesStore = []
+    }
+  }
 
   // Set $langCountStore
   $: {
@@ -120,6 +128,7 @@
           {heartCodesAndNames}
           {filteredHeartCodeAndNames}
           {filteredGatewayCodeAndNames}
+          onLangChange={handleLangChange}
         />
       {:else}
         <DesktopLanguageDisplay
@@ -128,6 +137,7 @@
           {heartCodesAndNames}
           {filteredHeartCodeAndNames}
           {filteredGatewayCodeAndNames}
+          onLangChange={handleLangChange}
         />
       {/if}
     {/if}

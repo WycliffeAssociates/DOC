@@ -1,14 +1,17 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
-  import { PUBLIC_STET_PASSAGES_URL } from '$env/static/public'
   import { env } from '$env/dynamic/public'
+  import { PUBLIC_STET_PASSAGES_URL, PUBLIC_PRODUCTION_DOMAIN } from '$env/static/public'
   import type { BibleReference } from './model'
 
   export let loading: boolean
   export let checkIcon: string
+  export let bookCodesAndNames: [string, string][]
   let stetSuccessMessage: string = ''
   let isLoadingStetPassages = false
+  let showSTET: boolean = false
 
   async function getSTETPassages(
     langCode: string,
@@ -23,8 +26,22 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return bibleReferences.filter((ref) =>
+      bookCodesAndNames.some(([code]) => code === ref.book_code)
+    )
   }
+
+  onMount(async () => {
+    const langCode = $langCodeAndNameStore.split(',')[0]
+    try {
+      const stetPassages = await getSTETPassages(langCode)
+      showSTET = stetPassages.length > 0
+    } catch (error) {
+      console.error('Failed to add STET passages:', error)
+    } finally {
+      console.log('Passages added successfully')
+    }
+  })
 
   export async function addSTETPassages() {
     try {
@@ -105,31 +122,35 @@
       handleRemoveSTETPassagesClick()
     }
   }
+
+  let isProduction = window.location.hostname.includes(PUBLIC_PRODUCTION_DOMAIN) ? true : false
 </script>
 
-<div id="stet-passages" class="mb-2 flex h-[56px] items-center">
-  <input
-    id="add-stet-passages-checkbox"
-    type="checkbox"
-    class="checkbox-target checkbox-style"
-    on:click={handleSTETCheckboxClick}
-  />
-  <label
-    for="add-stet-passages-checkbox"
-    class="pl-1 text-xl text-[#33445C] {isLoadingStetPassages || stetSuccessMessage
-      ? 'text-gray-400'
-      : ''}">Add STET Passages</label
-  >
-  <div class="loader-container">
-    {#if isLoadingStetPassages}
-      <div class="loader"></div>
-    {:else if stetSuccessMessage}
-      <div class="success-message ml-2 text-green-500">
-        {@html checkIcon}
-      </div>
-    {/if}
+{#if !isProduction && showSTET}
+  <div id="stet-passages" class="mb-2 flex h-[56px] items-center">
+    <input
+      id="add-stet-passages-checkbox"
+      type="checkbox"
+      class="checkbox-target checkbox-style"
+      on:click={handleSTETCheckboxClick}
+    />
+    <label
+      for="add-stet-passages-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingStetPassages || stetSuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add STET Passages</label
+    >
+    <div class="loader-container">
+      {#if isLoadingStetPassages}
+        <div class="loader"></div>
+      {:else if stetSuccessMessage}
+        <div class="success-message ml-2 text-green-500">
+          {@html checkIcon}
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .success-message {

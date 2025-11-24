@@ -15,8 +15,8 @@
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import CheckIcon from '$lib/CheckIcon.svelte'
 
-  // For use by Mobile UI
-  let showWizardBasketModal = false
+  let showWizardBasketModal = false // For use by Mobile UI
+  let bookCodesAndNames: Array<[string, string]> = []
 
   async function getBookCodesAndNames(
     langCode: string,
@@ -34,17 +34,15 @@
     return bookCodesAndNames
   }
 
-  let bookCodesAndNames: Array<[string, string]> = []
-
-  onMount(() => {
+  onMount(async () => {
     let langCode = $langCodeAndNameStore.split(',')[0]
-    console.log(langCode)
-    console.log(`langCode: ${JSON.stringify(langCode)}`)
-    getBookCodesAndNames(langCode)
-      .then((bookCodesAndNames_) => {
-        bookCodesAndNames = [...bookCodesAndNames_] // Ensure reactivity with [...blah]
-      })
-      .catch((err) => console.error(err))
+    try {
+      bookCodesAndNames = await getBookCodesAndNames(langCode)
+    } catch (error) {
+      console.error('Failed to retrieve book codes and names:', error)
+    } finally {
+      console.log('Book codes and names retrieved successfully')
+    }
   })
 
   function removePassage(id: number) {

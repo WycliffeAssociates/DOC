@@ -1130,7 +1130,7 @@ def assemble_tq_by_chapter(
             for tq_book in [
                 tq_book
                 for tq_book in tq_books
-                if tq_book.book_code == tq_book.book_code
+                if tq_book.book_code == book_code
             ]:
                 tq_verses = tq_chapter_verses(
                     tq_book,
@@ -1169,7 +1169,7 @@ def assemble_tq_by_chapter(
             for rg_book in [
                 rg_book
                 for rg_book in rg_books
-                if rg_book.book_code == rg_book.book_code
+                if rg_book.book_code == book_code
             ]:
                 rg_verses = rg_chapter_verses(
                     rg_book, chapter_num, use_section_visual_separator

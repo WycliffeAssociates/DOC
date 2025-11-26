@@ -27,7 +27,9 @@ def get_book_code(book_name: str, book_names: dict[str, str] = BOOK_NAMES) -> st
 
 
 def parse_bible_reference(
-    raw_bible_reference: str, book_names: list[str] = list(BOOK_NAMES.values())
+    raw_bible_reference: str,
+    book_names: list[str] = list(BOOK_NAMES.values()),
+    exceptional_book_name: str = "Song of Songs",
 ) -> BibleReference:
     bible_reference_components = raw_bible_reference.split()
     if (
@@ -97,7 +99,6 @@ def parse_bible_reference(
             elif bible_reference_components[1][
                 0
             ].isdigit() and not bible_reference_components[2].endswith("continued"):
-                # Likely an OT reviewer's guide reference which sometimes looks like ['Genesis', '1:1-2:3', 'God', 'creates', 'everything']
                 bible_reference_components = bible_reference_components[0:2]
                 logger.debug(
                     "2. Updated bible_reference_components: %s",
@@ -106,9 +107,37 @@ def parse_bible_reference(
                 book_name = bible_reference_components[0]
                 book_code = get_book_code(book_name)
                 chapter_verse_components = bible_reference_components[1].split(":")
-                bible_reference = get_ordinal_bible_reference(
-                    chapter_verse_components, book_code, book_name
+                if (
+                    len(chapter_verse_components) == 3
+                    and "-" in chapter_verse_components[1]
+                ):
+                    bible_reference = get_bible_reference_spanning_chapter_boundary(
+                        chapter_verse_components, book_code, book_name
+                    )
+                else:
+                    bible_reference = get_ordinal_bible_reference(
+                        chapter_verse_components, book_code, book_name
+                    )
+            elif (
+                not bible_reference_components[2].endswith("continued")
+                and f"{bible_reference_components[0]} {bible_reference_components[1]} {bible_reference_components[2]} == {exceptional_book_name}"
+            ):
+                bible_reference_components = bible_reference_components[0:4]
+                book_code = get_book_code(
+                    f"{bible_reference_components[0]} {bible_reference_components[1]} Solomon"
                 )
+                chapter_verse_components = bible_reference_components[3].split(":")
+                if (
+                    len(chapter_verse_components) == 3
+                    and "-" in chapter_verse_components[1]
+                ):
+                    bible_reference = get_bible_reference_spanning_chapter_boundary(
+                        chapter_verse_components, book_code, exceptional_book_name
+                    )
+                else:
+                    bible_reference = get_ordinal_bible_reference(
+                        chapter_verse_components, book_code, exceptional_book_name
+                    )
     return bible_reference
 
 
@@ -158,7 +187,9 @@ def get_bible_reference_spanning_chapter_boundary(
 
 
 def find_bible_references(
-    docx_file: str, book_names: list[str] = list(BOOK_NAMES.values())
+    docx_file: str,
+    book_names: list[str] = list(BOOK_NAMES.values()),
+    solomon: str = "Solomon",
 ) -> tuple[list[str], list[str]]:
     """
     Identifies Bible passage references and text between references.
@@ -185,7 +216,6 @@ def find_bible_references(
     if "Old Testament" in testament_paragraph.text.strip():
         logger.info("Parsing Old Testament rg document")
         for paragraph in doc.paragraphs:
-            # Check if the paragraph is a potential Bible reference
             paragraph_text = paragraph.text.strip()
             words = paragraph_text.split()
             if (
@@ -195,10 +225,15 @@ def find_bible_references(
                 and (
                     words[1][0].isdigit() or (len(words) > 2 and words[2][0].isdigit())
                 )
+            ) or (
+                words
+                and len(words) > 3
+                and (
+                    f"{words[0]} {words[1]} {solomon}" in book_names
+                )  # Input doc uses Song of Songs, but lookup is Song of Solomon
+                and words[3][0].isdigit()
             ):
-                if paragraph_text.endswith(
-                    "continued"
-                ):  # or "\t" in paragraph_text  # \t is in paragraph_text when it is a TOC entry
+                if paragraph_text.endswith("continued"):
                     continue
                 if inside_bible_reference:
                     if current_text:
@@ -212,7 +247,6 @@ def find_bible_references(
     else:
         logger.info("Parsing New Testament rg document")
         for paragraph in doc.paragraphs:
-            # Check if the paragraph is a potential Bible reference
             paragraph_text = paragraph.text.strip()
             words = paragraph_text.split()
             if (
@@ -221,9 +255,7 @@ def find_bible_references(
                 and len(words) < 5
                 and (words[0] in book_names or (f"{words[0]} {words[1]}" in book_names))
             ):
-                if (
-                    paragraph_text.endswith("continued") or "\t" in paragraph_text
-                ):  # \t is in paragraph_text when it is a TOC entry
+                if paragraph_text.endswith("continued") or "\t" in paragraph_text:
                     continue
                 if inside_bible_reference:
                     if current_text:

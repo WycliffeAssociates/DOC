@@ -70,3 +70,11 @@ export const booksMap: { [key: string]: string } = {
 export type BookKey = keyof typeof booksMap
 
 export const bookCodes = Object.keys(booksMap) as BookKey[]
+
+export function bookRange(start: string, end: string): BookKey[] {
+  const codes = bookCodes
+  const s = codes.indexOf(start)
+  const e = codes.indexOf(end)
+  if (s === -1 || e === -1 || s > e) return []
+  return codes.slice(s, e + 1)
+}

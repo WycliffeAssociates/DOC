@@ -9,9 +9,12 @@
   import type { BibleReference } from './model'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
   import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
+  import { bookRange } from '$lib/bible-books'
+  import type { BookKey } from '$lib/bible-books'
 
   export let loading: boolean
   export let checkIcon: string
+  export let bookCodesAndNames: [string, string][]
   let isLoadingOTSurveyRG1 = false
   let isLoadingOTSurveyRG2 = false
   let isLoadingOTSurveyRG3 = false
@@ -34,7 +37,9 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return bibleReferences.filter((ref) =>
+      bookCodesAndNames.some(([code]) => code === ref.book_code)
+    )
   }
 
   async function getOTSurveyRG2Passages(
@@ -50,7 +55,9 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return bibleReferences.filter((ref) =>
+      bookCodesAndNames.some(([code]) => code === ref.book_code)
+    )
   }
 
   async function getOTSurveyRG3Passages(
@@ -66,7 +73,9 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return bibleReferences.filter((ref) =>
+      bookCodesAndNames.some(([code]) => code === ref.book_code)
+    )
   }
 
   async function getOTSurveyRG4Passages(
@@ -82,14 +91,15 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return bibleReferences.filter((ref) =>
+      bookCodesAndNames.some(([code]) => code === ref.book_code)
+    )
   }
 
   export async function addOTSurveyRG1Passages() {
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG1Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -112,7 +122,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG2Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -135,7 +144,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG3Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -158,7 +166,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG4Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -181,7 +188,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG1Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -203,7 +209,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG2Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -225,7 +230,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG3Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -247,7 +251,6 @@
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getOTSurveyRG4Passages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
           langCode,
@@ -271,9 +274,6 @@
     try {
       await addOTSurveyRG1Passages()
       otSurveyRG1SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -288,9 +288,6 @@
     try {
       await addOTSurveyRG2Passages()
       otSurveyRG2SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -305,9 +302,6 @@
     try {
       await addOTSurveyRG3Passages()
       otSurveyRG3SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -322,9 +316,6 @@
     try {
       await addOTSurveyRG4Passages()
       otSurveyRG4SuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -338,10 +329,7 @@
     isLoadingOTSurveyRG1 = true
     try {
       await removeOTSurveyRG1Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG1SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -355,10 +343,7 @@
     isLoadingOTSurveyRG2 = true
     try {
       await removeOTSurveyRG2Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG2SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -372,10 +357,7 @@
     isLoadingOTSurveyRG3 = true
     try {
       await removeOTSurveyRG3Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG3SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -389,10 +371,7 @@
     isLoadingOTSurveyRG4 = true
     try {
       await removeOTSurveyRG4Passages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       otSurveyRG4SuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -401,7 +380,6 @@
     }
   }
 
-  // track checkbox states
   let otSurveyRG1Checked = false
   let otSurveyRG2Checked = false
   let otSurveyRG3Checked = false
@@ -411,16 +389,31 @@
   function handleSelectAllClick(event: Event) {
     const target = event.target as HTMLInputElement
     allOTSurveyChecked = target.checked
-    otSurveyRG1Checked = target.checked
-    otSurveyRG2Checked = target.checked
-    otSurveyRG3Checked = target.checked
-    otSurveyRG4Checked = target.checked
-
+    if (showRG1) {
+      otSurveyRG1Checked = target.checked
+    }
+    if (showRG2) {
+      otSurveyRG2Checked = target.checked
+    }
+    if (showRG3) {
+      otSurveyRG3Checked = target.checked
+    }
+    if (showRG4) {
+      otSurveyRG4Checked = target.checked
+    }
     if (target.checked) {
-      handleAddOTSurveyRG1PassagesClick()
-      handleAddOTSurveyRG2PassagesClick()
-      handleAddOTSurveyRG3PassagesClick()
-      handleAddOTSurveyRG4PassagesClick()
+      if (showRG1) {
+        handleAddOTSurveyRG1PassagesClick()
+      }
+      if (showRG2) {
+        handleAddOTSurveyRG2PassagesClick()
+      }
+      if (showRG3) {
+        handleAddOTSurveyRG3PassagesClick()
+      }
+      if (showRG4) {
+        handleAddOTSurveyRG4PassagesClick()
+      }
     } else {
       handleRemoveOTSurveyRG1PassagesClick()
       handleRemoveOTSurveyRG2PassagesClick()
@@ -431,7 +424,6 @@
 
   function handleOTSurvey1CheckboxClick(event: Event) {
     const target = event.target as HTMLInputElement
-
     otSurveyRG1Checked = target.checked
     if (target.checked) {
       handleAddOTSurveyRG1PassagesClick()
@@ -476,118 +468,141 @@
 
   function updateSelectAll() {
     allOTSurveyChecked =
-      otSurveyRG1Checked && otSurveyRG2Checked && otSurveyRG3Checked && otSurveyRG4Checked
+      (showRG1 ? otSurveyRG1Checked : true) &&
+      (showRG2 ? otSurveyRG2Checked : true) &&
+      (showRG3 ? otSurveyRG3Checked : true) &&
+      (showRG4 ? otSurveyRG4Checked : true)
   }
+
+  const rg1 = bookRange('gen', 'deu')
+  const rg2 = bookRange('jos', 'est')
+  const rg3 = bookRange('job', 'sng')
+  const rg4 = bookRange('isa', 'mal')
+
+  let showRG1 = bookCodesAndNames.some(([code]) => rg1.includes(code as BookKey))
+  let showRG2 = bookCodesAndNames.some(([code]) => rg2.includes(code as BookKey))
+  let showRG3 = bookCodesAndNames.some(([code]) => rg3.includes(code as BookKey))
+  let showRG4 = bookCodesAndNames.some(([code]) => rg4.includes(code as BookKey))
 </script>
 
-<div class="mb-4 flex h-[56px] items-center font-bold">
-  <input
-    id="add-all-ot-survey-passages-checkbox"
-    type="checkbox"
-    bind:checked={allOTSurveyChecked}
-    class="checkbox-target checkbox-style"
-    on:click={handleSelectAllClick}
-  />
-  <label for="add-all-ot-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
-    >Add all OT RG Passages</label
-  >
-</div>
-<div class="mb-2 flex h-[56px] items-center">
-  <input
-    id="add-ot-survey-passages-rg1-checkbox"
-    type="checkbox"
-    bind:checked={otSurveyRG1Checked}
-    class="checkbox-target checkbox-style"
-    on:click={handleOTSurvey1CheckboxClick}
-  />
-  <label
-    for="add-ot-survey-passages-rg1-checkbox"
-    class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG1 || otSurveyRG1SuccessMessage
-      ? 'text-gray-400'
-      : ''}">Add OT Survey RG1 Passages only (Genesis to Deuteronomy)</label
-  >
-  <div class="loader-container">
-    {#if isLoadingOTSurveyRG1}
-      <div class="loader"></div>
-    {:else if otSurveyRG1SuccessMessage}
-      <div class="success-message ml-2 text-green-500">
-        {@html checkIcon}
-      </div>
-    {/if}
+{#if [showRG1, showRG2, showRG3, showRG4].filter(Boolean).length > 1}
+  <div class="mb-4 flex h-[56px] items-center font-bold">
+    <input
+      id="add-all-ot-survey-passages-checkbox"
+      type="checkbox"
+      bind:checked={allOTSurveyChecked}
+      class="checkbox-target checkbox-style"
+      on:click={handleSelectAllClick}
+    />
+    <label for="add-all-ot-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
+      >Add all OT RG Passages</label
+    >
   </div>
-</div>
-<div class="mb-2 flex h-[56px] items-center">
-  <input
-    id="add-ot-survey-passages-rg2-checkbox"
-    type="checkbox"
-    bind:checked={otSurveyRG2Checked}
-    class="checkbox-target checkbox-style"
-    on:click={handleOTSurvey2CheckboxClick}
-  />
-  <label
-    for="add-ot-survey-passages-rg2-checkbox"
-    class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG2 || otSurveyRG2SuccessMessage
-      ? 'text-gray-400'
-      : ''}">Add OT Survey RG2 Passages only (Joshua to Esther)</label
-  >
-  <div class="loader-container">
-    {#if isLoadingOTSurveyRG2}
-      <div class="loader"></div>
-    {:else if otSurveyRG2SuccessMessage}
-      <div class="success-message ml-2 text-green-500">
-        {@html checkIcon}
-      </div>
-    {/if}
+{/if}
+{#if showRG1}
+  <div class="mb-2 flex h-[56px] items-center">
+    <input
+      id="add-ot-survey-passages-rg1-checkbox"
+      type="checkbox"
+      bind:checked={otSurveyRG1Checked}
+      class="checkbox-target checkbox-style"
+      on:click={handleOTSurvey1CheckboxClick}
+    />
+    <label
+      for="add-ot-survey-passages-rg1-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG1 || otSurveyRG1SuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add OT Survey RG1 Passages only (Genesis to Deuteronomy)</label
+    >
+    <div class="loader-container">
+      {#if isLoadingOTSurveyRG1}
+        <div class="loader"></div>
+      {:else if otSurveyRG1SuccessMessage}
+        <div class="success-message ml-2 text-green-500">
+          {@html checkIcon}
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
-<div class="mb-2 flex h-[56px] items-center">
-  <input
-    id="add-ot-survey-passages-rg3-checkbox"
-    type="checkbox"
-    bind:checked={otSurveyRG3Checked}
-    class="checkbox-target checkbox-style"
-    on:click={handleOTSurvey3CheckboxClick}
-  />
-  <label
-    for="add-ot-survey-passages-rg3-checkbox"
-    class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG3 || otSurveyRG3SuccessMessage
-      ? 'text-gray-400'
-      : ''}">Add OT Survey RG3 Passages only (Job to Song of Songs)</label
-  >
-  <div class="loader-container">
-    {#if isLoadingOTSurveyRG3}
-      <div class="loader"></div>
-    {:else if otSurveyRG3SuccessMessage}
-      <div class="success-message ml-2 text-green-500">
-        {@html checkIcon}
-      </div>
-    {/if}
+{/if}
+{#if showRG2}
+  <div class="mb-2 flex h-[56px] items-center">
+    <input
+      id="add-ot-survey-passages-rg2-checkbox"
+      type="checkbox"
+      bind:checked={otSurveyRG2Checked}
+      class="checkbox-target checkbox-style"
+      on:click={handleOTSurvey2CheckboxClick}
+    />
+    <label
+      for="add-ot-survey-passages-rg2-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG2 || otSurveyRG2SuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add OT Survey RG2 Passages only (Joshua to Esther)</label
+    >
+    <div class="loader-container">
+      {#if isLoadingOTSurveyRG2}
+        <div class="loader"></div>
+      {:else if otSurveyRG2SuccessMessage}
+        <div class="success-message ml-2 text-green-500">
+          {@html checkIcon}
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
-<div class="mb-2 flex h-[56px] items-center">
-  <input
-    id="add-ot-survey-passages-rg4-checkbox"
-    type="checkbox"
-    bind:checked={otSurveyRG4Checked}
-    class="checkbox-target checkbox-style"
-    on:click={handleOTSurvey4CheckboxClick}
-  />
-  <label
-    for="add-ot-survey-passages-rg4-checkbox"
-    class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG4 || otSurveyRG4SuccessMessage
-      ? 'text-gray-400'
-      : ''}">Add OT Survey RG4 Passages only (Isaiah to Malachi)</label
-  >
-  <div class="loader-container">
-    {#if isLoadingOTSurveyRG4}
-      <div class="loader"></div>
-    {:else if otSurveyRG4SuccessMessage}
-      <div class="success-message ml-2 text-green-500">
-        {@html checkIcon}
-      </div>
-    {/if}
+{/if}
+{#if showRG3}
+  <div class="mb-2 flex h-[56px] items-center">
+    <input
+      id="add-ot-survey-passages-rg3-checkbox"
+      type="checkbox"
+      bind:checked={otSurveyRG3Checked}
+      class="checkbox-target checkbox-style"
+      on:click={handleOTSurvey3CheckboxClick}
+    />
+    <label
+      for="add-ot-survey-passages-rg3-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG3 || otSurveyRG3SuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add OT Survey RG3 Passages only (Job to Song of Songs)</label
+    >
+    <div class="loader-container">
+      {#if isLoadingOTSurveyRG3}
+        <div class="loader"></div>
+      {:else if otSurveyRG3SuccessMessage}
+        <div class="success-message ml-2 text-green-500">
+          {@html checkIcon}
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
+{/if}
+{#if showRG4}
+  <div class="mb-2 flex h-[56px] items-center">
+    <input
+      id="add-ot-survey-passages-rg4-checkbox"
+      type="checkbox"
+      bind:checked={otSurveyRG4Checked}
+      class="checkbox-target checkbox-style"
+      on:click={handleOTSurvey4CheckboxClick}
+    />
+    <label
+      for="add-ot-survey-passages-rg4-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingOTSurveyRG4 || otSurveyRG4SuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add OT Survey RG4 Passages only (Isaiah to Malachi)</label
+    >
+    <div class="loader-container">
+      {#if isLoadingOTSurveyRG4}
+        <div class="loader"></div>
+      {:else if otSurveyRG4SuccessMessage}
+        <div class="success-message ml-2 text-green-500">
+          {@html checkIcon}
+        </div>
+      {/if}
+    </div>
+  </div>
+{/if}
 
 <style>
   .success-message {

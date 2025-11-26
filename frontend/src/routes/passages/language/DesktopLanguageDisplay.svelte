@@ -7,6 +7,7 @@
   export let heartCodesAndNames: Array<string>
   export let filteredGatewayCodeAndNames: Array<string>
   export let filteredHeartCodeAndNames: Array<string>
+  export let onLangChange: (e: Event, lang: string) => void
 </script>
 
 <main class="flex-1 overflow-y-auto p-4">
@@ -23,6 +24,7 @@
               type="radio"
               bind:group={$langCodeAndNameStore}
               value={langCodeAndName}
+              on:change={(e) => onLangChange(e, langCodeAndName.split(',')[0])}
               class="checkbox-target checkbox-style"
             />
             <span class="pl-1 text-xl text-[#33445C]">{getName(langCodeAndName)}</span>
@@ -44,6 +46,7 @@
               type="radio"
               bind:group={$langCodeAndNameStore}
               value={langCodeAndName}
+              on:change={(e) => onLangChange(e, langCodeAndName.split(',')[0])}
               class="checkbox-target checkbox-style"
             />
             <span class="pl-1 text-xl text-[#33445C]">{getName(langCodeAndName)}</span>

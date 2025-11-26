@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
   import { PUBLIC_NT_SURVEY_RG_PASSAGES_URL } from '$env/static/public'
@@ -7,6 +8,8 @@
 
   export let loading: boolean
   export let checkIcon: string
+  export let bookCodesAndNames: [string, string][]
+  let showNT: boolean = false
   let ntSurveySuccessMessage: string = ''
   let isLoadingNTSurvey = false
 
@@ -16,9 +19,6 @@
     try {
       await addNTSurveyRGPassages()
       ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
-      //   ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -32,10 +32,7 @@
     isLoadingNTSurvey = true
     try {
       await removeNTSurveyRGPassages()
-      // ntSurveySuccessMessage = '✔'
-      // setTimeout(() => {
       ntSurveySuccessMessage = ''
-      // }, 4000)
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -66,14 +63,27 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return bibleReferences.filter((ref) =>
+      bookCodesAndNames.some(([code]) => code === ref.book_code)
+    )
   }
+
+  onMount(async () => {
+    const langCode = $langCodeAndNameStore.split(',')[0]
+    try {
+      const ntRgPassages = await getNTSurveyRGPassages(langCode)
+      showNT = ntRgPassages.length > 0
+    } catch (error) {
+      console.error('Failed to add NT Survey RG passages:', error)
+    } finally {
+      console.log('Passages added successfully')
+    }
+  })
 
   export async function addNTSurveyRGPassages() {
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
       const bibleReferences = await getNTSurveyRGPassages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
           langCode,
@@ -115,29 +125,31 @@
   }
 </script>
 
-<div class="mb-2 flex h-[56px] items-center">
-  <input
-    id="add-nt-survey-passages-checkbox"
-    type="checkbox"
-    class="checkbox-target checkbox-style"
-    on:click={handleNTSurveyCheckboxClick}
-  />
-  <label
-    for="add-nt-survey-passages-checkbox"
-    class="pl-1 text-xl text-[#33445C] {isLoadingNTSurvey || ntSurveySuccessMessage
-      ? 'text-gray-400'
-      : ''}">Add NT Survey Reviewers' Guide Passages</label
-  >
-  <div class="loader-container">
-    {#if isLoadingNTSurvey}
-      <div class="loader"></div>
-    {:else if ntSurveySuccessMessage}
-      <div class="success-message ml-2 text-green-500">
-        {@html checkIcon}
-      </div>
-    {/if}
+{#if showNT}
+  <div class="mb-2 flex h-[56px] items-center">
+    <input
+      id="add-nt-survey-passages-checkbox"
+      type="checkbox"
+      class="checkbox-target checkbox-style"
+      on:click={handleNTSurveyCheckboxClick}
+    />
+    <label
+      for="add-nt-survey-passages-checkbox"
+      class="pl-1 text-xl text-[#33445C] {isLoadingNTSurvey || ntSurveySuccessMessage
+        ? 'text-gray-400'
+        : ''}">Add NT Survey Reviewers' Guide Passages</label
+    >
+    <div class="loader-container">
+      {#if isLoadingNTSurvey}
+        <div class="loader"></div>
+      {:else if ntSurveySuccessMessage}
+        <div class="success-message ml-2 text-green-500">
+          {@html checkIcon}
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .success-message {

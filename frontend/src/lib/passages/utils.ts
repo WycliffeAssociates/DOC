@@ -1,12 +1,10 @@
 import { browser } from '$app/environment'
 import { goto } from '$app/navigation'
-import { env } from '$env/dynamic/public'
-import { PUBLIC_LANGUAGE_BOOK_ORDER } from '$env/static/public'
 import {
   gatewayCodeAndNamesStore,
   heartCodeAndNamesStore,
   langCodeAndNameStore
-} from '$lib/passages/stores/LanguageStore'
+} from '$lib/passages/stores/LanguagesStore'
 import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
 import { documentRequestKeyStore } from '$lib/passages/stores/SettingsStore'
 import type { PassagesDocumentRequest } from '$lib/passages/models'

@@ -81,7 +81,6 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
     ]
     assembly_strategy_kind = model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
     assembly_layout_kind = model.AssemblyLayoutEnum.ONE_COLUMN
-    chunk_size = model.ChunkSizeEnum.CHAPTER
     limit_words = True
     use_chapter_labels = True
     use_section_visual_separator = True
@@ -89,7 +88,6 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
         resource_requests,
         assembly_strategy_kind,
         assembly_layout_kind,
-        chunk_size,
         limit_words,
         use_chapter_labels,
         use_section_visual_separator,

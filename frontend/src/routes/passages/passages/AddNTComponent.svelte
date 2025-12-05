@@ -1,7 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import {
+    addBibleReference,
+    addFilteredBibleReference,
+    removeBibleReference
+  } from '$lib/passages/stores/PassagesStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { PUBLIC_NT_SURVEY_RG_PASSAGES_URL } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import type { BibleReference } from './model'
@@ -54,7 +58,7 @@
     langCode: string,
     apiRootUrl = env.PUBLIC_BACKEND_API_URL,
     ntSurveyRgPassagesUrl = <string>PUBLIC_NT_SURVEY_RG_PASSAGES_URL
-  ): Promise<Array<BibleReference>> {
+  ): Promise<[Array<BibleReference>, Array<BibleReference>]> {
     const url = `${apiRootUrl}${ntSurveyRgPassagesUrl}/${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
@@ -63,15 +67,16 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences.filter((ref) =>
-      bookCodesAndNames.some(([code]) => code === ref.book_code)
-    )
+    return [
+      bibleReferences,
+      bibleReferences.filter((ref) => bookCodesAndNames.some(([code]) => code === ref.book_code))
+    ]
   }
 
   onMount(async () => {
     const langCode = $langCodeAndNameStore.split(',')[0]
     try {
-      const ntRgPassages = await getNTSurveyRGPassages(langCode)
+      const [ntRgPassages, _] = await getNTSurveyRGPassages(langCode)
       showNT = ntRgPassages.length > 0
     } catch (error) {
       console.error('Failed to add NT Survey RG passages:', error)
@@ -83,9 +88,20 @@
   export async function addNTSurveyRGPassages() {
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
-      const bibleReferences = await getNTSurveyRGPassages(langCode)
+      const [bibleReferences, bibleReferencesFiltered] = await getNTSurveyRGPassages(langCode)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
+          langCode,
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      for (const bibleRef of bibleReferencesFiltered) {
+        addFilteredBibleReference(
           langCode,
           bibleRef.book_code,
           bibleRef.book_name,
@@ -105,7 +121,7 @@
   export async function removeNTSurveyRGPassages() {
     try {
       const langCode = $langCodeAndNameStore.split(',')[0]
-      const bibleReferences = await getNTSurveyRGPassages(langCode)
+      const [bibleReferences, bibleReferencesFiltered] = await getNTSurveyRGPassages(langCode)
       console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(
@@ -126,7 +142,7 @@
 </script>
 
 {#if showNT}
-  <div class="mb-2 flex h-[56px] items-center">
+  <div class="mb-4 flex items-center">
     <input
       id="add-nt-survey-passages-checkbox"
       type="checkbox"
@@ -135,9 +151,9 @@
     />
     <label
       for="add-nt-survey-passages-checkbox"
-      class="pl-1 text-xl text-[#33445C] {isLoadingNTSurvey || ntSurveySuccessMessage
+      class="pl-1 text-xl font-bold text-[#33445C] {isLoadingNTSurvey || ntSurveySuccessMessage
         ? 'text-gray-400'
-        : ''}">Add NT Survey Reviewers' Guide Passages</label
+        : ''}">Add NT Survey Reviewers' Guide (RG) Passages</label
     >
     <div class="loader-container">
       {#if isLoadingNTSurvey}

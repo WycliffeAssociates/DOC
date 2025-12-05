@@ -209,3 +209,9 @@
     </div>
   {/if}
 </div>
+
+<style global lang="postcss">
+  .search-style {
+    @apply h-full w-full rounded-[7px] border border-blue-500 bg-transparent px-3 py-2.5 font-sans text-xl  font-normal text-[#33445c] outline outline-0 transition-all focus:ring focus:ring-indigo-200 focus:border-2 focus:border-indigo-600;
+  }
+</style>

@@ -39,8 +39,8 @@
 </script>
 
 <div class="flex flex-col">
-  <AddPassageComponent {chapters} {checkIcon} {bookCodesAndNames} />
-  <AddOTComponent {bookCodesAndNames} {checkIcon} bind:loading />
   <AddNTComponent {bookCodesAndNames} {checkIcon} bind:loading />
-  <AddSTETComponent {bookCodesAndNames} {checkIcon} bind:loading />
+  <AddOTComponent {bookCodesAndNames} {checkIcon} bind:loading />
+  <AddPassageComponent {chapters} {checkIcon} {bookCodesAndNames} />
+  <!-- <AddSTETComponent {bookCodesAndNames} {checkIcon} bind:loading /> -->
 </div>

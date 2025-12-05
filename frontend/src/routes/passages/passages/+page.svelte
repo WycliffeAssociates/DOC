@@ -11,7 +11,7 @@
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import CheckIcon from '$lib/CheckIcon.svelte'
 
@@ -38,6 +38,7 @@
     let langCode = $langCodeAndNameStore.split(',')[0]
     try {
       bookCodesAndNames = await getBookCodesAndNames(langCode)
+      console.log(`bookCodesAndNames: ${bookCodesAndNames}`)
     } catch (error) {
       console.error('Failed to retrieve book codes and names:', error)
     } finally {
@@ -45,17 +46,7 @@
     }
   })
 
-  function removePassage(id: number) {
-    $passagesStore = $passagesStore.filter((item: BibleReference) => item.id != id)
-  }
 
-  $: if (bookCodesAndNames && bookCodesAndNames.length > 0) {
-    for (let passageReferenceDto of $passagesStore) {
-      if (!bookCodesAndNames.map(([bookCode]) => bookCode).includes(passageReferenceDto.bookCode)) {
-        removePassage(passageReferenceDto.id)
-      }
-    }
-  }
 
   let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
@@ -70,7 +61,7 @@
 
 <div class="flex flex-grow flex-row overflow-y-auto overflow-x-hidden">
   <div class="flex flex-1 flex-col bg-white sm:w-2/3">
-    <h3 class="ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">Add Passages</h3>
+    <h3 class="mb-4 ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">Add Passages</h3>
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
       {#if !bookCodesAndNames || bookCodesAndNames.length === 0}
         <div class="ml-4">

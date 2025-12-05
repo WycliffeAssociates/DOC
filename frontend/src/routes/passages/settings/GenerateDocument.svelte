@@ -2,7 +2,7 @@
   import { env } from '$env/dynamic/public'
   import DownloadButton from './DownloadButton.svelte'
   import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import {
     emailStore,

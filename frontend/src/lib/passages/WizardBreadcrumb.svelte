@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { page, navigating } from '$app/stores'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { resetStores, langRegExp, passagesRegExp, settingsRegExp } from '$lib/passages/utils'
   import MobileBreadcrumb from '$lib/passages/MobileBreadcrumb.svelte'
   import DesktopBreadcrumb from '$lib/passages/DesktopBreadcrumb.svelte'
@@ -70,11 +70,11 @@
 
 <style lang="postcss">
   * :global(.next-button) {
-    background: linear-gradient(180deg, #1876fd 0%, #015ad9 100%),
-      linear-gradient(0deg, #33445c, #33445c);
+    background:
+      linear-gradient(180deg, #1876fd 0%, #015ad9 100%), linear-gradient(0deg, #33445c, #33445c);
   }
   * :global(.next-button:hover) {
-    background: linear-gradient(180deg, #0765ec 0%, #0149c8 100%),
-      linear-gradient(0deg, #33445c, #33445c);
+    background:
+      linear-gradient(180deg, #0765ec 0%, #0149c8 100%), linear-gradient(0deg, #33445c, #33445c);
   }
 </style>

@@ -248,17 +248,21 @@
         <div class="m-auto"><h3 class="text-xl text-[#82A93F]">Complete!</h3></div>
         {#if $generatePdfStore}
           <div class="m-auto mt-4">
-            <DownloadButton buttonText="Download PDF" url={pdfDownloadUrl} />
+            <DownloadButton buttonText="View PDF" linkText="Download PDF" url={pdfDownloadUrl} />
           </div>
         {/if}
         {#if $generateEpubStore}
           <div class="m-auto mt-4">
-            <DownloadButton buttonText="Download ePub" url={ePubDownloadUrl} />
+            <DownloadButton buttonText="View ePub" linkText="Download ePub" url={ePubDownloadUrl} />
           </div>
         {/if}
         {#if $generateDocxStore}
           <div class="m-auto mt-4">
-            <DownloadButton buttonText="Download Docx" url={docxDownloadUrl} />
+            <DownloadButton
+              buttonText="Download Docx"
+              linkText="Download Docx"
+              url={docxDownloadUrl}
+            />
           </div>
           <div class="mt-4 text-[#33445C]">
             <p>
@@ -299,8 +303,19 @@
                     text-center text-xl text-[#B3B9C2] hover:bg-[#efefef]"
         disabled
       >
-        Download
+        View
       </button>
+      <a
+        role="link"
+        aria-disabled="true"
+        tabindex="-1"
+        class="mt-2 block cursor-not-allowed
+           text-sm text-[#B3B9C2] underline
+           pointer-events-none"
+      >
+        Download
+        <span class="text-[#B3B9C2]"> (right-click → Save link as…) </span>
+      </a>
       <p class="mt-4 text-xl italic text-[#B3B9C2]">
         We appreciate your patience as this can take several minutes for larger documents.
       </p>

@@ -20,25 +20,13 @@
   import otBooks from '$lib/ot-books'
   import ntBooks from '$lib/nt-books'
   import { booksMap } from '$lib/bible-books'
-  import { routeToPage } from '$lib/utils'
+  import { routeToPage, getLangCodesNames } from '$lib/utils'
   import { PUBLIC_LANG_CODES_NAMES_URL, PUBLIC_SHARED_RESOURCE_TYPES_URL } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import { getCode, getName } from '$lib/utils'
 
   export let data: PageData
 
-  async function getLangCodesNames(
-    apiRootUrl: string = env.PUBLIC_BACKEND_API_URL,
-    langCodesAndNamesUrl: string = <string>PUBLIC_LANG_CODES_NAMES_URL
-  ): Promise<Array<[string, string, boolean]>> {
-    const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
-    const langCodeNameAndTypes: Array<[string, string, boolean]> = await response.json()
-    if (!response.ok) {
-      console.log(`Error: ${response.statusText}`)
-      throw new Error(response.statusText)
-    }
-    return langCodeNameAndTypes
-  }
 
   async function getResourceTypesAndNames(
     langCode: string,

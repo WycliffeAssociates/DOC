@@ -7,7 +7,8 @@ import httpx
 from doc.config import settings
 from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
-from docx import Document  # type: ignore
+from docx import Document
+from docx.document import Document as DocxDocument
 
 logger = settings.logger(__name__)
 
@@ -60,7 +61,7 @@ def check_result(
 
 
 def document_contains_substring(
-    doc: Document, substring: str, case_insensitive: bool = False
+    doc: DocxDocument, substring: str, case_insensitive: bool = False
 ) -> bool:
     if case_insensitive:
         substring = substring.lower()

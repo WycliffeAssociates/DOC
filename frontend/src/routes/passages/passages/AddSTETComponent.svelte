@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { env } from '$env/dynamic/public'
   import { PUBLIC_STET_PASSAGES_URL, PUBLIC_PRODUCTION_DOMAIN } from '$env/static/public'
   import type { BibleReference } from './model'

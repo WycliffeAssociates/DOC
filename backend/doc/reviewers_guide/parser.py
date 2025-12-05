@@ -13,7 +13,7 @@ from doc.reviewers_guide.model import (
     BibleReference,
     ParsedText,
 )
-from docx import Document  # type: ignore
+from docx import Document
 
 
 # Pattern for chapter and verse references after Bible books

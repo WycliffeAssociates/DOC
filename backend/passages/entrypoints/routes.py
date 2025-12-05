@@ -20,6 +20,10 @@ logger = settings.logger(__name__)
 async def generate_passages_docx_document(
     passages_document_request: model.PassagesDocumentRequest,
 ) -> JSONResponse:
+    # logger.debug(
+    #     "passages_document_request.bible_references: %s",
+    #     passages_document_request.bible_references,
+    # )
     # Top level exception handler
     try:
         task = document_generator.generate_passages_docx_document.apply_async(

@@ -7,7 +7,7 @@
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import type { BibleReference } from './model'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
   import { bookRange } from '$lib/bible-books'
   import type { BookKey } from '$lib/bible-books'
@@ -486,7 +486,7 @@
 </script>
 
 {#if [showRG1, showRG2, showRG3, showRG4].filter(Boolean).length > 1}
-  <div class="mb-4 flex h-[56px] items-center font-bold">
+  <div class="mb-2 mt-4 flex items-center">
     <input
       id="add-all-ot-survey-passages-checkbox"
       type="checkbox"
@@ -494,13 +494,13 @@
       class="checkbox-target checkbox-style"
       on:click={handleSelectAllClick}
     />
-    <label for="add-all-ot-survey-passages-checkbox" class="pl-1 text-xl text-[#33445C]"
-      >Add all OT RG Passages</label
+    <label for="add-all-ot-survey-passages-checkbox" class="pl-1 text-xl font-bold text-[#33445C]"
+      >Add all OT Survey Reviewers' Guide (RG) Passages</label
     >
   </div>
 {/if}
 {#if showRG1}
-  <div class="mb-2 flex h-[56px] items-center">
+  <div class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg1-checkbox"
       type="checkbox"
@@ -526,7 +526,7 @@
   </div>
 {/if}
 {#if showRG2}
-  <div class="mb-2 flex h-[56px] items-center">
+  <div class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg2-checkbox"
       type="checkbox"
@@ -552,7 +552,7 @@
   </div>
 {/if}
 {#if showRG3}
-  <div class="mb-2 flex h-[56px] items-center">
+  <div class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg3-checkbox"
       type="checkbox"
@@ -578,7 +578,7 @@
   </div>
 {/if}
 {#if showRG4}
-  <div class="mb-2 flex h-[56px] items-center">
+  <div class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg4-checkbox"
       type="checkbox"

@@ -27,6 +27,7 @@ import {
   generateDocxStore,
   documentRequestKeyStore
 } from '$lib/stores/SettingsStore'
+import { PUBLIC_LANG_CODES_NAMES_URL, PUBLIC_TAILWIND_SM_MIN_WIDTH } from '$env/static/public'
 
 const languageBookOrder: string = <string>PUBLIC_LANGUAGE_BOOK_ORDER
 
@@ -107,4 +108,29 @@ export function handleError(err: unknown): string | null {
     return err.message
   }
   return null
+}
+
+export async function getLangCodesNames(
+  apiRootUrl: string = env.PUBLIC_BACKEND_API_URL,
+  langCodesAndNamesUrl: string = <string>PUBLIC_LANG_CODES_NAMES_URL
+): Promise<Array<[string, string, boolean]>> {
+  const response = await fetch(`${apiRootUrl}${langCodesAndNamesUrl}`)
+  if (!response.ok) {
+    console.log(`Error: ${response.statusText}`)
+    throw new Error(response.statusText)
+  }
+  return await response.json()
+}
+
+export async function loadLangCodesNames(): Promise<
+  [Array<[string, string, boolean]>, Array<string>, Array<string>]
+> {
+  const langCodeNameAndTypes = await getLangCodesNames()
+  const gatewayCodesAndNames = langCodeNameAndTypes
+    .filter(([, , isGateway]) => isGateway)
+    .map(([code, name]) => `${code}, ${name}`)
+  const heartCodesAndNames = langCodeNameAndTypes
+    .filter(([, , isGateway]) => !isGateway)
+    .map(([code, name]) => `${code}, ${name}`)
+  return [langCodeNameAndTypes, gatewayCodesAndNames, heartCodesAndNames]
 }

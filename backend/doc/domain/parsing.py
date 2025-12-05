@@ -15,7 +15,8 @@ import requests
 from bs4 import BeautifulSoup
 from doc.config import settings
 from doc.domain.assembly_strategies.assembly_strategy_utils import (
-    adjust_commentary_headings,
+    demote_headings_by_one,
+    demote_headings_by_two,
 )
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
@@ -31,7 +32,9 @@ from doc.domain.model import (
     ResourceLookupDto,
     ResourceRequest,
     TNBook,
+    TNCBook,
     TNChapter,
+    TNCChapter,
     TQBook,
     TQChapter,
     TWBook,
@@ -44,11 +47,15 @@ from doc.domain.usfm_error_detection_and_fixes import (
     RESOURCES_WITH_USFM_DEFECTS,
     fix_usfm,
 )
-from doc.markdown_transforms import markdown_transformer
+from doc.markdown_transforms.markdown_transformer import (
+    remove_sections,
+    transform_ta_and_tn_links,
+    transform_tw_links,
+    remove_pagination_symbols,
+)
 from doc.reviewers_guide.model import RGBook
 from doc.reviewers_guide.parser import get_rg_books
 from doc.utils.docx_util import preprocess_html_for_internal_docx_links
-from doc.utils.file_utils import read_file
 from doc.utils.text_utils import (
     maybe_correct_book_name,
     chapter_label_numeric_part,
@@ -74,9 +81,9 @@ logger = settings.logger(__name__)
 H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
 
 
-# fmt: off
-BC_ARTICLE_URL_FMT_STR: str = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
-# fmt: on
+BC_ARTICLE_URL_FMT_STR: str = (
+    "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
+)
 
 
 CHAPTER_LABEL_REGEX = re.compile(r"\\cl\s+[^\n]+")
@@ -225,8 +232,10 @@ def usfm_chapter_html(
         output_file,
         t1 - t0,
     )
+    html_content = ""
     if exists(output_file):
-        html_content = read_file(output_file)
+        with open(output_file, "r") as fs:
+            html_content = fs.read()
         return html_content
     return None
 
@@ -456,7 +465,10 @@ def usfm_book_content(
         resource_dir,
         use_chapter_labels,
     )
-    content = read_file(content_file) if content_file else ""
+    content = ""
+    if content_file and exists(content_file):
+        with open(content_file, "r") as f:
+            content = f.read()
     if not use_chapter_labels:
         content = ensure_no_chapter_labels(content)
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
@@ -589,28 +601,68 @@ def tn_chapter_verses(
         chapter_intro = tn_chapter_intro(chapter_dir)
         chapter_intro_html = ""
         if chapter_intro:
-            chapter_intro = markdown_transformer.remove_sections(chapter_intro)
+            chapter_intro = remove_sections(chapter_intro)
             tw_resource_dir_ = tw_resource_dir(lang_code)
             translation_words_dict_ = translation_words_dict(tw_resource_dir_)
-            chapter_intro = markdown_transformer.transform_tw_links(
+            chapter_intro = transform_tw_links(
                 chapter_intro,
                 lang_code,
                 resource_requests,
                 translation_words_dict_,
             )
-            chapter_intro = markdown_transformer.transform_ta_and_tn_links(
+            chapter_intro_with_updated_links = transform_ta_and_tn_links(
                 chapter_intro,
                 lang_code,
                 resource_requests,
             )
-            chapter_intro_html = mistune.markdown(chapter_intro)
-            chapter_intro_html = markdown_transformer.remove_pagination_symbols(
-                chapter_intro_html
+            chapter_intro_html_raw = cast(
+                str, mistune.markdown(chapter_intro_with_updated_links)
             )
+            chapter_intro_html = remove_pagination_symbols(chapter_intro_html_raw)
         verses_html = tn_verses_html(
             chapter_dir, lang_code, book_code, resource_requests
         )
         chapter_verses[chapter_num] = TNChapter(
+            intro_html=chapter_intro_html, verses=verses_html
+        )
+    return chapter_verses
+
+
+def tnc_chapter_verses(
+    resource_dir: str,
+    lang_code: str,
+    book_code: str,
+    resource_requests: Sequence[ResourceRequest],
+) -> dict[int, TNCChapter]:
+    chapter_dirs = sorted(glob_chapter_dirs(resource_dir, book_code))
+    chapter_verses = {}
+    for chapter_dir in chapter_dirs:
+        chapter_num = int(Path(chapter_dir).name)
+        chapter_intro = tn_chapter_intro(chapter_dir)
+        chapter_intro_html = ""
+        if chapter_intro:
+            chapter_intro = remove_sections(chapter_intro)
+            tw_resource_dir_ = tw_resource_dir(lang_code)
+            translation_words_dict_ = translation_words_dict(tw_resource_dir_)
+            chapter_intro = transform_tw_links(
+                chapter_intro,
+                lang_code,
+                resource_requests,
+                translation_words_dict_,
+            )
+            chapter_intro_with_updated_links = transform_ta_and_tn_links(
+                chapter_intro,
+                lang_code,
+                resource_requests,
+            )
+            chapter_intro_html_raw = cast(
+                str, mistune.markdown(chapter_intro_with_updated_links)
+            )
+            chapter_intro_html = remove_pagination_symbols(chapter_intro_html_raw)
+        verses_html = tn_verses_html(
+            chapter_dir, lang_code, book_code, resource_requests
+        )
+        chapter_verses[chapter_num] = TNCChapter(
             intro_html=chapter_intro_html, verses=verses_html
         )
     return chapter_verses
@@ -624,15 +676,22 @@ def tn_chapter_intro(
     intro_paths = sorted(glob(glob_md_fmt_str.format(chapter_dir)))
     if not intro_paths:
         intro_paths = sorted(glob(glob_txt_fmt_str.format(chapter_dir)))
-    return read_file(intro_paths[0]) if intro_paths else None
+    if intro_paths:
+        with open(intro_paths[0], "r") as f:
+            return f.read()
+    else:
+        return None
 
 
 def book_intro_markdown(resource_dir: str, book_code: str) -> str:
     book_intro_paths = sorted(glob(f"{resource_dir}/*{book_code}/front/intro.md"))
     if not book_intro_paths:
         book_intro_paths = sorted(glob(f"{resource_dir}/*{book_code}/front/intro.txt"))
-    book_intro_markdown_ = read_file(book_intro_paths[0]) if book_intro_paths else ""
-    return book_intro_markdown_
+    if book_intro_paths and exists(book_intro_paths[0]):
+        with open(book_intro_paths[0], "r") as f:
+            return f.read()
+    else:
+        return ""
 
 
 def tn_verses_html(
@@ -653,20 +712,24 @@ def tn_verses_html(
     verses_html = {}
     for filepath in verse_paths:
         verse_ref = Path(filepath).stem
-        verse_md_content = read_file(filepath)
-        verse_md_content = markdown_transformer.transform_ta_and_tn_links(
-            verse_md_content,
-            lang_code,
-            resource_requests,
-        )
-        verse_html_content = mistune.markdown(verse_md_content)
-        adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
-        verses_html[verse_ref] = verse_fmt_str.format(
-            book_names[book_code],
-            int(Path(chapter_dir).stem),
-            int(verse_ref),
-            adjusted_verse_html_content,
-        )
+        with open(filepath, "r") as f:
+            verse_md_content = f.read()
+            verse_md_content = transform_ta_and_tn_links(
+                verse_md_content,
+                lang_code,
+                resource_requests,
+            )
+            verse_html_content = cast(str, mistune.markdown(verse_md_content))
+            adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
+            verses_html[verse_ref] = verse_fmt_str.format(
+                # NOTE Use nationalized book name from usfm book if available rather
+                # than English book name as here - we accompish this later in
+                # document_generator > localize_non_usfm_book_names
+                book_names[book_code],
+                int(Path(chapter_dir).stem),
+                int(verse_ref),
+                adjusted_verse_html_content,
+            )
     return verses_html
 
 
@@ -687,22 +750,65 @@ def tn_book_content(
     if show_tn_book_intro:
         book_intro = book_intro_markdown(resource_dir, resource_lookup_dto.book_code)
         if book_intro:
-            book_intro = markdown_transformer.remove_sections(book_intro)
+            book_intro = remove_sections(book_intro)
             tw_resource_dir_ = tw_resource_dir(resource_lookup_dto.lang_code)
             translation_words_dict_ = translation_words_dict(tw_resource_dir_)
-            book_intro = markdown_transformer.transform_tw_links(
+            book_intro = transform_tw_links(
                 book_intro,
                 resource_lookup_dto.lang_code,
                 resource_requests,
                 translation_words_dict_,
             )
-            book_intro = markdown_transformer.transform_ta_and_tn_links(
+            book_intro = transform_ta_and_tn_links(
                 book_intro,
                 resource_lookup_dto.lang_code,
                 resource_requests,
             )
-            book_intro = mistune.markdown(book_intro)
+            book_intro = cast(str, mistune.markdown(book_intro))
     return TNBook(
+        lang_code=resource_lookup_dto.lang_code,
+        lang_name=resource_lookup_dto.lang_name,
+        book_code=resource_lookup_dto.book_code,
+        resource_type_name=resource_lookup_dto.resource_type_name,
+        book_intro=book_intro,
+        chapters=chapter_verses,
+        lang_direction=resource_lookup_dto.lang_direction,
+    )
+
+
+def tnc_book_content(
+    resource_lookup_dto: ResourceLookupDto,
+    resource_dir: str,
+    resource_requests: Sequence[ResourceRequest],
+    layout_for_print: bool,
+    show_tn_book_intro: bool = settings.SHOW_TN_BOOK_INTRO,
+) -> TNCBook:
+    chapter_verses = tnc_chapter_verses(
+        resource_dir,
+        resource_lookup_dto.lang_code,
+        resource_lookup_dto.book_code,
+        resource_requests,
+    )
+    book_intro = ""
+    if show_tn_book_intro:
+        book_intro = book_intro_markdown(resource_dir, resource_lookup_dto.book_code)
+        if book_intro:
+            book_intro = remove_sections(book_intro)
+            tw_resource_dir_ = tw_resource_dir(resource_lookup_dto.lang_code)
+            translation_words_dict_ = translation_words_dict(tw_resource_dir_)
+            book_intro = transform_tw_links(
+                book_intro,
+                resource_lookup_dto.lang_code,
+                resource_requests,
+                translation_words_dict_,
+            )
+            book_intro = transform_ta_and_tn_links(
+                book_intro,
+                resource_lookup_dto.lang_code,
+                resource_requests,
+            )
+            book_intro = cast(str, mistune.markdown(book_intro))
+    return TNCBook(
         lang_code=resource_lookup_dto.lang_code,
         lang_name=resource_lookup_dto.lang_name,
         book_code=resource_lookup_dto.book_code,
@@ -748,21 +854,22 @@ def tq_chapter_verses(
             # There was a case of a verse file being named '18.txt, so we handle
             # such cases since we need to cast to int below:
             verse_ref = clean_numeric_string(verse_ref)
-            verse_md_content = read_file(filepath)
-            verse_md_content = markdown_transformer.transform_ta_and_tn_links(
-                verse_md_content,
-                lang_code,
-                resource_requests,
-            )
-            verse_html_content = mistune.markdown(verse_md_content)
-            adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
-            verses_html[verse_ref] = verse_label_fmt_str.format(
-                book_names[book_code],
-                chapter_num,
-                int(verse_ref),
-                adjusted_verse_html_content,
-            )
-            chapter_verses[chapter_num] = TQChapter(verses=verses_html)
+            with open(filepath, "r") as f:
+                verse_md_content = f.read()
+                verse_md_content = transform_ta_and_tn_links(
+                    verse_md_content,
+                    lang_code,
+                    resource_requests,
+                )
+                verse_html_content = cast(str, mistune.markdown(verse_md_content))
+                adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
+                verses_html[verse_ref] = verse_label_fmt_str.format(
+                    book_names[book_code],
+                    chapter_num,
+                    int(verse_ref),
+                    adjusted_verse_html_content,
+                )
+                chapter_verses[chapter_num] = TQChapter(verses=verses_html)
     return chapter_verses
 
 
@@ -806,45 +913,42 @@ def tw_name_content_pairs(
     name_content_pairs = []
     translation_words_dict_ = translation_words_dict(resource_dir)
     for translation_word_filepath in translation_word_filepaths_:
-        translation_word_content = read_file(translation_word_filepath)
-        # if "daughtersofzion" in translation_word_filepath:
-        #     logger.debug("translation_word_content: %s", translation_word_content)
-        # French has a single double quote at the start of some
-        # translation words which disturbs expected alphabetization,
-        # remove it if present. Other languages may have the same defect.
-        if translation_word_content.startswith('# "'):
-            translation_word_content = "# {translation_word_content[3:]}"
-        localized_translation_word_ = localized_translation_word(
-            translation_word_content
-        )
-        if not localized_translation_word_:  # language doesn't provide data
-            continue
-        translation_word_content = markdown_transformer.remove_sections(
-            translation_word_content
-        )
-        translation_word_content = markdown_transformer.transform_ta_and_tn_links(
-            translation_word_content, lang_code, resource_requests
-        )
-        translation_word_content = markdown_transformer.transform_tw_links(
-            translation_word_content,
-            lang_code,
-            resource_requests,
-            translation_words_dict_,
-        )
-        html_word_content = mistune.markdown(translation_word_content)
-        html_word_content = re.sub(h2, h4, html_word_content)
-        html_word_content = re.sub(h1, h3, html_word_content)
-        if generate_docx:
-            html_word_content = preprocess_html_for_internal_docx_links(
-                html_word_content
+        with open(translation_word_filepath, "r") as f:
+            translation_word_content = f.read()
+            # French has a single double quote at the start of some
+            # translation words which disturbs expected alphabetization,
+            # remove it if present. Other languages may have the same defect.
+            if translation_word_content.startswith('# "'):
+                translation_word_content = f"# {translation_word_content[3:]}"
+            localized_translation_word_ = localized_translation_word(
+                translation_word_content
             )
-        pair = TWNameContentPair(
-            localized_translation_word_,
-            translation_word_filepath,
-            html_word_content,
-        )
-        # logger.debug("tw_name_content_pair: %s", f"{pair.localized_word}, {pair.path}")
-        name_content_pairs.append(pair)
+            if not localized_translation_word_:  # language doesn't provide data
+                continue
+            translation_word_content = remove_sections(translation_word_content)
+            translation_word_content = transform_ta_and_tn_links(
+                translation_word_content, lang_code, resource_requests
+            )
+            translation_word_content = transform_tw_links(
+                translation_word_content,
+                lang_code,
+                resource_requests,
+                translation_words_dict_,
+            )
+            html_word_content = cast(str, mistune.markdown(translation_word_content))
+            html_word_content = re.sub(h2, h4, html_word_content)
+            html_word_content = re.sub(h1, h3, html_word_content)
+            if generate_docx:
+                html_word_content = preprocess_html_for_internal_docx_links(
+                    html_word_content
+                )
+            pair = TWNameContentPair(
+                localized_translation_word_,
+                translation_word_filepath,
+                html_word_content,
+            )
+            # logger.debug("tw_name_content_pair: %s", f"{pair.localized_word}, {pair.path}")
+            name_content_pairs.append(pair)
     return sorted(name_content_pairs, key=tw_sort_key)
 
 
@@ -875,7 +979,11 @@ def bc_book_intro_content(
     book_intro_paths = glob(
         book_intro_glob_path_fmt_str.format(resource_dir, book_code)
     )
-    return read_file(book_intro_paths[0]) if book_intro_paths else ""
+    if book_intro_paths:
+        with open(book_intro_paths[0], "r") as f:
+            return f.read()
+    else:
+        return ""
 
 
 def modify_commentary_label(
@@ -910,7 +1018,7 @@ def bc_chapters(
     lang_code: str,
     book_code: str,
     resource_requests: Sequence[ResourceRequest],
-    chapter_dirs_glob_fmt_str: str = "{}/*{}/*[0-9]*",
+    chapter_dirs_glob_fmt_str: str = "{}/*{}/*[0-9]*.md",
     url_fmt_str: str = BC_ARTICLE_URL_FMT_STR,
 ) -> dict[int, BCChapter]:
     chapter_dirs = sorted(
@@ -919,35 +1027,42 @@ def bc_chapters(
     chapters: dict[int, BCChapter] = {}
     for chapter_dir in chapter_dirs:
         chapter_num = int(Path(chapter_dir).stem)
-        chapter_commentary_md_content = read_file(chapter_dir)
-        chapter_commentary_md_content = markdown_transformer.remove_sections(
-            chapter_commentary_md_content
-        )
-        chapter_commentary_md_content = markdown_transformer.transform_ta_and_tn_links(
-            chapter_commentary_md_content, lang_code, resource_requests
-        )
-        chapter_commentary_html_content = mistune.markdown(
-            chapter_commentary_md_content
-        )
-        chapter_commentary_html_content = modify_commentary_label(
-            chapter_commentary_html_content, chapter_num
-        )
-        # fmt: off
-        chapter_commentary_html_content = markdown_transformer.remove_pagination_symbols(
-            chapter_commentary_html_content
-        )
-        # fmt: on
-        chapter_commentary_html_content = replace_relative_with_absolute_links(
-            chapter_commentary_html_content
-        )
-        chapter_commentary_html_content = adjust_commentary_headings(
-            chapter_commentary_html_content
-        )
-        # TODO For now we are deactivating the links to articles from commentary. It
-        # would be nice to provide those markdown articles as rendered HTML so that the
-        # user can follow those links.
-        chapter_commentary_html_content = remove_links(chapter_commentary_html_content)
-        chapters[chapter_num] = BCChapter(commentary=chapter_commentary_html_content)
+        with open(chapter_dir, "r") as f:
+            chapter_commentary_md_content_raw = f.read()
+            chapter_commentary_md_content_cleaned = remove_sections(
+                chapter_commentary_md_content_raw
+            )
+            chapter_commentary_md_content_transformed = transform_ta_and_tn_links(
+                chapter_commentary_md_content_cleaned, lang_code, resource_requests
+            )
+            chapter_commentary_html_content = cast(
+                str, mistune.markdown(chapter_commentary_md_content_transformed)
+            )
+            chapter_commentary_html_content_modified = modify_commentary_label(
+                chapter_commentary_html_content, chapter_num
+            )
+            chapter_commentary_html_content_without_pagination_symbols = (
+                remove_pagination_symbols(chapter_commentary_html_content_modified)
+            )
+            chapter_commentary_html_content_with_absolute_links = (
+                replace_relative_with_absolute_links(
+                    chapter_commentary_html_content_without_pagination_symbols
+                )
+            )
+            chapter_commentary_html_content_with_adjusted_headings = (
+                demote_headings_by_one(
+                    chapter_commentary_html_content_with_absolute_links
+                )
+            )
+            # TODO For now we are deactivating the links to articles from commentary. It
+            # would be nice to provide those markdown articles as rendered HTML so that the
+            # user can follow those links.
+            chapter_commentary_html_content = remove_links(
+                chapter_commentary_html_content_with_adjusted_headings
+            )
+            chapters[chapter_num] = BCChapter(
+                commentary=chapter_commentary_html_content
+            )
     return chapters
 
 
@@ -958,15 +1073,13 @@ def bc_book_content(
     layout_for_print: bool,
 ) -> BCBook:
     book_intro = bc_book_intro_content(resource_dir, resource_lookup_dto.book_code)
-    book_intro = markdown_transformer.remove_sections(book_intro)
-    book_intro = markdown_transformer.transform_ta_and_tn_links(
+    book_intro = remove_sections(book_intro)
+    book_intro = transform_ta_and_tn_links(
         book_intro, resource_lookup_dto.lang_code, resource_requests
     )
-    book_intro_html_content = mistune.markdown(book_intro)
-    book_intro_html_content = adjust_commentary_headings(book_intro_html_content)
-    book_intro_html_content = markdown_transformer.remove_pagination_symbols(
-        book_intro_html_content
-    )
+    book_intro_html_content = cast(str, mistune.markdown(book_intro))
+    book_intro_html_content = demote_headings_by_one(book_intro_html_content)
+    book_intro_html_content = remove_pagination_symbols(book_intro_html_content)
     book_intro_html_content = remove_links(book_intro_html_content)
     return BCBook(
         book_intro=book_intro_html_content,
@@ -1003,6 +1116,7 @@ def books(
 ) -> tuple[
     Sequence[USFMBook],
     Sequence[TNBook],
+    Sequence[TNCBook],
     Sequence[TQBook],
     Sequence[TWBook],
     Sequence[BCBook],
@@ -1010,6 +1124,7 @@ def books(
 ]:
     usfm_books = []
     tn_books = []
+    tnc_books = []
     tq_books = []
     tw_books = []
     bc_books = []
@@ -1023,15 +1138,18 @@ def books(
                 use_chapter_labels,
             )
             usfm_books.append(usfm_book)
-        elif (
-            resource_lookup_dto.resource_type == tn_resource_type
-            # Handle English Condensed TN
-            or resource_lookup_dto.resource_type == en_tn_condensed_resource_type
-        ):
+        elif resource_lookup_dto.resource_type == tn_resource_type:
             tn_book = tn_book_content(
                 resource_lookup_dto, resource_dir, resource_requests, layout_for_print
             )
             tn_books.append(tn_book)
+        elif (
+            resource_lookup_dto.resource_type == en_tn_condensed_resource_type
+        ):  # Handle English Condensed TN
+            tnc_book = tnc_book_content(
+                resource_lookup_dto, resource_dir, resource_requests, layout_for_print
+            )
+            tnc_books.append(tnc_book)
         elif resource_lookup_dto.resource_type == tq_resource_type:
             tq_book = tq_book_content(
                 resource_lookup_dto, resource_dir, resource_requests, layout_for_print
@@ -1067,7 +1185,15 @@ def books(
                 if rg_book.lang_code == resource_lookup_dto.lang_code
                 and rg_book.book_code == resource_lookup_dto.book_code
             ]
-    return usfm_books, tn_books, tq_books, tw_books, bc_books, filtered_rg_books
+    return (
+        usfm_books,
+        tn_books,
+        tnc_books,
+        tq_books,
+        tw_books,
+        bc_books,
+        filtered_rg_books,
+    )
 
 
 def ensure_paragraph_before_verses(
@@ -1377,7 +1503,11 @@ def split_chapter_into_verses_with_formatting(
         if verse_number:
             verse_number_ = verse_number.group(1)
             # Add to the dictionary with verse number as the key and verse text as the value
-            verse_dict[verse_number_] = verse_span
+            verse_dict[verse_number_] = (
+                verse_span.strip()
+                .replace("<p></p>", "")
+                .replace('<div class="sectionhead-5"></div>', "")
+            )
     return verse_dict
 
 
@@ -1423,7 +1553,11 @@ def split_chapter_into_verses_with_formatting_for_f10(
         cleaned_html = cleaned_html.strip()
         # if you want plain text instead, use: cleaned_text = verse_span.get_text(" ", strip=True)
         # store cleaned HTML fragment (still contains <sup> etc.)
-        verse_dict[verse_number] = cleaned_html
+        verse_dict[verse_number] = (
+            cleaned_html.strip()
+            .replace("<p></p>", "")
+            .replace('<div class="sectionhead-5"></div>', "")
+        )
     return verse_dict
 
 

@@ -23,7 +23,7 @@ logger = settings.logger(__name__)
 def languages_with_usfm_defects(
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
-    ] = usfm_error_detection_and_fixes.RESOURCES_WITH_USFM_DEFECTS
+    ] = usfm_error_detection_and_fixes.RESOURCES_WITH_USFM_DEFECTS,
 ) -> list[str]:
     lang_codes = [resource_tuple[0] for resource_tuple in resources_with_usfm_defects]
     return sorted(set(lang_codes))
@@ -32,7 +32,7 @@ def languages_with_usfm_defects(
 def resources_with_usfm_defects_(
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
-    ] = usfm_error_detection_and_fixes.RESOURCES_WITH_USFM_DEFECTS
+    ] = usfm_error_detection_and_fixes.RESOURCES_WITH_USFM_DEFECTS,
 ) -> Sequence[tuple[str, str, str]]:
     return resources_with_usfm_defects
 
@@ -89,7 +89,6 @@ def test_all_usfm_books_for_language(lang_code: str) -> None:
             check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-# @pytest.mark.skip
 @pytest.mark.usfm_fixes
 @pytest.mark.parametrize(
     "lang_code, resource_type, book_code",

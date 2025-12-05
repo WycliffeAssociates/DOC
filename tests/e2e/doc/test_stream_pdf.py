@@ -8,11 +8,6 @@ logger = settings.logger(__name__)
 
 
 def test_stream_pdf() -> None:
-    """
-    Produce verse level interleaved document for language, ar, Arabic
-    scripture. There are no other resources than USFM available at
-    this time.
-    """
     # First generate the PDF
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -20,9 +15,8 @@ def test_stream_pdf() -> None:
             json={
                 "email_address": settings.TO_EMAIL_ADDRESS,
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
-                "assembly_layout_kind": model.AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
+                "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
                 "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,

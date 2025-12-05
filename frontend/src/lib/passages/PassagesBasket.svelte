@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
-  import { passagesStore } from '$lib/passages/stores/PassagesStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import { passagesStore, filteredPassagesStore } from '$lib/passages/stores/PassagesStore'
   import type { BibleReference } from '$lib/passages/models'
   import { passagesRegExp } from '$lib/passages/utils'
   import BookIcon from '$lib/BookIcon.svelte'
@@ -36,8 +36,16 @@
     const endVerseB = parseInt(b.endChapterVerseRef ?? b.startChapterVerseRef, 10)
     return endVerseA - endVerseB
   })
+
   $: shownPassages = sortedPassages?.slice(0, size)
   $: hiddenPassages = sortedPassages?.slice(size)
+  $: idsOfAvailablePassages = new Set(
+    ($filteredPassagesStore ?? []).map((p: BibleReference) => p.id)
+  )
+
+  function isAvailable(passage: BibleReference): boolean {
+    return idsOfAvailablePassages.has(passage.id)
+  }
 </script>
 
 {#if passagesRegExp.test($page.url.pathname)}
@@ -68,6 +76,8 @@
       <div
         class="mt-2 flex w-full items-center justify-between
                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
+        class:text-[#66768B]={isAvailable(passage)}
+        class:text-[#B0B8C3]={!isAvailable(passage)}
       >
         <div>
           {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
@@ -82,9 +92,11 @@
             >
           {/if}
         </div>
-        <button on:click={() => uncheckPassage(passage.id)}>
-          <CloseIcon />
-        </button>
+        {#if isAvailable(passage)}
+          <button on:click={() => uncheckPassage(passage.id)}>
+            <CloseIcon />
+          </button>
+        {/if}
       </div>
     {:else}
       <div
@@ -123,6 +135,8 @@
             <div
               class="mt-2 flex w-full items-center justify-between
                       rounded-lg bg-white p-2 text-xl text-[#66768B]"
+              class:text-[#66768B]={isAvailable(passage)}
+              class:text-[#B0B8C3]={!isAvailable(passage)}
             >
               <div>
                 {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
@@ -137,9 +151,11 @@
                   >
                 {/if}
               </div>
-              <button on:click={() => uncheckPassage(passage.id)}>
-                <span class="ml-2"><CloseIcon /></span>
-              </button>
+              {#if isAvailable(passage)}
+                <button on:click={() => uncheckPassage(passage.id)}>
+                  <span class="ml-2"><CloseIcon /></span>
+                </button>
+              {/if}
             </div>
           {:else}
             <div

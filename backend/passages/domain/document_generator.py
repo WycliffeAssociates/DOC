@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Mapping, Sequence
+from typing import Mapping, Sequence, TYPE_CHECKING
 
 from celery import current_task
 from doc.config import settings
@@ -19,10 +19,10 @@ from doc.domain.resource_lookup import (
 from doc.reviewers_guide.model import BibleReference
 from doc.utils.file_utils import docx_filepath, file_needs_update
 from doc.utils.text_utils import maybe_correct_book_name
-from docx import Document  # type: ignore
-from docx.oxml import OxmlElement, parse_xml  # type: ignore
-from docx.shared import Inches  # type: ignore
-from docx.table import _Cell  # type: ignore
+from docx import Document
+from docx.oxml import OxmlElement, parse_xml
+from docx.shared import Inches
+
 from htmldocx import HtmlToDocx  # type: ignore
 from passages.domain.model import Passage, BibleReference as PassageReference
 from passages.domain.parser import verse_text_html
@@ -30,6 +30,17 @@ from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_block
 from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
 
+from docx.table import _Cell, _Row
+
+
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    Cell: TypeAlias = _Cell
+    Row: TypeAlias = _Row
+else:
+    Cell = _Cell
+    Row = _Row
 
 logger = settings.logger(__name__)
 
@@ -130,9 +141,17 @@ def generate_docx_document(
             non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}-{passage_ref_dto.end_chapter}:{passage_ref_dto.end_chapter_verse_ref}"
         else:
             non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}"
+        # NOTE We want the document to show references even if there is no
+        # content for it. Will these continue to be the desired behavior, we
+        # will see.
+        # localized_reference = (
+        #     f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
+        #     if selected_usfm_book and non_book_name_portion_of_reference
+        #     else passage_ref_dto.start_chapter_verse_ref
+        # )
         localized_reference = (
-            f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
-            if selected_usfm_book and non_book_name_portion_of_reference
+            f"{passage_ref_dto.book_name} {non_book_name_portion_of_reference}"
+            if non_book_name_portion_of_reference
             else passage_ref_dto.start_chapter_verse_ref
         )
         passage = Passage(
@@ -150,36 +169,48 @@ def generate_docx(
     docx_filepath: str,
     lang_code: str,
     lang_name: str,
+    show_notes_column: bool = False,  # TODO make a UI option, for now default to False
 ) -> None:
+    TOTAL_WIDTH = Inches(6.0)
     doc = Document()
     html_to_docx = HtmlToDocx()
     for passage_dto in passage_dtos:
-        table = doc.add_table(rows=1, cols=2)
-        table.autofit = False  # Disable automatic resizing
-        table.allow_autofit = False  # Ensure fixed widths
-        left_col_width = Inches(4.0)  # 2/3 of total
-        right_col_width = Inches(2.0)  # 1/3 of total
-        # Set column widths using preferred width settings
-        table.columns[0].width = left_col_width
-        table.columns[1].width = right_col_width
-        for i, width in enumerate([left_col_width, right_col_width]):
+        if show_notes_column:
+            table = doc.add_table(rows=1, cols=2)
+            left_col_width = Inches(4.0)
+            right_col_width = Inches(2.0)
+            col_widths = [left_col_width, right_col_width]
+        else:
+            table = doc.add_table(rows=1, cols=1)
+            col_widths = [TOTAL_WIDTH]
+        table.autofit = False
+        table.allow_autofit = False
+        # Apply column + cell widths explicitly
+        for i, width in enumerate(col_widths):
+            table.columns[i].width = width
             cell = table.cell(0, i)
             cell.width = width
-            # Apply preferred width at the XML level
             tc = cell._tc
             tcPr = tc.get_or_add_tcPr()
             tcW = OxmlElement("w:tcW")
             tcW.set(f"{{{WORD_NAMESPACE}}}w", str(int(width.inches * 1440)))
             tcW.set(f"{{{WORD_NAMESPACE}}}type", "dxa")
             tcPr.append(tcW)
-        # Fill left cell
+        # Fill left (or only) cell
         cell_left = table.cell(0, 0)
-        html_to_docx.add_html_to_document(passage_dto.bible_reference, cell_left)
-        html_to_docx.add_html_to_document(passage_dto.passage_text, cell_left)
-        # Fill right cell (empty, just add vertical line)
-        cell_right = table.cell(0, 1)
-        cell_right.text = ""
-        add_vertical_line(cell_right)
+        html_to_docx.add_html_to_document(
+            passage_dto.bible_reference,
+            cell_left,
+        )
+        html_to_docx.add_html_to_document(
+            passage_dto.passage_text,
+            cell_left,
+        )
+        # Fill right notes column only if enabled
+        if show_notes_column:
+            cell_right = table.cell(0, 1)
+            cell_right.text = ""
+            add_vertical_line(cell_right)
     doc = add_footer(doc)
     doc = add_header(doc, lang_name, header_text="Passages")
     doc.save(docx_filepath)
@@ -189,7 +220,7 @@ def generate_docx(
 WORD_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
 
-def add_vertical_line(cell: _Cell) -> None:
+def add_vertical_line(cell: Cell) -> None:
     """Adds a vertical line to the left side of the given table cell."""
     cell_xml = cell._tc  # Access the underlying XML of the cell
     # Ensure the `<w:tcPr>` (table cell properties) element exists
@@ -261,12 +292,12 @@ def generate_passages_docx_document(
     passage_reference_dtos = [
         PassageReference(**d) for d in passage_reference_dtos_list
     ]
-    # logger.debug(
-    #     "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
-    #     lang_code,
-    #     passage_reference_dtos,
-    #     email_address,
-    # )
+    logger.debug(
+        "passed args: lang_code: %s, passage_references: %s, email_adress: %s",
+        lang_code,
+        passage_reference_dtos,
+        email_address,
+    )
     document_request_key_ = document_request_key(lang_code, passage_reference_dtos)
     docx_filepath_ = docx_filepath(document_request_key_)
     if file_needs_update(docx_filepath_):

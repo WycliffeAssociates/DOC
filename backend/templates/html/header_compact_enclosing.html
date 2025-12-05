@@ -4,7 +4,7 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Bible</title>
     <style media="all" type="text/css">
-      /* Weasyprint page directives for headers and footers */
+      /* page directives for headers and footers */
       @page {
         size: letter;
         @top-center {
@@ -28,6 +28,16 @@
         }
       }
 
+      @media screen {
+        /* Important for superscript verse markers in HTML view */
+        sup {
+          font-size: 30%;
+          color: #999999;
+          position: relative;
+          top: -0.5em;
+        }
+      }
+
       .logo {
         height: 40px;
         width: 100px;
@@ -48,14 +58,12 @@
       }
       */
 
-      /* End of Weasy page directives for headers and footers */
       body {
-        /* Browsers typically default to 16px, let's make our default 12px */
         font-size: 70%;
       }
 
       h1 {
-        /* font-size: 14pt; */
+        font-size: 14pt;
         margin-bottom: 0px;
         padding-bottom: 0px;
         display: inline;
@@ -66,10 +74,16 @@
         white-space: pre;
       }
 
-
       h2 {
-        /* font-size: 12pt; */
+        font-size: 12pt;
         display: inline;
+      }
+
+      /* TODO retest to see if we still need this now that replace was used to remove empty p elements and section-5 styled divs */
+      span:has(+ h2)::after {
+        content: "\A";
+        white-space: pre;
+        line-height: 1;
       }
 
       h2:after {
@@ -78,7 +92,7 @@
       }
 
       h3 {
-        /* font-size: 11pt; */
+        font-size: 11pt;
         display: inline;
       }
 
@@ -88,24 +102,26 @@
       }
 
       h4 {
-        /* font-size: 10pt; */
+        font-size: 10pt;
         display: inline;
       }
 
-      h4:after {
-        content: "\A";
-        white-space: pre;
-      }
+      /* h4:after {
+               content: "\A";
+               white-space: pre;
+               }
+             */
 
       h5 {
-        /* font-size: 9pt; */
+        font-size: 9pt;
         display: inline;
       }
 
-      h5:after {
-        content: "\A";
-        white-space: pre;
-      }
+      /* h5:after {
+               content: "\A";
+               white-space: pre;
+               }
+             */
 
       p {
         display: inline;
@@ -118,6 +134,8 @@
 
       ol {
         display: inline;
+        margin-left: 0;
+        padding-left: 0;
       }
 
       ol:after {
@@ -125,8 +143,18 @@
         white-space: pre;
       }
 
+      ol li {
+        display: inline;
+      }
+
+      ol li:not(:last-child)::after {
+        content: ", ";
+      }
+
       ul {
         display: inline;
+        margin: 0;
+        padding: 0;
       }
 
       ul:after {
@@ -134,8 +162,20 @@
         white-space: pre;
       }
 
-      li {
+      ul li {
         display: inline;
+      }
+
+      ul li:not(:last-child)::after {
+        content: ", ";
+      }
+
+      /* Make translation word links not behave or look like links in compact print layout */
+      a {
+        color: inherit;
+        text-decoration: none;
+        cursor: text;
+        pointer-events: none;
       }
 
       .chunk-break {
@@ -161,202 +201,204 @@
       /* USFMToolsSharp.Renderers.HTML style rules begin */
       /* Format Styles */
       .small-text {
-          font-size: 16px;
+        font-size: 16px;
       }
 
       .med-text {
-          font-size: 22px;
+        font-size: 22px;
       }
 
       .large-text {
-          font-size: 29px;
+        font-size: 29px;
       }
 
       .sectionbreak {
-          page-break-before: always;
-          clear: both;
-          mso-break-type: section-break
+        page-break-before: always;
+        clear: both;
+        mso-break-type: section-break;
       }
 
       .pagebreak {
-          page-break-after: auto;
-          page-break-after: always;
+        page-break-after: auto;
+        page-break-after: always;
       }
 
       hr {
-          border-top: 1px solid lightgray;
-          border-bottom: none;
-          border-left: none;
-          border-right: none;
+        border-top: 1px solid lightgray;
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
       }
 
       @media print {
-          .pagebreak {
-              page-break-after: always;
-          }
-          /* page-break-after works, as well */
-          .sectionbreak {
-              page-break-before: always;
-              clear: both;
-          }
+        .pagebreak {
+          page-break-after: always;
+        }
+        /* page-break-after works, as well */
+        .sectionbreak {
+          page-break-before: always;
+          clear: both;
+        }
       }
 
       .single-space {
-          line-height: 1;
+        line-height: 1;
       }
 
       .one-half-space {
-          line-height: 150%;
+        line-height: 150%;
       }
 
       .double-space {
-          line-height: 2;
+        line-height: 2;
       }
 
       .two-half-space {
-          line-height: 250%;
+        line-height: 250%;
       }
 
       .triple-space {
-          line-height: 3;
+        line-height: 3;
       }
 
       .justified {
-          text-align: justify;
-          text-justify: inter-word;
+        text-align: justify;
+        text-justify: inter-word;
       }
 
       .right-align {
-          text-align: right;
+        text-align: right;
       }
 
       .center-align {
-          text-align: center;
+        text-align: center;
       }
 
       .rtl-direct {
-          direction: rtl;
+        direction: rtl;
       }
 
       @page FooterSection {
-          size: 8.5in 11.0in;
-          margin: 1.0in 1.0in 1.0in 1.0in;
-          mso-header-margin: .5in;
-          mso-footer-margin: .5in;
-          mso-header: h1;
-          mso-footer: f1;
-          mso-first-header: h1;
-          mso-first-footer: f1;
-          mso-paper-source: 0;
-          mso-page-numbers: 1;
+        size: 8.5in 11in;
+        margin: 1in 1in 1in 1in;
+        mso-header-margin: 0.5in;
+        mso-footer-margin: 0.5in;
+        mso-header: h1;
+        mso-footer: f1;
+        mso-first-header: h1;
+        mso-first-footer: f1;
+        mso-paper-source: 0;
+        mso-page-numbers: 1;
       }
 
       div.one-column {
-          column-count: 1;
-          mso-columns: 1;
-          page: ColumnOne;
+        column-count: 1;
+        mso-columns: 1;
+        page: ColumnOne;
       }
 
       div.two-column {
-          column-count: 2;
-          mso-columns: 2 even .5in;
-          page: Column2;
+        column-count: 2;
+        mso-columns: 2 even 0.5in;
+        page: Column2;
       }
 
-      p.MsoFooter, li.MsoFooter, div.MsoFooter {
-          margin: 0in;
-          margin-bottom: .0001pt;
-          mso-pagination: widow-orphan;
-          tab-stops: center 3.0in right 6.0in;
-          font-size: 12.0pt;
+      p.MsoFooter,
+      li.MsoFooter,
+      div.MsoFooter {
+        margin: 0in;
+        margin-bottom: 0.0001pt;
+        mso-pagination: widow-orphan;
+        tab-stops: center 3in right 6in;
+        font-size: 12pt;
       }
 
       div.FooterSection {
-          page: FooterSection;
+        page: FooterSection;
       }
 
       table#hrdftrtbl {
-          margin: 0in 0in 0in 900in;
-          width: 900px;
-          height: 1px;
-          tab-stops: center 3.0in right 6.0in;
-          overflow: hidden;
+        margin: 0in 0in 0in 900in;
+        width: 900px;
+        height: 1px;
+        tab-stops: center 3in right 6in;
+        overflow: hidden;
       }
 
       /* Marker Specific Styling */
 
       /* Header */
       .header {
-          margin-top: 1em;
-          font-size: 1.5em;
-          font-weight: bold;
-          display: inline-block;
+        margin-top: 1em;
+        font-size: 1.5em;
+        font-weight: bold;
+        display: inline-block;
       }
 
       .acrostic-heading {
-          display: block;
-          font-size: 1.2em;
-          font-weight: bold;
-          margin-top: 2em;
-          margin-bottom: 1em;
+        display: block;
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-top: 2em;
+        margin-bottom: 1em;
       }
 
       /* Major Title */
       .majortitle-1 {
-          display: none;
-          font-size: inherit;
+        display: none;
+        font-size: inherit;
       }
 
       .majortitle-2 {
-          display: none;
-          font-size: inherit;
+        display: none;
+        font-size: inherit;
       }
 
       .majortitle-3 {
-          display: none;
-          font-size: inherit;
+        display: none;
+        font-size: inherit;
       }
 
       /* Footnotes */
       .footnotecaller {
-          font-size: 0.5em;
-          vertical-align: top;
-          mso-text-raise: 40%;
+        font-size: 0.5em;
+        vertical-align: top;
+        mso-text-raise: 40%;
       }
 
       .footnotes {
-          font-size: 0.75em;
+        font-size: 0.75em;
       }
 
       .footnote-header {
-          font-size: 1.2em;
+        font-size: 1.2em;
       }
 
       .footnote-alternate-translation {
-          font-style: italic;
+        font-style: italic;
       }
 
       /* Chapter */
       .chapter {
-          margin-top: 1em;
-          font-size: inherit;
-          position: relative;
+        margin-top: 1em;
+        font-size: inherit;
+        position: relative;
       }
 
       .chaptermarker {
-          font-size: 1.5em;
-          font-weight: bold;
-          display: block;
-          float: left;
-          margin-right: 0.25em;
+        font-size: 1.5em;
+        font-weight: bold;
+        display: block;
+        float: left;
+        margin-right: 0.25em;
       }
 
       /* Poetry */
       .poetry-1 {
-          font-size: inherit;
-          line-break: normal;
-          display: block;
-          margin-left: 1.5em;
+        font-size: inherit;
+        line-break: normal;
+        display: block;
+        margin-left: 1.5em;
       }
       .poetry-1:after {
         content: "\A";
@@ -364,10 +406,10 @@
       }
 
       .poetry-2 {
-          font-size: inherit;
-          line-break: normal;
-          display: block;
-          margin-left: 3em;
+        font-size: inherit;
+        line-break: normal;
+        display: block;
+        margin-left: 3em;
       }
       .poetry-2:after {
         content: "\A";
@@ -375,10 +417,10 @@
       }
 
       .poetry-3 {
-          font-size: inherit;
-          line-break: normal;
-          display: block;
-          margin-left: 4.5em;
+        font-size: inherit;
+        line-break: normal;
+        display: block;
+        margin-left: 4.5em;
       }
       .poetry-3:after {
         content: "\A";
@@ -386,65 +428,65 @@
       }
 
       .poetry-outdent-1 {
-          margin-left: -1.5em;
+        margin-left: -1.5em;
       }
 
       .poetry-outdent-2 {
-          margin-left: -3em;
+        margin-left: -3em;
       }
 
       .selah-text {
-          font-style: italic;
-          text-align: right;
+        font-style: italic;
+        text-align: right;
       }
 
       /* Verse */
       .verse {
-          font-size: inherit;
-          font-weight: normal;
+        font-size: inherit;
+        font-weight: normal;
       }
 
       .versemarker {
-          font-size: 0.5em;
-          vertical-align: top;
-          mso-text-raise: 60%;
+        font-size: 0.5em;
+        vertical-align: top;
+        mso-text-raise: 60%;
       }
 
       [class^="poetry-"] .versemarker {
-          position: absolute;
-          left: 0;
+        position: absolute;
+        left: 0;
       }
 
       .closing {
-          text-align: right;
+        text-align: right;
       }
 
       .reference {
-          font-style: italic;
+        font-style: italic;
       }
 
       /* Section */
       .sectionhead-1 {
-          margin-top: 2em;
-          font-size: 1.2em;
-          font-weight: bold;
-          display: block;
-          text-align: center;
-          text-transform: uppercase;
+        margin-top: 2em;
+        font-size: 1.2em;
+        font-weight: bold;
+        display: block;
+        text-align: center;
+        text-transform: uppercase;
       }
 
       .sectionhead-2 {
-          margin-top: 1em;
-          font-size: 1.1em;
-          font-weight: bold;
-          display: block;
+        margin-top: 1em;
+        font-size: 1.1em;
+        font-weight: bold;
+        display: block;
       }
 
       .sectionhead-3 {
-          margin-top: 1em;
-          font-size: 1.05em;
-          font-weight: bold;
-          display: block;
+        margin-top: 1em;
+        font-size: 1.05em;
+        font-weight: bold;
+        display: block;
       }
 
       .section-reference {
@@ -452,99 +494,99 @@
 
       /* List */
       .list-1 {
-          line-break: normal;
-          display: block;
-          text-indent: 0px !important;
+        line-break: normal;
+        display: block;
+        text-indent: 0px !important;
       }
 
       .list-2 {
-          line-break: normal;
-          display: block;
-          text-indent: 30px !important;
+        line-break: normal;
+        display: block;
+        text-indent: 30px !important;
       }
 
       .list-3 {
-          line-break: normal;
-          display: block;
-          text-indent: 50px !important;
+        line-break: normal;
+        display: block;
+        text-indent: 50px !important;
       }
 
       /* Special Strings */
       .quoted-book {
-          font-style: italic;
+        font-style: italic;
       }
 
       .additions {
-          font-style: italic;
+        font-style: italic;
       }
 
       .transliterated {
-          font-style: italic;
+        font-style: italic;
       }
 
       .small-caps {
-          text-transform: uppercase;
-          font-size: 0.75em;
+        text-transform: uppercase;
+        font-size: 0.75em;
       }
 
       .center-paragraph {
-          text-align: center;
+        text-align: center;
       }
 
       .descriptive-text {
-          font-style: italic;
-          font-size: 85%;
+        font-style: italic;
+        font-size: 85%;
       }
 
       .word-entry {
-          font-size: 1em;
+        font-size: 1em;
       }
 
       /* Cross Reference */
       .caller {
-          font-size: 0.5em;
-          vertical-align: top;
-          mso-text-raise: 40%;
+        font-size: 0.5em;
+        vertical-align: top;
+        mso-text-raise: 40%;
       }
 
       .cross-ref-quote {
-          font-style: italic;
+        font-style: italic;
       }
 
       .cross-ref {
-          font-weight: bold;
+        font-weight: bold;
       }
 
       .cross-header {
-          font-size: 1.2em;
+        font-size: 1.2em;
       }
 
       .toc2-ref {
-          display: inline;
-          visibility: hidden;
+        display: inline;
+        visibility: hidden;
       }
 
       /* Table Markers */
-      .table-block{
-          width:50%;
+      .table-block {
+        width: 50%;
       }
 
       .table-head {
-          font-style: italic;
+        font-style: italic;
       }
 
       .table-head-right {
-          font-style: italic;
-          text-align: right;
+        font-style: italic;
+        text-align: right;
       }
 
       .table-cell {
       }
 
       .table-cell-right {
-          text-align: right;
+        text-align: right;
       }
-        /* End of USFMToolsSharp.Renderers.HTML style rules */
+      /* End of USFMToolsSharp.Renderers.HTML style rules */
 
       .pb-6 {
         padding-bottom: 6px;
@@ -556,38 +598,42 @@
   </head>
   <body>
     <div class="pagebreak">
-     {%if title1%}<h2>{{title1}}</h2>{%endif%}
-     {%if title2%}<h2>{{title2}}</h2>{%endif%}
-     {%if title3%}<h3>{{title3}}</h3>{%endif%}
+      {%if title1%}
+      <h2>{{title1}}</h2>
+      {%endif%} {%if title2%}
+      <h2>{{title2}}</h2>
+      {%endif%} {%if title3%}
+      <h3>{{title3}}</h3>
+      {%endif%}
     </div>
     <div class="pb-6">
-      ©2022 Wycliffe Associates<br />
+      ©2026 Wycliffe Associates<br />
       Released under a Creative Commons Attribution-ShareAlike 4.0 International
       License.
     </div>
 
-    <div class="pb-6">
-      Bible Text: The English Unlocked Literal Bible (ULB)<br />
-      ©2017 Wycliffe Associates<br />
-      Available at https://bibleineverylanguage.org/translations<br />
-      The English Unlocked Literal Bible is based on the unfoldingWord® Literal
-      Text, CC BY-SA 4.0. The original work of the unfoldingWord® Literal Text
-      is available at https://unfoldingword.bible/ult/.<br />
-      The ULB is licensed under the Creative Commons Attribution-ShareAlike 4.0
-      International License.
-    </div>
+    <!-- <div class="pb-6">
+         Bible Text: The English Unlocked Literal Bible (ULB)<br />
+         ©2017 Wycliffe Associates<br />
+         Available at https://bibleineverylanguage.org/translations<br />
+         The English Unlocked Literal Bible is based on the unfoldingWord® Literal
+         Text, CC BY-SA 4.0. The original work of the unfoldingWord® Literal Text
+         is available at https://unfoldingword.bible/ult/.<br />
+         The ULB is licensed under the Creative Commons Attribution-ShareAlike 4.0
+         International License.
+         </div>
 
-    <div class="pb-6">
-      Notes: English ULB Translation Notes<br />
-      ©2017 Wycliffe Associates<br />
-      Available at https://bibleineverylanguage.org/translations<br />
-      The English ULB Translation Notes is based on the unfoldingWord
-      translationNotes, under CC BY-SA 4.0. The original unfoldingWord work is
-      available at https://unfoldingword.bible/utn.<br />
-      The ULB Notes is licensed under the Creative Commons
-      Attribution-ShareAlike 4.0 International License.
-    </div>
-
+         <div class="pb-6">
+         Notes: English ULB Translation Notes<br />
+         ©2017 Wycliffe Associates<br />
+         Available at https://bibleineverylanguage.org/translations<br />
+         The English ULB Translation Notes is based on the unfoldingWord
+         translationNotes, under CC BY-SA 4.0. The original unfoldingWord work is
+         available at https://unfoldingword.bible/utn.<br />
+         The ULB Notes is licensed under the Creative Commons
+         Attribution-ShareAlike 4.0 International License.
+         </div>
+    -->
     <div class="pb-6">
       To view a copy of the CC BY-SA 4.0 license visit
       http://creativecommons.org/licenses/by-sa/4.0/
@@ -631,15 +677,15 @@
     </div>
     <div class="pagebreak">
       <div class="pb-6">
-      <b>Notices:</b><br />
-      You do not have to comply with the license for elements of the material in
-      the public domain or where your use is permitted by an applicable
-      exception or limitation.<br />
+        <b>Notices:</b><br />
+        You do not have to comply with the license for elements of the material
+        in the public domain or where your use is permitted by an applicable
+        exception or limitation.<br />
 
-      No warranties are given. The license may not give you all of the
-      permissions necessary for your intended use. For example, other rights
-      such as publicity, privacy, or moral rights may limit how you use the
-      material.<br />
+        No warranties are given. The license may not give you all of the
+        permissions necessary for your intended use. For example, other rights
+        such as publicity, privacy, or moral rights may limit how you use the
+        material.<br />
       </div>
       <img
         class="logo"

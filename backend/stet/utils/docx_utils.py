@@ -1,51 +1,56 @@
+from __future__ import annotations
+
 import re
-from typing import Optional
+from typing import Optional, cast, TYPE_CHECKING
 
-from docx import Document  # type: ignore
-from docx.document import Document as DocxDocument  # type: ignore
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT  # type: ignore
-from docx.oxml import OxmlElement  # type: ignore
-from docx.oxml.ns import qn  # type: ignore
-from docx.shared import Pt, RGBColor  # type: ignore
-from docx.table import Table, _Cell, _Row  # type: ignore
-from docx.text.paragraph import Paragraph  # type: ignore
-from htmldocx import HtmlToDocx  # type: ignore
+from docx import Document
+from docx.document import Document as DocxDocument
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT
+from docx.enum.section import WD_SECTION
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.oxml.table import CT_Tc
+from docx.shared import Pt, RGBColor
+from docx.table import Table
+from docx.text.paragraph import Paragraph
+from htmldocx import HtmlToDocx  # type: ignore[import-untyped]
 
 
-def format_docx_tables(doc: Document) -> Document:
-    """
-    Programmatically improve table borders and cell text padding.
-    """
-    # Loop through tables and set borders
+from docx.table import _Cell, _Row
+
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    Cell: TypeAlias = _Cell
+    Row: TypeAlias = _Row
+else:
+    Cell = _Cell
+    Row = _Row
+
+
+def format_docx_tables(doc: DocxDocument) -> DocxDocument:
     for table in doc.tables:
         tbl = table._element
-        tblBorders = OxmlElement("w:tblBorders")
-        for border_name in ["top", "left", "bottom", "right", "insideH", "insideV"]:
-            border = OxmlElement(f"w:{border_name}")
+        tbl_borders = OxmlElement("w:tblBorders")
+        for name in ("top", "left", "bottom", "right", "insideH", "insideV"):
+            border = OxmlElement(f"w:{name}")
             border.set(qn("w:val"), "single")
             border.set(qn("w:sz"), "8")  # 1px equivalent in Word (1/8 point units)
             border.set(qn("w:space"), "0")
             border.set(qn("w:color"), "000000")  # Border color
-            tblBorders.append(border)
-        tbl.tblPr.append(tblBorders)
+            tbl_borders.append(border)
+        tbl.tblPr.append(tbl_borders)
         # Ensure text in each cell is vertically centered and free of
         # excessive space.
         for row in table.rows:
             for cell in row.cells:
-                tc = cell._element
-                tcPr = tc.get_or_add_tcPr()
-                # Set vertical alignment to center
-                vAlign = OxmlElement("w:vAlign")
-                vAlign.set(qn("w:val"), "center")
-                tcPr.append(vAlign)
-                # Optional: Adjust padding/margins if needed
-                cell_paragraph = cell.paragraphs[0]
-                # cell_paragraph.paragraph_format.left_indent = Pt(
-                #     5
-                # )  # Slight left padding
-                cell_paragraph.paragraph_format.space_after = Pt(
-                    0
-                )  # Remove extra space after
+                tc = cell._tc
+                tc_pr = tc.get_or_add_tcPr()
+                v_align = OxmlElement("w:vAlign")
+                v_align.set(qn("w:val"), "center")
+                tc_pr.append(v_align)
+                para = cell.paragraphs[0]
+                para.paragraph_format.space_after = Pt(0)
     return doc
 
 
@@ -53,8 +58,8 @@ def add_checkbox_column(docx_filepath: str) -> None:
     """
     Add a third column to each table in a DOCX file, with each cell in the new column containing an unchecked checkbox.
     """
-    doc: DocxDocument = Document(docx_filepath)
-    for table in doc.tables:  # type: Table
+    doc = Document(docx_filepath)
+    for table in doc.tables:
         add_column_with_checkboxes(table)
     doc.save(docx_filepath)
 
@@ -64,86 +69,59 @@ def add_column_with_checkboxes(table: Table) -> None:
     Add a new column to the right of a table, with each cell containing an unchecked checkbox.
     """
     for row in table.rows:
-        # Append a new cell to the row's XML
-        new_cell = add_cell_to_row(row)
-        if new_cell:
-            add_checkbox_to_cell(new_cell)
+        cell = _append_cell(row)
+        if cell is not None:
+            _add_checkbox(cell)
 
 
-def add_cell_to_row(row: _Row) -> Optional[_Cell]:
-    """
-    Add a new cell to the row by manipulating its XML structure.
-    Returns the new cell object.
-    """
-    tc = OxmlElement("w:tc")  # Create a new table cell element
-    tcPr = OxmlElement("w:tcPr")  # Table cell properties
-    tc.append(tcPr)  # Append properties to the cell
-    row._tr.append(tc)  # Append the new cell to the row's XML
-    # Wrap the XML element in a python-docx cell object
-    return _Cell(tc, row.table)
+def _append_cell(row: Row) -> Optional[Cell]:
+    tc = OxmlElement("w:tc")
+    tc.append(OxmlElement("w:tcPr"))
+    row._tr.append(tc)
+    return Cell(cast(CT_Tc, tc), row.table)
 
 
-def add_checkbox_to_cell(cell: _Cell) -> None:
-    """
-    Add an unchecked checkbox to a table cell.
-    """
-    # Create a checkbox element
-    checkbox: OxmlElement = OxmlElement("w:sdt")  # Structured document tag
-    sdtPr: OxmlElement = OxmlElement("w:sdtPr")
-    checkBox: OxmlElement = OxmlElement("w:checkBox")
-    sdtPr.append(checkBox)
-    checkbox.append(sdtPr)
-    sdtContent: OxmlElement = OxmlElement("w:sdtContent")
-    p: OxmlElement = OxmlElement("w:p")  # Paragraph
-    r: OxmlElement = OxmlElement("w:r")  # Run
-    t: OxmlElement = OxmlElement("w:t")  # Text
-    t.text = "☐"  # Use a Unicode checkbox character
+def _add_checkbox(cell: Cell) -> None:
+    checkbox = OxmlElement("w:sdt")
+    sdt_pr = OxmlElement("w:sdtPr")
+    sdt_pr.append(OxmlElement("w:checkBox"))
+    checkbox.append(sdt_pr)
+    sdt_content = OxmlElement("w:sdtContent")
+    p = OxmlElement("w:p")
+    r = OxmlElement("w:r")
+    t = OxmlElement("w:t")
+    t.text = "☐"
     r.append(t)
     p.append(r)
-    sdtContent.append(p)
-    checkbox.append(sdtContent)
-    # Add the checkbox to the cell
-    if hasattr(cell, "_tc"):  # Ensure cell has '_tc' attribute for safety
-        tc: Optional[OxmlElement] = getattr(cell, "_tc", None)
-        if tc:
-            tc.append(checkbox)
+    sdt_content.append(p)
+    checkbox.append(sdt_content)
+    cell._tc.append(checkbox)
 
 
 def add_header(
-    doc: Document,
+    doc: DocxDocument,
     source_lang_code: str,
     target_lang_code: str,
     header_text: str = "Spiritual Terms Evaluation Tool (STET)",
-) -> Document:
-    """
-    Add a header with:
-    - header_text left.
-    - 'source_lang_code/target_lang_code' aligned to the right.
-    """
+) -> DocxDocument:
     section = doc.sections[0]
     header = section.header
-    header_paragraph = header.add_paragraph()
-    header_paragraph.style.font.size = Pt(12)  # Optional: Adjust font size
-    # Add the "Spiritual Terms Evaluation Tool" text with grey color
-    run1 = header_paragraph.add_run(header_text)
-    run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
-    # Add a tab and the "EN/FR" text with grey color
-    header_paragraph.add_run("\t")  # Add a tab for alignment
-    run2 = header_paragraph.add_run(
-        f"{source_lang_code.upper()}/{target_lang_code.upper()}"
+    para = header.add_paragraph()
+    run1 = para.add_run(header_text)
+    run1.font.size = Pt(12)
+    run1.font.color.rgb = RGBColor(169, 169, 169)
+    para.add_run("\t")
+    run2 = para.add_run(f"{source_lang_code.upper()}/{target_lang_code.upper()}")
+    run2.font.color.rgb = RGBColor(169, 169, 169)
+    assert section.page_width is not None
+    section.left_margin = section.right_margin = Pt(72)  # 1-inch margins
+    section.top_margin = section.bottom_margin = Pt(72)
+    usable_width = section.page_width - section.left_margin - section.right_margin
+    tab_pos = int(section.left_margin + usable_width * 0.75)
+    para.paragraph_format.tab_stops.add_tab_stop(
+        tab_pos, alignment=WD_ALIGN_PARAGRAPH.RIGHT
     )
-    run2.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
-    # Adjust tab stops (tab position must be an integer)
-    page_width = section.page_width
-    left_margin = section.left_margin
-    right_margin = section.right_margin
-    usable_width = page_width - left_margin - right_margin
-    # Set the tab stop closer to the right margin but within bounds
-    tab_position = int(left_margin + (usable_width * 0.75))  # 75% of usable width
-    header_paragraph.paragraph_format.tab_stops.add_tab_stop(
-        tab_position, alignment=WD_ALIGN_PARAGRAPH.RIGHT
-    )
-    header_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    para.alignment = WD_ALIGN_PARAGRAPH.LEFT
     return doc
 
 
@@ -156,30 +134,23 @@ def add_highlighted_html_to_docx_for_words(
     :param paragraph: The DOCX paragraph where the content will be added.
     :param keywords: The list of keywords to highlight in bold.
     """
-    # Use HtmlToDocx to convert the HTML to a temporary document
-    html_to_docx = HtmlToDocx()
     temp_doc = Document()
-    html_to_docx.add_html_to_document(html, temp_doc)
-    # Create a case-insensitive regex pattern for word-boundary matching
-    keyword_pattern = r"\b(" + "|".join(re.escape(kw) for kw in keywords) + r")\b"
-    regex = re.compile(keyword_pattern, re.IGNORECASE)
-    # Parse through all paragraphs in the temporary document
-    for temp_paragraph in temp_doc.paragraphs:
-        text = temp_paragraph.text
-        start = 0
-        # Iterate over matches in the text
-        for match in regex.finditer(text):
-            # Add text before the match
-            if match.start() > start:
-                paragraph.add_run(text[start : match.start()])
-            # Add the bolded keyword with original casing
-            bold_run = paragraph.add_run(text[match.start() : match.end()])
-            bold_run.bold = True
-            # Move start position forward
-            start = match.end()
-        # Add any remaining text after the last match
-        if start < len(text):
-            paragraph.add_run(text[start:])
+    HtmlToDocx().add_html_to_document(html, temp_doc)
+    regex = re.compile(
+        r"\b(" + "|".join(re.escape(k) for k in keywords) + r")\b",
+        re.IGNORECASE,
+    )
+    for p in temp_doc.paragraphs:
+        text = p.text
+        pos = 0
+        for m in regex.finditer(text):
+            if m.start() > pos:
+                paragraph.add_run(text[pos : m.start()])
+            run = paragraph.add_run(m.group(0))
+            run.bold = True
+            pos = m.end()
+        if pos < len(text):
+            paragraph.add_run(text[pos:])
 
 
 def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:
@@ -198,14 +169,16 @@ def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:
         paragraph.add_run(temp_paragraph.text.strip())
 
 
-def add_lined_page_at_end(doc: Document) -> Document:
+def add_lined_page_at_end(doc: DocxDocument) -> DocxDocument:
     """
     Adds a single page filled with ruled lines to the end of the document for note-taking.
     Each line spans the full page width and is evenly spaced.
     :param doc: The Word document to which the ruled page will be added.
     :return: The modified Word document.
     """
-    section = doc.add_section(start_type=1)  # Add a new section for a new page
+    section = doc.add_section(
+        start_type=WD_SECTION.NEW_PAGE
+    )  # Add a new section for a new page
     section.left_margin = section.right_margin = Pt(72)  # 1-inch margins
     section.top_margin = section.bottom_margin = Pt(72)
     usable_height = section.page_height - section.top_margin - section.bottom_margin
@@ -243,7 +216,7 @@ def adjust_table_columns(table: Table) -> None:
 
 
 def reduce_spacing_around_tables(
-    doc: Document, before_table_space: int = 0, after_table_space: int = 0
+    doc: DocxDocument, before_table_space: int = 0, after_table_space: int = 0
 ) -> None:
     """
     Reduces the whitespace around tables in a Word document.
@@ -285,57 +258,33 @@ def reduce_spacing_around_tables(
             previous_element = element
 
 
-def add_footer(doc: Document, date_text: str) -> Document:
-    """
-    Programmatically add page numbers and a date timestamp in the footer.
-    Page number will be centered, and the date timestamp will be aligned to the right
-    on the same line. The date timestamp will be prepended with 'Generated on ',
-    and both will be grey. The timestamp will stay within the right margin.
-    """
+def add_footer(doc: DocxDocument, date_text: str) -> DocxDocument:
     section = doc.sections[0]
     footer = section.footer
-    # Page width adjustments
-    page_width = section.page_width
-    left_margin = section.left_margin
-    right_margin = section.right_margin
-    # Calculate usable content width
-    usable_width = page_width - left_margin - right_margin
-    # Create or get the footer paragraph
-    footer_paragraph = (
-        footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
-    )
-    footer_paragraph.alignment = None  # Disable global alignment to use tab stops
-    # Configure tab stops
-    p_pr = footer_paragraph._p.get_or_add_pPr()  # Access paragraph properties
-    tabs = p_pr.find(qn("w:tabs"))  # Find existing 'w:tabs' element if it exists
-    if tabs is None:
-        tabs = OxmlElement("w:tabs")  # Create the 'w:tabs' element
-        p_pr.append(tabs)
-    # Add a center tab stop at half of usable content width
-    center_position = int(usable_width / 2)  # Center of the usable area
-    center_tab = OxmlElement("w:tab")
-    center_tab.set(qn("w:val"), "center")
-    center_tab.set(qn("w:pos"), str(center_position))
-    tabs.append(center_tab)
-    # Add a right-aligned tab stop slightly before the right margin
-    right_position = int(usable_width)
-    right_tab = OxmlElement("w:tab")
-    right_tab.set(qn("w:val"), "right")
-    right_tab.set(
-        qn("w:pos"), str(right_position - 720)
-    )  # 720 twips (0.5 inches) padding
-    tabs.append(right_tab)
-    # Add the page number field
-    footer_paragraph.add_run("\t")  # Tab to center position
-    field_code = "PAGE"
-    field = OxmlElement("w:fldSimple")
-    field.set(qn("w:instr"), field_code)
-    page_run = footer_paragraph.add_run()
-    page_run._r.append(field)
-    page_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for page number
-    # Add the "Generated on" text
-    footer_paragraph.add_run("\t")  # Tab to right position
-    date_run = footer_paragraph.add_run(date_text)
-    date_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for timestamp
-    date_run.font.size = Pt(10)  # Optional: Adjust font size for consistency
+    para = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
+    para.alignment = None
+    p_pr = para._p.get_or_add_pPr()
+    tabs = p_pr.find(qn("w:tabs")) or OxmlElement("w:tabs")
+    p_pr.append(tabs)
+    assert section.page_width is not None
+    assert section.left_margin is not None
+    assert section.right_margin is not None
+    usable_width = section.page_width - section.left_margin - section.right_margin
+
+    def _tab(val: str, pos: int) -> None:
+        t = OxmlElement("w:tab")
+        t.set(qn("w:val"), val)
+        t.set(qn("w:pos"), str(pos))
+        tabs.append(t)
+
+    _tab("center", int(usable_width / 2))
+    _tab("right", int(usable_width - 720))
+    para.add_run("\t")
+    fld = OxmlElement("w:fldSimple")
+    fld.set(qn("w:instr"), "PAGE")
+    para.add_run()._r.append(fld)
+    para.add_run("\t")
+    r = para.add_run(date_text)
+    r.font.color.rgb = RGBColor(169, 169, 169)
+    r.font.size = Pt(10)
     return doc

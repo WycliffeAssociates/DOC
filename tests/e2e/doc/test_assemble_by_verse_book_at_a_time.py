@@ -1,36 +1,34 @@
+import pytest
 from doc.config import settings
 from doc.domain import model
 from doc.entrypoints.app import app
 from fastapi.testclient import TestClient
 
-from tests.shared.utils import check_finished_document_with_verses_success
+from tests.shared.utils import (
+    check_finished_document_with_verses_success,
+)
 
 logger = settings.logger(__name__)
 
 
-def test_send_email_with_es_419_ulb_jud_pdf() -> None:
-    """
-    Produce chapter level interleaved document for language, ar, Arabic
-    scripture. There are no other resources than USFM available at
-    this time.
-    """
-    # First generate the PDF
+def test_en_ulb_col_by_verse_with_no_email_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
             json={
-                "email_address": settings.TO_EMAIL_ADDRESS,
-                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
+                # "email_address": settings.TO_EMAIL_ADDRESS,
+                "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_VERSE_BOOK_AT_A_TIME,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
+                "use_prince": True,
                 "resource_requests": [
                     {
-                        "lang_code": "es-419",
+                        "lang_code": "en",
                         "resource_type": "ulb",
-                        "book_code": "jud",
+                        "book_code": "col",
                     },
                 ],
             },

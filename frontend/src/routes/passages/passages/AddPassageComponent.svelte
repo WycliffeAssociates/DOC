@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { addBibleReference } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { addBibleReference, addFilteredBibleReference } from '$lib/passages/stores/PassagesStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
 
   export let chapters: Record<string, number[]>
   export let checkIcon: string
@@ -46,6 +46,15 @@
         null,
         null
       )
+      addFilteredBibleReference(
+        $langCodeAndNameStore.split(',')[0],
+        selectedBookCode,
+        bookName,
+        Number(selectedChapter),
+        verseReference,
+        null,
+        null
+      )
       passageSuccessMessage = '✔'
       setTimeout(() => {
         passageSuccessMessage = ''
@@ -65,7 +74,8 @@
   $: buttonEnabled = Boolean(selectedBookCode && selectedChapter && verseReference)
 </script>
 
-<div class="flex items-center">
+<div class="ml-2 mt-4 block text-xl font-bold text-[#33445C]">Other Passages</div>
+<div class="ml-2 flex items-center">
   <div class="mr-2">
     <label for="book" class="block text-sm font-medium text-gray-700">Bible Book</label>
     <select
@@ -103,7 +113,7 @@
       id="verses"
       type="text"
       placeholder="e.g., 1,2,5-7,20"
-      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+      class="mt-1 block w-full rounded-md border-2 border-blue-500 shadow-sm focus:border-indigo-600 focus:ring focus:ring-indigo-200 sm:text-sm"
       on:input={handleVerseInput}
       bind:value={verseReference}
     />

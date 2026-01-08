@@ -24,13 +24,7 @@
     useTwoColumnLayoutForTqNotesStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
-  import {
-    // limitTwStore,
-    resourceTypesStore,
-    resourceTypesCountStore
-    // twResourceRequestedStore,
-    // usfmAvailableStore
-  } from '$lib/stores/ResourceTypesStore'
+  import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { bookCountStore } from '$lib/stores/BooksStore'
   import GenerateDocument from './GenerateDocument.svelte'
@@ -89,13 +83,12 @@
   }
   $: console.log(`resourceTypesStore: ${$resourceTypesStore}`)
 
-  // If user chooses versification, they probably don't want to see
-  // the verbose parts of TN, BC, and RG resources by default. They can
-  // choose to include them via UI switches if they have chosen such resources
-  // to begin with.
   // This variable is used to track user interacting with optional
   // settings that would impact versification output.
   let userInteracted = false
+  // If user chooses versification, they probably don't want to see
+  // the verbose parts of TN, BC, and RG resources by default. They can
+  // choose to include them via UI switches.
   $: {
     if (
       !userInteracted &&
@@ -108,7 +101,7 @@
       $showRgChapterCommentaryStore = false
     }
   }
-  //  Make sure if the user first chooses one of the versification
+  // Make sure if the user first chooses one of the versification
   // assembly strategies and then subsequently chooses one of the non-versification
   // strategies, the appropriate defaults for non-versification are
   // chosen.
@@ -318,15 +311,17 @@
             </div>
           {/if}
         {/if}
-        <div class="flex">
-          <Switch bind:checked={$layoutForPrintStore} id="layout-for-print-store" />
-          <span class="ml-2 text-xl text-[#33445C]">Print optimization</span>
-        </div>
-        <div class="mt-2">
-          <span class="text-lg text-[#33445C]"
-            >Enabling this option will remove extra whitespace</span
-          >
-        </div>
+        {#if $docTypeStore === 'pdf' || $docTypeStore === 'epub'}
+          <div class="flex">
+            <Switch bind:checked={$layoutForPrintStore} id="layout-for-print-store" />
+            <span class="ml-2 text-xl text-[#33445C]">Print optimization</span>
+          </div>
+          <div class="mt-2">
+            <span class="text-lg text-[#33445C]"
+              >Enabling this option will remove extra whitespace</span
+            >
+          </div>
+        {/if}
         <!-- {#if $twResourceRequestedStore && $usfmAvailableStore} -->
         <!--   <div class="mb-2 mt-6 flex"> -->
         <!--     <Switch bind:checked={$limitTwStore} id="limit-tw-store" /> -->
@@ -351,7 +346,7 @@
       {#if showAdvanced}
         <h3 class="mb-2 mt-2 text-2xl text-[#33445C]">Optional Settings</h3>
         <div class="ml-4">
-          {#if showUsfmSettingsAsOption}
+          {#if showUsfmSettingsAsOption && !$layoutForPrintStore}
             <div class="mb-2 mt-6 flex">
               <Switch bind:checked={$useChapterLabelsStore} id="use-chapter-labels" />
               <span class="ml-2 text-xl text-[#33445C]"
@@ -359,15 +354,17 @@
               >
             </div>
           {/if}
-          <div class="mb-2 mt-6 flex">
-            <Switch
-              bind:checked={$useSectionVisualSeparatorStore}
-              id="use-section-visual-separator"
-            />
-            <span class="ml-2 text-xl text-[#33445C]"
-              >Show visual separator (horizontal line) between sections</span
-            >
-          </div>
+          {#if !$layoutForPrintStore}
+            <div class="mb-2 mt-6 flex">
+              <Switch
+                bind:checked={$useSectionVisualSeparatorStore}
+                id="use-section-visual-separator"
+              />
+              <span class="ml-2 text-xl text-[#33445C]"
+                >Show visual separator (horizontal line) between sections</span
+              >
+            </div>
+          {/if}
           {#if $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTnTwoColAsOption}
             <div class="mb-2 mt-6 flex items-center">
               <Switch
@@ -441,7 +438,7 @@
                 <OneColumnLayoutIcon />
                 <div
                   class="tooltip tooltip-info"
-                  data-tip="A few
+                  data-tip="This setting controls non-intro TN content layout. A few
                                                             languages,
                                                             e.g.,
                                                             Khmer,
@@ -490,6 +487,15 @@
                 <span class="ml-2 text-xl text-[#33445C]">Include BC chapter commentary</span>
               </div>
             {/if}
+          {/if}
+          {#if showBcChapterCommentaryAsOption && ($assemblyStrategyKindStore === 'lvo' || $assemblyStrategyKindStore === 'bvo')}
+            <div class="mb-2 mt-6 flex items-center">
+              <Switch
+                bind:checked={$showBcChapterCommentaryStore}
+                id="show-rg-chapter-commentary"
+              />
+              <span class="ml-2 text-xl text-[#33445C]">Include BC chapter commentary</span>
+            </div>
           {/if}
           {#if showRgChapterCommentaryAsOption && ($assemblyStrategyKindStore === 'lvo' || $assemblyStrategyKindStore === 'bvo')}
             <div class="mb-2 mt-6 flex items-center">

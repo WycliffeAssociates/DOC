@@ -12,7 +12,16 @@ from typing import Mapping, Optional, Sequence
 
 from doc.config import settings
 from doc.domain import parsing, resource_lookup, bible_books
-from doc.domain.model import ResourceRequest, TWBook, TWNameContentPair, TWUse, USFMBook
+from doc.domain.model import (
+    DocumentPart,
+    LangDirEnum,
+    ResourceRequest,
+    TWBook,
+    TWNameContentPair,
+    TWUse,
+    USFMBook,
+)
+from doc.utils.list_utils import unique_list_of_strings
 
 
 logger = settings.logger(__name__)
@@ -168,6 +177,58 @@ def translation_words_for_content(
     ]
 
 
+def translation_words_content(
+    tw_book: TWBook,
+    content: str,
+    use_section_visual_separator: bool,
+    tw_word_list_vertical: bool = settings.TW_WORD_LIST_VERTICAL,
+    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+) -> list[DocumentPart]:
+    is_rtl = tw_book and tw_book.lang_direction == LangDirEnum.RTL
+    document_parts: list[DocumentPart] = []
+    words = translation_words_for_content(tw_book, content)
+    unique_words = unique_list_of_strings(words)
+    if unique_words:
+        document_parts.append(
+            DocumentPart(
+                content=resource_type_name_fmt_str.format(tw_book.resource_type_name),
+                is_rtl=is_rtl,
+                use_section_visual_separator=False,
+            )
+        )
+        if tw_word_list_vertical:
+            document_parts.append(
+                DocumentPart(
+                    content="<ul>\n"
+                    + "\n".join(
+                        [
+                            f"<li><a href='#{tw_book.lang_code}-{word}'>{localized_word}</a></li>"
+                            for localized_word, word in unique_words
+                        ]
+                    )
+                    + "</ul>",
+                    is_rtl=is_rtl,
+                    use_section_visual_separator=False,
+                )
+            )
+        else:
+            document_parts.append(
+                DocumentPart(
+                    content="<ul>"
+                    + ", ".join(
+                        [
+                            f"<span><a href='#{tw_book.lang_code}-{word}'>{localized_word}</a></span>"
+                            for localized_word, word in unique_words
+                        ]
+                    )
+                    + "</ul>",
+                    is_rtl=is_rtl,
+                    use_section_visual_separator=False,
+                )
+            )
+    return document_parts
+
+
 def get_selected_name_content_pairs_for_book(
     tw_book: TWBook,
     usfm_books: Optional[Sequence[USFMBook]],
@@ -270,20 +331,6 @@ def name_content_pair_content_for_book(
     return name_content_pair.content
 
 
-def name_content_pair_content_for_verse(
-    name_content_pair: TWNameContentPair,
-    tw_book: TWBook,
-    include_uses_section: bool = False,
-) -> str:
-    name_content_pair.content = modify_content_for_anchors(name_content_pair, tw_book)
-    uses_section_ = ""
-    # TODO
-    if include_uses_section and name_content_pair.localized_word in tw_book.uses:
-        uses_section_ = uses_section(tw_book.uses[name_content_pair.localized_word])
-        name_content_pair.content = f"{name_content_pair.content}{uses_section_}"
-    return name_content_pair.content
-
-
 def filter_unique_by_lang_code(tw_books: Sequence[TWBook]) -> list[TWBook]:
     unique_tw_books = []
     seen_lang_codes = set()
@@ -306,11 +353,9 @@ def modify_content_for_anchors(
         opening_h3_with_id_fmt_str.format(
             book_content_unit.lang_code,
             Path(name_content_pair.path).stem,
-            # "".join(name_content_pair.localized_word.split()).lower(),
             name_content_pair.localized_word,
         ),
     )
-    # logger.debug("tw content: %s", content)
     return content
 
 

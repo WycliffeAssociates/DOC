@@ -3,7 +3,7 @@
   import { page, navigating } from '$app/stores'
   import BackButton from '$lib/BackButton.svelte'
   import NextButton from '$lib/NextButton.svelte'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguageStore'
+  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import { getCode, langRegExp, passagesRegExp, settingsRegExp } from '$lib/passages/utils'
   import LeftArrowIcon from '$lib/LeftArrowIcon.svelte'

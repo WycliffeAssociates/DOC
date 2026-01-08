@@ -5,7 +5,7 @@
     langCodeAndNameStore,
     gatewayCodeAndNamesStore,
     heartCodeAndNamesStore
-  } from '$lib/passages/stores/LanguageStore'
+  } from '$lib/passages/stores/LanguagesStore'
   import { langRegExp, getCode, getName } from '$lib/passages/utils'
   import CloseIcon from '$lib/CloseIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'

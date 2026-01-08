@@ -87,7 +87,7 @@ def read_file(file_name: str, encoding: str = "utf-8") -> str:
     with codecs.open(file_name, "r", encoding=encoding) as fin:
         content = fin.read()
         # convert Windows line endings to Linux line endings
-        content.replace("\r\n", "\n")
+        content = content.replace("\r\n", "\n")
     return content
 
 

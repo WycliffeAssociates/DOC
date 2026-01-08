@@ -5,6 +5,7 @@ pydantic.BaseModel as FastAPI can use these classes to do automatic
 validation and JSON serialization.
 """
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import NamedTuple, Optional, Sequence, TypedDict, final
 
@@ -87,24 +88,6 @@ class AssemblyLayoutEnum(str, Enum):
     STET_LAYOUT = "stet"
 
 
-@final
-class ChunkSizeEnum(str, Enum):
-    """
-    The length of content to burst out at a time when interleaving.
-    E.g., if CHAPTER is chosen as the chunk size then the interleaving will
-    do so in chapter chunks (one chapter of scripture, then one chapter of helps,
-    etc.). This exists because translators want to be able to choose
-    the chunk size of scripture that should be grouped together for the
-    purpose of translational cohesion.
-
-    * CHAPTER
-      - This enum value signals to make each chunk of interleaved
-        content be one chapter's worth in length.
-    """
-
-    CHAPTER = "chapter"
-
-
 # https://blog.meadsteve.dev/programming/2020/02/10/types-at-the-edges-in-python/
 # https://pydantic-docs.helpmanual.io/usage/models/
 @final
@@ -179,10 +162,6 @@ class DocumentRequest(BaseModel):
     generate_epub: bool = False
     # Indicate whether Docx should be generated.
     generate_docx: bool = False
-    # Indicate the chunk size to interleave. Default to chapter. Verse
-    # chunk size was deemed non-useful, but remains for now as a historical
-    # option.
-    chunk_size: ChunkSizeEnum = ChunkSizeEnum.CHAPTER
     # Indicate whether translation words, TW, should be limited to
     # only those that appear in the USFM requested (True), or, include all
     # the TW words available for the language requested (False).
@@ -364,23 +343,15 @@ class ResourceLookupDto(NamedTuple):
 
 
 @final
-class TNChapter(NamedTuple):
-    """
-    A class to hold a chapter's intro translation notes and a mapping
-    of its verse references to translation notes HTML content.
-    """
-
+@dataclass
+class TNChapter:
     intro_html: str
     verses: dict[VerseRef, str]
 
 
 @final
-class TNBook(NamedTuple):
-    """
-    A class to hold a book's intro translation notes and a mapping
-    of chapter numbers to translation notes HTML content.
-    """
-
+@dataclass
+class TNBook:
     lang_code: str
     lang_name: str
     book_code: str
@@ -391,22 +362,33 @@ class TNBook(NamedTuple):
 
 
 @final
-class TQChapter(NamedTuple):
-    """
-    A class to hold a mapping of verse references to translation
-    questions HTML content.
-    """
-
+@dataclass
+class TNCChapter:
+    intro_html: str
     verses: dict[VerseRef, str]
 
 
 @final
-class TQBook(NamedTuple):
-    """
-    A class to hold a mapping of chapter numbers to translation questions
-    HTML content.
-    """
+@dataclass
+class TNCBook:
+    lang_code: str
+    lang_name: str
+    book_code: str
+    resource_type_name: str
+    book_intro: str
+    chapters: dict[ChapterNum, TNCChapter]
+    lang_direction: LangDirEnum
 
+
+@final
+@dataclass
+class TQChapter:
+    verses: dict[VerseRef, str]
+
+
+@final
+@dataclass
+class TQBook:
     lang_code: str
     lang_name: str
     book_code: str
@@ -561,10 +543,12 @@ class SourceData(BaseModel):
     git_repo: list[RepoEntry]
 
 
+# Model parts of the generated document:
+
+
 class DocumentPart(BaseModel):
     content: str
     is_rtl: bool = False
-    add_hr_p: bool = True
     contained_in_two_column_section: bool = False
     add_page_break: bool = False
     use_section_visual_separator: bool = False

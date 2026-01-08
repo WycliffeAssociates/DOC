@@ -46,115 +46,15 @@ from doc.utils.url_utils import (
     book_codes_and_names_from_manifest,
 )
 from fastapi import HTTPException, status
+from filelock import FileLock
 from pydantic import HttpUrl, ValidationError
 
 
 logger = settings.logger(__name__)
 
-fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(maxsize=1, ttl=180)
-
-
-# This is only used to see if a lang_code is in the collection
-# otherwise it is a heart language. Eventually the graphql data api may
-# provide gateway/heart boolean value.
-GATEWAY_LANGUAGES: Sequence[str] = [
-    "abs",
-    "aju",
-    "am",
-    "apd",
-    "ar",
-    "ar-x-dcv",
-    "ary",
-    "arz",
-    "as",
-    "ase",
-    "bem",
-    "bg",
-    "bgw",
-    "bi",
-    "bn",
-    "ceb",
-    "cmn",
-    "cmn-x-omc",
-    "csl",
-    "dz",
-    "en",
-    "es",
-    "es-419",
-    "fa",
-    "fil",
-    "fr",
-    "grt",
-    "gu",
-    "gug",
-    "ha",
-    "hbs",
-    "hca",
-    "he",
-    "hi",
-    "hne",
-    "hu",
-    "id",
-    "id-x-dcv",
-    "idb",
-    "ilo",
-    "ins",
-    "ja",
-    "jv",
-    "kas",
-    "km",
-    "kn",
-    "lbj",
-    "ln",
-    "lo",
-    "mai",
-    "mg",
-    "ml",
-    "mn",
-    "mni",
-    "mnk",
-    "mr",
-    "ms",
-    "my",
-    "ne",
-    "nl",
-    "npi",
-    "or",
-    "pa",
-    "pbt",
-    "pes",
-    "pis",
-    "plt",
-    "pmy",
-    "pnb",
-    "prs",
-    "ps",
-    "psr",
-    "pt",
-    "pt-br",
-    "raj",
-    "rsl",
-    "ru",
-    "rwr",
-    "sn",
-    "sw",
-    "swc",
-    "swh",
-    "ta",
-    "te",
-    "th",
-    "ti",
-    "tl",
-    "tn",
-    "tpi",
-    "tr",
-    "tsg",
-    "ug",
-    "ur",
-    "vi",
-    "zh",
-    "zlm",
-]
+fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(
+    maxsize=1, ttl=settings.DATA_API_CACHE_TTL_SECONDS
+)
 
 
 # List of languages which do not have USFM available for any books. We use this
@@ -163,18 +63,14 @@ GATEWAY_LANGUAGES: Sequence[str] = [
 # selecting a language which might have non-USFM resources available but
 # not USFM so that when their resulting doc is generated no scripture is
 # present. It makes it seem like a bug in STET and is bad UX.
-LANG_CODES_WITH_NO_USFM: list[str] = ["ru"]
-
-# For cloudflare
-USER_AGENT_STR: str = "wa-doc"
-X_REQUESTED_WITH_VALUE: str = "WA-Tool-Doc"
+LANG_CODES_WITH_NO_USFM: frozenset[str] = frozenset(["ru"])
 
 
 @cached(fetch_source_data_cache)
 def fetch_source_data(
     data_api_url: HttpUrl = settings.DATA_API_URL,
-    user_agent_str: str = USER_AGENT_STR,
-    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
+    user_agent_str: str = settings.USER_AGENT_STR,
+    x_requested_with_value: str = settings.X_REQUESTED_WITH_VALUE,
 ) -> Optional[SourceData]:
     """
     Downloads data from a GraphQL API.
@@ -183,7 +79,7 @@ def fetch_source_data(
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
     >>> result.git_repo[0]
-    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/ebenezer-sako/ahm_eph_text_reg'), content=Content(resource_type='reg', language=Language(english_name='Aizi, Mobumrin', ietf_code='ahm', national_name='Mobumrin Aizi', direction=<LangDirEnum.LTR: 'ltr'>)))
+    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/klero/ach-SS-acholi_rev_text_reg'), content=Content(resource_type='reg', language=Language(english_name='Acholi', ietf_code='ach-SS-acholi', national_name='Acholi', direction=<LangDirEnum.LTR: 'ltr'>)))
     """
     graphql_query = """
 query MyQuery {
@@ -210,7 +106,6 @@ query MyQuery {
         if response.status_code == 200:
             data_payload = response.json().get("data", {})
             if "git_repo" in data_payload:
-                # return SourceData.model_validate(data_payload)
                 valid_repos = [
                     repo
                     for repo in data_payload["git_repo"]
@@ -241,7 +136,7 @@ query MyQuery {
 
 def lang_codes_and_names(
     # lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
-    gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
+    gateway_languages: frozenset[str] = settings.GATEWAY_LANGUAGES,
 ) -> Sequence[tuple[str, str, bool]]:
     """
     >>> from doc.domain import resource_lookup
@@ -280,8 +175,8 @@ def lang_codes_and_names(
 
 
 def lang_codes_and_names_having_usfm(
-    lang_code_filter_list: Sequence[str] = LANG_CODES_WITH_NO_USFM,
-    gateway_languages: Sequence[str] = GATEWAY_LANGUAGES,
+    lang_code_filter_list: frozenset[str] = LANG_CODES_WITH_NO_USFM,
+    gateway_languages: frozenset[str] = settings.GATEWAY_LANGUAGES,
 ) -> Sequence[tuple[str, str, bool]]:
     """
     >>> from doc.domain import resource_lookup
@@ -417,6 +312,17 @@ def get_resource_types(
     return resource_types
 
 
+def filter_excluded_resource_types(
+    repos_info: list[RepoEntry], excluded: list[tuple[str, str]] = [("en", "udb")]
+) -> list[RepoEntry]:
+    return [
+        entry
+        for entry in repos_info
+        if (entry.content.language.ietf_code, entry.content.resource_type)
+        not in excluded
+    ]
+
+
 @worker.app.task
 def resource_types(
     lang_code: str,
@@ -447,6 +353,7 @@ def resource_types(
         return []
     try:
         repos_info = data.git_repo
+        repos_info = filter_excluded_resource_types(repos_info)
         augmented_repos_info = add_data_not_supplied_by_data_api(repos_info)
         repo_clone_list = repos_to_clone(lang_code, augmented_repos_info)
         repos_to_clone_ = [
@@ -476,8 +383,8 @@ def batch_download_repos(
         "https://content.bibletranslationtools.org/api/v1/repos/"
     ),
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-    user_agent_str: str = USER_AGENT_STR,
-    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
+    user_agent_str: str = settings.USER_AGENT_STR,
+    x_requested_with_value: str = settings.X_REQUESTED_WITH_VALUE,
 ) -> None:
     """Batch download repos and then batch unzip repos."""
     download_commands = []
@@ -523,12 +430,80 @@ def batch_download_repos(
         )
 
 
+# @worker.app.task
+# def batch_clone_git_repos(
+#     repos: list[tuple[HttpUrl, str]],
+#     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
+#     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
+#     user_agent_str: str = settings.USER_AGENT_STR,
+#     x_requested_with_value: str = settings.X_REQUESTED_WITH_VALUE,
+#     lock_timeout_seconds: int = settings.LOCK_TIMEOUT_SECONDS,
+# ) -> None:
+#     """
+#     Celery-managed batch git clone with per-repository filesystem locking.
+#     Locking is per `resource_filepath` to prevent concurrent deletion/cloning
+#     races while still allowing parallel clones of distinct repositories.
+#     """
+#     clone_commands: list[str] = []
+#     for url, resource_filepath in repos:
+#         lock_path = resource_filepath + ".lock"
+#         lock = FileLock(
+#             lock_path, timeout=lock_timeout_seconds
+#         )  # prevent race condition possibility; timeout in case of process crash causing blocking
+#         with lock:
+#             if asset_caching_enabled:
+#                 try:
+#                     git_dir = join(resource_filepath, ".git")
+#                     stat_ = stat(git_dir)
+#                     mod_time = datetime.fromtimestamp(stat_.st_mtime)
+#                     expiry = timedelta(minutes=asset_caching_period)
+#                     if (
+#                         all(
+#                             exists(join(git_dir, filename))
+#                             for filename in ("config", "HEAD", "objects")
+#                         )
+#                         and any(scandir(resource_filepath))
+#                         and datetime.now() - mod_time <= expiry
+#                     ):
+#                         logger.info(
+#                             "Skipping clone: %s exists, valid, and not stale",
+#                             resource_filepath,
+#                         )
+#                         continue  # ✅ Reuse cached repo
+#                 except FileNotFoundError:
+#                     logger.warning("Git directory not found for %s", resource_filepath)
+#                 logger.info(
+#                     "Removing stale, incomplete, or corrupt repository: %s",
+#                     resource_filepath,
+#                 )
+#             else:
+#                 logger.info(
+#                     "Asset caching disabled: forcibly removing %s",
+#                     resource_filepath,
+#                 )
+#             if isdir(resource_filepath):
+#                 shutil.rmtree(resource_filepath)
+#             clone_command = (
+#                 f"git -c http.userAgent='{user_agent_str}' "
+#                 f"-c http.extraHeader='X-Requested-With:{x_requested_with_value}' "
+#                 f"clone --depth=1 --single-branch '{url}' '{resource_filepath}' || true"
+#             )
+#             clone_commands.append(clone_command)
+#     if clone_commands:
+#         full_command = " && ".join(clone_commands)
+#         try:
+#             subprocess.call(full_command, shell=True)
+#         except subprocess.SubprocessError:
+#             logger.error("Batch git clone failed!")
+
+
+# @worker.app.task
 def batch_clone_git_repos(
     repos: list[tuple[HttpUrl, str]],
     asset_caching_enabled: bool = settings.ASSET_CACHING_ENABLED,
     asset_caching_period: int = settings.ASSET_CACHING_PERIOD,
-    user_agent_str: str = USER_AGENT_STR,
-    x_requested_with_value: str = X_REQUESTED_WITH_VALUE,
+    user_agent_str: str = settings.USER_AGENT_STR,
+    x_requested_with_value: str = settings.X_REQUESTED_WITH_VALUE,
 ) -> None:
     """
     Clones multiple git repositories in a single batch operation.
@@ -649,7 +624,7 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     >>> ();data = resource_lookup.book_codes_for_lang("es-419");() # doctest: +ELLIPSIS
     (...)
     >>> list(data)
-    [('gen', 'Génesis'), ('exo', 'Éxodo'), ('lev', 'Levítico'), ('num', 'Números'), ('deu', 'Deuteronomio'), ('jos', 'Josué'), ('jdg', 'Jueces'), ('rut', 'Ruth'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reyes'), ('2ki', '2 Reyes'), ('1ch', '1 Crónicas'), ('2ch', '2 Crónicas'), ('ezr', 'Esdras'), ('neh', 'Nehemías'), ('est', 'Ester'), ('job', 'Job'), ('psa', 'Salmos'), ('pro', 'Proverbios'), ('ecc', 'Eclesiastés'), ('sng', 'Cántico de Salomón'), ('isa', 'Isaías'), ('jer', 'Jeremías'), ('lam', 'Lamentaciones'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseas'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Abdías'), ('jon', 'Jonás'), ('mic', 'Miqueas'), ('nam', 'Nahúm'), ('hab', 'Habacuc'), ('zep', 'Sofonías'), ('hag', 'Hageo'), ('zec', 'Zacarías'), ('mal', 'Malaquías'), ('mat', 'Mateo'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'Juan'), ('act', 'Hechos'), ('rom', 'Romanos'), ('1co', '1 Corintios'), ('2co', '2 Corintios'), ('gal', 'Gálatas'), ('eph', 'Efesios'), ('php', 'Filipenses'), ('col', 'Colosenses'), ('1th', '1 Tesalonicenses'), ('2th', '2 Tesalonicenses'), ('1ti', '1 Timoteo'), ('2ti', '2 Timoteo'), ('tit', 'Tito'), ('phm', 'Filemón'), ('heb', 'Hebreos'), ('jas', 'Santiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 Juan'), ('2jn', '2 Juan'), ('3jn', '3 Juan'), ('jud', 'Judas'), ('rev', 'Apocalipsis')]
+    [('gen', 'Génesis'), ('exo', 'Éxodo'), ('lev', 'Levítico'), ('num', 'Números'), ('deu', 'Deuteronomio'), ('jos', 'Josué'), ('jdg', 'Jueces'), ('rut', 'Ruth'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reyes'), ('2ki', '2 Reyes'), ('1ch', '1 Crónicas'), ('2ch', '2 Crónicas'), ('ezr', 'Esdras'), ('neh', 'Nehemías'), ('est', 'Ester'), ('job', 'Job'), ('psa', 'Salmos'), ('pro', 'Proverbios'), ('ecc', 'Eclesiastés'), ('sng', 'Cántico de salomón'), ('isa', 'Isaías'), ('jer', 'Jeremías'), ('lam', 'Lamentaciones'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseas'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Abdías'), ('jon', 'Jonás'), ('mic', 'Miqueas'), ('nam', 'Nahúm'), ('hab', 'Habacuc'), ('zep', 'Sofonías'), ('hag', 'Hageo'), ('zec', 'Zacarías'), ('mal', 'Malaquías'), ('mat', 'Mateo'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'Juan'), ('act', 'Hechos'), ('rom', 'Romanos'), ('1co', '1 Corintios'), ('2co', '2 Corintios'), ('gal', 'Gálatas'), ('eph', 'Efesios'), ('php', 'Filipenses'), ('col', 'Colosenses'), ('1th', '1 Tesalonicenses'), ('2th', '2 Tesalonicenses'), ('1ti', '1 Timoteo'), ('2ti', '2 Timoteo'), ('tit', 'Tito'), ('phm', 'Filemón'), ('heb', 'Hebreos'), ('jas', 'Santiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 Juan'), ('2jn', '2 Juan'), ('3jn', '3 Juan'), ('jud', 'Judas'), ('rev', 'Apocalipsis')]
     >>> ();data = resource_lookup.shared_book_codes("pt-br", "es-419");() # doctest: +ELLIPSIS
     (...)
     >>> list(data)
@@ -746,6 +721,11 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
         ),
         make_entry(
             HttpUrl(
+                # NOTE: this URL is actually not used in DOC because the file no longer exists
+                # there. Instead we provide this file for ourselves and copy it into
+                # place from the root of this project at FastAPI initialization. One day
+                # it would be nice to have this live somewhere online so that
+                # potentially updated versions could be acquired.
                 "https://github.com/WycliffeAssociates/TS-biel-files/blob/master/training/en/Refinement%20and%20Publication/Reviewers'%20Guide/NT%20Survey%20RG%20Files/NT%20Survey%20Reviewers'%20Guide.docx"
             ),
             "rg",
@@ -965,9 +945,11 @@ def get_book_names_from_usfm_metadata(
     book_codes_and_names_localized: dict[str, str] = {}
     usfm_files = parsing.find_usfm_files(resource_filepath)
     for usfm_file in usfm_files:
+        usfm = ""
         usfm_file_components = Path(usfm_file).stem.lower().split("-")
         book_code = usfm_file_components[1]
-        usfm = read_file(usfm_file) if usfm_file else ""
+        with open(usfm_file, "r") as f:
+            usfm = f.read()
         frontmatter, _, _ = parsing.split_usfm_by_chapters(
             lang_code, resource_type, book_code, usfm
         )
@@ -1014,7 +996,7 @@ def book_codes_for_lang_from_usfm_only(
 
 
 def chapters_in_books(
-    book_chapters: Mapping[str, int] = BOOK_CHAPTERS
+    book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
 ) -> dict[str, list[int]]:
     chapters_in_book: dict[str, list[int]] = {
         book_code: list(range(1, num_of_chapters + 1))
@@ -1249,7 +1231,6 @@ def nt_survey_rg_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
-        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1291,7 +1272,6 @@ def ot_survey_rg1_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
-        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1333,7 +1313,6 @@ def ot_survey_rg2_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
-        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1375,7 +1354,6 @@ def ot_survey_rg3_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
-        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1417,7 +1395,6 @@ def ot_survey_rg4_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
-        logger.debug("maybe_localized_book_name: %s", maybe_localized_book_name)
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 

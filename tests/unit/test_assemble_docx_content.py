@@ -27,19 +27,22 @@ def test_assemble_docx_content_ordering_of_books() -> None:
     ]
     for resource_dir, dto in zip(resource_dirs, found_resource_lookup_dtos):
         resource_lookup.provision_asset_files(dto.url, resource_dir)
-    usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
-        found_resource_lookup_dtos,
-        resource_dirs,
-        document_request.resource_requests,
-        document_request.layout_for_print,
-        document_request.use_chapter_labels,
-        document_request.generate_docx,
+    usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books, rg_books = (
+        parsing.books(
+            found_resource_lookup_dtos,
+            resource_dirs,
+            document_request.resource_requests,
+            document_request.layout_for_print,
+            document_request.use_chapter_labels,
+            document_request.generate_docx,
+        )
     )
-    document_parts = document_generator.assemble_docx_content(
+    document_parts = document_generator.assemble_content(
         document_request_key,
         document_request,
         usfm_books,
         tn_books,
+        tnc_books,
         tq_books,
         tw_books,
         bc_books,

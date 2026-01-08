@@ -9,22 +9,22 @@ beautifulsoup4
 cachetools
 celery
 celery-types
+docxcompose
 docxtpl
 fastapi[all]
+filelock
 flower
-htmldocx
 gunicorn
+htmldocx
 jinja2
 mistune
 orjson
 pydantic
 email-validator
 python-dotenv
-# For ebook-convert HTML to PDF (we use weasyprint)
-# PyQt5
-# PyQtWebEngine
 pyyaml
 redis
+regex # for unicode aware word boundaries for RTL languages
 requests
 setuptools
 termcolor

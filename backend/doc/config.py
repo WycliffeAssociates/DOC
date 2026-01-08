@@ -20,6 +20,110 @@ class Settings(BaseSettings):
 
     DATA_API_URL: HttpUrl
 
+    # This is only used to see if a lang_code is in the collection
+    # otherwise it is a heart language. Eventually the graphql data api may
+    # provide gateway/heart boolean value.
+    GATEWAY_LANGUAGES: frozenset[str] = frozenset(
+        [
+            "abs",
+            "aju",
+            "am",
+            "apd",
+            "ar",
+            "ar-x-dcv",
+            "ary",
+            "arz",
+            "as",
+            "ase",
+            "bem",
+            "bg",
+            "bgw",
+            "bi",
+            "bn",
+            "ceb",
+            "cmn",
+            "cmn-x-omc",
+            "csl",
+            "dz",
+            "en",
+            "es",
+            "es-419",
+            "fa",
+            "fil",
+            "fr",
+            "grt",
+            "gu",
+            "gug",
+            "ha",
+            "hbs",
+            "hca",
+            "he",
+            "hi",
+            "hne",
+            "hu",
+            "id",
+            "id-x-dcv",
+            "idb",
+            "ilo",
+            "ins",
+            "ja",
+            "jv",
+            "kas",
+            "km",
+            "kn",
+            "lbj",
+            "ln",
+            "lo",
+            "mai",
+            "mg",
+            "ml",
+            "mn",
+            "mni",
+            "mnk",
+            "mr",
+            "ms",
+            "my",
+            "ne",
+            "nl",
+            "npi",
+            "or",
+            "pa",
+            "pbt",
+            "pes",
+            "pis",
+            "plt",
+            "pmy",
+            "pnb",
+            "prs",
+            "ps",
+            "psr",
+            "pt",
+            "pt-br",
+            "raj",
+            "rsl",
+            "ru",
+            "rwr",
+            "sn",
+            "sw",
+            "swc",
+            "swh",
+            "ta",
+            "te",
+            "th",
+            "ti",
+            "tl",
+            "tn",
+            "tpi",
+            "tr",
+            "tsg",
+            "ug",
+            "ur",
+            "vi",
+            "zh",
+            "zlm",
+        ]
+    )
+
     USFM_RESOURCE_TYPES: Sequence[str] = [
         "avd",
         "ayt",
@@ -28,7 +132,7 @@ class Settings(BaseSettings):
         "f10",
         "nav",
         "reg",
-        # "udb",  # 2023-06-20 Content team doesn't want this used. This should probably be filtered at the graphql level though.
+        # "udb",  # Content team doesn't want udb used for any language, e.g., en, mr, tl, gu
         "ugnt",
         "uhb",
         "ulb",
@@ -51,20 +155,13 @@ class Settings(BaseSettings):
         "tn-condensed": "Condensed Translation Notes",
         "tq": "Translation Questions",
         "tw": "Translation Words",
-        # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used TODO (just for English or ?)
+        # "udb": "Unlocked Dynamic Bible",  # Content team doesn't want udb used for any language, e.g., en, mr, tl, gu
         "ugnt": "unfoldingWord® Greek New Testament",
         "uhb": "unfoldingWord® Hebrew Bible",
         "ulb": "Unlocked Literal Bible",
     }
 
     SHOW_TN_BOOK_INTRO: bool = True
-    # SHOW_BC_BOOK_INTRO: bool = True
-    # SHOW_TN_CHAPTER_INTRO: bool = True
-    # SHOW_TN_BOOK_INTRO_IN_VERSIFIED_CONTEXT: bool = True
-    # SHOW_BC_BOOK_INTRO_IN_VERSIFIED_CONTEXT: bool = True
-    # SHOW_TN_CHAPTER_INTRO_IN_VERSIFIED_CONTEXT: bool = True
-    # SHOW_BC_CHAPTER_COMMENTARY_IN_VERSIFIED_CONTEXT: bool = True
-    # SHOW_RG_CHAPTER_COMMENTARY_IN_VERSIFIED_CONTEXT: bool = True
 
     CHECK_USFM: bool
     USE_LOCALIZED_BOOK_NAME: bool
@@ -78,12 +175,18 @@ class Settings(BaseSettings):
     UNORDERED_LIST_END_STR: str = "</ul>"
     VERSE_SPAN_FMT_STR: str = '<span class="verse">{}</span>'
     BOOK_NAME_FMT_STR: str = "<h2 class='book-name'>{}</h2>"
-    LEFT_ALIGNED_HEADER_FMT_STR: str = "<h3 class='book-name'>{}</h3>"
-    END_OF_CHAPTER_HTML: str = '<div class="end-of-chapter"></div>'
+    RESOURCE_TYPE_NAME_FMT_STR: str = "<h2 class='book-name'>{}</h2>"
     HR: str = "<hr/>"
-    TW_WORD_LIST_VERTICAL: bool = True
+    TW_WORD_LIST_VERTICAL: bool = False
 
     DOWNLOAD_ASSETS: bool = False  # If true then download assets, else clone assets
+
+    LOCK_TIMEOUT_SECONDS: int
+
+    USER_AGENT_STR: str
+    X_REQUESTED_WITH_VALUE: str
+
+    DATA_API_CACHE_TTL_SECONDS: int
 
     def logger(self, name: str) -> logging.Logger:
         """

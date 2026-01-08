@@ -5,7 +5,7 @@ import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
 from doc.domain import resource_lookup
-from docx import Document  # type: ignore
+from docx import Document
 from fastapi import APIRouter, Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from stet.domain import document_generator, model

@@ -18,10 +18,6 @@ from tests.shared.utils import (
 
 logger = settings.logger(__name__)
 
-##########################################################################
-## Specific targeted tests (wrt language, resource type, resource code) ##
-##########################################################################
-
 
 @pytest.mark.docx
 def test_en_ulb_col_en_tn_col_language_book_order_with_no_email_1c_docx() -> None:
@@ -33,7 +29,6 @@ def test_en_ulb_col_en_tn_col_language_book_order_with_no_email_1c_docx() -> Non
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": True,
@@ -482,8 +477,6 @@ def test_pt_br_ulb_tn_luk_en_ulb_tn_luk_sw_ulb_tn_col_language_book_order_1c_c()
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-# tq has been retired for en
-# @pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> (
     None
 ):
@@ -561,8 +554,6 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-# tq has been retired for en
-# @pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tn_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tn_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> (
     None
 ):
@@ -912,8 +903,6 @@ def test_en_ulb_col_en_tw_col_sw_ulb_col_sw_tw_col_sw_ulb_tit_sw_tw_tit_language
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-# tq has been retired for en
-# @pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c() -> (
     None
 ):
@@ -991,8 +980,6 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_ti
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-# tq has been retired for en
-# @pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_sw_ulb_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> (
     None
 ):
@@ -1143,8 +1130,6 @@ def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_ti
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-# cuv is not provided by data api
-# @pytest.mark.skip
 def test_en_ulb_col_en_tq_col_en_tw_col_sw_ulb_col_sw_tq_col_sw_tw_col_zh_cuv_tit_sw_tq_tit_sw_tw_tit_language_book_order_1c_c() -> (
     None
 ):
@@ -1335,7 +1320,6 @@ def test_zh_cuv_jol_zh_tn_jol_zh_tq_jol_zh_tw_jol_language_book_order_1c_docx() 
                 # "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "assembly_layout_kind": None,
                 "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": True,
@@ -1558,7 +1542,6 @@ def test_nyk_x_nyanehumbe_reg_1pe_lbo_1c_chapter() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
-# @pytest.mark.focus
 def test_bjz_reg_eph_lbo_1c_chapter() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
@@ -1704,7 +1687,6 @@ def test_en_bc_col_language_book_order_with_no_email_1c_docx() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": True,
@@ -1729,7 +1711,6 @@ def test_en_bc_col_language_book_order_with_no_email_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": True,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1754,7 +1735,6 @@ def test_en_ulb_1jn_en_ulb_3jn_language_book_order_with_no_email_1c() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,
@@ -1798,7 +1778,6 @@ def test_en_tn_mat_with_book_intro() -> None:
                 "assembly_strategy_kind": model.AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
                 "assembly_layout_kind": model.AssemblyLayoutEnum.ONE_COLUMN,
                 "layout_for_print": False,
-                "chunk_size": model.ChunkSizeEnum.CHAPTER,
                 "generate_pdf": False,
                 "generate_epub": False,
                 "generate_docx": False,

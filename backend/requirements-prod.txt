@@ -4,40 +4,48 @@
 #
 #    pip-compile ./backend/requirements-prod.in
 #
-execnet==2.1.1
+execnet==2.1.2
     # via pytest-xdist
 icdiff==2.0.7
     # via pytest-icdiff
-iniconfig==2.0.0
+iniconfig==2.3.0
     # via pytest
-mypy==1.13.0
-    # via -r ./backend/requirements-prod.in
-mypy-extensions==1.0.0
+librt==0.7.3
     # via mypy
-packaging==24.2
+mypy==1.19.0
+    # via -r backend/requirements-prod.in
+mypy-extensions==1.1.0
+    # via mypy
+packaging==25.0
     # via
-    #   -c /Users/lriley/src/WA/github.com/linearcombination/DOC/backend/requirements.txt
+    #   -c backend/requirements.txt
     #   pytest
-pluggy==1.5.0
+pathspec==0.12.1
+    # via mypy
+pluggy==1.6.0
     # via pytest
 pprintpp==0.4.0
     # via pytest-icdiff
-pytest==8.3.3
+pygments==2.19.2
     # via
-    #   -r ./backend/requirements-prod.in
+    #   -c backend/requirements.txt
+    #   pytest
+pytest==9.0.2
+    # via
+    #   -r backend/requirements-prod.in
     #   pytest-datafiles
     #   pytest-icdiff
     #   pytest-repeat
     #   pytest-xdist
 pytest-datafiles==3.0.0
-    # via -r ./backend/requirements-prod.in
+    # via -r backend/requirements-prod.in
 pytest-icdiff==0.9
-    # via -r ./backend/requirements-prod.in
-pytest-repeat==0.9.3
-    # via -r ./backend/requirements-prod.in
-pytest-xdist==3.6.1
-    # via -r ./backend/requirements-prod.in
-typing-extensions==4.12.2
+    # via -r backend/requirements-prod.in
+pytest-repeat==0.9.4
+    # via -r backend/requirements-prod.in
+pytest-xdist==3.8.0
+    # via -r backend/requirements-prod.in
+typing-extensions==4.15.0
     # via
-    #   -c /Users/lriley/src/WA/github.com/linearcombination/DOC/backend/requirements.txt
+    #   -c backend/requirements.txt
     #   mypy

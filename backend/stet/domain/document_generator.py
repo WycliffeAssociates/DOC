@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Mapping, Sequence
+from typing import Mapping, Sequence, cast
 
 import mistune
 from celery import current_task
@@ -20,10 +20,10 @@ from doc.domain.resource_lookup import (
 )
 from doc.utils.file_utils import docx_filepath, file_needs_update
 from doc.utils.text_utils import maybe_correct_book_name
-from docx import Document  # type: ignore
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT  # type: ignore
-from docx.oxml import OxmlElement  # type: ignore
-from docx.oxml.ns import qn  # type: ignore
+from docx import Document
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from htmldocx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
@@ -178,7 +178,7 @@ def generate_docx_document(
         word_entry.words = word_entry_dto.words
         word_entry.bolded_phrases = word_entry_dto.bolded_phrases
         word_entry.strongs_numbers = word_entry_dto.strongs_numbers
-        word_entry.definition = mistune.markdown(word_entry_dto.definition)
+        word_entry.definition = cast(str, mistune.markdown(word_entry_dto.definition))
         for verse_ref_dto in word_entry_dto.verse_ref_dtos:
             source_selected_usfm_books = [
                 usfm_book_

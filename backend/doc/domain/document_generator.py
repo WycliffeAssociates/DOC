@@ -9,26 +9,25 @@ from datetime import datetime
 from os.path import exists, join
 from typing import Optional, Sequence, cast
 
+# import regex as re # not yet supported in python 3.13 - used for unicode word boundaries for RTL languages
+import re
 from celery import current_task
 from doc.config import settings
 from doc.domain import parsing, resource_lookup, worker
-from doc.domain.assembly_strategies.assembly_strategies_book_then_lang_by_chapter import (
-    assemble_content_by_chapter,
-    assemble_content_by_verse_chapter_at_a_time,
-)
-from doc.domain.assembly_strategies.assembly_strategies_lang_then_book_by_chapter import (
+from doc.domain.assembly_strategies.assemble_by_book import (
     assemble_content_by_book,
     assemble_content_by_verse_book_at_a_time,
 )
-from doc.domain.assembly_strategies_docx import (
-    assembly_strategies_book_then_lang_by_chapter as book_then_lang,
-    assembly_strategies_lang_then_book_by_chapter as lang_then_book,
+from doc.domain.assembly_strategies.assemble_by_chapter import (
+    assemble_content_by_chapter,
+    assemble_content_by_verse_chapter_at_a_time,
 )
-from doc.domain.assembly_strategies_docx.assembly_strategy_utils import (
+from doc.domain.assembly_strategies.assembly_strategy_utils import (
     add_full_width_hr,
     add_one_column_section,
     add_page_break,
     add_two_column_section,
+    two_column_spanning_hr_trick,
 )
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
@@ -37,22 +36,27 @@ from doc.domain.model import (
     AssemblyStrategyEnum,
     Attachment,
     BCBook,
-    ChunkSizeEnum,
     DocumentPart,
     DocumentRequest,
     DocumentRequestSourceEnum,
+    LangDirEnum,
     ResourceLookupDto,
     ResourceRequest,
     TNBook,
+    TNChapter,
+    TNCBook,
+    TNCChapter,
     TQBook,
+    TQChapter,
     TWBook,
     USFMBook,
 )
 from doc.reviewers_guide.model import RGBook
 from doc.utils.docx_util import (
+    add_internal_docx_links,
     generate_docx_toc,
     preprocess_html_for_internal_docx_links,
-    add_internal_docx_links,
+    style_superscripts,
 )
 from doc.utils.file_utils import (
     docx_filepath,
@@ -68,8 +72,10 @@ from doc.utils.tw_utils import (
     filter_unique_by_lang_code,
     translation_words_section_for_book,
 )
-from docx import Document  # type: ignore
-from docx.enum.section import WD_SECTION  # type: ignore
+from docx import Document
+from docx.document import Document as DocxDocument
+from docx.enum.section import WD_SECTION
+from docx.shared import RGBColor
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
 from htmldocx import HtmlToDocx  # type: ignore
@@ -92,7 +98,6 @@ def initialize_document_request_and_key(
         document_request.resource_requests,
         document_request.assembly_strategy_kind,
         document_request.assembly_layout_kind,
-        document_request.chunk_size,
         document_request.limit_words,
         document_request.use_chapter_labels,
         document_request.use_section_visual_separator,
@@ -107,12 +112,100 @@ def initialize_document_request_and_key(
     return document_request, document_request_key_
 
 
+def localize_non_usfm_book_names(
+    usfm_books: Sequence[USFMBook],
+    tn_books: list[TNBook],
+    tnc_books: list[TNCBook],
+    tq_books: list[TQBook],
+) -> None:
+    replacement_map: dict[
+        tuple[str, str],
+        tuple[re.Pattern[str], str],
+    ] = {}
+
+    for usfm in usfm_books:
+        english_name = BOOK_NAMES.get(usfm.book_code)
+        if not english_name:
+            continue
+
+        pattern = re.compile(rf"\b{re.escape(english_name)}\b")
+
+        replacement_map[(usfm.lang_code, usfm.book_code)] = (
+            pattern,
+            usfm.national_book_name,
+        )
+
+    def localize_tn_chapter(
+        chapter: TNChapter,
+        pattern: re.Pattern[str],
+        replacement: str,
+    ) -> None:
+        chapter.intro_html = pattern.sub(replacement, chapter.intro_html)
+        for verse_ref, html in chapter.verses.items():
+            chapter.verses[verse_ref] = pattern.sub(replacement, html)
+
+    def localize_tnc_chapter(
+        chapter: TNCChapter,
+        pattern: re.Pattern[str],
+        replacement: str,
+    ) -> None:
+        chapter.intro_html = pattern.sub(replacement, chapter.intro_html)
+        for verse_ref, html in chapter.verses.items():
+            chapter.verses[verse_ref] = pattern.sub(replacement, html)
+
+    def localize_tq_chapter(
+        chapter: TQChapter,
+        pattern: re.Pattern[str],
+        replacement: str,
+    ) -> None:
+        for verse_ref, html in chapter.verses.items():
+            chapter.verses[verse_ref] = pattern.sub(replacement, html)
+
+    # --- TN ---
+    for tn_book in tn_books:
+        key = (tn_book.lang_code, tn_book.book_code)
+        entry = replacement_map.get(key)
+        if not entry:
+            continue
+
+        pattern, replacement = entry
+        tn_book.book_intro = pattern.sub(replacement, tn_book.book_intro)
+
+        for tn_chapter in tn_book.chapters.values():
+            localize_tn_chapter(tn_chapter, pattern, replacement)
+
+    # --- TNC ---
+    for tnc_book in tnc_books:
+        key = (tnc_book.lang_code, tnc_book.book_code)
+        entry = replacement_map.get(key)
+        if not entry:
+            continue
+
+        pattern, replacement = entry
+        tnc_book.book_intro = pattern.sub(replacement, tnc_book.book_intro)
+
+        for tnc_chapter in tnc_book.chapters.values():
+            localize_tnc_chapter(tnc_chapter, pattern, replacement)
+
+    # --- TQ ---
+    for book in tq_books:
+        key = (book.lang_code, book.book_code)
+        entry = replacement_map.get(key)
+        if not entry:
+            continue
+
+        pattern, replacement = entry
+        for tq_chapter in book.chapters.values():
+            localize_tq_chapter(tq_chapter, pattern, replacement)
+
+
 def locate_acquire_and_build_resource_objects(
     document_request: DocumentRequest,
 ) -> tuple[
     Sequence[ResourceLookupDto],
     Sequence[USFMBook],
     Sequence[TNBook],
+    Sequence[TNCBook],
     Sequence[TQBook],
     Sequence[TWBook],
     Sequence[BCBook],
@@ -147,13 +240,18 @@ def locate_acquire_and_build_resource_objects(
     )
     current_task.update_state(state="Parsing asset files")
     t0 = time.time()
-    usfm_books, tn_books, tq_books, tw_books, bc_books, rg_books = parsing.books(
-        found_resource_lookup_dtos,
-        resource_dirs,
-        document_request.resource_requests,
-        document_request.layout_for_print,
-        document_request.use_chapter_labels,
-        document_request.generate_docx,
+    usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books, rg_books = (
+        parsing.books(
+            found_resource_lookup_dtos,
+            resource_dirs,
+            document_request.resource_requests,
+            document_request.layout_for_print,
+            document_request.use_chapter_labels,
+            document_request.generate_docx,
+        )
+    )
+    localize_non_usfm_book_names(
+        usfm_books, list(tn_books), list(tnc_books), list(tq_books)
     )
     t1 = time.time()
     logger.info("Time to parse all resource content: %s", t1 - t0)
@@ -161,6 +259,7 @@ def locate_acquire_and_build_resource_objects(
         found_resource_lookup_dtos,
         usfm_books,
         tn_books,
+        tnc_books,
         tq_books,
         tw_books,
         bc_books,
@@ -168,11 +267,6 @@ def locate_acquire_and_build_resource_objects(
     )
 
 
-# @worker.app.task(
-#     autoretry_for=(Exception,),
-#     retry_backoff=True,
-#     retry_kwargs={"max_retries": 3},
-# )
 @worker.app.task
 def generate_document(
     document_request_json: str,
@@ -196,24 +290,25 @@ def generate_document(
             found_resource_lookup_dtos,
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
             rg_books,
         ) = locate_acquire_and_build_resource_objects(document_request)
         current_task.update_state(state="Assembling content")
-        content = assemble_content(
+        document_parts = assemble_content(
             document_request_key_,
             document_request,
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
             rg_books,
-            found_resource_lookup_dtos,
         )
-        content_str = "".join(content)
+        content_str = compose_document(document_parts)
         if usfm_books:
             content_str = check_content_for_issues(content_str)
         content_str = create_title_page_and_wrap_in_template(
@@ -279,17 +374,19 @@ def generate_docx_document(
             found_resource_lookup_dtos,
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
             rg_books,
         ) = locate_acquire_and_build_resource_objects(document_request)
         current_task.update_state(state="Assembling content")
-        document_parts = assemble_docx_content(
+        document_parts = assemble_content(
             document_request_key_,
             document_request,
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
@@ -332,7 +429,6 @@ def document_request_key(
     resource_requests: Sequence[ResourceRequest],
     assembly_strategy_kind: AssemblyStrategyEnum,
     assembly_layout_kind: AssemblyLayoutEnum,
-    chunk_size: ChunkSizeEnum,
     limit_words: bool,
     use_chapter_labels: bool,
     use_section_visual_separator: bool,
@@ -375,9 +471,9 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}_{"rgct" if show_rg_chapter_commentary else "rgcf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}_{"rgct" if show_rg_chapter_commentary else "rgcf"}'
     else:
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{chunk_size.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}_{"rgct" if show_rg_chapter_commentary else "rgcf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}_{"rgct" if show_rg_chapter_commentary else "rgcf"}'
     if len(document_request_key) >= max_filename_len:
         # The generated filename could be too long for the OS where this is
         # running. Therefore, use the current time as a document_request_key
@@ -419,12 +515,6 @@ def document_html_header(
     title2: str,
     title3: str,
 ) -> str:
-    """
-    Choose the appropriate HTML header given the
-    assembly_layout_kind. The HTML header, naturally, contains the CSS
-    definitions and they in turn can be used to affect visual
-    compactness.
-    """
     if generate_docx:
         template = env.get_template("html/header_no_css_enclosing.html")
         return template.render()
@@ -438,137 +528,6 @@ def document_html_header(
     return instantiated_html_header_template(
         "html/header_enclosing.html", title1, title2, title3
     )
-
-
-def assemble_content(
-    document_request_key: str,
-    document_request: DocumentRequest,
-    usfm_books: Sequence[USFMBook],
-    tn_books: Sequence[TNBook],
-    tq_books: Sequence[TQBook],
-    tw_books: Sequence[TWBook],
-    bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
-    found_resource_lookup_dtos: Sequence[ResourceLookupDto],
-    hr: str = "<hr/>",
-    resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
-) -> list[str]:
-    """
-    Assemble and return the content from all requested resources according to the
-    assembly_strategy requested.
-
-    """
-    t0 = time.time()
-    content = []
-    if (
-        document_request.assembly_strategy_kind
-        == AssemblyStrategyEnum.INTERLEAVE_BY_BOOK
-    ):
-        content.extend(
-            assemble_content_by_book(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
-                cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-                document_request.use_section_visual_separator,
-                document_request.use_two_column_layout_for_tn_notes,
-                document_request.use_two_column_layout_for_tq_notes,
-                document_request.show_tn_book_intro,
-                document_request.show_bc_book_intro,
-                document_request.show_tn_chapter_intro,
-            )
-        )
-    elif (
-        document_request.assembly_strategy_kind
-        == AssemblyStrategyEnum.INTERLEAVE_BY_VERSE_BOOK_AT_A_TIME
-    ):
-        content.extend(
-            assemble_content_by_verse_book_at_a_time(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
-                cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-                document_request.use_section_visual_separator,
-                document_request.use_two_column_layout_for_tn_notes,
-                document_request.use_two_column_layout_for_tq_notes,
-                document_request.show_tn_book_intro,
-                document_request.show_bc_book_intro,
-                document_request.show_tn_chapter_intro,
-                document_request.show_bc_chapter_commentary,
-                document_request.show_rg_chapter_commentary,
-            )
-        )
-    elif (
-        document_request.assembly_strategy_kind
-        == AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
-    ):
-        content.extend(
-            assemble_content_by_chapter(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
-                cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-                document_request.use_section_visual_separator,
-                document_request.use_two_column_layout_for_tn_notes,
-                document_request.use_two_column_layout_for_tq_notes,
-                document_request.show_tn_book_intro,
-                document_request.show_bc_book_intro,
-                document_request.show_tn_chapter_intro,
-            )
-        )
-    elif (
-        document_request.assembly_strategy_kind
-        == AssemblyStrategyEnum.INTERLEAVE_BY_VERSE
-    ):
-        content.extend(
-            assemble_content_by_verse_chapter_at_a_time(
-                usfm_books,
-                tn_books,
-                tq_books,
-                tw_books,
-                bc_books,
-                rg_books,
-                cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-                document_request.use_section_visual_separator,
-                document_request.use_two_column_layout_for_tn_notes,
-                document_request.use_two_column_layout_for_tq_notes,
-                document_request.show_tn_book_intro,
-                document_request.show_bc_book_intro,
-                document_request.show_tn_chapter_intro,
-                document_request.show_bc_chapter_commentary,
-                document_request.show_rg_chapter_commentary,
-            )
-        )
-    t1 = time.time()
-    logger.info("Time for interleaving document: %s", t1 - t0)
-    t0 = time.time()
-    # Add the translation words definition section for each language requested.
-    unique_tw_books = filter_unique_by_lang_code(tw_books)
-    for tw_book in unique_tw_books:
-        content.extend(
-            translation_words_section_for_book(
-                tw_book,
-                usfm_books,
-                # Not currently using limit tw words feature now because we want all
-                # interdocument tw links to work.
-                False,
-                document_request.resource_requests,
-            )
-        )
-        if document_request.use_section_visual_separator:
-            content.append(hr)
-    t1 = time.time()
-    logger.info("Time for add TW content to document: %s", t1 - t0)
-    return content
 
 
 def create_title_page_and_wrap_in_template(
@@ -593,11 +552,12 @@ def create_title_page_and_wrap_in_template(
     return content
 
 
-def assemble_docx_content(
+def assemble_content(
     document_request_key: str,
     document_request: DocumentRequest,
     usfm_books: Sequence[USFMBook],
     tn_books: Sequence[TNBook],
+    tnc_books: Sequence[TNCBook],
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
@@ -613,36 +573,35 @@ def assemble_docx_content(
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.INTERLEAVE_BY_BOOK
     ):
-        document_parts = lang_then_book.assemble_content_by_book(
+        document_parts = assemble_content_by_book(
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-            document_request.chunk_size,
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
             document_request.use_two_column_layout_for_tq_notes,
             document_request.show_tn_book_intro,
             document_request.show_bc_book_intro,
             document_request.show_tn_chapter_intro,
-            document_request.show_bc_chapter_commentary,
         )
     elif (
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.INTERLEAVE_BY_VERSE_BOOK_AT_A_TIME
     ):
-        document_parts = lang_then_book.assemble_content_by_verse_book_at_a_time(
+        document_parts = assemble_content_by_verse_book_at_a_time(
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-            document_request.chunk_size,
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
             document_request.use_two_column_layout_for_tq_notes,
@@ -656,15 +615,15 @@ def assemble_docx_content(
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER
     ):
-        document_parts = book_then_lang.assemble_content_by_chapter(
+        document_parts = assemble_content_by_chapter(
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-            document_request.chunk_size,
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
             document_request.use_two_column_layout_for_tq_notes,
@@ -676,15 +635,15 @@ def assemble_docx_content(
         document_request.assembly_strategy_kind
         == AssemblyStrategyEnum.INTERLEAVE_BY_VERSE
     ):
-        document_parts = book_then_lang.assemble_content_by_verse_chapter_at_a_time(
+        document_parts = assemble_content_by_verse_chapter_at_a_time(
             usfm_books,
             tn_books,
+            tnc_books,
             tq_books,
             tw_books,
             bc_books,
             rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
-            # document_request.chunk_size,
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
             document_request.use_two_column_layout_for_tq_notes,
@@ -696,7 +655,7 @@ def assemble_docx_content(
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)
-    if tw_books:
+    if tw_books and not document_request.layout_for_print:
         t0 = time.time()
         # Add the translation words definition section for each language requested.
         unique_tw_books = filter_unique_by_lang_code(tw_books)
@@ -708,17 +667,16 @@ def assemble_docx_content(
                             tw_book,
                             usfm_books,
                             False,
-                            # document_request.limit_words,
                             document_request.resource_requests,
                         )
                     ),
-                    use_section_visual_separator=document_request.use_section_visual_separator,
+                    is_rtl=tw_book and tw_book.lang_direction == LangDirEnum.RTL,
+                    use_section_visual_separator=False,
                 )
             )
             document_parts.append(
-                DocumentPart(
-                    content="",
-                    use_section_visual_separator=document_request.use_section_visual_separator,
+                two_column_spanning_hr_trick(
+                    document_request.use_section_visual_separator
                 )
             )
         t1 = time.time()
@@ -798,7 +756,7 @@ def convert_html_to_epub(
 
 def compose_docx_document(
     document_parts: list[DocumentPart],
-) -> Document:
+) -> DocxDocument:
     """
     Convert a sequence of HTML parts into one DOCX Document,
     performing preprocessing and optional separators.
@@ -816,13 +774,29 @@ def compose_docx_document(
             html_to_docx.add_html_to_document(processed_html, doc)
         except ValueError as e:
             logger.exception("Error converting HTML to docx: %s", e)
-        if part.use_section_visual_separator and part.add_hr_p:
+        if part.use_section_visual_separator:
             add_full_width_hr(doc)
         if part.add_page_break:
             add_page_break(doc)
+    style_superscripts(doc, lift_half_points=4, color=RGBColor(0x99, 0x99, 0x99))
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %.2f seconds", t1 - t0)
     return doc
+
+
+def compose_document(
+    document_parts: list[DocumentPart],
+    hr: str = "<hr/>",
+) -> str:
+    content = []
+    t0 = time.time()
+    for part in document_parts:
+        content.append(part.content)
+        if part.use_section_visual_separator:
+            content.append(hr)
+    t1 = time.time()
+    logger.info("Time for composing document parts into HTML: %.2f seconds", t1 - t0)
+    return "".join(content)
 
 
 def convert_html_to_docx(
@@ -877,8 +851,10 @@ def cover_filepath(
 def select_assembly_layout_kind(
     document_request: DocumentRequest,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    language_book_order: AssemblyStrategyEnum = AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
-    book_language_order: AssemblyStrategyEnum = AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
+    by_book_order: AssemblyStrategyEnum = AssemblyStrategyEnum.INTERLEAVE_BY_BOOK,
+    by_verse_book_at_a_time_order: AssemblyStrategyEnum = AssemblyStrategyEnum.INTERLEAVE_BY_VERSE_BOOK_AT_A_TIME,
+    by_chapter_order: AssemblyStrategyEnum = AssemblyStrategyEnum.INTERLEAVE_BY_CHAPTER,
+    by_verse_order: AssemblyStrategyEnum = AssemblyStrategyEnum.INTERLEAVE_BY_VERSE,
     stet_strategy: AssemblyStrategyEnum = AssemblyStrategyEnum.STET_STRATEGY,
     one_column_compact: AssemblyLayoutEnum = AssemblyLayoutEnum.ONE_COLUMN_COMPACT,
     sl_sr: AssemblyLayoutEnum = AssemblyLayoutEnum.TWO_COLUMN_SCRIPTURE_LEFT_SCRIPTURE_RIGHT,
@@ -893,40 +869,26 @@ def select_assembly_layout_kind(
     DocumentRequest's validator. If we hadn't then we wouldn't be able
     to make the assumptions this function makes.
     """
-    # The assembly_layout_kind does not get set by the UI, so if it is set
-    # now that means that the request is coming from a client other than the UI.
-    # In either case validation of the DocumentRequest instance will have
-    # already occurred by this point thus ensuring that the document
-    # request's values are valid in which case we can simply return the
-    # assembly_layout_kind that was set.
     if (
         document_request.document_request_source == DocumentRequestSourceEnum.TEST
         and document_request.assembly_layout_kind
-    ):
+    ):  # request is coming from a test, so just use the value the test set
         return document_request.assembly_layout_kind
-    if document_request.assembly_strategy_kind == stet_strategy:
+    elif document_request.assembly_strategy_kind == stet_strategy:
         return stet_layout
-    if (
-        document_request.layout_for_print
-        and document_request.assembly_strategy_kind == language_book_order
-    ):
-        return one_column_compact
-    elif (
-        not document_request.layout_for_print
-        and document_request.assembly_strategy_kind == language_book_order
+    elif not document_request.layout_for_print and (
+        document_request.assembly_strategy_kind == by_book_order
+        or document_request.assembly_strategy_kind == by_verse_book_at_a_time_order
+        or document_request.assembly_strategy_kind == by_verse_order
+        or document_request.assembly_strategy_kind == by_chapter_order
     ):
         return one_column
-    elif (
-        not document_request.layout_for_print
-        and document_request.assembly_strategy_kind == book_language_order
+    elif document_request.layout_for_print and (
+        document_request.assembly_strategy_kind == by_book_order
+        or document_request.assembly_strategy_kind == by_verse_book_at_a_time_order
+        or document_request.assembly_strategy_kind == by_verse_order
+        or document_request.assembly_strategy_kind == by_chapter_order
     ):
-        # return sl_sr
-        return one_column
-    elif (
-        document_request.layout_for_print
-        and document_request.assembly_strategy_kind == book_language_order
-    ):
-        # return sl_sr_compact
         return one_column_compact
     return one_column
 

@@ -1,11 +1,14 @@
 import re
 from pathlib import Path
 
-from docx import Document  # type: ignore
-from docx.oxml import OxmlElement  # type: ignore
-from docx.oxml.ns import qn  # type: ignore
-from docx.text.paragraph import Paragraph  # type: ignore
-from docx.text.run import Run  # type: ignore
+from docx import Document
+from docx.document import Document as DocxDocument
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import RGBColor
+from docx.text.paragraph import Paragraph
+from docx.text.run import Run
+from lxml.etree import _Element as Element
 
 
 def generate_docx_toc(docx_filepath: str) -> str:
@@ -13,7 +16,7 @@ def generate_docx_toc(docx_filepath: str) -> str:
     Create subdocument that contains only the code to generate (on
     first open of document) the table of contents.
     """
-    toc_path = "{}_toc.docx".format(Path(docx_filepath).with_suffix(""))
+    toc_path = f"{Path(docx_filepath).with_suffix('')}_toc.docx"
     document = Document()
     paragraph = document.add_paragraph()
     run = paragraph.add_run()
@@ -39,7 +42,7 @@ def generate_docx_toc(docx_filepath: str) -> str:
     r_element.append(fldChar2)
     r_element.append(fldChar4)
     document.save(toc_path)
-    return toc_path
+    return str(toc_path)
 
 
 def preprocess_html_for_internal_docx_links(html: str) -> str:
@@ -72,8 +75,7 @@ def preprocess_html_for_internal_docx_links(html: str) -> str:
     return html
 
 
-def _make_text_run(text: str) -> OxmlElement:
-    """Create a plain text run that preserves spaces."""
+def _make_text_run(text: str) -> Element:
     r = OxmlElement("w:r")
     t = OxmlElement("w:t")
     t.text = text
@@ -83,10 +85,9 @@ def _make_text_run(text: str) -> OxmlElement:
     return r
 
 
-def _make_internal_hyperlink_element(text: str, bookmark_name: str) -> OxmlElement:
-    """Create an internal hyperlink element to an existing bookmark."""
+def _make_internal_hyperlink_element(text: str, bookmark_name: str) -> Element:
     hyperlink = OxmlElement("w:hyperlink")
-    hyperlink.set(qn("w:anchor"), bookmark_name)  # internal anchor, no '#'
+    hyperlink.set(qn("w:anchor"), bookmark_name)
     hyperlink.set(qn("w:history"), "1")
     r = OxmlElement("w:r")
     r_pr = OxmlElement("w:rPr")
@@ -106,32 +107,33 @@ def _add_bookmark_to_run(run: Run, bookmark_name: str) -> None:
     """Add a DOCX bookmark around the given run in-place."""
     r = run._r
     p = r.getparent()
+    if p is None:
+        return
     start = OxmlElement("w:bookmarkStart")
     start.set(qn("w:id"), "0")
     start.set(qn("w:name"), bookmark_name)
     end = OxmlElement("w:bookmarkEnd")
     end.set(qn("w:id"), "0")
-    p.insert(p.index(r), start)
-    p.insert(p.index(r) + 1, end)
+    idx = p.index(r)
+    p.insert(idx, start)
+    p.insert(idx + 1, end)
 
 
-def _replace_runs(para: Paragraph, new_elems: list[OxmlElement]) -> None:
+def _replace_runs(para: Paragraph, new_elems: list[Element]) -> None:
     """
     Replace all runs in a paragraph with the provided XML elements.
     (Keeps paragraph element intact and appends supplied elements.)
     """
-    # remove existing run XML elements
     for run in list(para.runs):
         p_r = run._r
         p = p_r.getparent()
         if p is not None and p_r in p:
             p.remove(p_r)
-    # append new elements
     for elem in new_elems:
         para._p.append(elem)
 
 
-def add_internal_docx_links(doc: Document) -> None:
+def add_internal_docx_links(doc: DocxDocument) -> None:
     """
     Convert {{BOOKMARK:name}} markers into bookmarks, and
     convert {{LINK_START:name}}...{{LINK_END}} sequences into internal links.
@@ -163,7 +165,7 @@ def add_internal_docx_links(doc: Document) -> None:
         if "{{LINK_START:" not in combined_text:
             # nothing to do for this paragraph
             continue
-        new_elements: list[OxmlElement] = []
+        new_elements: list[Element] = []
         cursor = 0
         for m in link_pattern.finditer(combined_text):
             start, end = m.span()
@@ -188,3 +190,34 @@ def add_internal_docx_links(doc: Document) -> None:
         # replace the paragraph's runs with our constructed elements
         if new_elements:
             _replace_runs(para, new_elements)
+
+
+# from docx.oxml import OxmlElement
+# from docx.oxml.ns import qn
+
+
+def style_superscripts(
+    doc: DocxDocument,
+    *,
+    lift_half_points: int = 2,
+    color: RGBColor = RGBColor(0x66, 0x66, 0x66),
+) -> None:
+    """
+    lift_half_points:
+        2 = +1pt
+        4 = +2pt
+        6 = +3pt
+
+    color:
+        RGBColor for superscripts (e.g. light gray)
+    """
+    for para in doc.paragraphs:
+        for run in para.runs:
+            if run.font.superscript:
+                # --- Color ---
+                run.font.color.rgb = color
+                # --- Vertical position ---
+                rPr = run._r.get_or_add_rPr()
+                position = OxmlElement("w:position")
+                position.set(qn("w:val"), str(lift_half_points))
+                rPr.append(position)

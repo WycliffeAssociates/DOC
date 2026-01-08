@@ -12,7 +12,7 @@ logger = settings.logger(__name__)
 # the value of settings.CHECK_ALL_BOOKS_FOR_LANGUAGE in .env file.
 # This list is also used in tests and in that context
 # settings.CHECK_ALL_BOOKS_FOR_LANGUAGE is not checked but each
-# resource listed below is tested and nothing more.
+# resource listed below is tested.
 RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("aaz-x-amarasibarat", "reg", "2pe"),
     ("abu", "reg", "php"),
@@ -151,7 +151,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("lky", "reg", "2th"),
     ("lbx-x-capuracu", "reg", "eph"),
     ("mfq-x-mual", "reg", "1ki"),
-    # ("mgs", "reg", "php"), # book no longer available from data api
+    ("mgs", "reg", "php"),
     ("mgs", "reg", "2th"),
     ("mhi-x-burolo", "reg", "mat"),
     ("mhi-x-burolo", "reg", "2jn"),
@@ -160,7 +160,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("mhi-x-burolo", "reg", "2th"),
     ("mhy-x-benualima", "reg", "mrk"),
     # ("mwe", "reg", "tit"),  # book is available as choice, but resource not cloned?
-    # ("mxo", "reg", "mrk"), # unavailable from data API
+    # ("mxo", "reg", "mrk"),  # not currently unavailable from data API
     ("nak-x-bileki", "reg", "mat"),
     ("nak-x-bileki", "reg", "1ti"),
     ("nak-x-bileki", "reg", "eph"),
@@ -174,7 +174,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("nfd", "reg", "2th"),
     ("nfd", "reg", "2ti"),
     ("nfd", "reg", "heb"),
-    # ("nhx", "reg", "jos"), # unavailable from data API
+    # ("nhx", "reg", "jos"),  # not currently available from data API
     ("nnb-x-kishula", "reg", "mrk"),
     ("not", "reg", "jos"),
     ("now", "reg", "mic"),
@@ -246,7 +246,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("txy", "reg", "2jn"),
     ("tyn", "reg", "jud"),
     ("tyn", "reg", "mrk"),
-    # ("vin", "reg", "2co"), # no longer available from data API
+    # ("vin", "reg", "2co"), # not currently available from data API
     # ("vin", "reg", "1th"),
     # ("vin", "reg", "1ti"),
     # ("vin", "reg", "gal"),

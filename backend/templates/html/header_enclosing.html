@@ -46,6 +46,16 @@
         }
       }
 
+      @media screen {
+        /* Important for superscript verse markers in HTML view */
+        sup {
+          font-size: 30%;
+          color: #999999;
+          position: relative;
+          top: -0.5em;
+        }
+      }
+
       .logo {
         height: 40px;
         width: 100px;
@@ -71,6 +81,12 @@
         font-size: 75%;
         /* Set font fallback for Princexml (bo language is the case that prompted this) */
         font-family: var(--universal-font);
+      }
+
+      /* Makes list of translation words left justified after an h2 (the resource type name: Translation Words) */
+      h2 + ul {
+        margin-left: 0;
+        padding-left: 0;
       }
 
       /*
@@ -593,33 +609,33 @@
       {%endif%}
     </div>
     <div class="pb-6">
-      ©2022 Wycliffe Associates<br />
+      ©2026 Wycliffe Associates<br />
       Released under a Creative Commons Attribution-ShareAlike 4.0 International
       License.
     </div>
 
-    <div class="pb-6">
-      Bible Text: The English Unlocked Literal Bible (ULB)<br />
-      ©2017 Wycliffe Associates<br />
-      Available at https://bibleineverylanguage.org/translations<br />
-      The English Unlocked Literal Bible is based on the unfoldingWord® Literal
-      Text, CC BY-SA 4.0. The original work of the unfoldingWord® Literal Text
-      is available at https://unfoldingword.bible/ult/.<br />
-      The ULB is licensed under the Creative Commons Attribution-ShareAlike 4.0
-      International License.
-    </div>
+    <!-- <div class="pb-6">
+         Bible Text: The English Unlocked Literal Bible (ULB)<br />
+         ©2017 Wycliffe Associates<br />
+         Available at https://bibleineverylanguage.org/translations<br />
+         The English Unlocked Literal Bible is based on the unfoldingWord® Literal
+         Text, CC BY-SA 4.0. The original work of the unfoldingWord® Literal Text
+         is available at https://unfoldingword.bible/ult/.<br />
+         The ULB is licensed under the Creative Commons Attribution-ShareAlike 4.0
+         International License.
+         </div>
 
-    <div class="pb-6">
-      Notes: English ULB Translation Notes<br />
-      ©2017 Wycliffe Associates<br />
-      Available at https://bibleineverylanguage.org/translations<br />
-      The English ULB Translation Notes is based on the unfoldingWord
-      translationNotes, under CC BY-SA 4.0. The original unfoldingWord work is
-      available at https://unfoldingword.bible/utn.<br />
-      The ULB Notes is licensed under the Creative Commons
-      Attribution-ShareAlike 4.0 International License.
-    </div>
-
+         <div class="pb-6">
+         Notes: English ULB Translation Notes<br />
+         ©2017 Wycliffe Associates<br />
+         Available at https://bibleineverylanguage.org/translations<br />
+         The English ULB Translation Notes is based on the unfoldingWord
+         translationNotes, under CC BY-SA 4.0. The original unfoldingWord work is
+         available at https://unfoldingword.bible/utn.<br />
+         The ULB Notes is licensed under the Creative Commons
+         Attribution-ShareAlike 4.0 International License.
+         </div>
+    -->
     <div class="pb-6">
       To view a copy of the CC BY-SA 4.0 license visit
       http://creativecommons.org/licenses/by-sa/4.0/

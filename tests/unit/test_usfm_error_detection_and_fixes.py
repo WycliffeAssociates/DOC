@@ -74,7 +74,6 @@ class USFMErrorDetection(unittest.TestCase):
 \v 3 Vinse na man kpha fuhm ka nan zii bagaba.\v 4 Vinse we ba linwabung ɓuocnham la,la bagaba se ,Ii nyin faram la Neman li nwah buock.\v 5 Na man kha fuh la bai ba gamza gabq we bai fuh la bepiu la wulah vii a jekang.\v 6 In bi yang la bai ninka,Yuka be pi ba ba chonin ala we ba la ba ,au tarta vii kau u gama wala vii ba wai Yeso Almasihu.""",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers(self) -> None:
         self.assertEqual(
@@ -82,7 +81,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"\v 1 Some text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers2(self) -> None:
         self.assertEqual(
@@ -90,7 +88,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"\v 1 Some text. \v 2 This is more text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers3(self) -> None:
         self.assertEqual(
@@ -98,7 +95,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"\v 1 Some text. \v 2 This is more text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers4(self) -> None:
         self.assertEqual(
@@ -106,7 +102,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"\v 1 Some text. \v 2 This is more text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers5(self) -> None:
         self.assertEqual(
@@ -114,7 +109,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"\c 1 Some text. \v 1 This is more text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers6(self) -> None:
         self.assertEqual(
@@ -122,7 +116,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"\1 Some text. \2 This is more text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers7(self) -> None:
         actual = fix_standalone_verse_numbers(
@@ -144,7 +137,6 @@ class USFMErrorDetection(unittest.TestCase):
         # print(repr(expected))
         self.assertEqual(actual, expected)
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers8(self) -> None:
         self.assertEqual(
@@ -160,7 +152,6 @@ class USFMErrorDetection(unittest.TestCase):
 """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers9(self) -> None:
         self.assertEqual(
@@ -174,7 +165,6 @@ class USFMErrorDetection(unittest.TestCase):
 """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers10(self) -> None:
         self.assertEqual(
@@ -184,7 +174,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"""\v 15 وأليود ولد أليعازر \li1 وأليعازر ولد متان \li1 ومتان ولد يعقوب \li1 \v 16 ويعقوب ولد يوسف رجل مريم اللي ولدت عيسى اللي يسموه المسيح \li4 \v 17 ويطلع مجموع الأجيال من إبراهيم إلى داود 14 جيل ومن داود إلى الأسر البابلي 14 جيل ومن الأسر البابلي إلى المسيح 14 جيل""",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers11(self) -> None:
         self.assertEqual(
@@ -194,7 +183,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"""\v 1 This is a verse \v2 this is another verse \v 3 and this verse too \v 4 and another as well""",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers12(self) -> None:
         self.assertEqual(
@@ -204,7 +192,6 @@ class USFMErrorDetection(unittest.TestCase):
             r"""\v 1 This is a verse \v2 this is another verse 3 and this verse too 3 and another as well""",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers13(self) -> None:
         self.assertEqual(
@@ -262,7 +249,6 @@ Sampi Puji
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers14(self) -> None:
         self.assertEqual(
@@ -288,7 +274,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers15(self) -> None:
         self.assertEqual(
@@ -320,7 +305,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers16(self) -> None:
         self.assertEqual(
@@ -356,7 +340,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_numbers17(self) -> None:
         self.assertEqual(
@@ -372,7 +355,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_standalone_verse_number_and_period(self) -> None:
         self.assertEqual(
@@ -380,7 +362,6 @@ Pengajar Ti Pelesu
             r"\v 1 Some text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_usfm(self) -> None:
         lang_code = "iba-x-ibanempran"
@@ -400,7 +381,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_after_number(self) -> None:
         self.assertEqual(
@@ -408,7 +388,6 @@ Pengajar Ti Pelesu
             r"\v 1 Some text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_after_number2(self) -> None:
         self.assertEqual(
@@ -416,7 +395,6 @@ Pengajar Ti Pelesu
             r"\v 2 Another verse.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_after_number3(self) -> None:
         self.assertEqual(
@@ -424,7 +402,6 @@ Pengajar Ti Pelesu
             r"\v 5 5 Some text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_after_number4(self) -> None:
         self.assertEqual(
@@ -437,7 +414,6 @@ Pengajar Ti Pelesu
 """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_after_number5(self) -> None:
         self.assertEqual(
@@ -452,7 +428,6 @@ Pengajar Ti Pelesu
 """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_missing_space_after_number6(self) -> None:
         self.assertEqual(
@@ -466,7 +441,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_missing_space_after_number7(self) -> None:
         self.assertEqual(
@@ -496,7 +470,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_number(self) -> None:
         self.assertEqual(
@@ -504,7 +477,6 @@ Pengajar Ti Pelesu
             r"Wut. 1 Some text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_number2(self) -> None:
         self.assertEqual(
@@ -512,7 +484,6 @@ Pengajar Ti Pelesu
             r"Wut. 1 Some text. \v 2 Yo",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_number3(self) -> None:
         self.assertEqual(
@@ -526,7 +497,6 @@ Pengajar Ti Pelesu
                 """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_number4(self) -> None:
         actual = fix_missing_space_before_number(
@@ -541,7 +511,6 @@ Pengajar Ti Pelesu
         print("Actual:   ", actual)
         self.assertEqual(actual, expected)
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_number5(self) -> None:
         self.assertEqual(
@@ -555,7 +524,6 @@ Pengajar Ti Pelesu
 """,
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_number6(self) -> None:
         actual = fix_missing_space_before_number(
@@ -570,7 +538,6 @@ Pengajar Ti Pelesu
         print("Actual:   ", actual)
         self.assertEqual(actual, expected)
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_verse_marker(self) -> None:
         self.assertEqual(
@@ -578,7 +545,6 @@ Pengajar Ti Pelesu
             r"Wut \v 1Some text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_verse_marker2(self) -> None:
         self.assertEqual(
@@ -588,7 +554,6 @@ Pengajar Ti Pelesu
             r"\v 2Another verse. \v 3 This is more text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_verse_marker3(self) -> None:
         self.assertEqual(
@@ -596,7 +561,6 @@ Pengajar Ti Pelesu
             r"\v 5 5Some text.",
         )
 
-    # @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_verse_marker4(self) -> None:
         self.assertEqual(
@@ -626,7 +590,6 @@ Pengajar Ti Pelesu
         """,
         )
 
-    @pytest.mark.focus
     @pytest.mark.usfm_fixes
     def test_fix_missing_space_before_verse_marker5(self) -> None:
         self.assertEqual(

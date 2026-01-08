@@ -1,18 +1,32 @@
 from datetime import datetime
-from typing import Optional
+from typing import cast, Optional, TYPE_CHECKING
 
-from docx import Document  # type: ignore
-from docx.document import Document as DocxDocument  # type: ignore
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT  # type: ignore
-from docx.oxml import OxmlElement  # type: ignore
-from docx.oxml.ns import qn  # type: ignore
-from docx.shared import Pt, RGBColor  # type: ignore
-from docx.table import Table, _Cell, _Row  # type: ignore
-from docx.text.paragraph import Paragraph  # type: ignore
+from docx import Document
+from docx.enum.section import WD_SECTION
+from docx.document import Document as DocxDocument
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.oxml.table import CT_Tc
+from docx.shared import Pt, RGBColor
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 from htmldocx import HtmlToDocx  # type: ignore
 
 
-def format_docx_tables(doc: Document) -> Document:
+from docx.table import _Cell, _Row
+
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    Cell: TypeAlias = _Cell
+    Row: TypeAlias = _Row
+else:
+    Cell = _Cell
+    Row = _Row
+
+
+def format_docx_tables(doc: DocxDocument) -> DocxDocument:
     """
     Programmatically improve table borders and cell text padding.
     """
@@ -65,38 +79,32 @@ def add_column_with_checkboxes(table: Table) -> None:
     """
     for row in table.rows:
         # Append a new cell to the row's XML
-        new_cell = add_cell_to_row(row)
+        new_cell = _append_cell(row)
         if new_cell:
             add_checkbox_to_cell(new_cell)
 
 
-def add_cell_to_row(row: _Row) -> Optional[_Cell]:
-    """
-    Add a new cell to the row by manipulating its XML structure.
-    Returns the new cell object.
-    """
-    tc = OxmlElement("w:tc")  # Create a new table cell element
-    tcPr = OxmlElement("w:tcPr")  # Table cell properties
-    tc.append(tcPr)  # Append properties to the cell
-    row._tr.append(tc)  # Append the new cell to the row's XML
-    # Wrap the XML element in a python-docx cell object
-    return _Cell(tc, row.table)
+def _append_cell(row: Row) -> Optional[Cell]:
+    tc = OxmlElement("w:tc")
+    tc.append(OxmlElement("w:tcPr"))
+    row._tr.append(tc)
+    return Cell(cast(CT_Tc, tc), row.table)
 
 
-def add_checkbox_to_cell(cell: _Cell) -> None:
+def add_checkbox_to_cell(cell: Cell) -> None:
     """
     Add an unchecked checkbox to a table cell.
     """
     # Create a checkbox element
-    checkbox: OxmlElement = OxmlElement("w:sdt")  # Structured document tag
-    sdtPr: OxmlElement = OxmlElement("w:sdtPr")
-    checkBox: OxmlElement = OxmlElement("w:checkBox")
+    checkbox = OxmlElement("w:sdt")  # Structured document tag
+    sdtPr = OxmlElement("w:sdtPr")
+    checkBox = OxmlElement("w:checkBox")
     sdtPr.append(checkBox)
     checkbox.append(sdtPr)
-    sdtContent: OxmlElement = OxmlElement("w:sdtContent")
-    p: OxmlElement = OxmlElement("w:p")  # Paragraph
-    r: OxmlElement = OxmlElement("w:r")  # Run
-    t: OxmlElement = OxmlElement("w:t")  # Text
+    sdtContent = OxmlElement("w:sdtContent")
+    p = OxmlElement("w:p")  # Paragraph
+    r = OxmlElement("w:r")  # Run
+    t = OxmlElement("w:t")  # Text
     t.text = "☐"  # Use a Unicode checkbox character
     r.append(t)
     p.append(r)
@@ -104,16 +112,16 @@ def add_checkbox_to_cell(cell: _Cell) -> None:
     checkbox.append(sdtContent)
     # Add the checkbox to the cell
     if hasattr(cell, "_tc"):  # Ensure cell has '_tc' attribute for safety
-        tc: Optional[OxmlElement] = getattr(cell, "_tc", None)
+        tc = getattr(cell, "_tc", None)
         if tc:
             tc.append(checkbox)
 
 
 def add_header(
-    doc: Document,
+    doc: DocxDocument,
     lang_name: str,
     header_text: str = "Passages",
-) -> Document:
+) -> DocxDocument:
     """
     Add a header with:
     - header_text left.
@@ -121,6 +129,7 @@ def add_header(
     section = doc.sections[0]
     header = section.header
     header_paragraph = header.add_paragraph()
+    header_paragraph.style = doc.styles["Header"]
     header_paragraph.style.font.size = Pt(12)  # Optional: Adjust font size
     # Add the header text with grey color
     run1 = header_paragraph.add_run(header_text + ": " + lang_name)
@@ -177,14 +186,14 @@ def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:
         paragraph.add_run(temp_paragraph.text.strip())
 
 
-def add_lined_page_at_end(doc: Document) -> Document:
+def add_lined_page_at_end(doc: DocxDocument) -> DocxDocument:
     """
     Adds a single page filled with ruled lines to the end of the document for note-taking.
     Each line spans the full page width and is evenly spaced.
     :param doc: The Word document to which the ruled page will be added.
     :return: The modified Word document.
     """
-    section = doc.add_section(start_type=1)  # Add a new section for a new page
+    section = doc.add_section(start_type=WD_SECTION.NEW_PAGE)
     section.left_margin = section.right_margin = Pt(72)  # 1-inch margins
     section.top_margin = section.bottom_margin = Pt(72)
     usable_height = section.page_height - section.top_margin - section.bottom_margin
@@ -222,7 +231,7 @@ def adjust_table_columns(table: Table) -> None:
 
 
 def reduce_spacing_around_tables(
-    doc: Document, before_table_space: int = 0, after_table_space: int = 0
+    doc: DocxDocument, before_table_space: int = 0, after_table_space: int = 0
 ) -> None:
     """
     Reduces the whitespace around tables in a Word document.
@@ -264,15 +273,14 @@ def reduce_spacing_around_tables(
             previous_element = element
 
 
-def add_footer(doc: Document) -> Document:
+def add_footer(doc: DocxDocument) -> DocxDocument:
     section = doc.sections[0]
     footer = section.footer
-    # Page width adjustments
-    page_width = section.page_width
-    left_margin = section.left_margin
-    right_margin = section.right_margin
     # Calculate usable content width
-    usable_width = page_width - left_margin - right_margin
+    assert section.page_width is not None
+    assert section.left_margin is not None
+    assert section.right_margin is not None
+    usable_width = section.page_width - section.left_margin - section.right_margin
     # Create or get the footer paragraph
     footer_paragraph = (
         footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()

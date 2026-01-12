@@ -87,40 +87,51 @@ def assemble_content_by_book(
                 else:
                     usfm_book = selected_usfm_books[0]
                     usfm_book2 = selected_usfm_books[1]
-            selected_tn_books = [
-                tn_book
-                for tn_book in tn_books
-                if tn_book.lang_code == lang_code and tn_book.book_code == book_code
-            ]
-            tn_book = selected_tn_books[0] if selected_tn_books else None
-            selected_tnc_books = [
-                tnc_book
-                for tnc_book in tnc_books
-                if tnc_book.lang_code == lang_code and tnc_book.book_code == book_code
-            ]
-            tnc_book = selected_tnc_books[0] if selected_tnc_books else None
-            selected_tq_books = [
-                tq_book
-                for tq_book in tq_books
-                if tq_book.lang_code == lang_code and tq_book.book_code == book_code
-            ]
-            tq_book = selected_tq_books[0] if selected_tq_books else None
-            selected_tw_books = [
-                tw_book for tw_book in tw_books if tw_book.lang_code == lang_code
-            ]
-            tw_book = selected_tw_books[0] if selected_tw_books else None
-            selected_bc_books = [
-                bc_book
-                for bc_book in bc_books
-                if bc_book.lang_code == lang_code and bc_book.book_code == book_code
-            ]
-            bc_book = selected_bc_books[0] if selected_bc_books else None
-            selected_rg_books = [
-                rg_book
-                for rg_book in rg_books
-                if rg_book.lang_code == lang_code and rg_book.book_code == book_code
-            ]
-            rg_book = selected_rg_books[0] if selected_rg_books else None
+            tn_book = next(
+                (
+                    tn_book
+                    for tn_book in tn_books
+                    if tn_book.lang_code == lang_code and tn_book.book_code == book_code
+                ),
+                None,
+            )
+            tnc_book = next(
+                (
+                    tnc_book
+                    for tnc_book in tnc_books
+                    if tnc_book.lang_code == lang_code
+                    and tnc_book.book_code == book_code
+                ),
+                None,
+            )
+            tq_book = next(
+                (
+                    tq_book
+                    for tq_book in tq_books
+                    if tq_book.lang_code == lang_code and tq_book.book_code == book_code
+                ),
+                None,
+            )
+            tw_book = next(
+                (tw_book for tw_book in tw_books if tw_book.lang_code == lang_code),
+                None,
+            )
+            bc_book = next(
+                (
+                    bc_book
+                    for bc_book in bc_books
+                    if bc_book.lang_code == lang_code and bc_book.book_code == book_code
+                ),
+                None,
+            )
+            rg_book = next(
+                (
+                    rg_book
+                    for rg_book in rg_books
+                    if rg_book.lang_code == lang_code and rg_book.book_code == book_code
+                ),
+                None,
+            )
             if usfm_book is not None:
                 document_parts.extend(
                     assemble_usfm_by_book(
@@ -253,40 +264,51 @@ def assemble_content_by_verse_book_at_a_time(
                 else:
                     usfm_book = selected_usfm_books[0]
                     usfm_book2 = selected_usfm_books[1]
-            selected_tn_books = [
-                tn_book
-                for tn_book in tn_books
-                if tn_book.lang_code == lang_code and tn_book.book_code == book_code
-            ]
-            tn_book = selected_tn_books[0] if selected_tn_books else None
-            selected_tnc_books = [
-                tnc_book
-                for tnc_book in tnc_books
-                if tnc_book.lang_code == lang_code and tnc_book.book_code == book_code
-            ]
-            tnc_book = selected_tnc_books[0] if selected_tnc_books else None
-            selected_tq_books = [
-                tq_book
-                for tq_book in tq_books
-                if tq_book.lang_code == lang_code and tq_book.book_code == book_code
-            ]
-            tq_book = selected_tq_books[0] if selected_tq_books else None
-            selected_tw_books = [
-                tw_book for tw_book in tw_books if tw_book.lang_code == lang_code
-            ]
-            tw_book = selected_tw_books[0] if selected_tw_books else None
-            selected_bc_books = [
-                bc_book
-                for bc_book in bc_books
-                if bc_book.lang_code == lang_code and bc_book.book_code == book_code
-            ]
-            bc_book = selected_bc_books[0] if selected_bc_books else None
-            selected_rg_books = [
-                rg_book
-                for rg_book in rg_books
-                if rg_book.lang_code == lang_code and rg_book.book_code == book_code
-            ]
-            rg_book = selected_rg_books[0] if selected_rg_books else None
+            tn_book = next(
+                (
+                    tn_book
+                    for tn_book in tn_books
+                    if tn_book.lang_code == lang_code and tn_book.book_code == book_code
+                ),
+                None,
+            )
+            tnc_book = next(
+                (
+                    tnc_book
+                    for tnc_book in tnc_books
+                    if tnc_book.lang_code == lang_code
+                    and tnc_book.book_code == book_code
+                ),
+                None,
+            )
+            tq_book = next(
+                (
+                    tq_book
+                    for tq_book in tq_books
+                    if tq_book.lang_code == lang_code and tq_book.book_code == book_code
+                ),
+                None,
+            )
+            tw_book = next(
+                (tw_book for tw_book in tw_books if tw_book.lang_code == lang_code),
+                None,
+            )
+            bc_book = next(
+                (
+                    bc_book
+                    for bc_book in bc_books
+                    if bc_book.lang_code == lang_code and bc_book.book_code == book_code
+                ),
+                None,
+            )
+            rg_book = next(
+                (
+                    rg_book
+                    for rg_book in rg_books
+                    if rg_book.lang_code == lang_code and rg_book.book_code == book_code
+                ),
+                None,
+            )
             if usfm_book:
                 document_parts.extend(
                     assemble_usfm_by_verse_book_at_a_time(
@@ -500,7 +522,6 @@ def assemble_usfm_by_verse_book_at_a_time(
                             tnc_book,
                             tq_book,
                             bc_book,
-                            # rg_book,
                             verse_ref,
                             chapter_num,
                             is_rtl,

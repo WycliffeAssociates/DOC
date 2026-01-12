@@ -253,7 +253,7 @@ class Settings(BaseSettings):
     # Used by docker
     IMAGE_TAG: str
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, frozen=True)
 
 
 # mypy with pydantic v2 doesn't understand that defaults will be

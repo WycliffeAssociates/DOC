@@ -7,7 +7,7 @@ import subprocess
 import time
 from datetime import datetime
 from os.path import exists, join
-from typing import Optional, Sequence, cast
+from typing import Final, Mapping, Optional, Sequence, TypeAlias, cast
 
 # import regex as re # not yet supported in python 3.13 - used for unicode word boundaries for RTL languages
 import re
@@ -43,11 +43,8 @@ from doc.domain.model import (
     ResourceLookupDto,
     ResourceRequest,
     TNBook,
-    TNChapter,
     TNCBook,
-    TNCChapter,
     TQBook,
-    TQChapter,
     TWBook,
     USFMBook,
 )
@@ -84,6 +81,16 @@ from htmldocx import HtmlToDocx  # type: ignore
 logger = settings.logger(__name__)
 
 
+LangCode: TypeAlias = str
+BookCode: TypeAlias = str
+Key: TypeAlias = tuple[LangCode, BookCode]
+
+ReplacementEntry: TypeAlias = tuple[re.Pattern[str], str]  # (pattern, replacement)
+ReplacementMap: TypeAlias = dict[Key, ReplacementEntry]
+
+BOOK_NAMES: Final[Mapping[BookCode, str]] = BOOK_NAMES
+
+
 def initialize_document_request_and_key(
     document_request_json: str,
 ) -> tuple[DocumentRequest, str]:
@@ -117,86 +124,76 @@ def localize_non_usfm_book_names(
     tn_books: list[TNBook],
     tnc_books: list[TNCBook],
     tq_books: list[TQBook],
+    book_names: Mapping[BookCode, str] = BOOK_NAMES,
 ) -> None:
-    replacement_map: dict[
-        tuple[str, str],
-        tuple[re.Pattern[str], str],
-    ] = {}
+    """
+    In-place replacement of English book names with localized (national) names
+    in Translation Notes (TN), Condensed TN (TNC), and Translation Questions (TQ).
 
+    If user has not chosen USFM, gets localized names from USFM for
+    given language/book if it was available as a choice in the language chosen.
+    """
+    replacement_map: ReplacementMap = {}
+    # ── Phase 1: Collect known national names from chosen USFM books ──────────
     for usfm in usfm_books:
-        english_name = BOOK_NAMES.get(usfm.book_code)
+        english_name = book_names.get(usfm.book_code)
         if not english_name:
             continue
-
-        pattern = re.compile(rf"\b{re.escape(english_name)}\b")
-
+        pattern = re.compile(rf"\b{re.escape(english_name)}\b", re.IGNORECASE)
         replacement_map[(usfm.lang_code, usfm.book_code)] = (
             pattern,
             usfm.national_book_name,
         )
 
-    def localize_tn_chapter(
-        chapter: TNChapter,
+    def apply_replacement(
+        text: str,
         pattern: re.Pattern[str],
         replacement: str,
-    ) -> None:
-        chapter.intro_html = pattern.sub(replacement, chapter.intro_html)
-        for verse_ref, html in chapter.verses.items():
-            chapter.verses[verse_ref] = pattern.sub(replacement, html)
+    ) -> str:
+        return pattern.sub(replacement, text)
 
-    def localize_tnc_chapter(
-        chapter: TNCChapter,
-        pattern: re.Pattern[str],
-        replacement: str,
+    def localize_book(
+        book: TNBook | TNCBook | TQBook,
+        has_book_intro: bool,
+        has_chapter_intro: bool,
     ) -> None:
-        chapter.intro_html = pattern.sub(replacement, chapter.intro_html)
-        for verse_ref, html in chapter.verses.items():
-            chapter.verses[verse_ref] = pattern.sub(replacement, html)
+        key: Key = (book.lang_code, book.book_code)
+        entry = replacement_map.get(key)
+        if entry is None:
+            usfm_names = resource_lookup.book_codes_for_lang_from_usfm_only(
+                book.lang_code
+            )
+            match = next(
+                (item for item in usfm_names if item[0] == book.book_code), None
+            )
+            english_name = book_names.get(book.book_code)
+            if english_name is None or match is None:
+                return
+            pattern = re.compile(rf"\b{re.escape(english_name)}\b", re.IGNORECASE)
+            replacement = match[1].strip()
+            if not replacement:
+                return
+            replacement_map[key] = (pattern, replacement)
+            entry = (pattern, replacement)
+        pattern, replacement = entry
+        if has_book_intro and hasattr(book, "book_intro"):
+            book.book_intro = apply_replacement(book.book_intro, pattern, replacement)
+        for chapter in book.chapters.values():
+            if has_chapter_intro and hasattr(chapter, "intro_html"):
+                chapter.intro_html = apply_replacement(
+                    chapter.intro_html, pattern, replacement
+                )
+            for verse_ref, html in chapter.verses.items():
+                chapter.verses[verse_ref] = apply_replacement(
+                    html, pattern, replacement
+                )
 
-    def localize_tq_chapter(
-        chapter: TQChapter,
-        pattern: re.Pattern[str],
-        replacement: str,
-    ) -> None:
-        for verse_ref, html in chapter.verses.items():
-            chapter.verses[verse_ref] = pattern.sub(replacement, html)
-
-    # --- TN ---
     for tn_book in tn_books:
-        key = (tn_book.lang_code, tn_book.book_code)
-        entry = replacement_map.get(key)
-        if not entry:
-            continue
-
-        pattern, replacement = entry
-        tn_book.book_intro = pattern.sub(replacement, tn_book.book_intro)
-
-        for tn_chapter in tn_book.chapters.values():
-            localize_tn_chapter(tn_chapter, pattern, replacement)
-
-    # --- TNC ---
+        localize_book(tn_book, has_book_intro=True, has_chapter_intro=True)
     for tnc_book in tnc_books:
-        key = (tnc_book.lang_code, tnc_book.book_code)
-        entry = replacement_map.get(key)
-        if not entry:
-            continue
-
-        pattern, replacement = entry
-        tnc_book.book_intro = pattern.sub(replacement, tnc_book.book_intro)
-
-        for tnc_chapter in tnc_book.chapters.values():
-            localize_tnc_chapter(tnc_chapter, pattern, replacement)
-
-    # --- TQ ---
-    for book in tq_books:
-        key = (book.lang_code, book.book_code)
-        entry = replacement_map.get(key)
-        if not entry:
-            continue
-
-        pattern, replacement = entry
-        for tq_chapter in book.chapters.values():
-            localize_tq_chapter(tq_chapter, pattern, replacement)
+        localize_book(tnc_book, has_book_intro=True, has_chapter_intro=True)
+    for tq_book in tq_books:
+        localize_book(tq_book, has_book_intro=False, has_chapter_intro=False)
 
 
 def locate_acquire_and_build_resource_objects(

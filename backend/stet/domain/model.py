@@ -10,6 +10,8 @@ class VerseEntry(NamedTuple):
     source_text: str
     target_reference: str
     target_text: str
+    occurrence_index: int = 0  # 1, 2, 3, ...
+    occurrence_total: int = 0  # e.g. 3
 
 
 @final

@@ -1,3 +1,4 @@
+from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Mapping, Sequence, cast
 
@@ -170,6 +171,15 @@ def generate_docx_document(
                         split_chapter_into_verses(chapter_)
                     )
                 target_usfm_books.append(target_usfm_book)
+    # Count total occurrences per reference (using source_reference as key)
+    reference_counter: Counter[str] = Counter()
+    for word_entry_dto in word_entry_dtos:
+        for verse_ref_dto in word_entry_dto.verse_ref_dtos:
+            # If one verse_ref_dto can contain multiple verses → count them
+            ref = verse_ref_dto.source_reference
+            reference_counter[ref] += len(verse_ref_dto.verse_refs)
+    # Track current occurrence number as we process
+    occurrence_tracker: defaultdict[str, int] = defaultdict(int)
     current_task.update_state(state="Assembling content")
     for word_entry_dto in word_entry_dtos:
         source_verse_text = ""
@@ -249,12 +259,19 @@ def generate_docx_document(
                     )
                 else:
                     target_verse_text = ""
+            # Occurrence logic
+            ref_key = verse_ref_dto.source_reference
+            total = reference_counter[ref_key]
+            occurrence_tracker[ref_key] += 1
+            current = occurrence_tracker[ref_key]
             word_entry.verses.append(
                 VerseEntry(
                     source_reference=localized_source_reference,
                     source_text=source_verse_text,
                     target_reference=localized_target_reference,
                     target_text=target_verse_text,
+                    occurrence_index=current,
+                    occurrence_total=total,
                 )
             )
         word_entries.append(word_entry)
@@ -310,9 +327,20 @@ def generate_docx(
         for verse in word_entry.verses:
             # Row for references
             row_cells = table.add_row().cells
-            source_run = row_cells[0].paragraphs[0].add_run(verse.source_reference)
+            source_ref_display = verse.source_reference
+            if verse.occurrence_total > 1:
+                source_ref_display += (
+                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
+                )
+
+            target_ref_display = verse.target_reference
+            if verse.occurrence_total > 1:
+                target_ref_display += (
+                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
+                )
+            source_run = row_cells[0].paragraphs[0].add_run(source_ref_display)
             source_run.bold = True
-            target_run = row_cells[1].paragraphs[0].add_run(verse.target_reference)
+            target_run = row_cells[1].paragraphs[0].add_run(target_ref_display)
             target_run.bold = True
             status_run = (
                 row_cells[2]

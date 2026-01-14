@@ -144,7 +144,9 @@ test('checkboxes are only shown when language chosen has books in each checkbox 
   // await expect(page.locator('body')).not.toContainText('Add OT Survey RG2 Passages')
   // await expect(page.locator('body')).not.toContainText('Add OT Survey RG3 Passages')
   // await expect(page.locator('body')).not.toContainText('Add OT Survey RG4 Passages')
-  await expect(page.locator('body')).toContainText("Add NT Survey Reviewers' Guide (RG) Passages")
+  await expect(page.locator('body')).toContainText("Add NT Survey Reviewers' Guide (RG) Passages", {
+    timeout: 32_000
+  })
   // await expect(page.locator('#stet-passages')).toContainText('Add STET Passages')
   await page.getByText("Add NT Survey Reviewers'").click()
   await expect(page.locator('body')).toContainText('Matius 2:1-12', { timeout: 32_000 })

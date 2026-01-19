@@ -36,7 +36,6 @@ from doc.reviewers_guide.parser import (
 from doc.utils.file_utils import (
     delete_tree,
     file_needs_update,
-    read_file,
 )
 from doc.utils.list_utils import unique_tuples, unique_book_codes
 from doc.utils.text_utils import maybe_correct_book_name, normalize_localized_book_name

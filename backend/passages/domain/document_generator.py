@@ -142,8 +142,7 @@ def generate_docx_document(
         else:
             non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}"
         # NOTE We want the document to show references even if there is no
-        # content for it. Will these continue to be the desired behavior, we
-        # will see.
+        # content for it.
         # localized_reference = (
         #     f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
         #     if selected_usfm_book and non_book_name_portion_of_reference

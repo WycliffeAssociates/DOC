@@ -133,7 +133,6 @@ def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,
     use_two_column_layout_for_tn_notes: bool,
-    # fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
 ) -> str:
     """
     Return the HTML for verses that are in the chapter with

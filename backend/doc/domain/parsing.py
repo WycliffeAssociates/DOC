@@ -77,6 +77,11 @@ logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
 
+_SECTIONHEAD5_RE = re.compile(
+    r'<div\s+class="sectionhead-5">\s*</div>',
+    re.MULTILINE,
+)
+
 
 BC_ARTICLE_URL_FMT_STR: str = (
     "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
@@ -444,6 +449,10 @@ def ensure_chapter_marker(
     return f"\\c {chapter_num}\n" + chapter_usfm_text
 
 
+def remove_sectionhead5_elements(content: str) -> str:
+    return _SECTIONHEAD5_RE.sub(" ", content)
+
+
 def usfm_book_content(
     resource_lookup_dto: ResourceLookupDto,
     resource_dir: str,
@@ -508,9 +517,12 @@ def usfm_book_content(
         cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
             chapter_html_content
         )
+        chapter_html_content_sans_s5 = remove_sectionhead5_elements(
+            cleaned_chapter_html_content
+        )
         usfm_chapters[chapter_num] = USFMChapter(
             content=(
-                cleaned_chapter_html_content if cleaned_chapter_html_content else ""
+                chapter_html_content_sans_s5 if chapter_html_content_sans_s5 else ""
             ),
             verses=None,
         )
@@ -1275,7 +1287,7 @@ def assemble_chapter_usfm(
         verse_content = read_verse_file(usfm_file)
         cleaned_verse_content = clean_verse_content(verse_content)
         verse_content = ensure_paragraph_before_verses(usfm_file, cleaned_verse_content)
-        chapter_usfm_content.append(cleaned_verse_content)
+        chapter_usfm_content.append(verse_content)
         chapter_usfm_content.append(
             " \n"
         )  # Make sure a space before next chunk, e.g., auh, mat, ch 9, v 14
@@ -1453,6 +1465,8 @@ def handle_split_chapter_into_verses(
 
 def split_chapter_into_verses_with_formatting(
     chapter: USFMChapter,
+    empty_paragraph: str = "<p></p>",
+    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
 ) -> dict[VerseRef, str]:
     """
     Given a USFMChapter instance, return the same instance with its
@@ -1502,14 +1516,16 @@ def split_chapter_into_verses_with_formatting(
             # Add to the dictionary with verse number as the key and verse text as the value
             verse_dict[verse_number_] = (
                 verse_span.strip()
-                .replace("<p></p>", "")
-                .replace('<div class="sectionhead-5"></div>', "")
+                .replace(empty_paragraph, "")
+                .replace(sectionhead5_element, "")
             )
     return verse_dict
 
 
 def split_chapter_into_verses_with_formatting_for_f10(
     chapter: USFMChapter,
+    empty_paragraph: str = "<p></p>",
+    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
 ) -> dict[str, str]:
     """
     Parse chapter.content as HTML, extract each <span class="verse">,
@@ -1552,8 +1568,8 @@ def split_chapter_into_verses_with_formatting_for_f10(
         # store cleaned HTML fragment (still contains <sup> etc.)
         verse_dict[verse_number] = (
             cleaned_html.strip()
-            .replace("<p></p>", "")
-            .replace('<div class="sectionhead-5"></div>', "")
+            .replace(empty_paragraph, "")
+            .replace(sectionhead5_element, "")
         )
     return verse_dict
 

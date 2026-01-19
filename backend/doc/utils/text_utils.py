@@ -1,13 +1,15 @@
-import re
+from re import compile, match, sub, IGNORECASE, Match
 
 from doc.config import settings
 
 
 logger = settings.logger(__name__)
 
+HEADING_RE = compile(r"</?h([1-6])\b", IGNORECASE)
+
 
 def normalize_spaces(text: str) -> str:
-    return re.sub(r"\s+", " ", text).strip()
+    return sub(r"\s+", " ", text).strip()
 
 
 _ROMAN_TO_INT = {
@@ -50,9 +52,9 @@ def normalize_localized_book_name(localized_book_name: str) -> str:
     'Isaías'
     """
     name = localized_book_name.strip()
-    match = re.match(r"^(1|2|3|i{1,3})", name, re.IGNORECASE)
-    if match:
-        numeral_raw = match.group(1)
+    match_ = match(r"^(1|2|3|i{1,3})", name, IGNORECASE)
+    if match_:
+        numeral_raw = match_.group(1)
         numeral_upper = numeral_raw.upper()
         next_char = name[len(numeral_raw) : len(numeral_raw) + 1]
         # Special case: single "I" must be followed by space or uppercase to count as numeral
@@ -112,6 +114,27 @@ def maybe_correct_book_name(
     if not book_name_:
         book_name_ = book_name
     return book_name_
+
+
+def _demote_heading(match: Match[str], levels: int) -> str:
+    tag = match.group(0)
+    level = int(match.group(1))
+    new_level = min(level + levels, 6)
+    return tag.replace(f"h{level}", f"h{new_level}", 1)
+
+
+def demote_headings_by_one(content: str) -> str:
+    return HEADING_RE.sub(
+        lambda m: _demote_heading(m, levels=1),
+        content,
+    )
+
+
+def demote_headings_by_two(content: str) -> str:
+    return HEADING_RE.sub(
+        lambda m: _demote_heading(m, levels=2),
+        content,
+    )
 
 
 if __name__ == "__main__":

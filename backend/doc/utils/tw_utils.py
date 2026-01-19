@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Mapping, Optional, Sequence
 
 from doc.config import settings
-from doc.domain import parsing, resource_lookup, bible_books
+from doc.domain import resource_lookup, bible_books
 from doc.domain.model import (
     DocumentPart,
     LangDirEnum,
@@ -363,6 +363,8 @@ def fetch_usfm_books(
     resource_requests: Sequence[ResourceRequest],
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 ) -> list[USFMBook]:
+    from doc.domain.parsing import usfm_book_content
+
     usfm_resource_lookup_dtos = []
     for resource_request in resource_requests:
         for usfm_type in usfm_resource_types:
@@ -393,7 +395,7 @@ def fetch_usfm_books(
     )
     # Initialize found resources from their provisioned assets.
     usfm_book_content_units = [
-        parsing.usfm_book_content(resource_lookup_dto, resource_dir, False)  # , False
+        usfm_book_content(resource_lookup_dto, resource_dir, False)
         for resource_lookup_dto, resource_dir in zip(
             found_usfm_resource_lookup_dtos, resource_dirs
         )
@@ -406,6 +408,8 @@ def fetch_usfm_book(
     book_code: str,
     resource_type: str,
 ) -> Optional[USFMBook]:
+    from doc.domain.parsing import usfm_book_content
+
     usfm_book = None
     resource_lookup_dto = resource_lookup.resource_lookup_dto(
         lang_code,
@@ -421,7 +425,7 @@ def fetch_usfm_book(
             "Time to provision USFM asset files (acquire and write to disk) for TW resource: %s",
             t1 - t0,
         )
-        usfm_book = parsing.usfm_book_content(resource_lookup_dto, resource_dir, False)
+        usfm_book = usfm_book_content(resource_lookup_dto, resource_dir, False)
     return usfm_book
 
 

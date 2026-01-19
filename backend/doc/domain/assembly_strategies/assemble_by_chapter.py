@@ -7,8 +7,6 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     chapter_commentary_parts,
     collect_unique_book_codes,
     collect_unique_lang_codes,
-    demote_headings_by_one,
-    demote_headings_by_two,
     filter_books_by_book_code,
     filter_books_by_lang_code,
     get_book_intros,
@@ -26,6 +24,7 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     tq_verses_parts,
     rg_verses_parts,
 )
+from doc.utils.text_utils import demote_headings_by_one
 from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     AssemblyLayoutEnum,

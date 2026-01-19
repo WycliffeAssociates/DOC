@@ -14,10 +14,7 @@ import mistune
 import requests
 from bs4 import BeautifulSoup
 from doc.config import settings
-from doc.domain.assembly_strategies.assembly_strategy_utils import (
-    demote_headings_by_one,
-    demote_headings_by_two,
-)
+from doc.utils.text_utils import demote_headings_by_one
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     BC_RESOURCE_TYPE,

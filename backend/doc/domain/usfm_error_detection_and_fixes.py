@@ -37,7 +37,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bem-x-kabenmushi", "reg", "sng"),
     ("bem-x-kabenmushi", "reg", "deu"),
     ("bem-x-kabenmushi", "reg", "1ki"),
-    ("bem-x-kabenmushi", "reg", "1ch"),
+    # ("bem-x-kabenmushi", "reg", "1ch"), # unavailable from data API
     ("bem-x-kabenmushi", "reg", "ecc"),
     ("bem-x-kabenmushi", "reg", "2ki"),
     ("bi", "reg", "act"),

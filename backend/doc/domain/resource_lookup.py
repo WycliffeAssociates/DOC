@@ -78,7 +78,7 @@ def fetch_source_data(
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
     >>> result.git_repo[0]
-    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/klero/ach-SS-acholi_rev_text_reg'), content=Content(resource_type='reg', language=Language(english_name='Acholi', ietf_code='ach-SS-acholi', national_name='Acholi', direction=<LangDirEnum.LTR: 'ltr'>)))
+    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/0success/cli_1jn_text_reg'), content=Content(resource_type='reg', language=Language(english_name='Chakali', ietf_code='cli', national_name='Chakali', direction=<LangDirEnum.LTR: 'ltr'>)))
     """
     graphql_query = """
 query MyQuery {
@@ -110,6 +110,8 @@ query MyQuery {
                     for repo in data_payload["git_repo"]
                     if repo.get("content", {}).get("resource_type") is not None
                 ]
+                # Sort for test stability - ensures consistent ordering
+                valid_repos.sort(key=lambda repo: repo["repo_url"])
                 return SourceData.model_validate({"git_repo": valid_repos})
             else:
                 logger.info("Invalid payload structure, no data.")
@@ -1211,7 +1213,8 @@ def nt_survey_rg_passages(
 ) -> list[BibleReference]:
     """
     >>> from doc.domain import resource_lookup
-    >>> rg_books = resource_lookup.nt_survey_rg_passages()
+    >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
+    (...)
     >>> rg_books[0]
     BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
@@ -1252,9 +1255,10 @@ def ot_survey_rg1_passages(
 ) -> list[BibleReference]:
     """
     >>> from doc.domain import resource_lookup
-    >>> rg_books = resource_lookup.ot_survey_rg1_passages()
+    >>> ();rg_books = resource_lookup.ot_survey_rg1_passages();() # doctest: +ELLIPSIS
+    (...)
     >>> rg_books[0]
-    BibleReference(book_code='gen', book_name='Genesis', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    BibleReference(book_code='gen', book_name='Genesis', start_chapter=1, start_chapter_verse_ref='1', end_chapter=2, end_chapter_verse_ref='3')
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1293,9 +1297,10 @@ def ot_survey_rg2_passages(
 ) -> list[BibleReference]:
     """
     >>> from doc.domain import resource_lookup
-    >>> rg_books = resource_lookup.ot_survey_rg2_passages()
+    >>> ();rg_books = resource_lookup.ot_survey_rg2_passages();() # doctest: +ELLIPSIS
+    (...)
     >>> rg_books[0]
-    BibleReference(book_code='jos', book_name='Joshua', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    BibleReference(book_code='jos', book_name='Joshua', start_chapter=1, start_chapter_verse_ref='1-9', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1334,9 +1339,10 @@ def ot_survey_rg3_passages(
 ) -> list[BibleReference]:
     """
     >>> from doc.domain import resource_lookup
-    >>> rg_books = resource_lookup.ot_survey_rg3_passages()
+    >>> ();rg_books = resource_lookup.ot_survey_rg3_passages();() # doctest: +ELLIPSIS
+    (...)
     >>> rg_books[0]
-    BibleReference(book_code='job', book_name='Job', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    BibleReference(book_code='job', book_name='Job', start_chapter=1, start_chapter_verse_ref='6-22', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1375,9 +1381,10 @@ def ot_survey_rg4_passages(
 ) -> list[BibleReference]:
     """
     >>> from doc.domain import resource_lookup
-    >>> rg_books = resource_lookup.ot_survey_rg4_passages()
+    >>> ();rg_books = resource_lookup.ot_survey_rg4_passages();() # doctest: +ELLIPSIS
+    (...)
     >>> rg_books[0]
-    BibleReference(book_code='isa', book_name='Isaiah', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    BibleReference(book_code='isa', book_name='Isaiah', start_chapter=1, start_chapter_verse_ref='1-9', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(

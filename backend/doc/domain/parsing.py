@@ -1476,29 +1476,27 @@ def split_chapter_into_verses_with_formatting(
     Sample HTML content with multiple verse elements:
 
     >>> html_content = '''
-    >>> <span class="verse">
-    >>> <sup class="versemarker">19</sup>
-    >>> For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
-    >>> <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
-    >>> <div class="sectionhead-5"></div>
-    >>> </span>
-    >>> <span class="verse">
-    >>> <sup class="versemarker">20</sup>
-    >>> I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
-    >>> <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
-    >>> <div class="sectionhead-5"></div>
-    >>> </span>
-    >>> '''
+    ... <span class="verse">
+    ... <sup class="versemarker">19</sup>
+    ... For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
+    ... <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
+    ... <div class="sectionhead-5"></div>
+    ... </span>
+    ... <span class="verse">
+    ... <sup class="versemarker">20</sup>
+    ... I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
+    ... <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
+    ... <div class="sectionhead-5"></div>
+    ... </span>
+    ... '''
     >>> from doc.domain.parsing import split_chapter_into_verses_with_formatting
-    >>> chapter = USFMChapter(content=html_content)
+    >>> chapter = USFMChapter(content=html_content, verses=None)
     >>> chapter.verses = split_chapter_into_verses_with_formatting(chapter)
-    >>> chapter.verses["19"]
-    <span class="verse">
+    >>> print(chapter.verses["19"])
     <sup class="versemarker">19</sup>
     For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
     <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
-    <div class="sectionhead-5"></div>
-    </span>
+    <BLANKLINE>
     """
     # TODO What to do about footnote targets? Perhaps have the value be a
     # tuple with first element of the verse HTML (which includes the

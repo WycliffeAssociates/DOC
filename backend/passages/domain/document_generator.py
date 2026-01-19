@@ -285,6 +285,7 @@ def generate_passages_docx_document(
     lang_name: str,
     passage_reference_dtos_json: str,
     email_address: str,
+    docx_filepath_prefix: str = "passages_",
     book_names: dict[str, str] = BOOK_NAMES,
 ) -> Json[str]:
     passage_reference_dtos_list = json.loads(passage_reference_dtos_json)
@@ -298,7 +299,7 @@ def generate_passages_docx_document(
         email_address,
     )
     document_request_key_ = document_request_key(lang_code, passage_reference_dtos)
-    docx_filepath_ = docx_filepath(document_request_key_)
+    docx_filepath_ = f"{docx_filepath_prefix}{docx_filepath(document_request_key_)}"
     if file_needs_update(docx_filepath_):
         generate_docx_document(
             lang_code,

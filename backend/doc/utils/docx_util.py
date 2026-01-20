@@ -192,10 +192,6 @@ def add_internal_docx_links(doc: DocxDocument) -> None:
             _replace_runs(para, new_elements)
 
 
-# from docx.oxml import OxmlElement
-# from docx.oxml.ns import qn
-
-
 def style_superscripts(
     doc: DocxDocument,
     *,

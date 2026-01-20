@@ -37,7 +37,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bem-x-kabenmushi", "reg", "sng"),
     ("bem-x-kabenmushi", "reg", "deu"),
     ("bem-x-kabenmushi", "reg", "1ki"),
-    ("bem-x-kabenmushi", "reg", "1ch"),
+    # ("bem-x-kabenmushi", "reg", "1ch"), # unavailable from data API
     ("bem-x-kabenmushi", "reg", "ecc"),
     ("bem-x-kabenmushi", "reg", "2ki"),
     ("bi", "reg", "act"),
@@ -129,7 +129,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("kod", "reg", "phm"),
     # ("kqi", "reg", "2th"), # unavailable from data API
     # ("kqi", "reg", "2ti"), # unavailable from data API
-    # ("kqi", "reg", "mrk"), # book no longer available from data api
+    # ("kqi", "reg", "mrk"), # unavailable from data API
     ("kqi", "reg", "heb"),
     # ("kqi", "reg", "1pe"), # unavailable from data API
     # ("kqi", "reg", "tit"), # unavailable from data API
@@ -160,7 +160,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("mhi-x-burolo", "reg", "2th"),
     ("mhy-x-benualima", "reg", "mrk"),
     # ("mwe", "reg", "tit"),  # book is available as choice, but resource not cloned?
-    # ("mxo", "reg", "mrk"),  # not currently unavailable from data API
+    # ("mxo", "reg", "mrk"),  # unavailable from data API
     ("nak-x-bileki", "reg", "mat"),
     ("nak-x-bileki", "reg", "1ti"),
     ("nak-x-bileki", "reg", "eph"),
@@ -174,7 +174,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("nfd", "reg", "2th"),
     ("nfd", "reg", "2ti"),
     ("nfd", "reg", "heb"),
-    # ("nhx", "reg", "jos"),  # not currently available from data API
+    # ("nhx", "reg", "jos"),  # unavailable from data API
     ("nnb-x-kishula", "reg", "mrk"),
     ("not", "reg", "jos"),
     ("now", "reg", "mic"),
@@ -246,10 +246,10 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("txy", "reg", "2jn"),
     ("tyn", "reg", "jud"),
     ("tyn", "reg", "mrk"),
-    # ("vin", "reg", "2co"), # not currently available from data API
-    # ("vin", "reg", "1th"),
-    # ("vin", "reg", "1ti"),
-    # ("vin", "reg", "gal"),
+    # ("vin", "reg", "2co"), # unavailable from data API
+    # ("vin", "reg", "1th"), # unavailable from data API
+    # ("vin", "reg", "1ti"), # unavailable from data API
+    # ("vin", "reg", "gal"), # unavailable from data API
     ("wbj", "reg", "luk"),
     ("wbj", "reg", "tit"),
     ("wbj", "reg", "2jn"),

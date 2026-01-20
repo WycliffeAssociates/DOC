@@ -142,8 +142,7 @@ def generate_docx_document(
         else:
             non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}"
         # NOTE We want the document to show references even if there is no
-        # content for it. Will these continue to be the desired behavior, we
-        # will see.
+        # content for it.
         # localized_reference = (
         #     f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
         #     if selected_usfm_book and non_book_name_portion_of_reference
@@ -286,6 +285,7 @@ def generate_passages_docx_document(
     lang_name: str,
     passage_reference_dtos_json: str,
     email_address: str,
+    docx_filepath_prefix: str = "passages_",
     book_names: dict[str, str] = BOOK_NAMES,
 ) -> Json[str]:
     passage_reference_dtos_list = json.loads(passage_reference_dtos_json)
@@ -299,7 +299,7 @@ def generate_passages_docx_document(
         email_address,
     )
     document_request_key_ = document_request_key(lang_code, passage_reference_dtos)
-    docx_filepath_ = docx_filepath(document_request_key_)
+    docx_filepath_ = f"{docx_filepath_prefix}{docx_filepath(document_request_key_)}"
     if file_needs_update(docx_filepath_):
         generate_docx_document(
             lang_code,

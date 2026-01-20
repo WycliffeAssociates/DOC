@@ -2,8 +2,8 @@
 Utility functions used by assembly_strategies.
 """
 
-from re import compile, IGNORECASE, Match, search
-from typing import Optional, Sequence, TypeVar
+from re import search
+from typing import Optional, Sequence
 
 from doc.config import settings
 from doc.domain.bible_books import BOOK_ID_MAP
@@ -19,6 +19,7 @@ from doc.domain.model import (
 from doc.reviewers_guide.model import RGBook
 from doc.reviewers_guide.render_to_html import render_chapter
 from doc.utils.tw_utils import translation_words_content
+from doc.utils.text_utils import demote_headings_by_one
 from docx.document import Document as DocxDocument
 from docx.enum.section import WD_SECTION
 from docx.enum.text import WD_BREAK
@@ -27,11 +28,6 @@ from docx.oxml.ns import qn
 
 
 logger = settings.logger(__name__)
-
-
-HEADING_RE = compile(r"</?h([1-6])\b", IGNORECASE)
-
-T = TypeVar("T")
 
 
 OXML_LANGUAGE_LIST: list[str] = [
@@ -137,7 +133,6 @@ def tn_chapter_verses(
     tn_book: Optional[TNBook],
     chapter_num: int,
     use_two_column_layout_for_tn_notes: bool,
-    # fmt_str: str = TN_VERSE_NOTES_ENCLOSING_DIV_FMT_STR,
 ) -> str:
     """
     Return the HTML for verses that are in the chapter with
@@ -968,27 +963,6 @@ def get_non_usfm_resources_verse(
             )
         )
     return document_parts
-
-
-def _demote_heading(match: Match[str], levels: int) -> str:
-    tag = match.group(0)
-    level = int(match.group(1))
-    new_level = min(level + levels, 6)
-    return tag.replace(f"h{level}", f"h{new_level}", 1)
-
-
-def demote_headings_by_one(content: str) -> str:
-    return HEADING_RE.sub(
-        lambda m: _demote_heading(m, levels=1),
-        content,
-    )
-
-
-def demote_headings_by_two(content: str) -> str:
-    return HEADING_RE.sub(
-        lambda m: _demote_heading(m, levels=2),
-        content,
-    )
 
 
 def tnc_chapter_intro(

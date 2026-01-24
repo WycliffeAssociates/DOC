@@ -5,9 +5,8 @@
   import AddPassageComponent from './AddPassageComponent.svelte'
   import AddOTComponent from './AddOTComponent.svelte'
   import AddNTComponent from './AddNTComponent.svelte'
-  import AddSTETComponent from './AddSTETComponent.svelte'
+  // import AddSTETComponent from './AddSTETComponent.svelte'
 
-  let loading = false
   let checkIcon =
     '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 0A8 8 0 1 0 8 16A8 8 0 0 0 8 0zM3.5 8.5l2.5 2.5L12.5 5l-1-1l-7 7l-2.5-2.5l-1 1z"/></svg>'
 
@@ -39,8 +38,8 @@
 </script>
 
 <div class="flex flex-col">
-  <AddNTComponent {bookCodesAndNames} {checkIcon} bind:loading />
-  <AddOTComponent {bookCodesAndNames} {checkIcon} bind:loading />
+  <AddNTComponent {bookCodesAndNames} {checkIcon} />
+  <AddOTComponent {bookCodesAndNames} {checkIcon} />
   <AddPassageComponent {chapters} {checkIcon} {bookCodesAndNames} />
   <!-- <AddSTETComponent {bookCodesAndNames} {checkIcon} bind:loading /> -->
 </div>

@@ -21,10 +21,13 @@ from doc.utils.file_utils import docx_filepath, file_needs_update
 from doc.utils.text_utils import maybe_correct_book_name
 from docx import Document
 from docx.oxml import OxmlElement, parse_xml
-from docx.shared import Inches
+from docx.shared import Inches, RGBColor
 
 from htmldocx import HtmlToDocx  # type: ignore
-from passages.domain.model import Passage, BibleReference as PassageReference
+from passages.domain.model import (
+    Passage,
+    BibleReferenceWithAvailability as PassageReference,
+)
 from passages.domain.parser import verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
 from passages.utils.docx_utils import add_footer, add_header
@@ -58,14 +61,12 @@ def generate_docx_document(
         str, str
     ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> str:
-    """
-    Generate the scriptural terms evaluation document.
-
-    >>> from passages.domain.document_generator import generate_docx_document
-    >>> generate_docx_document("en", list[PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="3-6"), PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="9-10"), PassageReferenceDto(lang_code="en", book_code="mat", book_name="Matthew", chapter_num=1, verse_reference="15")])
-    """
+    """Generate the content for the Passages document"""
     book_codes = list(
-        {passage_ref_dto.book_code for passage_ref_dto in passage_reference_dtos}
+        {
+            passage_ref_dto.reference.book_code
+            for passage_ref_dto in passage_reference_dtos
+        }
     )
     resource_types_ = resource_types(lang_code, ",".join(book_codes))
     resource_types_codes = list(
@@ -116,11 +117,12 @@ def generate_docx_document(
     current_task.update_state(state="Assembling content")
     passages = []
     for passage_ref_dto in passage_reference_dtos:
+        reference = passage_ref_dto.reference
         selected_usfm_books = [
             usfm_book_
             for usfm_book_ in usfm_books
             if usfm_book_.lang_code == lang_code
-            and usfm_book_.book_code == passage_ref_dto.book_code
+            and usfm_book_.book_code == reference.book_code
             and usfm_book_.resource_type_name
             == resource_type_codes_and_names[usfm_resource_type]
         ]
@@ -129,33 +131,29 @@ def generate_docx_document(
         if selected_usfm_books:
             selected_usfm_book = selected_usfm_books[0]
         if selected_usfm_book:
-            verse_text_html_ = verse_text_html(passage_ref_dto, selected_usfm_book)
+            verse_text_html_ = verse_text_html(reference, selected_usfm_book)
         else:
             verse_text_html_ = ""
         non_book_name_portion_of_reference = ""
         if (
-            passage_ref_dto.end_chapter
-            and passage_ref_dto.end_chapter > 0
-            and passage_ref_dto.end_chapter_verse_ref
+            reference.end_chapter
+            and reference.end_chapter > 0
+            and reference.end_chapter_verse_ref
         ):
-            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}-{passage_ref_dto.end_chapter}:{passage_ref_dto.end_chapter_verse_ref}"
+            non_book_name_portion_of_reference = f"{reference.start_chapter}:{reference.start_chapter_verse_ref}-{reference.end_chapter}:{reference.end_chapter_verse_ref}"
         else:
-            non_book_name_portion_of_reference = f"{passage_ref_dto.start_chapter}:{passage_ref_dto.start_chapter_verse_ref}"
-        # NOTE We want the document to show references even if there is no
-        # content for it.
-        # localized_reference = (
-        #     f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
-        #     if selected_usfm_book and non_book_name_portion_of_reference
-        #     else passage_ref_dto.start_chapter_verse_ref
-        # )
+            non_book_name_portion_of_reference = (
+                f"{reference.start_chapter}:{reference.start_chapter_verse_ref}"
+            )
         localized_reference = (
-            f"{passage_ref_dto.book_name} {non_book_name_portion_of_reference}"
-            if non_book_name_portion_of_reference
-            else passage_ref_dto.start_chapter_verse_ref
+            f"{selected_usfm_book.national_book_name} {non_book_name_portion_of_reference}"
+            if selected_usfm_book and non_book_name_portion_of_reference
+            else f"{reference.book_name} {non_book_name_portion_of_reference}"
         )
         passage = Passage(
             bible_reference=localized_reference,
             passage_text=verse_text_html_,
+            is_available=passage_ref_dto.is_available,
         )
         passages.append(passage)
     current_task.update_state(state="Converting to Docx")
@@ -170,6 +168,7 @@ def generate_docx(
     lang_name: str,
     show_notes_column: bool = False,  # TODO make a UI option, for now default to False
 ) -> None:
+    """Generate the Passages output document in docx format"""
     TOTAL_WIDTH = Inches(6.0)
     doc = Document()
     html_to_docx = HtmlToDocx()
@@ -197,10 +196,16 @@ def generate_docx(
             tcPr.append(tcW)
         # Fill left (or only) cell
         cell_left = table.cell(0, 0)
-        html_to_docx.add_html_to_document(
-            passage_dto.bible_reference,
-            cell_left,
-        )
+        # Add bible reference with color depending on availability
+        p = cell_left.add_paragraph()  # create a fresh paragraph for control
+        run = p.add_run(passage_dto.bible_reference)
+        # run.bold = True  # optional – if you want it emphasized
+        # run.font.size = Pt(10)                  # optional
+        if passage_dto.is_available:
+            run.font.color.rgb = RGBColor(102, 118, 139)  # ≈ #66768B
+        else:
+            run.font.color.rgb = RGBColor(176, 184, 195)  # ≈ #B0B8C3
+        # Then add the passage text (still using html_to_docx if it has other formatting)
         html_to_docx.add_html_to_document(
             passage_dto.passage_text,
             cell_left,
@@ -262,7 +267,7 @@ def document_request_key(
     translation_table = str.maketrans(":;,-", "____")
     passages_key = underscore.join(
         [
-            f"{passage_reference.book_code}_{passage_reference.start_chapter}_{passage_reference.start_chapter_verse_ref.translate(translation_table)}"
+            f"{passage_reference.reference.book_code}_{passage_reference.reference.start_chapter}_{passage_reference.reference.start_chapter_verse_ref.translate(translation_table)}"
             for passage_reference in passage_reference_dtos
         ]
     )
@@ -299,7 +304,8 @@ def generate_passages_docx_document(
         email_address,
     )
     document_request_key_ = document_request_key(lang_code, passage_reference_dtos)
-    docx_filepath_ = f"{docx_filepath_prefix}{docx_filepath(document_request_key_)}"
+    docx_filepath_ = f"{docx_filepath(document_request_key_, docx_filepath_prefix)}"
+    logger.debug("docx_filepath_: %s", docx_filepath_)
     if file_needs_update(docx_filepath_):
         generate_docx_document(
             lang_code,

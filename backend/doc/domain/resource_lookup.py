@@ -1212,11 +1212,14 @@ def nt_survey_rg_passages(
     resource_dir: str = settings.EN_RG_DIR,
 ) -> list[BibleReference]:
     """
-    >>> from doc.domain import resource_lookup
-    >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
-    (...)
-    >>> rg_books[0]
-    BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+        Returns the list of all NT RG passages from the docx_file_path, but with
+    book names localized for language chosen.
+
+        >>> from doc.domain import resource_lookup
+        >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
+        (...)
+        >>> rg_books[0]
+        BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(

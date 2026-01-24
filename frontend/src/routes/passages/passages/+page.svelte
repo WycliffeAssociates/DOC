@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { BibleReference } from '$lib/passages/models'
   import BibleReferenceSelector from './BibleReferenceSelector.svelte'
   import { onMount } from 'svelte'
   import {
@@ -38,15 +37,13 @@
     let langCode = $langCodeAndNameStore.split(',')[0]
     try {
       bookCodesAndNames = await getBookCodesAndNames(langCode)
-      console.log(`bookCodesAndNames: ${bookCodesAndNames}`)
+      console.log(`bookCodesAndNames for ${langCode}: ${bookCodesAndNames}`)
     } catch (error) {
       console.error('Failed to retrieve book codes and names:', error)
     } finally {
       console.log('Book codes and names retrieved successfully')
     }
   })
-
-
 
   let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number

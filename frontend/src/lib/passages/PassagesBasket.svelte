@@ -4,7 +4,7 @@
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { passagesStore, filteredPassagesStore } from '$lib/passages/stores/PassagesStore'
   import type { BibleReference } from '$lib/passages/models'
-  import { passagesRegExp } from '$lib/passages/utils'
+  import { isAvailable, passagesRegExp } from '$lib/passages/utils'
   import BookIcon from '$lib/BookIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'
   import CloseIcon from '$lib/CloseIcon.svelte'
@@ -39,13 +39,7 @@
 
   $: shownPassages = sortedPassages?.slice(0, size)
   $: hiddenPassages = sortedPassages?.slice(size)
-  $: idsOfAvailablePassages = new Set(
-    ($filteredPassagesStore ?? []).map((p: BibleReference) => p.id)
-  )
 
-  function isAvailable(passage: BibleReference): boolean {
-    return idsOfAvailablePassages.has(passage.id)
-  }
 </script>
 
 {#if passagesRegExp.test($page.url.pathname)}
@@ -153,7 +147,7 @@
               </div>
               {#if isAvailable(passage)}
                 <button on:click={() => uncheckPassage(passage.id)}>
-                  <span class="ml-2"><CloseIcon /></span>
+                  <CloseIcon />
                 </button>
               {/if}
             </div>

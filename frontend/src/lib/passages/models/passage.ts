@@ -1,7 +1,7 @@
 export type PassagesDocumentRequest = {
   langCode: string
   langName: string
-  bibleReferences: Array<BibleReference>
+  bibleReferences: Array<BibleReferenceWithAvailability> // Now uses the wrapper
   emailAddress: string | null
 }
 
@@ -14,4 +14,9 @@ export type BibleReference = {
   startChapterVerseRef: string
   endChapter?: number | null
   endChapterVerseRef?: string | null
+}
+
+export type BibleReferenceWithAvailability = {
+  reference: BibleReference // The original reference object
+  isAvailable: boolean // Flag indicating if this reference is available (e.g., based on prior checks)
 }

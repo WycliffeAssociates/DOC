@@ -10,15 +10,14 @@
     settingsUpdatedStore
   } from '$lib/passages/stores/SettingsStore'
   import { taskIdStore, taskStateStore } from '$lib/passages/stores/TaskStore'
-  import { getCode, getName } from '$lib/passages/utils'
+  import { getCode, getName, isAvailable } from '$lib/passages/utils'
   import LogRocket from 'logrocket'
   import TaskStatus from './TaskStatus.svelte'
   import type { PassagesDocumentRequest } from '$lib/passages/models/passage'
   import { toSnakeCase } from '$lib/camel-to-snake-case-util'
-  import { omitIdFromPassageReferences } from '$lib/passages/utils'
   import ErrorAlertIcon from '$lib/ErrorAlertIcon.svelte'
   import { bookCodes } from '$lib/bible-books'
-  import type { BibleReference } from '$lib/passages/models'
+  import type { BibleReference, BibleReferenceWithAvailability } from '$lib/passages/models'
 
   let apiRootUrl = env.PUBLIC_BACKEND_API_URL
   let fileServerUrl: string = env.PUBLIC_FILE_SERVER_URL
@@ -67,14 +66,16 @@
     const documentRequest: PassagesDocumentRequest = {
       langCode: getCode($langCodeAndNameStore),
       langName: getName($langCodeAndNameStore),
-      bibleReferences: sortedPassages,
+      bibleReferences: sortedPassages.map(
+        (ref) =>
+          ({
+            reference: ref,
+            isAvailable: isAvailable(ref)
+          }) as BibleReferenceWithAvailability
+      ),
       emailAddress: $emailStore
     }
-    const documentRequestWithoutIds = omitIdFromPassageReferences(documentRequest)
-    console.log(
-      'document request: ',
-      JSON.stringify(toSnakeCase(documentRequestWithoutIds), null, 2)
-    )
+    console.log('document request: ', JSON.stringify(toSnakeCase(documentRequest), null, 2))
     $errorStore = null
     $documentReadyStore = false
     $documentRequestKeyStore = ''
@@ -83,7 +84,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // toSnakeCase for FastAPI (python) endpoint
-      body: JSON.stringify(toSnakeCase(documentRequestWithoutIds))
+      body: JSON.stringify(toSnakeCase(documentRequest))
     })
     const data = await response.json()
     if (!response.ok) {
@@ -144,7 +145,7 @@
 
   // Reactively set download URLs of generated documents
   let docxDownloadUrl: string
-  $: docxDownloadUrl = `${fileServerUrl}/${$documentRequestKeyStore}.docx`
+  $: docxDownloadUrl = `${fileServerUrl}/passages_${$documentRequestKeyStore}.docx`
 
   function viewFromUrl(url: string) {
     console.log(`url: ${url}`)

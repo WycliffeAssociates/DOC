@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
+  import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import {
     PUBLIC_OT_SURVEY_RG1_PASSAGES_URL,
     PUBLIC_OT_SURVEY_RG2_PASSAGES_URL,
@@ -8,11 +10,15 @@
   import { env } from '$env/dynamic/public'
   import type { BibleReference } from './model'
   import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
-  import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
+  import {
+    addBibleReference,
+    addFilteredBibleReference,
+    removeBibleReference
+  } from '$lib/passages/stores/PassagesStore'
   import { bookRange } from '$lib/bible-books'
   import type { BookKey } from '$lib/bible-books'
 
-  export let loading: boolean
+  let loading: boolean = false
   export let checkIcon: string
   export let bookCodesAndNames: [string, string][]
   let isLoadingOTSurveyRG1 = false
@@ -23,6 +29,18 @@
   let otSurveyRG2SuccessMessage: string = ''
   let otSurveyRG3SuccessMessage: string = ''
   let otSurveyRG4SuccessMessage: string = ''
+  let rg1BibleReferences: Array<BibleReference> = []
+  let availableRg1BibleReferences: Array<BibleReference> = []
+  let showRG1: boolean = false
+  let rg2BibleReferences: Array<BibleReference> = []
+  let availableRg2BibleReferences: Array<BibleReference> = []
+  let showRG2: boolean = false
+  let rg3BibleReferences: Array<BibleReference> = []
+  let availableRg3BibleReferences: Array<BibleReference> = []
+  let showRG3: boolean = false
+  let rg4BibleReferences: Array<BibleReference> = []
+  let availableRg4BibleReferences: Array<BibleReference> = []
+  let showRG4: boolean = false
 
   async function getOTSurveyRG1Passages(
     langCode: string,
@@ -37,9 +55,7 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences.filter((ref) =>
-      bookCodesAndNames.some(([code]) => code === ref.book_code)
-    )
+    return bibleReferences
   }
 
   async function getOTSurveyRG2Passages(
@@ -55,9 +71,7 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences.filter((ref) =>
-      bookCodesAndNames.some(([code]) => code === ref.book_code)
-    )
+    return bibleReferences
   }
 
   async function getOTSurveyRG3Passages(
@@ -73,9 +87,7 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences.filter((ref) =>
-      bookCodesAndNames.some(([code]) => code === ref.book_code)
-    )
+    return bibleReferences
   }
 
   async function getOTSurveyRG4Passages(
@@ -91,10 +103,111 @@
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences.filter((ref) =>
-      bookCodesAndNames.some(([code]) => code === ref.book_code)
-    )
+    return bibleReferences
   }
+
+  onMount(async () => {
+    loading = true
+    const langCode = $langCodeAndNameStore.split(',')[0]
+    try {
+      // Get all the OT RG 1 passages
+      rg1BibleReferences = await getOTSurveyRG1Passages(langCode)
+      // Filter down to the OT RG 1 passages available in this language
+      availableRg1BibleReferences = rg1BibleReferences.filter((ref) =>
+        bookCodesAndNames.some(([code]) => code === ref.book_code)
+      )
+      // Add available bible references to filteredPassagesStore for
+      // later reference in PassagesBasket
+      for (const bibleRef of availableRg1BibleReferences) {
+        addFilteredBibleReference(
+          langCode,
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      // Set flag indicating if this language provides any of the OT
+      // RG 1 survey passages.
+      showRG1 = availableRg1BibleReferences.length > 0
+
+      // Get all the OT RG 2 passages
+      rg2BibleReferences = await getOTSurveyRG2Passages(langCode)
+      // Filter down to the OT RG 2 passages available in this language
+      availableRg2BibleReferences = rg2BibleReferences.filter((ref) =>
+        bookCodesAndNames.some(([code]) => code === ref.book_code)
+      )
+      // Add available bible references to filteredPassagesStore for
+      // later reference in PassagesBasket
+      for (const bibleRef of availableRg2BibleReferences) {
+        addFilteredBibleReference(
+          langCode,
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      // Set flag indicating if this language provides any of the 0T
+      // RG 2 survey passages.
+      showRG2 = availableRg2BibleReferences.length > 0
+
+      // Get all the OT RG 3 passages
+      rg3BibleReferences = await getOTSurveyRG3Passages(langCode)
+      // Filter down to the OT RG 3 passages available in this language
+      availableRg3BibleReferences = rg3BibleReferences.filter((ref) =>
+        bookCodesAndNames.some(([code]) => code === ref.book_code)
+      )
+      // Add available bible references to filteredPassagesStore for
+      // later reference in PassagesBasket
+      for (const bibleRef of availableRg3BibleReferences) {
+        addFilteredBibleReference(
+          langCode,
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      // Set flag indicating if this language provides any of the 0T
+      // RG 3 survey passages.
+      showRG3 = availableRg3BibleReferences.length > 0
+
+      // Get all the OT RG 4 passages
+      rg4BibleReferences = await getOTSurveyRG4Passages(langCode)
+      // Filter down to the OT RG 4 passages available in this language
+      availableRg4BibleReferences = rg4BibleReferences.filter((ref) =>
+        bookCodesAndNames.some(([code]) => code === ref.book_code)
+      )
+      // Add available bible references to filteredPassagesStore for
+      // later reference in PassagesBasket
+      for (const bibleRef of availableRg4BibleReferences) {
+        addFilteredBibleReference(
+          langCode,
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      // Set flag indicating if this language provides any of the 0T
+      // RG 4 survey passages.
+      showRG4 = availableRg4BibleReferences.length > 0
+    } catch (error) {
+      console.error('Failed to load NT Survey RG passages:', error)
+    } finally {
+      console.log('NT Survey RG passages loaded successfully')
+    }
+    loading = false
+  })
 
   export async function addOTSurveyRG1Passages() {
     try {
@@ -269,7 +382,6 @@
   }
 
   async function handleAddOTSurveyRG1PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG1 = true
     try {
       await addOTSurveyRG1Passages()
@@ -277,13 +389,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG1 = false
     }
   }
 
   async function handleAddOTSurveyRG2PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG2 = true
     try {
       await addOTSurveyRG2Passages()
@@ -291,13 +401,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG2 = false
     }
   }
 
   async function handleAddOTSurveyRG3PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG3 = true
     try {
       await addOTSurveyRG3Passages()
@@ -305,13 +413,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG3 = false
     }
   }
 
   async function handleAddOTSurveyRG4PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG4 = true
     try {
       await addOTSurveyRG4Passages()
@@ -319,13 +425,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG4 = false
     }
   }
 
   async function handleRemoveOTSurveyRG1PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG1 = true
     try {
       await removeOTSurveyRG1Passages()
@@ -333,13 +437,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG1 = false
     }
   }
 
   async function handleRemoveOTSurveyRG2PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG2 = true
     try {
       await removeOTSurveyRG2Passages()
@@ -347,13 +449,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG2 = false
     }
   }
 
   async function handleRemoveOTSurveyRG3PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG3 = true
     try {
       await removeOTSurveyRG3Passages()
@@ -361,13 +461,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG3 = false
     }
   }
 
   async function handleRemoveOTSurveyRG4PassagesClick() {
-    loading = true
     isLoadingOTSurveyRG4 = true
     try {
       await removeOTSurveyRG4Passages()
@@ -375,7 +473,6 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingOTSurveyRG4 = false
     }
   }
@@ -473,18 +570,11 @@
       (showRG3 ? otSurveyRG3Checked : true) &&
       (showRG4 ? otSurveyRG4Checked : true)
   }
-
-  const rg1 = bookRange('gen', 'deu')
-  const rg2 = bookRange('jos', 'est')
-  const rg3 = bookRange('job', 'sng')
-  const rg4 = bookRange('isa', 'mal')
-
-  let showRG1 = bookCodesAndNames.some(([code]) => rg1.includes(code as BookKey))
-  let showRG2 = bookCodesAndNames.some(([code]) => rg2.includes(code as BookKey))
-  let showRG3 = bookCodesAndNames.some(([code]) => rg3.includes(code as BookKey))
-  let showRG4 = bookCodesAndNames.some(([code]) => rg4.includes(code as BookKey))
 </script>
 
+{#if loading}
+  <ProgressIndicator />
+{/if}
 {#if [showRG1, showRG2, showRG3, showRG4].filter(Boolean).length > 1}
   <div class="mb-2 mt-4 flex items-center">
     <input

@@ -16,14 +16,21 @@ class BibleReference(BaseModel):
 
 
 @final
+class BibleReferenceWithAvailability(BaseModel):
+    reference: BibleReference
+    is_available: bool
+
+
+@final
 class Passage(NamedTuple):
     passage_text: str  # HTML of passage
     bible_reference: str
+    is_available: bool
 
 
 @final
 class PassagesDocumentRequest(BaseModel):
     lang_code: str
     lang_name: str
-    bible_references: list[BibleReference]
+    bible_references: list[BibleReferenceWithAvailability]
     email_address: Optional[EmailStr]

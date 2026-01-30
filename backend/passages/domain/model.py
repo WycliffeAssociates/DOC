@@ -1,4 +1,4 @@
-from typing import Optional, NamedTuple, final
+from typing import Optional, NamedTuple, final, TypeAlias
 
 from doc.domain.model import ChapterNum
 from pydantic import BaseModel, EmailStr
@@ -23,14 +23,17 @@ class BibleReferenceWithAvailability(BaseModel):
 
 @final
 class Passage(NamedTuple):
+    reference: BibleReference
     passage_text: str  # HTML of passage
-    bible_reference: str
+    localized_reference: str
     is_available: bool
 
 
 @final
 class PassagesDocumentRequest(BaseModel):
-    lang_code: str
-    lang_name: str
+    lang0_code: str
+    lang0_name: str
+    lang1_code: Optional[str]
+    lang1_name: Optional[str]
     bible_references: list[BibleReferenceWithAvailability]
     email_address: Optional[EmailStr]

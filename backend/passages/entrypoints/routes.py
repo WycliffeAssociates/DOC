@@ -20,16 +20,17 @@ logger = settings.logger(__name__)
 async def generate_passages_docx_document(
     passages_document_request: model.PassagesDocumentRequest,
 ) -> JSONResponse:
-    # logger.debug(
-    #     "passages_document_request.bible_references: %s",
-    #     passages_document_request.bible_references,
-    # )
-    # Top level exception handler
+    logger.debug(
+        "passages_document_request: %s",
+        passages_document_request,
+    )
     try:
         task = document_generator.generate_passages_docx_document.apply_async(
             args=(
-                passages_document_request.lang_code,
-                passages_document_request.lang_name,
+                passages_document_request.lang0_code,
+                passages_document_request.lang0_name,
+                passages_document_request.lang1_code,
+                passages_document_request.lang1_name,
                 # Serialize the list of objects to a JSON string
                 json.dumps(
                     passages_document_request.bible_references,

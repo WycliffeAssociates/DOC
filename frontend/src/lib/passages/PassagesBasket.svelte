@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
-  import { passagesStore, filteredPassagesStore } from '$lib/passages/stores/PassagesStore'
+  import { langCodesStore } from '$lib/passages/stores/LanguagesStore'
+  import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import type { BibleReference } from '$lib/passages/models'
   import { isAvailable, passagesRegExp } from '$lib/passages/utils'
   import BookIcon from '$lib/BookIcon.svelte'
@@ -39,7 +39,6 @@
 
   $: shownPassages = sortedPassages?.slice(0, size)
   $: hiddenPassages = sortedPassages?.slice(size)
-
 </script>
 
 {#if passagesRegExp.test($page.url.pathname)}
@@ -55,8 +54,8 @@
     </div>
     <button
       class="flex rounded bg-white px-4 py-2 text-xl text-[#33445c] hover:bg-[#efefef]"
-      on:click={() => $langCodeAndNameStore && goto('/passages/passages')}
-      disabled={!$langCodeAndNameStore}
+      on:click={() => $langCodesStore && goto('/passages/passages')}
+      disabled={!$langCodesStore}
     >
       <EditIcon />
       <span class="ml-2"> Edit </span>
@@ -77,12 +76,14 @@
           {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
             <span
               >{passage.bookName}
-              {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
+              {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}
+              ({passage.langCode})</span
             >
           {:else}
             <span
               >{passage.bookName}
-              {passage.startChapter}:{passage.startChapterVerseRef}</span
+              {passage.startChapter}:{passage.startChapterVerseRef}
+              ({passage.langCode})</span
             >
           {/if}
         </div>
@@ -99,14 +100,16 @@
       >
         <div>
           {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
+            ({passage.langCode})
             <span
               >{passage.bookName}
-              {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
+              {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}
+              ({passage.langCode})</span
             >
           {:else}
             <span
               >{passage.bookName}
-              {passage.startChapter}:{passage.startChapterVerseRef}</span
+              {passage.startChapter}:{passage.startChapterVerseRef} ({passage.langCode})</span
             >
           {/if}
         </div>
@@ -136,12 +139,13 @@
                 {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
                   <span
                     >{passage.bookName}
-                    {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}
+                    ({passage.langCode})</span
                   >
                 {:else}
                   <span
                     >{passage.bookName}
-                    {passage.startChapter}:{passage.startChapterVerseRef}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef} ({passage.langCode})</span
                   >
                 {/if}
               </div>
@@ -158,14 +162,16 @@
             >
               <div>
                 {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
+                  ({passage.langCode})
                   <span
                     >{passage.bookName}
-                    {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef}-{passage.endChapter}:{passage.endChapterVerseRef}
+                    ({passage.langCode})</span
                   >
                 {:else}
                   <span
                     >{passage.bookName}
-                    {passage.startChapter}:{passage.startChapterVerseRef}</span
+                    {passage.startChapter}:{passage.startChapterVerseRef} ({passage.langCode})</span
                   >
                 {/if}
               </div>

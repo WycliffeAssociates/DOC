@@ -1,6 +1,8 @@
 export type PassagesDocumentRequest = {
-  langCode: string
-  langName: string
+  lang0Code: string
+  lang0Name: string
+  lang1Code?: string | null
+  lang1Name?: string | null
   bibleReferences: Array<BibleReferenceWithAvailability> // Now uses the wrapper
   emailAddress: string | null
 }

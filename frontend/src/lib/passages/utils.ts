@@ -4,10 +4,10 @@ import { goto } from '$app/navigation'
 import {
   gatewayCodeAndNamesStore,
   heartCodeAndNamesStore,
-  langCodeAndNameStore
+  langCodesStore
 } from '$lib/passages/stores/LanguagesStore'
 import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
-import { filteredPassagesStore } from '$lib/passages/stores/PassagesStore'
+import { availablePassagesStore } from '$lib/passages/stores/PassagesStore'
 import { documentRequestKeyStore } from '$lib/passages/stores/SettingsStore'
 import type { PassagesDocumentRequest } from '$lib/passages/models'
 import type { BibleReference } from '$lib/passages/models'
@@ -22,7 +22,7 @@ export function resetStores(storeGroup: StoreGroup) {
   if (storeGroup === 'language') {
     gatewayCodeAndNamesStore.set([])
     heartCodeAndNamesStore.set([])
-    langCodeAndNameStore.set('')
+    langCodesStore.set([])
   }
 
   if (storeGroup === 'settings') {
@@ -48,10 +48,9 @@ export function routeToPage(url: string): void {
   }
 }
 
-
 export function isAvailable(passage: BibleReference): boolean {
-  const currentFiltered = get(filteredPassagesStore)
-  return currentFiltered.some(
+  const available = get(availablePassagesStore)
+  return available.some(
     (ref: BibleReference) =>
       ref.langCode === passage.langCode &&
       ref.bookCode === passage.bookCode &&

@@ -3,21 +3,24 @@
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import {
     addBibleReference,
-    addFilteredBibleReference,
+    addAvailableBibleReference,
     removeBibleReference
   } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import { langCodesStore, langCountStore } from '$lib/passages/stores/LanguagesStore'
   import { PUBLIC_NT_SURVEY_RG_PASSAGES_URL } from '$env/static/public'
   import { env } from '$env/dynamic/public'
   import type { BibleReference } from './model'
 
   let loading: boolean = false
   export let checkIcon: string
-  export let bookCodesAndNames: [string, string][]
+  export let bookCodesAndNamesLang0: [string, string][]
+  export let bookCodesAndNamesLang1: [string, string][]
   let ntSurveySuccessMessage: string = ''
   let isLoadingNTSurvey = false
-  let ntBibleReferences: Array<BibleReference> = []
-  let availableNtBibleReferences: Array<BibleReference> = []
+  let lang0NtBibleReferences: Array<BibleReference> = []
+  let lang1NtBibleReferences: Array<BibleReference> = []
+  let availableLang0NtBibleReferences: Array<BibleReference> = []
+  let availableLang1NtBibleReferences: Array<BibleReference> = []
   let showNT: boolean = false
 
   async function handleAddNTSurveyRGPassagesClick() {
@@ -71,19 +74,37 @@
 
   onMount(async () => {
     loading = true
-    const langCode = $langCodeAndNameStore.split(',')[0]
     try {
-      // Get all the NT RG passages
-      ntBibleReferences = await getNTSurveyRGPassages(langCode)
+      lang0NtBibleReferences = await getNTSurveyRGPassages($langCodesStore[0])
       // Filter down to the passages available in this language
-      availableNtBibleReferences = ntBibleReferences.filter((ref) =>
-        bookCodesAndNames.some(([code]) => code === ref.book_code)
+      availableLang0NtBibleReferences = lang0NtBibleReferences.filter((ref) =>
+        bookCodesAndNamesLang0.some(([code]) => code === ref.book_code)
       )
-      // Add availableNtBibleReferences to filteredPassagesStore for
+      if ($langCountStore > 1) {
+        lang1NtBibleReferences = await getNTSurveyRGPassages($langCodesStore[1])
+        // Filter down to the passages available in this language
+        availableLang1NtBibleReferences = lang1NtBibleReferences.filter((ref) =>
+          bookCodesAndNamesLang1.some(([code]) => code === ref.book_code)
+        )
+      }
+      // Add availableLang0NtBibleReferences to filteredPassagesStore for
       // later reference in PassagesBasket
-      for (const bibleRef of availableNtBibleReferences) {
-        addFilteredBibleReference(
-          langCode,
+      for (const bibleRef of availableLang0NtBibleReferences) {
+        addAvailableBibleReference(
+          $langCodesStore[0],
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      // Add availableLang1NtBibleReferences to filteredPassagesStore for
+      // later reference in PassagesBasket
+      for (const bibleRef of availableLang1NtBibleReferences) {
+        addAvailableBibleReference(
+          $langCodesStore[1],
           bibleRef.book_code,
           bibleRef.book_name,
           Number(bibleRef.start_chapter),
@@ -95,7 +116,8 @@
       // Set flag indicating if this language provides any of the NT
       // RG survey passages. We use this to show or not show the NT RG
       // passages checkbox
-      showNT = availableNtBibleReferences.length > 0
+      showNT =
+        availableLang0NtBibleReferences.length > 0 || availableLang1NtBibleReferences.length > 0
       loading = false
     } catch (error) {
       console.error('Failed to load NT Survey RG passages:', error)
@@ -107,12 +129,22 @@
 
   export async function addNTSurveyRGPassages() {
     try {
-      const langCode = $langCodeAndNameStore.split(',')[0]
-      // Add all NT RG passages to the passageStore for reference in
+      // Add lang0 NT RG passages to the passageStore for reference in
       // PassagesBasket.svelte
-      for (const bibleRef of ntBibleReferences) {
+      for (const bibleRef of lang0NtBibleReferences) {
         addBibleReference(
-          langCode,
+          $langCodesStore[0],
+          bibleRef.book_code,
+          bibleRef.book_name,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      for (const bibleRef of lang1NtBibleReferences) {
+        addBibleReference(
+          $langCodesStore[1],
           bibleRef.book_code,
           bibleRef.book_name,
           Number(bibleRef.start_chapter),
@@ -130,11 +162,21 @@
 
   export async function removeNTSurveyRGPassages() {
     try {
-      const langCode = $langCodeAndNameStore.split(',')[0]
-      // Remove all the NT RG passages from the passageStore
-      for (const bibleRef of ntBibleReferences) {
+      // Remove the lang0 NT RG passages from the passageStore
+      for (const bibleRef of lang0NtBibleReferences) {
         removeBibleReference(
-          langCode,
+          $langCodesStore[0],
+          bibleRef.book_code,
+          Number(bibleRef.start_chapter),
+          bibleRef.start_chapter_verse_ref,
+          Number(bibleRef.end_chapter),
+          bibleRef.end_chapter_verse_ref
+        )
+      }
+      // Remove the lang1 NT RG passages from the passageStore
+      for (const bibleRef of lang1NtBibleReferences) {
+        removeBibleReference(
+          $langCodesStore[1],
           bibleRef.book_code,
           Number(bibleRef.start_chapter),
           bibleRef.start_chapter_verse_ref,
@@ -148,8 +190,10 @@
       console.log('NT Survey RG Passages removed successfully')
     }
   }
-  $: console.log(`ntBibleReferences: ${ntBibleReferences}`)
-  $: console.log(`availableNtBibleReferences: ${availableNtBibleReferences}`)
+  $: console.log('lang0NtBibleReferences:', lang0NtBibleReferences)
+  $: console.log('lang1NtBibleReferences:', lang1NtBibleReferences)
+  $: console.log('availableLang0NtBibleReferences:', availableLang0NtBibleReferences)
+  $: console.log('availableLang1NtBibleReferences:', availableLang1NtBibleReferences)
 </script>
 
 {#if loading}

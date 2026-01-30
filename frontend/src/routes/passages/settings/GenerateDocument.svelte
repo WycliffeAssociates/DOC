@@ -2,15 +2,19 @@
   import { env } from '$env/dynamic/public'
   import DownloadButton from './DownloadButton.svelte'
   import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import {
+    langCodesStore,
+    langCountStore,
+    langNamesStore
+  } from '$lib/passages/stores/LanguagesStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import {
     emailStore,
     documentRequestKeyStore,
     settingsUpdatedStore
   } from '$lib/passages/stores/SettingsStore'
-  import { taskIdStore, taskStateStore } from '$lib/passages/stores/TaskStore'
-  import { getCode, getName, isAvailable } from '$lib/passages/utils'
+  import { taskStateStore } from '$lib/passages/stores/TaskStore'
+  import { isAvailable } from '$lib/passages/utils'
   import LogRocket from 'logrocket'
   import TaskStatus from './TaskStatus.svelte'
   import type { PassagesDocumentRequest } from '$lib/passages/models/passage'
@@ -39,6 +43,7 @@
   $: generatingDocument = false
 
   $: allPassages = $passagesStore || []
+  $: console.log('allPassages:', allPassages)
   $: sortedPassages = allPassages?.slice().sort((a: BibleReference, b: BibleReference) => {
     const indexA = bookCodes.indexOf(a.bookCode)
     const indexB = bookCodes.indexOf(b.bookCode)
@@ -64,8 +69,10 @@
     generatingDocument = true
     $settingsUpdatedStore = false
     const documentRequest: PassagesDocumentRequest = {
-      langCode: getCode($langCodeAndNameStore),
-      langName: getName($langCodeAndNameStore),
+      lang0Code: $langCodesStore[0],
+      lang0Name: $langNamesStore[0],
+      lang1Code: $langCountStore > 1 ? $langCodesStore[1] : null,
+      lang1Name: $langCountStore > 1 ? $langNamesStore[1] : null,
       bibleReferences: sortedPassages.map(
         (ref) =>
           ({
@@ -158,6 +165,8 @@
       event.returnValue = `Are you sure you want to leave while your document is being generated?`
     }
   })
+
+  $: console.log('langNamesStore:', $langNamesStore)
 </script>
 
 <div class="bg-white pb-4 pt-12">
@@ -173,7 +182,7 @@
       </div>
     </div>
   {:else if (!generatingDocument && !$documentReadyStore) || $settingsUpdatedStore}
-    {#if $langCodeAndNameStore}
+    {#if $langCodesStore}
       <div class="pb-4">
         <button
           class="blue-gradient w-1/2 rounded-md p-4 text-center"

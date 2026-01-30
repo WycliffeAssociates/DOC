@@ -1,27 +1,30 @@
 <script lang="ts">
   import BibleReferenceSelector from './BibleReferenceSelector.svelte'
+  import { handleError } from '$lib/utils'
   import { onMount } from 'svelte'
   import {
     PUBLIC_BOOK_CODES_FROM_USFM_ONLY_URL,
     PUBLIC_TAILWIND_SM_MIN_WIDTH
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
+  import { errorStore } from '$lib/passages/stores/NotificationStore'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
   import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
-  import { passagesStore } from '$lib/passages/stores/PassagesStore'
+  import { langCodesStore, langCountStore } from '$lib/passages/stores/LanguagesStore'
+  import { passagesStore, availablePassagesStore } from '$lib/passages/stores/PassagesStore'
   import CheckIcon from '$lib/CheckIcon.svelte'
 
   let showWizardBasketModal = false // For use by Mobile UI
-  let bookCodesAndNames: Array<[string, string]> = []
+  let bookCodesAndNamesLang0: [string, string][] = []
+  let bookCodesAndNamesLang1: [string, string][] = []
 
   async function getBookCodesAndNames(
     langCode: string,
     apiRootUrl = env.PUBLIC_BACKEND_API_URL,
     bookCodesUrl = <string>PUBLIC_BOOK_CODES_FROM_USFM_ONLY_URL
-  ): Promise<Array<[string, string]>> {
+  ): Promise<[string, string][]> {
     const url = `${apiRootUrl}${bookCodesUrl}${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
@@ -33,23 +36,33 @@
     return bookCodesAndNames
   }
 
-  onMount(async () => {
-    let langCode = $langCodeAndNameStore.split(',')[0]
+  async function loadBookCodesAndNames() {
     try {
-      bookCodesAndNames = await getBookCodesAndNames(langCode)
-      console.log(`bookCodesAndNames for ${langCode}: ${bookCodesAndNames}`)
-    } catch (error) {
-      console.error('Failed to retrieve book codes and names:', error)
+      bookCodesAndNamesLang0 = await getBookCodesAndNames($langCodesStore[0])
+      if ($langCountStore > 1) {
+        bookCodesAndNamesLang1 = await getBookCodesAndNames($langCodesStore[1])
+      }
+    } catch (err) {
+      console.error(err)
+      $errorStore = handleError(err)
     } finally {
-      console.log('Book codes and names retrieved successfully')
+      console.log('Successfully fetched book codes and names')
     }
+  }
+
+  onMount(async () => {
+    await loadBookCodesAndNames()
   })
 
   let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
 
+  $: console.log(`$langCountStore: ${$langCountStore}`)
+  $: console.log(`bookCodesAndNamesLang0: ${bookCodesAndNamesLang0}`)
+  $: console.log(`bookCodesAndNamesLang1: ${bookCodesAndNamesLang1}`)
   $: console.log(`windowWidth: ${windowWidth}`)
-  $: console.log(`$passagesStore: ${JSON.stringify($passagesStore)}`)
+  $: console.log('$passagesStore:', $passagesStore)
+  $: console.log('availablePassagesStore:', $availablePassagesStore)
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
@@ -60,14 +73,14 @@
   <div class="flex flex-1 flex-col bg-white sm:w-2/3">
     <h3 class="mb-4 ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">Add Passages</h3>
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
-      {#if !bookCodesAndNames || bookCodesAndNames.length === 0}
+      {#if !bookCodesAndNamesLang0 || bookCodesAndNamesLang0.length === 0}
         <div class="ml-4">
           <ProgressIndicator
             labelString="Acquiring and analyzing books available for language chosen, please be patient"
           />
         </div>
       {:else}
-        <BibleReferenceSelector {bookCodesAndNames} />
+        <BibleReferenceSelector {bookCodesAndNamesLang0} {bookCodesAndNamesLang1} />
         {#if windowWidth < TAILWIND_SM_MIN_WIDTH}
           <button class="ml-2" on:click={() => (showWizardBasketModal = true)}>
             <div class="relative">

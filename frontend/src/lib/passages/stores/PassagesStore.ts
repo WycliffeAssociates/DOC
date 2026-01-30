@@ -3,7 +3,7 @@ import type { BibleReference } from '../models/passage'
 
 // Define the passages store
 export const passagesStore = writable<BibleReference[]>([])
-export const filteredPassagesStore = writable<BibleReference[]>([])
+export const availablePassagesStore = writable<BibleReference[]>([])
 
 export const addBibleReference = (
   langCode: string,
@@ -44,7 +44,7 @@ export const addBibleReference = (
   })
 }
 
-export const addFilteredBibleReference = (
+export const addAvailableBibleReference = (
   langCode: string,
   bookCode: string,
   bookName: string,
@@ -53,7 +53,7 @@ export const addFilteredBibleReference = (
   endChapterNum?: number | null,
   endChapterVerseReference?: string | null
 ) => {
-  filteredPassagesStore.update((currentPassages) => {
+  availablePassagesStore.update((currentPassages) => {
     // Check if the passage already exists
     const exists = currentPassages.some(
       (p) =>

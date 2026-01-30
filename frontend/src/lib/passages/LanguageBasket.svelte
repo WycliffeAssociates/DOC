@@ -2,38 +2,23 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import {
-    langCodeAndNameStore,
-    gatewayCodeAndNamesStore,
-    heartCodeAndNamesStore
+    langCodesStore,
+    langCountStore,
+    languagesClickedOrderStore
   } from '$lib/passages/stores/LanguagesStore'
   import { langRegExp, getCode, getName } from '$lib/passages/utils'
   import CloseIcon from '$lib/CloseIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'
   import GlobeIcon from '$lib/GlobeIcon.svelte'
 
-  function uncheckGatewayLanguage(langCodeAndName: string) {
-    if (langCodeAndName) {
-      $gatewayCodeAndNamesStore = $gatewayCodeAndNamesStore.filter(
-        (item) => getCode(item) != getCode(langCodeAndName)
-      )
-    }
-    if (langCodeAndName && $langCodeAndNameStore && langCodeAndName === $langCodeAndNameStore) {
-      $langCodeAndNameStore = ''
-    }
+  function uncheckLanguage(langCodeAndName: string) {
+    $languagesClickedOrderStore = $languagesClickedOrderStore.filter(
+      (item) => item != langCodeAndName
+    )
+    $langCodesStore = $langCodesStore.filter((item) => item != getCode(langCodeAndName))
+    $langCountStore = $langCodesStore.length
   }
 
-  function uncheckHeartLanguage(langCodeAndName: string) {
-    if (langCodeAndName) {
-      $heartCodeAndNamesStore = $heartCodeAndNamesStore.filter(
-        (item) => getCode(item) != getCode(langCodeAndName)
-      )
-    }
-    if (langCodeAndName && $langCodeAndNameStore && langCodeAndName === $langCodeAndNameStore) {
-      $langCodeAndNameStore = ''
-    }
-  }
-
-  $: console.log(`$langCodeAndNameStore: ${JSON.stringify(langCodeAndNameStore, null, 2)}`)
 </script>
 
 {#if langRegExp.test($page.url.pathname)}
@@ -56,40 +41,38 @@
     </button>
   </div>
 {/if}
-{#if $langCodeAndNameStore}
-  {#if langRegExp.test($page.url.pathname)}
-    <div
-      class="mt-2 flex w-full items-center justify-between
+
+{#if $languagesClickedOrderStore && $languagesClickedOrderStore.length > 0}
+  {#each $languagesClickedOrderStore as langCodeAndName}
+    {#if langRegExp.test($page.url.pathname)}
+      <div
+        class="mt-2 flex w-full items-center justify-between
                  rounded-lg bg-white p-4 text-xl text-[#66768B]"
-    >
-      <div>
-        <span>{getName($langCodeAndNameStore)}</span><span class="ml-2"
-          >({getCode($langCodeAndNameStore)})</span
-        >
-      </div>
-      <button
-        on:click={() => {
-          uncheckGatewayLanguage($langCodeAndNameStore)
-          uncheckHeartLanguage($langCodeAndNameStore)
-        }}
       >
-        <CloseIcon />
-      </button>
-    </div>
-  {:else}
-    <div
-      class="mt-2 flex w-full items-center justify-between
-                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
-    >
-      <div>
-        <span>{getName($langCodeAndNameStore)}</span><span class="ml-2"
-          >({getCode($langCodeAndNameStore)})</span
-        >
+        <div>
+          <span>{getName(langCodeAndName)}</span><span class="ml-2"
+            >({getCode(langCodeAndName)})</span
+          >
+        </div>
+        <button on:click={() => uncheckLanguage(langCodeAndName)}>
+          <CloseIcon />
+        </button>
       </div>
-    </div>
-  {/if}
+    {:else}
+      <div
+        class="mt-2 flex w-full items-center justify-between
+                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
+      >
+        <div>
+          <span>{getName(langCodeAndName)}</span><span class="ml-2"
+            >({getCode(langCodeAndName)})</span
+          >
+        </div>
+      </div>
+    {/if}
+  {/each}
 {:else}
   <div class="rounded-lg bg-[#e5e8eb] p-6 text-xl text-[#66768b]">
-    Language will appear here selected
+    Selections will appear here once a language is selected
   </div>
 {/if}

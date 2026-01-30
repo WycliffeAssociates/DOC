@@ -3,7 +3,7 @@
   import { page, navigating } from '$app/stores'
   import BackButton from '$lib/BackButton.svelte'
   import NextButton from '$lib/NextButton.svelte'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import { langCodesStore } from '$lib/passages/stores/LanguagesStore'
   import { passagesStore } from '$lib/passages/stores/PassagesStore'
   import { getCode, langRegExp, passagesRegExp, settingsRegExp } from '$lib/passages/utils'
   import LeftArrowIcon from '$lib/LeftArrowIcon.svelte'
@@ -100,7 +100,7 @@
     {/if}
   </div>
   <!-- next button logic -->
-  {#if langRegExp.test($page.url.pathname) && $langCodeAndNameStore}
+  {#if langRegExp.test($page.url.pathname) && $langCodesStore}
     <NextButton func={submitLanguage} />
   {:else if passagesRegExp.test($page.url.pathname) && $passagesStore}
     <NextButton func={submitPassages} />

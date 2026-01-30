@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { addBibleReference, addFilteredBibleReference } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import { addBibleReference, addAvailableBibleReference } from '$lib/passages/stores/PassagesStore'
+  import { langCodesStore, langCountStore } from '$lib/passages/stores/LanguagesStore'
 
   export let chapters: Record<string, number[]>
   export let checkIcon: string
-  export let bookCodesAndNames: [string, string][]
+  export let bookCodesAndNamesLang0: [string, string][]
+  export let bookCodesAndNamesLang1: [string, string][]
   let selectedBookCode: string = ''
   let selectedChapter: string = ''
   let chaptersForSelectedBook: number[] = []
@@ -35,10 +36,10 @@
 
   function addPassage() {
     if (selectedBookCode && selectedChapter && verseReference) {
-      const bookName =
-        bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'
+      const bookEntry = bookCodesAndNamesLang0.find(([code]) => code === selectedBookCode)
+      const bookName = bookEntry ? bookEntry[1] : 'Unknown'
       addBibleReference(
-        $langCodeAndNameStore.split(',')[0],
+        $langCodesStore[0],
         selectedBookCode,
         bookName,
         Number(selectedChapter),
@@ -46,8 +47,8 @@
         null,
         null
       )
-      addFilteredBibleReference(
-        $langCodeAndNameStore.split(',')[0],
+      addAvailableBibleReference(
+        $langCodesStore[0],
         selectedBookCode,
         bookName,
         Number(selectedChapter),
@@ -55,6 +56,26 @@
         null,
         null
       )
+      if ($langCountStore > 1) {
+        addBibleReference(
+          $langCodesStore[1],
+          selectedBookCode,
+          bookName,
+          Number(selectedChapter),
+          verseReference,
+          null,
+          null
+        )
+        addAvailableBibleReference(
+          $langCodesStore[1],
+          selectedBookCode,
+          bookName,
+          Number(selectedChapter),
+          verseReference,
+          null,
+          null
+        )
+      }
       passageSuccessMessage = '✔'
       setTimeout(() => {
         passageSuccessMessage = ''
@@ -85,8 +106,11 @@
       bind:value={selectedBookCode}
     >
       <option value="" disabled selected>Choose a book</option>
-      {#each bookCodesAndNames as [code, name]}
+      {#each bookCodesAndNamesLang0 as [code, name]}
         <option value={code}>{name}</option>
+      {/each}
+      {#each bookCodesAndNamesLang1 as [code2, name2]}
+        <option value={code2}>{name2}</option>
       {/each}
     </select>
   </div>

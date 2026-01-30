@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { addBibleReference, removeBibleReference } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import { langCodesStore } from '$lib/passages/stores/LanguagesStore'
   import { env } from '$env/dynamic/public'
   import { PUBLIC_STET_PASSAGES_URL, PUBLIC_PRODUCTION_DOMAIN } from '$env/static/public'
   import type { BibleReference } from './model'
@@ -32,7 +32,8 @@
   }
 
   onMount(async () => {
-    const langCode = $langCodeAndNameStore.split(',')[0]
+    // TODO for lang1
+    const langCode = $langCodesStore[0]
     try {
       const stetPassages = await getSTETPassages(langCode)
       showSTET = stetPassages.length > 0
@@ -45,7 +46,8 @@
 
   export async function addSTETPassages() {
     try {
-      const langCode = $langCodeAndNameStore.split(',')[0]
+      // TODO for lang1
+      const langCode = $langCodesStore[0]
       const bibleReferences = await getSTETPassages(langCode)
       for (const bibleRef of bibleReferences) {
         addBibleReference(
@@ -67,7 +69,8 @@
 
   export async function removeSTETPassages() {
     try {
-      const langCode = $langCodeAndNameStore.split(',')[0]
+      // TODO for lang1
+      const langCode = $langCodesStore[0]
       const bibleReferences = await getSTETPassages(langCode)
       for (const bibleRef of bibleReferences) {
         removeBibleReference(

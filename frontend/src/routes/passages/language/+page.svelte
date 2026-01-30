@@ -16,7 +16,7 @@
 </script>
 
 <Languages
-  message="Select the language"
+  message="Select up to 2 languages"
   {WizardBreadcrumb}
   {WizardBasket}
   {MobileLanguageDisplay}
@@ -26,4 +26,3 @@
   {langNamesStore}
   {langCountStore}
 />
-

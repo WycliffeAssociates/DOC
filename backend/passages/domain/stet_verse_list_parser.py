@@ -4,7 +4,7 @@ import re
 from doc.domain.bible_books import BOOK_NAMES
 
 
-BOOK_INDEX = dict((id, pos) for pos, id in enumerate(BOOK_NAMES.keys()))
+BOOK_INDEX = dict((key, pos) for pos, key in enumerate(BOOK_NAMES.keys()))
 BOOK_VERSE_PATTERN = re.compile(r"(?:([1-3]?\s?[A-Z][a-z]+)\s)?(\d+:\d+)")
 HEADER_PATTERN = re.compile(r"^(\w+)\s+\(([\d,; ]+)\)")
 

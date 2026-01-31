@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Mapping, Optional, Sequence, TYPE_CHECKING, cast
+from typing import Mapping, Optional, Sequence, TYPE_CHECKING
 
 from celery import current_task
 from doc.config import settings
@@ -46,6 +46,21 @@ else:
 logger = settings.logger(__name__)
 
 
+def format_reference_suffix(reference: BibleReference) -> str:
+    if (
+        reference.end_chapter
+        and reference.end_chapter > 0
+        and reference.end_chapter_verse_ref
+    ):
+        return (
+            f"{reference.start_chapter}:"
+            f"{reference.start_chapter_verse_ref}-"
+            f"{reference.end_chapter}:"
+            f"{reference.end_chapter_verse_ref}"
+        )
+    return f"{reference.start_chapter}:{reference.start_chapter_verse_ref}"
+
+
 def get_passages(
     bible_references_with_availability: list[BibleReferenceWithAvailability],
     usfm_resource_type: str,
@@ -70,24 +85,9 @@ def get_passages(
         verse_text_html_ = (
             verse_text_html(reference, selected_usfm_book) if selected_usfm_book else ""
         )
-        if (
-            reference.end_chapter
-            and reference.end_chapter > 0
-            and reference.end_chapter_verse_ref
-        ):
-            non_book_name_portion_of_reference = (
-                f"{reference.start_chapter}:"
-                f"{reference.start_chapter_verse_ref}-"
-                f"{reference.end_chapter}:"
-                f"{reference.end_chapter_verse_ref}"
-            )
-        else:
-            non_book_name_portion_of_reference = (
-                f"{reference.start_chapter}:{reference.start_chapter_verse_ref}"
-            )
         passage = Passage(
             reference=reference,
-            localized_reference=f"{reference.book_name} {non_book_name_portion_of_reference}",
+            localized_reference=f"{reference.book_name} {format_reference_suffix(reference)}",
             passage_text=verse_text_html_,
             is_available=bible_reference_with_availability.is_available,
         )

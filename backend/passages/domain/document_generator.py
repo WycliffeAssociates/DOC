@@ -58,6 +58,9 @@ def get_passages(
         reference = bible_reference_with_availability.reference
         # logger.debug("reference: %s", reference)
     passages: list[Passage] = []
+    if not usfm_resource_type:
+        resource_type_name = ""
+    else:
         resource_type_name = resource_type_codes_and_names[usfm_resource_type]
         selected_usfm_book = next(
             (

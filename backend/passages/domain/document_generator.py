@@ -45,6 +45,9 @@ else:
 
 logger = settings.logger(__name__)
 
+AVAILABLE_COLOR = RGBColor(102, 118, 139)
+UNAVAILABLE_COLOR = RGBColor(200, 200, 200)
+
 
 def format_reference_suffix(reference: BibleReference) -> str:
     if (
@@ -229,8 +232,9 @@ def generate_docx(
     lang1_code: Optional[str],
     lang1_name: Optional[str],
     show_notes_column: bool = False,
+    available_color: RGBColor = AVAILABLE_COLOR,
+    unavailable_color: RGBColor = UNAVAILABLE_COLOR,
 ) -> None:
-    # logger.debug("passage_dtos: %s", passage_dtos)
     TOTAL_WIDTH = Inches(6.0)
     doc = Document()
     html_to_docx = HtmlToDocx()
@@ -261,32 +265,28 @@ def generate_docx(
     for i, w in enumerate(col_widths):
         table.columns[i].width = w
     col_index = {name: i for i, name in enumerate(columns)}
-    logger.debug(
-        "len(lang0_passages): %s, len(lang1_passages): %s",
-        len(passages_lang0),
-        len(passages_lang1),
-    )
     pairs = (
         zip(passages_lang0, passages_lang1)
         if has_lang1
         else ((p, None) for p in passages_lang0)
     )
     for p0, p1 in pairs:
-        logger.debug("p0: %s, p1: %s", p0, p1)
         row = table.add_row()
         cell = row.cells[col_index["lang0"]]
         run = cell.add_paragraph().add_run(p0.localized_reference)
-        run.font.color.rgb = (
-            RGBColor(102, 118, 139) if p0.is_available else RGBColor(176, 184, 195)
-        )
+        run.font.color.rgb = available_color if p0.is_available else unavailable_color
+        if not p0.is_available:
+            run.font.italic = True
         if p0.is_available:
             html_to_docx.add_html_to_document(p0.passage_text, cell)
         if has_lang1 and p1 is not None:
             cell = row.cells[col_index["lang1"]]
             run = cell.add_paragraph().add_run(p1.localized_reference)
             run.font.color.rgb = (
-                RGBColor(102, 118, 139) if p1.is_available else RGBColor(176, 184, 195)
+                available_color if p1.is_available else unavailable_color
             )
+            if not p1.is_available:
+                run.font.italic = True
             if p1.is_available:
                 html_to_docx.add_html_to_document(p1.passage_text, cell)
         if show_notes_column:

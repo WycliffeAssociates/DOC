@@ -54,22 +54,18 @@ def get_passages(
         str, str
     ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[Passage]:
-    for bible_reference_with_availability in bible_references_with_availability:
-        reference = bible_reference_with_availability.reference
-        # logger.debug("reference: %s", reference)
     passages: list[Passage] = []
     if not usfm_resource_type:
         resource_type_name = ""
     else:
         resource_type_name = resource_type_codes_and_names[usfm_resource_type]
-        selected_usfm_book = next(
-            (
-                usfm_book_
-                for usfm_book_ in usfm_books
-                if usfm_book_.book_code == reference.book_code
-                and usfm_book_.resource_type_name == resource_type_name
-            ),
-            None,
+    usfm_book_index: dict[tuple[str, str], USFMBook] = {
+        (b.book_code, b.resource_type_name): b for b in usfm_books
+    }
+    for bible_reference_with_availability in bible_references_with_availability:
+        reference = bible_reference_with_availability.reference
+        selected_usfm_book = usfm_book_index.get(
+            (reference.book_code, resource_type_name)
         )
         verse_text_html_ = (
             verse_text_html(reference, selected_usfm_book) if selected_usfm_book else ""

@@ -54,10 +54,10 @@ def get_passages(
         str, str
     ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[Passage]:
-    passages = []
     for bible_reference_with_availability in bible_references_with_availability:
         reference = bible_reference_with_availability.reference
         # logger.debug("reference: %s", reference)
+    passages: list[Passage] = []
         resource_type_name = resource_type_codes_and_names[usfm_resource_type]
         selected_usfm_book = next(
             (

@@ -71,7 +71,6 @@ def get_passages(
         verse_text_html_ = (
             verse_text_html(reference, selected_usfm_book) if selected_usfm_book else ""
         )
-        non_book_name_portion_of_reference = ""
         if (
             reference.end_chapter
             and reference.end_chapter > 0

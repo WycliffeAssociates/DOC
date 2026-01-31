@@ -95,6 +95,66 @@ def get_passages(
     return passages
 
 
+def get_usfm_books_and_usfm_resource_type(
+    bible_references_with_availability: list[BibleReferenceWithAvailability],
+    lang_code: str,
+    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+) -> tuple[list[USFMBook], str]:
+    # Invariant: book codes are only those that were available from USFM resources
+    book_codes = list(
+        dict.fromkeys(
+            ref.reference.book_code for ref in bible_references_with_availability
+        )
+    )
+    resource_types_ = resource_types(lang_code, ",".join(book_codes))
+    resource_types_codes = list(
+        {lang_resource_type_tuple[0] for lang_resource_type_tuple in resource_types_}
+    )
+    usfm_resource_types = list(
+        {
+            resource_type_
+            for resource_type_ in resource_types_codes
+            if resource_type_ in usfm_resource_types
+        }
+    )
+    ulb_usfm_resource_types = list(
+        {
+            usfm_resource_type_
+            for usfm_resource_type_ in usfm_resource_types
+            if "ulb" in usfm_resource_type_
+        }
+    )
+    usfm_books = []
+    usfm_resource_type = ""
+    if ulb_usfm_resource_types:  # Prefer ulb if available
+        usfm_resource_type = ulb_usfm_resource_types[0]
+    elif usfm_resource_types:
+        usfm_resource_type = usfm_resource_types[0]
+    if usfm_resource_type:
+        usfm_book = None
+        for book_code in book_codes:
+            current_task.update_state(state="Locating assets")
+            resource_lookup_dto_ = resource_lookup_dto(
+                lang_code, usfm_resource_type, book_code
+            )
+            if resource_lookup_dto_ and resource_lookup_dto_.url:
+                current_task.update_state(state="Provisioning asset files")
+                resource_dir = prepare_resource_filepath(resource_lookup_dto_)
+                provision_asset_files(resource_lookup_dto_.url, resource_dir)
+                current_task.update_state(state="Parsing asset files")
+                usfm_book = usfm_book_content(
+                    resource_lookup_dto_,
+                    resource_dir,
+                    False,
+                )
+                for chapter_num_, chapter_ in usfm_book.chapters.items():
+                    usfm_book.chapters[chapter_num_].verses = split_chapter_into_verses(
+                        chapter_
+                    )
+                usfm_books.append(usfm_book)
+    return usfm_books, usfm_resource_type
+
+
 def generate_docx_document(
     lang0_code: str,
     lang0_name: str,
@@ -109,75 +169,14 @@ def generate_docx_document(
     book_index: dict[str, int] = BOOK_INDEX,
 ) -> str:
     """Generate the content for the Passages document"""
-    # Invariant: book names are already localized at this point
-    # logger.debug(
-    #     "bible_references_with_availability: %s", bible_references_with_availability
-    # )
-    # ----lang0: -----------------------------
     bible_references_with_availability_lang0: list[BibleReferenceWithAvailability] = [
         b
         for b in bible_references_with_availability
         if b.reference.lang_code == lang0_code
     ]
-    # Invariant: book codes are only those that were available from USFM resources
-    book_codes_lang0 = list(
-        dict.fromkeys(
-            ref.reference.book_code for ref in bible_references_with_availability_lang0
-        )
+    usfm_books_lang0, usfm_resource_type_lang0 = get_usfm_books_and_usfm_resource_type(
+        bible_references_with_availability_lang0, lang0_code
     )
-    logger.debug(
-        "book_codes_lang0 prior to uniqification and sorting: %s", book_codes_lang0
-    )
-    resource_types_lang0 = resource_types(lang0_code, ",".join(book_codes_lang0))
-    resource_types_codes_lang0 = list(
-        {
-            lang_resource_type_tuple[0]
-            for lang_resource_type_tuple in resource_types_lang0
-        }
-    )
-    usfm_resource_types_lang0 = list(
-        {
-            resource_type_
-            for resource_type_ in resource_types_codes_lang0
-            if resource_type_ in usfm_resource_types
-        }
-    )
-    ulb_usfm_resource_types_lang0 = list(
-        {
-            usfm_resource_type_
-            for usfm_resource_type_ in usfm_resource_types_lang0
-            if "ulb" in usfm_resource_type_
-        }
-    )
-    usfm_books_lang0 = []
-    usfm_resource_type_lang0 = ""
-    if ulb_usfm_resource_types_lang0:  # Prefer ulb if available
-        usfm_resource_type_lang0 = ulb_usfm_resource_types_lang0[0]
-    elif usfm_resource_types_lang0:
-        usfm_resource_type_lang0 = usfm_resource_types_lang0[0]
-    if usfm_resource_type_lang0:
-        usfm_book = None
-        for book_code in book_codes_lang0:
-            current_task.update_state(state="Locating assets")
-            resource_lookup_dto_lang0 = resource_lookup_dto(
-                lang0_code, usfm_resource_type_lang0, book_code
-            )
-            if resource_lookup_dto_lang0 and resource_lookup_dto_lang0.url:
-                current_task.update_state(state="Provisioning asset files")
-                resource_dir = prepare_resource_filepath(resource_lookup_dto_lang0)
-                provision_asset_files(resource_lookup_dto_lang0.url, resource_dir)
-                current_task.update_state(state="Parsing asset files")
-                usfm_book = usfm_book_content(
-                    resource_lookup_dto_lang0,
-                    resource_dir,
-                    False,
-                )
-                for chapter_num_, chapter_ in usfm_book.chapters.items():
-                    usfm_book.chapters[chapter_num_].verses = split_chapter_into_verses(
-                        chapter_
-                    )
-                usfm_books_lang0.append(usfm_book)
-    # ----lang1: -----------------------------
     bible_references_with_availability_lang1: list[BibleReferenceWithAvailability] = (
         [
             b
@@ -187,82 +186,27 @@ def generate_docx_document(
         if lang1_code
         else []
     )
-    book_codes_lang1 = list(
-        dict.fromkeys(
-            ref.reference.book_code for ref in bible_references_with_availability_lang1
-        )
-    )
-    logger.debug(
-        "book_codes_lang1 prior to uniqification and sorting: %s", book_codes_lang1
-    )
-    resource_types_lang1 = (
-        resource_types(lang1_code, ",".join(book_codes_lang1)) if lang1_code else []
-    )
-    if lang1_code:
-        resource_types_lang1 = resource_types(lang1_code, ",".join(book_codes_lang1))
-        resource_types_codes_lang1 = list(
-            {
-                lang_resource_type_tuple[0]
-                for lang_resource_type_tuple in resource_types_lang1
-            }
-        )
-        usfm_resource_types_lang1 = list(
-            {
-                resource_type_
-                for resource_type_ in resource_types_codes_lang1
-                if resource_type_ in usfm_resource_types
-            }
-        )
-        ulb_usfm_resource_types_lang1 = (
-            list(
-                {
-                    usfm_resource_type_
-                    for usfm_resource_type_ in usfm_resource_types_lang1
-                    if "ulb" in usfm_resource_type_
-                }
-            )
-            if usfm_resource_types_lang1
-            else []
-        )
-    usfm_books_lang1 = []
+    usfm_books_lang1: list[USFMBook] = []
     usfm_resource_type_lang1 = ""
-    if lang1_code and ulb_usfm_resource_types_lang1:  # Prefer ulb if available
-        usfm_resource_type_lang1 = ulb_usfm_resource_types_lang1[0]
-    elif usfm_resource_types_lang1:
-        usfm_resource_type_lang1 = usfm_resource_types_lang1[0]
-    if lang1_code and usfm_resource_type_lang1:
-        usfm_book2 = None
-        for book_code in book_codes_lang1:
-            current_task.update_state(state="Locating assets")
-            resource_lookup_dto_lang1 = resource_lookup_dto(
-                lang1_code, usfm_resource_type_lang1, book_code
+    if lang1_code:
+        usfm_books_lang1, usfm_resource_type_lang1 = (
+            get_usfm_books_and_usfm_resource_type(
+                bible_references_with_availability_lang1, lang1_code
             )
-            if resource_lookup_dto_lang1 and resource_lookup_dto_lang1.url:
-                current_task.update_state(state="Provisioning asset files")
-                resource_dir = prepare_resource_filepath(resource_lookup_dto_lang1)
-                provision_asset_files(resource_lookup_dto_lang1.url, resource_dir)
-                current_task.update_state(state="Parsing asset files")
-                usfm_book2 = usfm_book_content(
-                    resource_lookup_dto_lang1,
-                    resource_dir,
-                    False,
-                )
-                for chapter_num_, chapter_ in usfm_book2.chapters.items():
-                    usfm_book2.chapters[chapter_num_].verses = (
-                        split_chapter_into_verses(chapter_)
-                    )
-                usfm_books_lang1.append(usfm_book2)
+        )
     current_task.update_state(state="Assembling content")
     passages_lang0 = get_passages(
         bible_references_with_availability_lang0,
         usfm_resource_type_lang0,
         usfm_books_lang0,
     )
-    passages_lang1 = get_passages(
-        bible_references_with_availability_lang1,
-        usfm_resource_type_lang1,
-        usfm_books_lang1,
-    )
+    passages_lang1 = []
+    if lang1_code:
+        passages_lang1 = get_passages(
+            bible_references_with_availability_lang1,
+            usfm_resource_type_lang1,
+            usfm_books_lang1,
+        )
     current_task.update_state(state="Converting to Docx")
     generate_docx(
         passages_lang0,

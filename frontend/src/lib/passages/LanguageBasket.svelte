@@ -6,6 +6,7 @@
     langCountStore,
     languagesClickedOrderStore
   } from '$lib/passages/stores/LanguagesStore'
+  import { passagesStore, availablePassagesStore } from '$lib/passages/stores/PassagesStore'
   import { langRegExp, getCode, getName } from '$lib/passages/utils'
   import CloseIcon from '$lib/CloseIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'
@@ -17,8 +18,9 @@
     )
     $langCodesStore = $langCodesStore.filter((item) => item != getCode(langCodeAndName))
     $langCountStore = $langCodesStore.length
+    $passagesStore = []
+    $availablePassagesStore = []
   }
-
 </script>
 
 {#if langRegExp.test($page.url.pathname)}

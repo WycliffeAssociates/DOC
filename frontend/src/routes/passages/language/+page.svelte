@@ -5,18 +5,34 @@
   import Languages from '$lib/Languages.svelte'
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
+  import { passagesStore, availablePassagesStore } from '$lib/passages/stores/PassagesStore'
 
   import {
-    // langCodeAndNameStore,
     langCodesStore,
     langCountStore,
     langNamesStore,
     languagesClickedOrderStore
   } from '$lib/passages/stores/LanguagesStore'
+
+  function handleLangChange(e: Event, lang: string) {
+    const input = e.currentTarget as HTMLInputElement
+    languagesClickedOrderStore.update((arr) => {
+      if (input.checked) {
+        // append only if not already present
+        return arr.includes(lang) ? arr : [...arr, lang]
+      } else {
+        // remove if unchecked
+        return arr.filter((v) => v !== lang)
+      }
+    })
+    $passagesStore = []
+    $availablePassagesStore = []
+  }
 </script>
 
 <Languages
   message="Select up to 2 languages"
+  {handleLangChange}
   {WizardBreadcrumb}
   {WizardBasket}
   {MobileLanguageDisplay}

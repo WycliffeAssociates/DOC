@@ -76,7 +76,12 @@ def get_passages(
             and reference.end_chapter > 0
             and reference.end_chapter_verse_ref
         ):
-            non_book_name_portion_of_reference = f"{reference.start_chapter}:{reference.start_chapter_verse_ref}-{reference.end_chapter}:{reference.end_chapter_verse_ref}"
+            non_book_name_portion_of_reference = (
+                f"{reference.start_chapter}:"
+                f"{reference.start_chapter_verse_ref}-"
+                f"{reference.end_chapter}:"
+                f"{reference.end_chapter_verse_ref}"
+            )
         else:
             non_book_name_portion_of_reference = (
                 f"{reference.start_chapter}:{reference.start_chapter_verse_ref}"

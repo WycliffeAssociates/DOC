@@ -223,7 +223,7 @@ def generate_docx_document(
         )
     usfm_books_lang1 = []
     usfm_resource_type_lang1 = ""
-    if ulb_usfm_resource_types_lang1:  # Prefer ulb if available
+    if lang1_code and ulb_usfm_resource_types_lang1:  # Prefer ulb if available
         usfm_resource_type_lang1 = ulb_usfm_resource_types_lang1[0]
     elif usfm_resource_types_lang1:
         usfm_resource_type_lang1 = usfm_resource_types_lang1[0]

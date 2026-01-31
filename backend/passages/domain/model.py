@@ -1,18 +1,10 @@
 from typing import Optional, NamedTuple, final, TypeAlias
 
 from doc.domain.model import ChapterNum
+from doc.reviewers_guide.model import BibleReference
 from pydantic import BaseModel, EmailStr
 
 
-@final
-class BibleReference(BaseModel):
-    lang_code: str
-    book_code: str
-    book_name: str
-    start_chapter: ChapterNum
-    start_chapter_verse_ref: str
-    end_chapter: Optional[ChapterNum]
-    end_chapter_verse_ref: Optional[str]
 
 
 @final

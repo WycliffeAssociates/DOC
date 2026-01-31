@@ -542,6 +542,7 @@ def parse_bible_reference(book_and_reference_raw: str) -> BibleReference:
     chapter = int(chapter_reference.split(":")[0])
     chapter_verse_ref = chapter_reference.split(":")[1]
     bible_reference = BibleReference(
+        lang_code=None,
         book_code=get_book_code(book_name),
         book_name=book_name,
         start_chapter=chapter,

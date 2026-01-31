@@ -147,6 +147,7 @@ def get_ordinal_bible_reference(
     start_chapter = chapter_verse_components[0]
     start_chapter_verse_ref = chapter_verse_components[1]
     bible_reference = BibleReference(
+        lang_code=None,
         book_code=book_code,
         book_name=book_name,
         start_chapter=int(start_chapter),
@@ -176,6 +177,7 @@ def get_bible_reference_spanning_chapter_boundary(
         chapter_verse_components[2] if len(chapter_verse_components) >= 3 else None
     )
     bible_reference = BibleReference(
+        lang_code=None,
         book_code=book_code,
         book_name=book_name,
         start_chapter=int(start_chapter),

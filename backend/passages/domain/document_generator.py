@@ -19,6 +19,7 @@ from doc.domain.resource_lookup import (
 from doc.reviewers_guide.model import BibleReference
 from doc.utils.file_utils import docx_filepath, file_needs_update
 from doc.utils.text_utils import maybe_correct_book_name
+from doc.utils.docx_util import ensure_reference_styles
 from docx import Document
 from docx.oxml import parse_xml
 from docx.shared import Inches, RGBColor
@@ -45,7 +46,6 @@ else:
 
 logger = settings.logger(__name__)
 
-AVAILABLE_COLOR = RGBColor(102, 118, 139)
 UNAVAILABLE_COLOR = RGBColor(200, 200, 200)
 
 
@@ -232,11 +232,17 @@ def generate_docx(
     lang1_code: Optional[str],
     lang1_name: Optional[str],
     show_notes_column: bool = False,
-    available_color: RGBColor = AVAILABLE_COLOR,
+    available_reference_style_name: str = "AvailableReference",
+    unavailable_reference_style_name: str = "UnavailableReference",
     unavailable_color: RGBColor = UNAVAILABLE_COLOR,
+    total_width: int = Inches(7.0),
+    document_margin_width: float = Inches(0.75),
 ) -> None:
-    TOTAL_WIDTH = Inches(6.0)
     doc = Document()
+    section = doc.sections[0]
+    section.left_margin = Inches(0.75)
+    section.right_margin = Inches(0.75)
+    ensure_reference_styles(doc, unavailable_color=unavailable_color)
     html_to_docx = HtmlToDocx()
     has_lang1 = lang1_code is not None and lang1_name is not None
     if has_lang1:
@@ -250,13 +256,13 @@ def generate_docx(
     if show_notes_column:
         columns.append("notes")
     if columns == ["lang0"]:
-        col_widths = [TOTAL_WIDTH]
+        col_widths = [total_width]
     elif columns == ["lang0", "lang1"]:
-        col_widths = [Inches(3.0), Inches(3.0)]
+        col_widths = [Inches(3.5), Inches(3.5)]
     elif columns == ["lang0", "notes"]:
-        col_widths = [Inches(4.0), Inches(2.0)]
+        col_widths = [Inches(4.5), Inches(2.5)]
     elif columns == ["lang0", "lang1", "notes"]:
-        col_widths = [Inches(2.5), Inches(2.5), Inches(1.0)]
+        col_widths = [Inches(3.0), Inches(3.0), Inches(1.0)]
     else:
         logger.warning(f"Unexpected column configuration: {columns}")
     table = doc.add_table(rows=0, cols=len(columns))
@@ -274,19 +280,21 @@ def generate_docx(
         row = table.add_row()
         cell = row.cells[col_index["lang0"]]
         run = cell.add_paragraph().add_run(p0.localized_reference)
-        run.font.color.rgb = available_color if p0.is_available else unavailable_color
-        if not p0.is_available:
-            run.font.italic = True
+        run.style = (
+            available_reference_style_name
+            if p0.is_available
+            else unavailable_reference_style_name
+        )
         if p0.is_available:
             html_to_docx.add_html_to_document(p0.passage_text, cell)
         if has_lang1 and p1 is not None:
             cell = row.cells[col_index["lang1"]]
             run = cell.add_paragraph().add_run(p1.localized_reference)
-            run.font.color.rgb = (
-                available_color if p1.is_available else unavailable_color
+            run.style = (
+                available_reference_style_name
+                if p1.is_available
+                else unavailable_reference_style_name
             )
-            if not p1.is_available:
-                run.font.italic = True
             if p1.is_available:
                 html_to_docx.add_html_to_document(p1.passage_text, cell)
         if show_notes_column:

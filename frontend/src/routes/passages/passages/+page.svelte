@@ -57,6 +57,8 @@
   let windowWidth: number = typeof window !== 'undefined' ? window.innerWidth : 0
   let TAILWIND_SM_MIN_WIDTH: number = PUBLIC_TAILWIND_SM_MIN_WIDTH as unknown as number
 
+  $: labelString = `Acquiring and analyzing books available for language${$langCountStore > 1 ? 's' : ''} chosen, please be patient`
+
   $: console.log(`$langCountStore: ${$langCountStore}`)
   $: console.log(`bookCodesAndNamesLang0: ${bookCodesAndNamesLang0}`)
   $: console.log(`bookCodesAndNamesLang1: ${bookCodesAndNamesLang1}`)
@@ -75,9 +77,7 @@
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
       {#if !bookCodesAndNamesLang0 || bookCodesAndNamesLang0.length === 0}
         <div class="ml-4">
-          <ProgressIndicator
-            labelString="Acquiring and analyzing books available for language chosen, please be patient"
-          />
+          <ProgressIndicator {labelString} />
         </div>
       {:else}
         <BibleReferenceSelector {bookCodesAndNamesLang0} {bookCodesAndNamesLang1} />

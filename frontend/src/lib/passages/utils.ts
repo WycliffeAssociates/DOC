@@ -48,13 +48,17 @@ export function routeToPage(url: string): void {
   }
 }
 
-export function isAvailable(passage: BibleReference): boolean {
-  const available = get(availablePassagesStore)
+export function isAvailable(
+  passage: BibleReference,
+  available: readonly BibleReference[]
+): boolean {
   return available.some(
-    (ref: BibleReference) =>
+    (ref) =>
       ref.langCode === passage.langCode &&
       ref.bookCode === passage.bookCode &&
       ref.startChapter === passage.startChapter &&
-      ref.startChapterVerseRef === passage.startChapterVerseRef
+      ref.startChapterVerseRef === passage.startChapterVerseRef &&
+      ref.endChapter === passage.endChapter &&
+      ref.endChapterVerseRef === passage.endChapterVerseRef
   )
 }

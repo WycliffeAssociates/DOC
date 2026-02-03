@@ -7,7 +7,7 @@
     langCountStore,
     langNamesStore
   } from '$lib/passages/stores/LanguagesStore'
-  import { passagesStore } from '$lib/passages/stores/PassagesStore'
+  import { passagesStore, availablePassagesStore } from '$lib/passages/stores/PassagesStore'
   import {
     emailStore,
     documentRequestKeyStore,
@@ -17,7 +17,7 @@
   import { isAvailable } from '$lib/passages/utils'
   import LogRocket from 'logrocket'
   import TaskStatus from './TaskStatus.svelte'
-  import type { PassagesDocumentRequest } from '$lib/passages/models/passage'
+  import type { PassagesDocumentRequest } from '$lib/passages/models'
   import { toSnakeCase } from '$lib/camel-to-snake-case-util'
   import ErrorAlertIcon from '$lib/ErrorAlertIcon.svelte'
   import { bookCodes } from '$lib/bible-books'
@@ -77,7 +77,7 @@
         (ref) =>
           ({
             reference: ref,
-            isAvailable: isAvailable(ref)
+            isAvailable: isAvailable(ref, availablePassages)
           }) as BibleReferenceWithAvailability
       ),
       emailAddress: $emailStore
@@ -165,6 +165,8 @@
       event.returnValue = `Are you sure you want to leave while your document is being generated?`
     }
   })
+
+  $: availablePassages = $availablePassagesStore
 
   $: console.log('langNamesStore:', $langNamesStore)
 </script>

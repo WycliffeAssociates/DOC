@@ -9,11 +9,20 @@
   import EditIcon from '$lib/EditIcon.svelte'
   import CloseIcon from '$lib/CloseIcon.svelte'
   import { bookCodes } from '$lib/bible-books'
+  import { availablePassagesStore } from '$lib/passages/stores/PassagesStore'
 
   let size = 5 // Number of passages to show initially
 
-  function uncheckPassage(id: number) {
-    $passagesStore = $passagesStore.filter((item: BibleReference) => item.id != id)
+  function uncheckPassage(passage: BibleReference) {
+    $passagesStore = $passagesStore.filter(
+      (item: BibleReference) =>
+        item.langCode !== passage.langCode ||
+        item.bookCode !== passage.bookCode ||
+        item.startChapter !== passage.startChapter ||
+        item.startChapterVerseRef !== passage.startChapterVerseRef ||
+        item.endChapter !== passage.endChapter ||
+        item.endChapterVerseRef !== passage.endChapterVerseRef
+    )
   }
 
   $: allPassages = $passagesStore || []
@@ -39,6 +48,9 @@
 
   $: shownPassages = sortedPassages?.slice(0, size)
   $: hiddenPassages = sortedPassages?.slice(size)
+
+  // Set reactivity for available passages so that basket stays up to date
+  $: availablePassages = $availablePassagesStore
 </script>
 
 {#if passagesRegExp.test($page.url.pathname)}
@@ -69,8 +81,8 @@
       <div
         class="mt-2 flex w-full items-center justify-between
                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
-        class:text-[#66768B]={isAvailable(passage)}
-        class:text-[#B0B8C3]={!isAvailable(passage)}
+        class:text-[#66768B]={isAvailable(passage, availablePassages)}
+        class:text-[#B0B8C3]={!isAvailable(passage, availablePassages)}
       >
         <div>
           {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
@@ -87,8 +99,8 @@
             >
           {/if}
         </div>
-        {#if isAvailable(passage)}
-          <button on:click={() => uncheckPassage(passage.id)}>
+        {#if isAvailable(passage, availablePassages)}
+          <button on:click={() => uncheckPassage(passage)}>
             <CloseIcon />
           </button>
         {/if}
@@ -132,8 +144,8 @@
             <div
               class="mt-2 flex w-full items-center justify-between
                       rounded-lg bg-white p-2 text-xl text-[#66768B]"
-              class:text-[#66768B]={isAvailable(passage)}
-              class:text-[#B0B8C3]={!isAvailable(passage)}
+              class:text-[#66768B]={isAvailable(passage, availablePassages)}
+              class:text-[#B0B8C3]={!isAvailable(passage, availablePassages)}
             >
               <div>
                 {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
@@ -149,8 +161,8 @@
                   >
                 {/if}
               </div>
-              {#if isAvailable(passage)}
-                <button on:click={() => uncheckPassage(passage.id)}>
+              {#if isAvailable(passage, availablePassages)}
+                <button on:click={() => uncheckPassage(passage)}>
                   <CloseIcon />
                 </button>
               {/if}

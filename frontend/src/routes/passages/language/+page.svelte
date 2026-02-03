@@ -6,6 +6,7 @@
   import WizardBreadcrumb from '$lib/passages/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/passages/WizardBasket.svelte'
   import { passagesStore, availablePassagesStore } from '$lib/passages/stores/PassagesStore'
+  import type { BibleReference } from '$lib/passages/models'
 
   import {
     langCodesStore,
@@ -25,8 +26,14 @@
         return arr.filter((v) => v !== lang)
       }
     })
-    $passagesStore = []
-    $availablePassagesStore = []
+    // keep only passages whose langCode is still selected
+    const allowedLangs = new Set($languagesClickedOrderStore)
+    passagesStore.update((passages) =>
+      passages.filter((p: BibleReference) => p.langCode !== null && allowedLangs.has(p.langCode))
+    )
+    availablePassagesStore.update((passages) =>
+      passages.filter((p: BibleReference) => p.langCode !== null && allowedLangs.has(p.langCode))
+    )
   }
 </script>
 

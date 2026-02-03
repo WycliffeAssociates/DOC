@@ -7,6 +7,7 @@
     languagesClickedOrderStore
   } from '$lib/passages/stores/LanguagesStore'
   import { passagesStore, availablePassagesStore } from '$lib/passages/stores/PassagesStore'
+  import type { BibleReference } from '$lib/passages/models'
   import { langRegExp, getCode, getName } from '$lib/passages/utils'
   import CloseIcon from '$lib/CloseIcon.svelte'
   import EditIcon from '$lib/EditIcon.svelte'
@@ -18,8 +19,14 @@
     )
     $langCodesStore = $langCodesStore.filter((item) => item != getCode(langCodeAndName))
     $langCountStore = $langCodesStore.length
-    $passagesStore = []
-    $availablePassagesStore = []
+    // keep only passages whose langCode is still selected
+    const allowedLangs = new Set($languagesClickedOrderStore)
+    passagesStore.update((passages) =>
+      passages.filter((p: BibleReference) => p.langCode !== null && allowedLangs.has(p.langCode))
+    )
+    availablePassagesStore.update((passages) =>
+      passages.filter((p: BibleReference) => p.langCode !== null && allowedLangs.has(p.langCode))
+    )
   }
 </script>
 

@@ -1,106 +1,59 @@
 import { writable } from 'svelte/store'
-import type { BibleReference } from '../models/passage'
+import type { BibleReference } from '../models'
 
 // Define the passages store
 export const passagesStore = writable<BibleReference[]>([])
 export const availablePassagesStore = writable<BibleReference[]>([])
 
-export const addBibleReference = (
-  langCode: string,
-  bookCode: string,
-  bookName: string,
-  startChapterNum: number,
-  startChapterVerseReference: string,
-  endChapterNum?: number | null,
-  endChapterVerseReference?: string | null
-) => {
+export function addBibleReference(ref: BibleReference) {
   passagesStore.update((currentPassages) => {
     // Check if the passage already exists
     const exists = currentPassages.some(
       (p) =>
-        p.langCode === langCode &&
-        p.bookCode === bookCode &&
-        p.startChapter === startChapterNum &&
-        p.startChapterVerseRef === startChapterVerseReference &&
-        p.endChapter === endChapterNum &&
-        p.endChapterVerseRef === endChapterVerseReference
+        p.langCode === ref.langCode &&
+        p.bookCode === ref.bookCode &&
+        p.startChapter === ref.startChapter &&
+        p.startChapterVerseRef === ref.startChapterVerseRef &&
+        p.endChapter === ref.endChapter &&
+        p.endChapterVerseRef === ref.endChapterVerseRef
     )
     if (exists) {
       return currentPassages // Return unchanged if passage exists
     }
-    return [
-      ...currentPassages,
-      {
-        id: Math.max(0, ...currentPassages.map((p) => p.id)) + 1,
-        langCode,
-        bookCode,
-        bookName,
-        startChapter: startChapterNum,
-        startChapterVerseRef: startChapterVerseReference,
-        endChapter: endChapterNum,
-        endChapterVerseRef: endChapterVerseReference
-      }
-    ]
+    return [...currentPassages, ref]
   })
 }
 
-export const addAvailableBibleReference = (
-  langCode: string,
-  bookCode: string,
-  bookName: string,
-  startChapterNum: number,
-  startChapterVerseReference: string,
-  endChapterNum?: number | null,
-  endChapterVerseReference?: string | null
-) => {
+export function addAvailableBibleReference(ref: BibleReference) {
   availablePassagesStore.update((currentPassages) => {
     // Check if the passage already exists
     const exists = currentPassages.some(
       (p) =>
-        p.langCode === langCode &&
-        p.bookCode === bookCode &&
-        p.startChapter === startChapterNum &&
-        p.startChapterVerseRef === startChapterVerseReference &&
-        p.endChapter === endChapterNum &&
-        p.endChapterVerseRef === endChapterVerseReference
+        p.langCode === ref.langCode &&
+        p.bookCode === ref.bookCode &&
+        p.startChapter === ref.startChapter &&
+        p.startChapterVerseRef === ref.startChapterVerseRef &&
+        p.endChapter === ref.endChapter &&
+        p.endChapterVerseRef === ref.endChapterVerseRef
     )
     if (exists) {
       return currentPassages // Return unchanged if passage exists
     }
-    return [
-      ...currentPassages,
-      {
-        id: Math.max(0, ...currentPassages.map((p) => p.id)) + 1,
-        langCode,
-        bookCode,
-        bookName,
-        startChapter: startChapterNum,
-        startChapterVerseRef: startChapterVerseReference,
-        endChapter: endChapterNum,
-        endChapterVerseRef: endChapterVerseReference
-      }
-    ]
+    return [...currentPassages, ref]
   })
 }
 
-export const removeBibleReference = (
-  langCode: string,
-  bookCode: string,
-  startChapterNum: number,
-  startChapterVerseReference: string,
-  endChapterNum?: number | null,
-  endChapterVerseReference?: string | null
-) => {
+export function removeBibleReference(ref: BibleReference) {
   passagesStore.update((currentPassages) => {
     return currentPassages.filter(
       (p) =>
         !(
-          p.langCode === langCode &&
-          p.bookCode === bookCode &&
-          p.startChapter === startChapterNum &&
-          p.startChapterVerseRef === startChapterVerseReference &&
-          p.endChapter === endChapterNum &&
-          p.endChapterVerseRef === endChapterVerseReference
+          p.langCode === ref.langCode &&
+          p.bookCode === ref.bookCode &&
+          p.startChapter === ref.startChapter &&
+          p.startChapterVerseRef === ref.startChapterVerseRef &&
+          p.endChapter === ref.endChapter &&
+          p.endChapterVerseRef === ref.endChapterVerseRef
         )
     )
   })

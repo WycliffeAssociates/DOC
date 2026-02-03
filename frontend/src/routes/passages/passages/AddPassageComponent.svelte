@@ -1,6 +1,7 @@
 <script lang="ts">
   import { addBibleReference, addAvailableBibleReference } from '$lib/passages/stores/PassagesStore'
   import { langCodesStore, langCountStore } from '$lib/passages/stores/LanguagesStore'
+  import type { BibleReference } from '$lib/passages/models'
 
   export let chapters: Record<string, number[]>
   export let checkIcon: string
@@ -38,43 +39,29 @@
     if (selectedBookCode && selectedChapter && verseReference) {
       const bookEntry = bookCodesAndNamesLang0.find(([code]) => code === selectedBookCode)
       const bookName = bookEntry ? bookEntry[1] : 'Unknown'
-      addBibleReference(
-        $langCodesStore[0],
-        selectedBookCode,
-        bookName,
-        Number(selectedChapter),
-        verseReference,
-        null,
-        null
-      )
-      addAvailableBibleReference(
-        $langCodesStore[0],
-        selectedBookCode,
-        bookName,
-        Number(selectedChapter),
-        verseReference,
-        null,
-        null
-      )
+      const bibleRefLang0: BibleReference = {
+        langCode: $langCodesStore[0],
+        bookCode: selectedBookCode,
+        bookName: bookName,
+        startChapter: Number(selectedChapter),
+        startChapterVerseRef: verseReference,
+        endChapter: null,
+        endChapterVerseRef: null
+      }
+      addBibleReference(bibleRefLang0)
+      addAvailableBibleReference(bibleRefLang0)
       if ($langCountStore > 1) {
-        addBibleReference(
-          $langCodesStore[1],
-          selectedBookCode,
-          bookName,
-          Number(selectedChapter),
-          verseReference,
-          null,
-          null
-        )
-        addAvailableBibleReference(
-          $langCodesStore[1],
-          selectedBookCode,
-          bookName,
-          Number(selectedChapter),
-          verseReference,
-          null,
-          null
-        )
+        const bibleRefLang1 = {
+          langCode: $langCodesStore[1],
+          bookCode: selectedBookCode,
+          bookName: bookName,
+          startChapter: Number(selectedChapter),
+          startChapterVerseRef: verseReference,
+          endChapter: null,
+          endChapterVerseRef: null
+        }
+        addBibleReference(bibleRefLang1)
+        addAvailableBibleReference(bibleRefLang1)
       }
       passageSuccessMessage = '✔'
       setTimeout(() => {

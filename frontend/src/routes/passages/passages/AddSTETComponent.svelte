@@ -4,7 +4,7 @@
   import { langCodesStore } from '$lib/passages/stores/LanguagesStore'
   import { env } from '$env/dynamic/public'
   import { PUBLIC_STET_PASSAGES_URL, PUBLIC_PRODUCTION_DOMAIN } from '$env/static/public'
-  import type { BibleReference } from './model'
+  import type { BibleReference } from '$lib/passages/models'
 
   export let loading: boolean
   export let checkIcon: string
@@ -27,7 +27,7 @@
       throw new Error(response.statusText)
     }
     return bibleReferences.filter((ref) =>
-      bookCodesAndNames.some(([code]) => code === ref.book_code)
+      bookCodesAndNames.some(([code]) => code === ref.bookCode)
     )
   }
 
@@ -50,15 +50,7 @@
       const langCode = $langCodesStore[0]
       const bibleReferences = await getSTETPassages(langCode)
       for (const bibleRef of bibleReferences) {
-        addBibleReference(
-          langCode,
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addBibleReference(bibleRef)
       }
     } catch (error) {
       console.error('Failed to add STET passages:', error)
@@ -73,14 +65,7 @@
       const langCode = $langCodesStore[0]
       const bibleReferences = await getSTETPassages(langCode)
       for (const bibleRef of bibleReferences) {
-        removeBibleReference(
-          langCode,
-          bibleRef.book_code,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        removeBibleReference(bibleRef)
       }
     } catch (error) {
       console.error('Failed to remove STET passages:', error)

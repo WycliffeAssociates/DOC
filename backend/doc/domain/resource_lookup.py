@@ -1245,6 +1245,7 @@ def nt_survey_rg_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1287,6 +1288,7 @@ def ot_survey_rg1_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1329,6 +1331,7 @@ def ot_survey_rg2_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1371,6 +1374,7 @@ def ot_survey_rg3_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1413,6 +1417,7 @@ def ot_survey_rg4_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 

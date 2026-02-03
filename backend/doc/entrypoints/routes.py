@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, cast
 
 import celery.states
 from celery.result import AsyncResult
@@ -113,13 +113,17 @@ async def resource_types(
     Return the list of available resource types tuples for lang_code
     with book_codes.
     """
-    return resource_lookup.resource_types(lang_code, book_codes)
+    return cast(
+        Sequence[tuple[str, str]], resource_lookup.resource_types(lang_code, book_codes)
+    )
 
 
 @router.get("/book_codes_for_lang/{lang_code}")
 async def book_codes_for_lang(lang_code: str) -> Sequence[tuple[str, str]]:
     """Return list of all available resource codes."""
-    return resource_lookup.book_codes_for_lang(lang_code)
+    return cast(
+        Sequence[tuple[str, str]], resource_lookup.book_codes_for_lang(lang_code)
+    )
 
 
 @router.get("/book_codes_for_lang_from_usfm_only/{lang_code}")
@@ -127,7 +131,10 @@ async def book_codes_for_lang_from_usfm_only(
     lang_code: str,
 ) -> Sequence[tuple[str, str]]:
     """Return list of all available resource codes."""
-    return resource_lookup.book_codes_for_lang_from_usfm_only(lang_code)
+    return cast(
+        Sequence[tuple[str, str]],
+        resource_lookup.book_codes_for_lang_from_usfm_only(lang_code),
+    )
 
 
 @router.get("/chapters_in_books")

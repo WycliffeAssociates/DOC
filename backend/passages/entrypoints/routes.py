@@ -1,5 +1,5 @@
 import json
-from typing import Sequence
+from typing import Sequence, cast
 
 import celery.states
 from celery.result import AsyncResult
@@ -71,4 +71,4 @@ async def task_status(task_id: str) -> JSONResponse:
 
 @router.get("/passages/stet_verse_list/{lang_code}")
 async def stet_verse_list(lang_code: str) -> Sequence[BibleReference]:
-    return stet_exhaustive_verse_list(lang_code)
+    return cast(Sequence[BibleReference], stet_exhaustive_verse_list(lang_code))

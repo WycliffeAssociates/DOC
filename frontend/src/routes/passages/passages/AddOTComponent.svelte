@@ -8,9 +8,11 @@
     PUBLIC_OT_SURVEY_RG4_PASSAGES_URL
   } from '$env/static/public'
   import { env } from '$env/dynamic/public'
-  import type { BibleReference } from './model'
+  import type { BibleReference } from '$lib/passages/models'
+  import { parseBibleReferences, matches } from '$lib/passages/models'
   import { langCodesStore, langCountStore } from '$lib/passages/stores/LanguagesStore'
   import {
+    passagesStore,
     addBibleReference,
     addAvailableBibleReference,
     removeBibleReference
@@ -40,6 +42,11 @@
   let lang0Rg4BibleReferences: Array<BibleReference> = []
   let availableLang0Rg4BibleReferences: Array<BibleReference> = []
   let showRG4: boolean = false
+  let otSurveyRG1Checked = false
+  let otSurveyRG2Checked = false
+  let otSurveyRG3Checked = false
+  let otSurveyRG4Checked = false
+  let allOTSurveyChecked = false
 
   let lang1Rg1BibleReferences: Array<BibleReference> = []
   let availableLang1Rg1BibleReferences: Array<BibleReference> = []
@@ -58,12 +65,12 @@
     const url = `${apiRootUrl}${otSurveyRg1PassagesUrl}/${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
-    const bibleReferences: Array<BibleReference> = await response.json()
+    const json = await response.json()
     if (!response.ok) {
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return parseBibleReferences.parse(json)
   }
 
   async function getOTSurveyRG2Passages(
@@ -74,12 +81,12 @@
     const url = `${apiRootUrl}${otSurveyRg2PassagesUrl}/${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
-    const bibleReferences: Array<BibleReference> = await response.json()
+    const json = await response.json()
     if (!response.ok) {
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return parseBibleReferences.parse(json)
   }
 
   async function getOTSurveyRG3Passages(
@@ -90,12 +97,12 @@
     const url = `${apiRootUrl}${otSurveyRg3PassagesUrl}/${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
-    const bibleReferences: Array<BibleReference> = await response.json()
+    const json = await response.json()
     if (!response.ok) {
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return parseBibleReferences.parse(json)
   }
 
   async function getOTSurveyRG4Passages(
@@ -106,12 +113,12 @@
     const url = `${apiRootUrl}${otSurveyRg4PassagesUrl}/${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
-    const bibleReferences: Array<BibleReference> = await response.json()
+    const json = await response.json()
     if (!response.ok) {
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return bibleReferences
+    return parseBibleReferences.parse(json)
   }
 
   onMount(async () => {
@@ -122,77 +129,45 @@
       lang0Rg1BibleReferences = await getOTSurveyRG1Passages($langCodesStore[0])
       // Filter down to the OT RG 1 passages available in this language
       availableLang0Rg1BibleReferences = lang0Rg1BibleReferences.filter((ref) =>
-        bookCodesAndNamesLang0.some(([code]) => code === ref.book_code)
+        bookCodesAndNamesLang0.some(([code]) => code === ref.bookCode)
       )
       // Add available bible references to filteredPassagesStore for
       // later reference in PassagesBasket
       for (const bibleRef of availableLang0Rg1BibleReferences) {
-        addAvailableBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addAvailableBibleReference(bibleRef)
       }
       // Get lang0 OT RG 2 passages
       lang0Rg2BibleReferences = await getOTSurveyRG2Passages($langCodesStore[0])
       // Filter down to the OT RG 2 passages available in this language
       availableLang0Rg2BibleReferences = lang0Rg2BibleReferences.filter((ref) =>
-        bookCodesAndNamesLang0.some(([code]) => code === ref.book_code)
+        bookCodesAndNamesLang0.some(([code]) => code === ref.bookCode)
       )
       // Add available bible references to filteredPassagesStore for
       // later reference in PassagesBasket
       for (const bibleRef of availableLang0Rg2BibleReferences) {
-        addAvailableBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addAvailableBibleReference(bibleRef)
       }
       // Get lang0 OT RG 3 passages
       lang0Rg3BibleReferences = await getOTSurveyRG3Passages($langCodesStore[0])
       // Filter down to the OT RG 3 passages available in this language
       availableLang0Rg3BibleReferences = lang0Rg3BibleReferences.filter((ref) =>
-        bookCodesAndNamesLang0.some(([code]) => code === ref.book_code)
+        bookCodesAndNamesLang0.some(([code]) => code === ref.bookCode)
       )
       // Add available bible references to filteredPassagesStore for
       // later reference in PassagesBasket
       for (const bibleRef of availableLang0Rg3BibleReferences) {
-        addAvailableBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addAvailableBibleReference(bibleRef)
       }
       // Get lang0 OT RG 4 passages
       lang0Rg4BibleReferences = await getOTSurveyRG4Passages($langCodesStore[0])
       // Filter down to the OT RG 4 passages available in this language
       availableLang0Rg4BibleReferences = lang0Rg4BibleReferences.filter((ref) =>
-        bookCodesAndNamesLang0.some(([code]) => code === ref.book_code)
+        bookCodesAndNamesLang0.some(([code]) => code === ref.bookCode)
       )
       // Add available bible references to filteredPassagesStore for
       // later reference in PassagesBasket
       for (const bibleRef of availableLang0Rg4BibleReferences) {
-        addAvailableBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addAvailableBibleReference(bibleRef)
       }
       // Lang 1:
       if ($langCountStore > 1) {
@@ -200,97 +175,47 @@
         lang1Rg1BibleReferences = await getOTSurveyRG1Passages($langCodesStore[1])
         // Filter down to the OT RG 1 passages available in this language
         availableLang1Rg1BibleReferences = lang1Rg1BibleReferences.filter((ref) =>
-          bookCodesAndNamesLang1.some(([code]) => code === ref.book_code)
+          bookCodesAndNamesLang1.some(([code]) => code === ref.bookCode)
         )
         // Add available bible references to filteredPassagesStore for
         // later reference in PassagesBasket
         for (const bibleRef of availableLang1Rg1BibleReferences) {
-          addAvailableBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addAvailableBibleReference(bibleRef)
         }
         // Get all the OT RG 2 passages
         lang1Rg2BibleReferences = await getOTSurveyRG2Passages($langCodesStore[1])
         // Filter down to the OT RG 2 passages available in this language
         availableLang1Rg2BibleReferences = lang1Rg2BibleReferences.filter((ref) =>
-          bookCodesAndNamesLang1.some(([code]) => code === ref.book_code)
+          bookCodesAndNamesLang1.some(([code]) => code === ref.bookCode)
         )
         // Add available bible references to filteredPassagesStore for
         // later reference in PassagesBasket
         for (const bibleRef of availableLang1Rg2BibleReferences) {
-          addAvailableBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addAvailableBibleReference(bibleRef)
         }
         // Get all the OT RG 3 passages
         lang1Rg3BibleReferences = await getOTSurveyRG3Passages($langCodesStore[1])
         // Filter down to the OT RG 3 passages available in this language
         availableLang1Rg3BibleReferences = lang1Rg3BibleReferences.filter((ref) =>
-          bookCodesAndNamesLang1.some(([code]) => code === ref.book_code)
+          bookCodesAndNamesLang1.some(([code]) => code === ref.bookCode)
         )
         // Add available bible references to filteredPassagesStore for
         // later reference in PassagesBasket
         for (const bibleRef of availableLang1Rg3BibleReferences) {
-          addAvailableBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addAvailableBibleReference(bibleRef)
         }
         // Get lang1 OT RG 4 passages
         lang1Rg4BibleReferences = await getOTSurveyRG4Passages($langCodesStore[1])
         // Filter down to the OT RG 4 passages available in this language
         availableLang1Rg4BibleReferences = lang1Rg4BibleReferences.filter((ref) =>
-          bookCodesAndNamesLang1.some(([code]) => code === ref.book_code)
+          bookCodesAndNamesLang1.some(([code]) => code === ref.bookCode)
         )
         // Add available bible references to filteredPassagesStore for
         // later reference in PassagesBasket
         for (const bibleRef of availableLang1Rg4BibleReferences) {
-          addAvailableBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addAvailableBibleReference(bibleRef)
         }
       }
-      // Set flag indicating if this language provides any of the OT
-      // RG 1 survey passages.
-      showRG1 =
-        availableLang0Rg1BibleReferences.length > 0 || availableLang1Rg1BibleReferences?.length > 0
-      // Set flag indicating if this language provides any of the 0T
-      // RG 2 survey passages.
-      showRG2 =
-        availableLang0Rg2BibleReferences.length > 0 || availableLang1Rg2BibleReferences?.length > 0
-
-      // Set flag indicating if this language provides any of the 0T
-      // RG 3 survey passages.
-      showRG3 =
-        availableLang0Rg3BibleReferences.length > 0 || availableLang1Rg3BibleReferences?.length > 0
-
-      // Set flag indicating if this language provides any of the 0T
-      // RG 4 survey passages.
-      showRG4 =
-        availableLang0Rg4BibleReferences.length > 0 || availableLang1Rg4BibleReferences?.length > 0
     } catch (error) {
       console.error('Failed to load NT Survey RG passages:', error)
     } finally {
@@ -302,27 +227,11 @@
   export async function addOTSurveyRG1Passages() {
     try {
       for (const bibleRef of lang0Rg1BibleReferences) {
-        addBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg1BibleReferences) {
-          addBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -335,27 +244,11 @@
   export async function addOTSurveyRG2Passages() {
     try {
       for (const bibleRef of lang0Rg2BibleReferences) {
-        addBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg2BibleReferences) {
-          addBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -368,27 +261,11 @@
   export async function addOTSurveyRG3Passages() {
     try {
       for (const bibleRef of lang0Rg3BibleReferences) {
-        addBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg3BibleReferences) {
-          addBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -401,27 +278,11 @@
   export async function addOTSurveyRG4Passages() {
     try {
       for (const bibleRef of lang0Rg4BibleReferences) {
-        addBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        addBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg4BibleReferences) {
-          addBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            bibleRef.book_name,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          addBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -434,25 +295,11 @@
   export async function removeOTSurveyRG1Passages() {
     try {
       for (const bibleRef of lang0Rg1BibleReferences) {
-        removeBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        removeBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg1BibleReferences) {
-          removeBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          removeBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -465,25 +312,11 @@
   export async function removeOTSurveyRG2Passages() {
     try {
       for (const bibleRef of lang0Rg2BibleReferences) {
-        removeBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        removeBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg2BibleReferences) {
-          removeBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          removeBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -496,25 +329,11 @@
   export async function removeOTSurveyRG3Passages() {
     try {
       for (const bibleRef of lang0Rg3BibleReferences) {
-        removeBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        removeBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg3BibleReferences) {
-          removeBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          removeBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -527,25 +346,11 @@
   export async function removeOTSurveyRG4Passages() {
     try {
       for (const bibleRef of lang0Rg4BibleReferences) {
-        removeBibleReference(
-          $langCodesStore[0],
-          bibleRef.book_code,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+        removeBibleReference(bibleRef)
       }
       if ($langCountStore > 1) {
         for (const bibleRef of lang1Rg4BibleReferences) {
-          removeBibleReference(
-            $langCodesStore[1],
-            bibleRef.book_code,
-            Number(bibleRef.start_chapter),
-            bibleRef.start_chapter_verse_ref,
-            Number(bibleRef.end_chapter),
-            bibleRef.end_chapter_verse_ref
-          )
+          removeBibleReference(bibleRef)
         }
       }
     } catch (error) {
@@ -651,12 +456,6 @@
     }
   }
 
-  let otSurveyRG1Checked = false
-  let otSurveyRG2Checked = false
-  let otSurveyRG3Checked = false
-  let otSurveyRG4Checked = false
-  let allOTSurveyChecked = false
-
   function handleSelectAllClick(event: Event) {
     const target = event.target as HTMLInputElement
     allOTSurveyChecked = target.checked
@@ -744,6 +543,68 @@
       (showRG3 ? otSurveyRG3Checked : true) &&
       (showRG4 ? otSurveyRG4Checked : true)
   }
+
+  $: otSurveyRG1Checked =
+    lang0Rg1BibleReferences.every((ref) =>
+      $passagesStore.some((storeRef) => matches(storeRef, ref))
+    ) &&
+    ($langCountStore > 1
+      ? lang1Rg1BibleReferences.every((ref) =>
+          $passagesStore.some((storeRef) => matches(storeRef, ref))
+        )
+      : true)
+
+  $: otSurveyRG2Checked =
+    lang0Rg2BibleReferences.every((ref) =>
+      $passagesStore.some((storeRef) => matches(storeRef, ref))
+    ) &&
+    ($langCountStore > 1
+      ? lang1Rg2BibleReferences.every((ref) =>
+          $passagesStore.some((storeRef) => matches(storeRef, ref))
+        )
+      : true)
+
+  $: otSurveyRG3Checked =
+    lang0Rg3BibleReferences.every((ref) =>
+      $passagesStore.some((storeRef) => matches(storeRef, ref))
+    ) &&
+    ($langCountStore > 1
+      ? lang1Rg3BibleReferences.every((ref) =>
+          $passagesStore.some((storeRef) => matches(storeRef, ref))
+        )
+      : true)
+
+  $: otSurveyRG4Checked =
+    lang0Rg4BibleReferences.every((ref) =>
+      $passagesStore.some((storeRef) => matches(storeRef, ref))
+    ) &&
+    ($langCountStore > 1
+      ? lang1Rg4BibleReferences.every((ref) =>
+          $passagesStore.some((storeRef) => matches(storeRef, ref))
+        )
+      : true)
+
+  $: allOTSurveyChecked =
+    otSurveyRG1Checked && otSurveyRG2Checked && otSurveyRG3Checked && otSurveyRG4Checked
+
+  // Set flag indicating if this language provides any of the OT
+  // RG 1 survey passages.
+  $: showRG1 =
+    availableLang0Rg1BibleReferences.length > 0 || availableLang1Rg1BibleReferences?.length > 0
+  // Set flag indicating if this language provides any of the 0T
+  // RG 2 survey passages.
+  $: showRG2 =
+    availableLang0Rg2BibleReferences.length > 0 || availableLang1Rg2BibleReferences?.length > 0
+
+  // Set flag indicating if this language provides any of the 0T
+  // RG 3 survey passages.
+  $: showRG3 =
+    availableLang0Rg3BibleReferences.length > 0 || availableLang1Rg3BibleReferences?.length > 0
+
+  // Set flag indicating if this language provides any of the 0T
+  // RG 4 survey passages.
+  $: showRG4 =
+    availableLang0Rg4BibleReferences.length > 0 || availableLang1Rg4BibleReferences?.length > 0
 </script>
 
 {#if loading}

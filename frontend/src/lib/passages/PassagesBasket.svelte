@@ -48,9 +48,6 @@
 
   $: shownPassages = sortedPassages?.slice(0, size)
   $: hiddenPassages = sortedPassages?.slice(size)
-
-  // Set reactivity for available passages so that basket stays up to date
-  $: availablePassages = $availablePassagesStore
 </script>
 
 {#if passagesRegExp.test($page.url.pathname)}
@@ -81,8 +78,8 @@
       <div
         class="mt-2 flex w-full items-center justify-between
                 rounded-lg bg-white p-4 text-xl text-[#66768B]"
-        class:text-[#66768B]={isAvailable(passage, availablePassages)}
-        class:text-[#B0B8C3]={!isAvailable(passage, availablePassages)}
+        class:text-[#66768B]={isAvailable(passage, $availablePassagesStore)}
+        class:text-[#B0B8C3]={!isAvailable(passage, $availablePassagesStore)}
       >
         <div>
           {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
@@ -99,7 +96,7 @@
             >
           {/if}
         </div>
-        {#if isAvailable(passage, availablePassages)}
+        {#if isAvailable(passage, $availablePassagesStore)}
           <button on:click={() => uncheckPassage(passage)}>
             <CloseIcon />
           </button>
@@ -144,8 +141,8 @@
             <div
               class="mt-2 flex w-full items-center justify-between
                       rounded-lg bg-white p-2 text-xl text-[#66768B]"
-              class:text-[#66768B]={isAvailable(passage, availablePassages)}
-              class:text-[#B0B8C3]={!isAvailable(passage, availablePassages)}
+              class:text-[#66768B]={isAvailable(passage, $availablePassagesStore)}
+              class:text-[#B0B8C3]={!isAvailable(passage, $availablePassagesStore)}
             >
               <div>
                 {#if passage.endChapter && passage.endChapter > 0 && passage.endChapterVerseRef}
@@ -161,7 +158,7 @@
                   >
                 {/if}
               </div>
-              {#if isAvailable(passage, availablePassages)}
+              {#if isAvailable(passage, $availablePassagesStore)}
                 <button on:click={() => uncheckPassage(passage)}>
                   <CloseIcon />
                 </button>

@@ -20,7 +20,12 @@
     $langCodesStore = $langCodesStore.filter((item) => item != getCode(langCodeAndName))
     $langCountStore = $langCodesStore.length
     // keep only passages whose langCode is still selected
-    const allowedLangs = new Set($languagesClickedOrderStore)
+    const allowedLangs = new Set(
+      $languagesClickedOrderStore.map((s) => {
+        const [langCode] = s.split(',')
+        return langCode
+      })
+    )
     passagesStore.update((passages) =>
       passages.filter((p: BibleReference) => p.langCode !== null && allowedLangs.has(p.langCode))
     )

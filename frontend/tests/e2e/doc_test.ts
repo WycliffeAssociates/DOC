@@ -470,9 +470,9 @@ test('space between end of chunk and beginning of another', async ({ page }) => 
   // Ensure there is a space between the end of a verse span chunk and
   // the verse number for the start of the next chunk, i.e., check
   // spacing at chunk boundaries
-  await expect(page1.locator('body')).toContainText("bembu?'' 12Ulo")
-  await expect(page1.locator('body')).toContainText("lelo ababembu.'' 14Nolu abasambi")
-  await expect(page1.locator('body')).toContainText('ukulya. 16Takuli')
+  await expect(page1.locator('body')).toContainText('bembu?" 12Ulo')
+  await expect(page1.locator('body')).toContainText('lelo naishile ababembu." 14Nolu abasambi')
+  await expect(page1.locator('body')).toContainText('bakafunga. 16Takuli')
 })
 
 test('lang then book by verse', async ({ page }) => {

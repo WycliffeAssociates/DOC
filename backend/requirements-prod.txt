@@ -6,11 +6,11 @@
 #
 execnet==2.1.2
     # via pytest-xdist
-icdiff==2.0.7
+icdiff==2.0.10
     # via pytest-icdiff
 iniconfig==2.3.0
     # via pytest
-librt==0.7.8
+librt==0.8.0
     # via mypy
 mypy==1.19.1
     # via -r backend/requirements-prod.in

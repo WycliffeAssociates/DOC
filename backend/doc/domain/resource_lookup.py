@@ -48,7 +48,6 @@ from fastapi import HTTPException, status
 from filelock import FileLock
 from pydantic import HttpUrl, ValidationError
 
-
 logger = settings.logger(__name__)
 
 fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(

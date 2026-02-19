@@ -160,6 +160,27 @@ test('checkboxes are only shown when language chosen has books in each checkbox 
   //   timeout: 32_000
   // })
 })
+
+test('language change changes passages chosen', async ({ page }) => {
+  await page.goto('http://localhost:8001/passages')
+  await page.getByText('English').click()
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByText('Abé').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText("Add NT Survey Reviewers'").click()
+  await page.getByRole('button', { name: 'Edit' }).click()
+  await page.locator('.mt-2 > button').first().click()
+  await page.getByText('English').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText("Add NT Survey Reviewers'").click()
+  await expect(page.getByTestId('shown-passages')).toContainText('Matthew 2:1-12 (aba)')
+  await expect(page.getByTestId('shown-passages')).toContainText('Matthew 2:1-12 (en)')
+  await page.getByRole('button', { name: 'Edit' }).click()
+  await page.locator('div:nth-child(4) > button').click()
+  await expect(page.getByTestId('shown-passages')).toContainText('Matthew 2:1-12 (aba)')
+  await expect(page.getByTestId('shown-passages')).not.toContainText('Matthew 2:1-12 (en)')
+})
+
 // We do not provide STET passages checkbox in Passages app currently by request of PO
 test.skip('stet passages not available in production', async ({ page }) => {
   await page.addInitScript(() => {

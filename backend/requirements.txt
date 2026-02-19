@@ -27,6 +27,8 @@ beautifulsoup4==4.14.3
     #   htmldocx
 billiard==4.2.4
     # via celery
+brotli==1.2.0
+    # via fonttools
 cachetools==7.0.1
     # via -r backend/requirements.in
 celery==5.6.2
@@ -41,6 +43,8 @@ certifi==2026.1.4
     #   httpx
     #   requests
     #   sentry-sdk
+cffi==2.0.0
+    # via weasyprint
 charset-normalizer==3.4.4
     # via requests
 click==8.3.1
@@ -58,6 +62,8 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
+cssselect2==0.9.0
+    # via weasyprint
 dnspython==2.8.0
     # via email-validator
 docxcompose3==1.4.5
@@ -81,6 +87,8 @@ filelock==3.21.1
     # via -r backend/requirements.in
 flower==2.0.1
     # via -r backend/requirements.in
+fonttools[woff]==4.61.1
+    # via weasyprint
 gunicorn==25.0.3
     # via -r backend/requirements.in
 h11==0.16.0
@@ -135,10 +143,14 @@ packaging==26.0
     # via
     #   gunicorn
     #   kombu
+pillow==12.1.1
+    # via weasyprint
 prometheus-client==0.24.1
     # via flower
 prompt-toolkit==3.0.52
     # via click-repl
+pycparser==3.0
+    # via cffi
 pydantic[email]==2.12.5
     # via
     #   -r backend/requirements.in
@@ -152,8 +164,12 @@ pydantic-extra-types==2.11.0
     # via fastapi
 pydantic-settings==2.12.0
     # via fastapi
+pydyf==0.12.1
+    # via weasyprint
 pygments==2.19.2
     # via rich
+pyphen==0.17.2
+    # via weasyprint
 python-dateutil==2.9.0.post0
     # via celery
 python-docx==1.2.0
@@ -205,6 +221,12 @@ starlette==0.52.1
     # via fastapi
 termcolor==3.3.0
     # via -r backend/requirements.in
+tinycss2==1.5.1
+    # via
+    #   cssselect2
+    #   weasyprint
+tinyhtml5==2.0.0
+    # via weasyprint
 tornado==6.5.4
     # via flower
 typer==0.23.0
@@ -275,8 +297,17 @@ watchfiles==1.1.1
     # via uvicorn
 wcwidth==0.6.0
     # via prompt-toolkit
+weasyprint==68.1
+    # via -r backend/requirements.in
+webencodings==0.5.1
+    # via
+    #   cssselect2
+    #   tinycss2
+    #   tinyhtml5
 websockets==16.0
     # via uvicorn
+zopfli==0.4.1
+    # via fonttools
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

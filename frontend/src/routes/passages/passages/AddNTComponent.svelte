@@ -166,7 +166,7 @@
   <ProgressIndicator />
 {/if}
 {#if showNT}
-  <div class="mb-4 flex items-center">
+  <div id="add-nt-passages" class="mb-4 flex items-center">
     <input
       id="add-nt-survey-passages-checkbox"
       type="checkbox"

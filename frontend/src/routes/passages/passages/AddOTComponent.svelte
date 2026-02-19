@@ -625,7 +625,7 @@
   </div>
 {/if}
 {#if showRG1}
-  <div class="mb-2 flex items-center">
+  <div id="add-ot-rg1-passages" class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg1-checkbox"
       type="checkbox"
@@ -651,7 +651,7 @@
   </div>
 {/if}
 {#if showRG2}
-  <div class="mb-2 flex items-center">
+  <div id="add-ot-rg2-passages" class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg2-checkbox"
       type="checkbox"
@@ -677,7 +677,7 @@
   </div>
 {/if}
 {#if showRG3}
-  <div class="mb-2 flex items-center">
+  <div id="add-ot-rg3-passages" class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg3-checkbox"
       type="checkbox"
@@ -703,7 +703,7 @@
   </div>
 {/if}
 {#if showRG4}
-  <div class="mb-2 flex items-center">
+  <div id="add-ot-rg4-passages" class="mb-2 flex items-center">
     <input
       id="add-ot-survey-passages-rg4-checkbox"
       type="checkbox"

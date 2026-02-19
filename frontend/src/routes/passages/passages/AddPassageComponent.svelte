@@ -83,7 +83,7 @@
 </script>
 
 <div class="ml-2 mt-4 block text-xl font-bold text-[#33445C]">Other Passages</div>
-<div class="ml-2 flex items-center">
+<div id="add-other-passages" class="ml-2 flex items-center">
   <div class="mr-2">
     <label for="book" class="block text-sm font-medium text-gray-700">Bible Book</label>
     <select

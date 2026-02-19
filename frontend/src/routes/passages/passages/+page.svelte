@@ -72,7 +72,7 @@
 <WizardBreadcrumb />
 
 <div class="flex flex-grow flex-row overflow-y-auto overflow-x-hidden">
-  <div class="flex flex-1 flex-col bg-white sm:w-2/3">
+  <main class="flex flex-1 flex-col bg-white sm:w-2/3">
     <h3 class="mb-4 ml-4 text-4xl font-normal leading-[48px] text-[#33445C]">Add Passages</h3>
     <div class="ml-4 mt-2 flex items-center bg-white px-2 py-2">
       {#if !bookCodesAndNamesLang0 || bookCodesAndNamesLang0.length === 0}
@@ -105,7 +105,7 @@
         {/if}
       {/if}
     </div>
-  </div>
+  </main>
 
   <!-- if isMobile -->
   {#if showWizardBasketModal}

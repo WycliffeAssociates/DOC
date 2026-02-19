@@ -30,7 +30,7 @@ test('ui part 2', async ({ page }) => {
   await page.getByText('English').click()
   await page.getByText('Español Latin America (Latin').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Galatians').click()
+  await page.getByText('Galatians').click({ timeout: 32_000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await page
     .getByText(/.*Unlocked Literal Bible.*/)

@@ -18,7 +18,6 @@
     removeBibleReference
   } from '$lib/passages/stores/PassagesStore'
 
-  let loading: boolean = false
   export let checkIcon: string
   export let bookCodesAndNamesLang0: [string, string][]
   export let bookCodesAndNamesLang1: [string, string][]
@@ -122,7 +121,6 @@
   }
 
   onMount(async () => {
-    loading = true
     try {
       // Lang 0:
       // Get lang0 OT RG 1 passages
@@ -221,7 +219,6 @@
     } finally {
       console.log('NT Survey RG passages loaded successfully')
     }
-    loading = false
   })
 
   export async function addOTSurveyRG1Passages() {
@@ -587,29 +584,56 @@
   $: allOTSurveyChecked =
     otSurveyRG1Checked && otSurveyRG2Checked && otSurveyRG3Checked && otSurveyRG4Checked
 
-  // Set flag indicating if this language provides any of the OT
-  // RG 1 survey passages.
+  // NOTE: if one wanted to only show the Add OT RG1 checkbox if the
+  // language actually provided some of those passages
+  // then you would do something like check against
+  // availableLang0Rg1BibleReferences and
+  // availableLang1Rg1BibleReferences lengths instead
   $: showRG1 =
-    availableLang0Rg1BibleReferences.length > 0 || availableLang1Rg1BibleReferences?.length > 0
-  // Set flag indicating if this language provides any of the 0T
-  // RG 2 survey passages.
+    ($langCountStore === 1 && lang0Rg1BibleReferences.length > 0) ||
+    ($langCountStore === 2 &&
+      lang0Rg1BibleReferences.length > 0 &&
+      lang1Rg1BibleReferences?.length > 0)
+
+  // NOTE: if one wanted to only show the Add OT RG1 checkbox if the
+  // language actually provided some of those passages
+  // then you would do something like check against
+  // availableLang0Rg2BibleReferences and
+  // availableLang1Rg2BibleReferences lengths instead
   $: showRG2 =
-    availableLang0Rg2BibleReferences.length > 0 || availableLang1Rg2BibleReferences?.length > 0
+    ($langCountStore === 1 && lang0Rg2BibleReferences.length > 0) ||
+    ($langCountStore === 2 &&
+      lang0Rg2BibleReferences?.length > 0 &&
+      lang1Rg2BibleReferences?.length > 0)
 
-  // Set flag indicating if this language provides any of the 0T
-  // RG 3 survey passages.
+  // NOTE: if one wanted to only show the Add OT RG1 checkbox if the
+  // language actually provided some of those passages
+  // then you would do something like check against
+  // availableLang0Rg3BibleReferences and
+  // availableLang1Rg3BibleReferences lengths instead
   $: showRG3 =
-    availableLang0Rg3BibleReferences.length > 0 || availableLang1Rg3BibleReferences?.length > 0
+    ($langCountStore === 1 && lang0Rg3BibleReferences.length > 0) ||
+    ($langCountStore === 2 &&
+      lang0Rg3BibleReferences?.length > 0 &&
+      lang1Rg3BibleReferences?.length > 0)
 
-  // Set flag indicating if this language provides any of the 0T
-  // RG 4 survey passages.
+  // NOTE: if one wanted to only show the Add OT RG1 checkbox if the
+  // language actually provided some of those passages
+  // then you would do something like check against
+  // availableLang0Rg4BibleReferences and
+  // availableLang1Rg4BibleReferences lengths instead
   $: showRG4 =
-    availableLang0Rg4BibleReferences.length > 0 || availableLang1Rg4BibleReferences?.length > 0
+    ($langCountStore === 1 && lang0Rg4BibleReferences.length > 0) ||
+    ($langCountStore === 2 &&
+      lang0Rg4BibleReferences?.length > 0 &&
+      lang1Rg4BibleReferences?.length > 0)
+
+  $: labelStringRg1 = 'Acquiring and loading OT survey RG1 passages, please be patient'
+  $: labelStringRg2 = 'Acquiring and loading OT survey RG2 passages, please be patient'
+  $: labelStringRg3 = 'Acquiring and loading OT survey RG3 passages, please be patient'
+  $: labelStringRg4 = 'Acquiring and loading OT survey RG4 passages, please be patient'
 </script>
 
-{#if loading}
-  <ProgressIndicator />
-{/if}
 {#if [showRG1, showRG2, showRG3, showRG4].filter(Boolean).length > 1}
   <div class="mb-2 mt-4 flex items-center">
     <input
@@ -649,6 +673,8 @@
       {/if}
     </div>
   </div>
+{:else}
+  <ProgressIndicator labelString={labelStringRg1} />
 {/if}
 {#if showRG2}
   <div id="add-ot-rg2-passages" class="mb-2 flex items-center">
@@ -675,6 +701,8 @@
       {/if}
     </div>
   </div>
+{:else}
+  <ProgressIndicator labelString={labelStringRg2} />
 {/if}
 {#if showRG3}
   <div id="add-ot-rg3-passages" class="mb-2 flex items-center">
@@ -701,6 +729,8 @@
       {/if}
     </div>
   </div>
+{:else}
+  <ProgressIndicator labelString={labelStringRg3} />
 {/if}
 {#if showRG4}
   <div id="add-ot-rg4-passages" class="mb-2 flex items-center">
@@ -727,6 +757,8 @@
       {/if}
     </div>
   </div>
+{:else}
+  <ProgressIndicator labelString={labelStringRg4} />
 {/if}
 
 <style>

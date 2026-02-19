@@ -13,7 +13,6 @@
   import type { BibleReference } from '$lib/passages/models'
   import { matches, parseBibleReferences } from '$lib/passages/models'
 
-  let loading: boolean = false
   export let checkIcon: string
   export let bookCodesAndNamesLang0: [string, string][]
   export let bookCodesAndNamesLang1: [string, string][]
@@ -76,7 +75,6 @@
   }
 
   onMount(async () => {
-    loading = true
     try {
       lang0NtBibleReferences = await getNTSurveyRGPassages($langCodesStore[0])
       // Filter down to the passages available in this language
@@ -100,7 +98,6 @@
       console.error('Failed to load NT Survey RG passages:', error)
     } finally {
       console.log('NT Survey RG passages loaded successfully')
-      loading = false
     }
   })
 
@@ -144,7 +141,6 @@
     console.log('availableLang1NtBibleReferences:', availableLang1NtBibleReferences)
   }
 
-
   $: checkboxChecked =
     lang0NtBibleReferences.every((ref) =>
       $passagesStore.some((storeRef) => matches(storeRef, ref))
@@ -155,16 +151,21 @@
         )
       : true)
 
-  // Set flag indicating if this language provides any of the NT
-  // RG survey passages. We use this to show or not show the NT RG
-  // passages checkbox
+  // Show checkbox if passages are done loading
+  // NOTE: if one wanted to only show the Add NT checkbox if the
+  // language actually provided some passages in the NT passages
+  // collection then you would do something like check against
+  // availableLang0NtBibleReferences and
+  // availableLang1NtBibleReferences lengths instead
   $: showNT =
-    availableLang0NtBibleReferences.length > 0 || availableLang1NtBibleReferences.length > 0
+    ($langCountStore === 1 && lang0NtBibleReferences.length > 0) ||
+    ($langCountStore === 2 &&
+      lang0NtBibleReferences.length > 0 &&
+      lang1NtBibleReferences.length > 0)
+
+  $: labelString = 'Acquiring and loading NT survey RG passages, please be patient'
 </script>
 
-{#if loading}
-  <ProgressIndicator />
-{/if}
 {#if showNT}
   <div id="add-nt-passages" class="mb-4 flex items-center">
     <input
@@ -190,6 +191,8 @@
       {/if}
     </div>
   </div>
+{:else}
+  <ProgressIndicator {labelString} />
 {/if}
 
 <style>

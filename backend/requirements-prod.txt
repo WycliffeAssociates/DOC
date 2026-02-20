@@ -6,21 +6,21 @@
 #
 execnet==2.1.2
     # via pytest-xdist
-icdiff==2.0.7
+icdiff==2.0.10
     # via pytest-icdiff
 iniconfig==2.3.0
     # via pytest
-librt==0.7.3
+librt==0.8.0
     # via mypy
-mypy==1.19.0
+mypy==1.19.1
     # via -r backend/requirements-prod.in
 mypy-extensions==1.1.0
     # via mypy
-packaging==25.0
+packaging==26.0
     # via
     #   -c backend/requirements.txt
     #   pytest
-pathspec==0.12.1
+pathspec==1.0.4
     # via mypy
 pluggy==1.6.0
     # via pytest
@@ -37,7 +37,7 @@ pytest==9.0.2
     #   pytest-icdiff
     #   pytest-repeat
     #   pytest-xdist
-pytest-datafiles==3.0.0
+pytest-datafiles==3.0.1
     # via -r backend/requirements-prod.in
 pytest-icdiff==0.9
     # via -r backend/requirements-prod.in

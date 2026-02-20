@@ -48,7 +48,6 @@ from fastapi import HTTPException, status
 from filelock import FileLock
 from pydantic import HttpUrl, ValidationError
 
-
 logger = settings.logger(__name__)
 
 fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(
@@ -821,24 +820,16 @@ def get_book_codes_for_lang_(
                 manifest_name = book_codes_and_names_localized_from_manifest.get(
                     code, ""
                 )
-                if not name and manifest_name:
-                    book_codes_and_names_localized.append(
-                        (
-                            code,
-                            maybe_correct_book_name(
-                                lang_code, normalize_localized_book_name(manifest_name)
-                            ),
-                        )
+                chosen_name = name or manifest_name
+                book_codes_and_names_localized.append(
+                    (
+                        code,
+                        maybe_correct_book_name(
+                            lang_code,
+                            normalize_localized_book_name(chosen_name),
+                        ),
                     )
-                else:
-                    book_codes_and_names_localized.append(
-                        (
-                            code,
-                            maybe_correct_book_name(
-                                lang_code, normalize_localized_book_name(name)
-                            ),
-                        )
-                    )
+                )
         elif (
             use_localized_book_name
             and len(repo_components) > 2
@@ -862,7 +853,8 @@ def get_book_codes_for_lang_(
                 (
                     repo_components[1],
                     maybe_correct_book_name(
-                        lang_code, normalize_localized_book_name(book_name_)
+                        lang_code,
+                        normalize_localized_book_name(book_name_),
                     ),
                 )
             )
@@ -882,14 +874,22 @@ def get_book_codes_for_lang_(
             )
     logger.debug("book_codes_and_names: %s", book_codes_and_names)
     logger.debug("book_codes_and_names_localized: %s", book_codes_and_names_localized)
-    if not book_codes_and_names_localized or any(
-        name == "" for _, name in book_codes_and_names_localized
-    ):
-        unique_values = unique_book_codes(book_codes_and_names)
-    else:
-        unique_values = unique_book_codes(book_codes_and_names_localized)
+    localized_map: dict[str, str] = {
+        code: name for code, name in book_codes_and_names_localized
+    }
+    non_localized_map: dict[str, str] = {
+        code: name for code, name in book_codes_and_names
+    }
+    merged: list[tuple[str, str]] = []
+    for code in set(localized_map) | set(non_localized_map):
+        name = localized_map.get(code, "")
+        if not name:
+            name = non_localized_map.get(code, "")
+        merged.append((code, name))
+    unique_values = unique_book_codes(merged)
     return sorted(
-        unique_values, key=lambda book_code_and_name: book_id_map[book_code_and_name[0]]
+        unique_values,
+        key=lambda book_code_and_name: book_id_map[book_code_and_name[0]],
     )
 
 
@@ -1212,11 +1212,14 @@ def nt_survey_rg_passages(
     resource_dir: str = settings.EN_RG_DIR,
 ) -> list[BibleReference]:
     """
-    >>> from doc.domain import resource_lookup
-    >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
-    (...)
-    >>> rg_books[0]
-    BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+        Returns the list of all NT RG passages from the docx_file_path, but with
+    book names localized for language chosen.
+
+        >>> from doc.domain import resource_lookup
+        >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
+        (...)
+        >>> rg_books[0]
+        BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1241,6 +1244,7 @@ def nt_survey_rg_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1283,6 +1287,7 @@ def ot_survey_rg1_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1325,6 +1330,7 @@ def ot_survey_rg2_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1367,6 +1373,7 @@ def ot_survey_rg3_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 
@@ -1409,6 +1416,7 @@ def ot_survey_rg4_passages(
         maybe_localized_book_name = book_name_map.get(
             bible_reference.book_code, bible_reference.book_name
         )
+        bible_reference.lang_code = lang_code
         bible_reference.book_name = maybe_localized_book_name
     return bible_references
 

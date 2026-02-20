@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { page, navigating } from '$app/stores'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
   import { resetStores, langRegExp, passagesRegExp, settingsRegExp } from '$lib/passages/utils'
   import MobileBreadcrumb from '$lib/passages/MobileBreadcrumb.svelte'
   import DesktopBreadcrumb from '$lib/passages/DesktopBreadcrumb.svelte'

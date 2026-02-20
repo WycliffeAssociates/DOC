@@ -3,6 +3,7 @@ from pathlib import Path
 
 from docx import Document
 from docx.document import Document as DocxDocument
+from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import RGBColor
@@ -217,3 +218,57 @@ def style_superscripts(
                 position = OxmlElement("w:position")
                 position.set(qn("w:val"), str(lift_half_points))
                 rPr.append(position)
+
+
+def _ensure_character_style_based_on_default(
+    doc: DocxDocument,
+    name: str,
+    *,
+    color: RGBColor | None = None,
+    italic: bool | None = None,
+) -> None:
+    styles = doc.styles
+    if name in styles:
+        return
+    style = styles.add_style(name, WD_STYLE_TYPE.CHARACTER)
+    # ---- Base on Default Paragraph Font ----
+    style_elm = style._element
+    based_on = OxmlElement("w:basedOn")
+    based_on.set(qn("w:val"), "DefaultParagraphFont")
+    style_elm.insert(0, based_on)
+    # ---- Only override what is explicitly requested ----
+    font = style.font
+    if color is not None:
+        font.color.rgb = color
+    if italic is not None:
+        font.italic = italic
+
+
+def ensure_reference_styles(
+    doc: DocxDocument,
+    *,
+    available_color: RGBColor | None = None,
+    unavailable_color: RGBColor,
+) -> None:
+    """
+    Create semantic character styles for passage references.
+
+    AvailableReference:
+        - Based on Default Paragraph Font
+        - Usually no overrides (inherits document defaults)
+
+    UnavailableReference:
+        - Based on Default Paragraph Font
+        - Lighter color + italics to signal intentional absence
+    """
+    _ensure_character_style_based_on_default(
+        doc,
+        "AvailableReference",
+        color=available_color,  # usually None
+    )
+    _ensure_character_style_based_on_default(
+        doc,
+        "UnavailableReference",
+        color=unavailable_color,
+        italic=True,
+    )

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PUBLIC_MAX_LANGUAGES } from '$env/static/public'
-  import { page, navigating } from '$app/stores'
+  import { page } from '$app/stores'
   import BackButton from './BackButton.svelte'
   import NextButton from './NextButton.svelte'
   import { langCountStore } from '$lib/stores/LanguagesStore'

@@ -119,7 +119,8 @@ def add_checkbox_to_cell(cell: Cell) -> None:
 
 def add_header(
     doc: DocxDocument,
-    lang_name: str,
+    lang0_name: str,
+    lang1_name: Optional[str],
     header_text: str = "Passages",
 ) -> DocxDocument:
     """
@@ -131,9 +132,16 @@ def add_header(
     header_paragraph = header.add_paragraph()
     header_paragraph.style = doc.styles["Header"]
     header_paragraph.style.font.size = Pt(12)  # Optional: Adjust font size
-    # Add the header text with grey color
-    run1 = header_paragraph.add_run(header_text + ": " + lang_name)
-    run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
+    if lang1_name:
+        # Add the header text with grey color
+        run1 = header_paragraph.add_run(
+            header_text + ": " + lang0_name + "/" + lang1_name
+        )
+        run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
+    else:
+        # Add the header text with grey color
+        run1 = header_paragraph.add_run(header_text + ": " + lang0_name)
+        run1.font.color.rgb = RGBColor(169, 169, 169)  # Grey color
     return doc
 
 

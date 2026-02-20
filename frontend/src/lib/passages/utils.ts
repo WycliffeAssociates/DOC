@@ -1,13 +1,16 @@
+import { get } from 'svelte/store'
 import { browser } from '$app/environment'
 import { goto } from '$app/navigation'
 import {
   gatewayCodeAndNamesStore,
   heartCodeAndNamesStore,
-  langCodeAndNameStore
+  langCodesStore
 } from '$lib/passages/stores/LanguagesStore'
 import { documentReadyStore, errorStore } from '$lib/passages/stores/NotificationStore'
+import { availablePassagesStore } from '$lib/passages/stores/PassagesStore'
 import { documentRequestKeyStore } from '$lib/passages/stores/SettingsStore'
 import type { PassagesDocumentRequest } from '$lib/passages/models'
+import type { BibleReference } from '$lib/passages/models'
 
 type StoreGroup = 'language' | 'settings' | 'notifications'
 
@@ -19,7 +22,7 @@ export function resetStores(storeGroup: StoreGroup) {
   if (storeGroup === 'language') {
     gatewayCodeAndNamesStore.set([])
     heartCodeAndNamesStore.set([])
-    langCodeAndNameStore.set('')
+    langCodesStore.set([])
   }
 
   if (storeGroup === 'settings') {
@@ -45,10 +48,17 @@ export function routeToPage(url: string): void {
   }
 }
 
-// Function to omit the 'id' from passageReferences just before stringifying
-export function omitIdFromPassageReferences(documentRequest: PassagesDocumentRequest) {
-  return {
-    ...documentRequest,
-    bibleReferences: documentRequest.bibleReferences.map(({ id, ...rest }) => rest) // Omit 'id'
-  }
+export function isAvailable(
+  passage: BibleReference,
+  available: readonly BibleReference[]
+): boolean {
+  return available.some(
+    (ref) =>
+      ref.langCode === passage.langCode &&
+      ref.bookCode === passage.bookCode &&
+      ref.startChapter === passage.startChapter &&
+      ref.startChapterVerseRef === passage.startChapterVerseRef &&
+      ref.endChapter === passage.endChapter &&
+      ref.endChapterVerseRef === passage.endChapterVerseRef
+  )
 }

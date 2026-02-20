@@ -1,24 +1,31 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import ProgressIndicator from '$lib/ProgressIndicator.svelte'
   import {
+    passagesStore,
     addBibleReference,
-    addFilteredBibleReference,
+    addAvailableBibleReference,
     removeBibleReference
   } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import { langCodesStore, langCountStore } from '$lib/passages/stores/LanguagesStore'
   import { PUBLIC_NT_SURVEY_RG_PASSAGES_URL } from '$env/static/public'
   import { env } from '$env/dynamic/public'
-  import type { BibleReference } from './model'
+  import type { BibleReference } from '$lib/passages/models'
+  import { matches, parseBibleReferences } from '$lib/passages/models'
 
-  export let loading: boolean
   export let checkIcon: string
-  export let bookCodesAndNames: [string, string][]
-  let showNT: boolean = false
+  export let bookCodesAndNamesLang0: [string, string][]
+  export let bookCodesAndNamesLang1: [string, string][]
   let ntSurveySuccessMessage: string = ''
   let isLoadingNTSurvey = false
+  let lang0NtBibleReferences: Array<BibleReference> = []
+  let lang1NtBibleReferences: Array<BibleReference> = []
+  let availableLang0NtBibleReferences: Array<BibleReference> = []
+  let availableLang1NtBibleReferences: Array<BibleReference> = []
+  let showNT: boolean = false
+  let checkboxChecked: boolean
 
   async function handleAddNTSurveyRGPassagesClick() {
-    loading = true
     isLoadingNTSurvey = true
     try {
       await addNTSurveyRGPassages()
@@ -26,13 +33,11 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingNTSurvey = false
     }
   }
 
   async function handleRemoveNTSurveyRGPassagesClick() {
-    loading = true
     isLoadingNTSurvey = true
     try {
       await removeNTSurveyRGPassages()
@@ -40,7 +45,6 @@
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      loading = false
       isLoadingNTSurvey = false
     }
   }
@@ -58,58 +62,54 @@
     langCode: string,
     apiRootUrl = env.PUBLIC_BACKEND_API_URL,
     ntSurveyRgPassagesUrl = <string>PUBLIC_NT_SURVEY_RG_PASSAGES_URL
-  ): Promise<[Array<BibleReference>, Array<BibleReference>]> {
+  ): Promise<Array<BibleReference>> {
     const url = `${apiRootUrl}${ntSurveyRgPassagesUrl}/${langCode}`
     console.log(`url: ${url}`)
     const response = await fetch(url)
-    const bibleReferences: Array<BibleReference> = await response.json()
+    const json = await response.json()
     if (!response.ok) {
       console.error(response.statusText)
       throw new Error(response.statusText)
     }
-    return [
-      bibleReferences,
-      bibleReferences.filter((ref) => bookCodesAndNames.some(([code]) => code === ref.book_code))
-    ]
+    return parseBibleReferences.parse(json)
   }
 
   onMount(async () => {
-    const langCode = $langCodeAndNameStore.split(',')[0]
     try {
-      const [ntRgPassages, _] = await getNTSurveyRGPassages(langCode)
-      showNT = ntRgPassages.length > 0
+      lang0NtBibleReferences = await getNTSurveyRGPassages($langCodesStore[0])
+      // Filter down to the passages available in this language
+      availableLang0NtBibleReferences = lang0NtBibleReferences.filter((ref) =>
+        bookCodesAndNamesLang0.some(([code]) => code === ref.bookCode)
+      )
+      if ($langCountStore > 1) {
+        lang1NtBibleReferences = await getNTSurveyRGPassages($langCodesStore[1])
+        // Filter down to the passages available in this language
+        availableLang1NtBibleReferences = lang1NtBibleReferences.filter((ref) =>
+          bookCodesAndNamesLang1.some(([code]) => code === ref.bookCode)
+        )
+      }
+      for (const bibleRef of availableLang0NtBibleReferences) {
+        addAvailableBibleReference(bibleRef)
+      }
+      for (const bibleRef of availableLang1NtBibleReferences) {
+        addAvailableBibleReference(bibleRef)
+      }
     } catch (error) {
-      console.error('Failed to add NT Survey RG passages:', error)
+      console.error('Failed to load NT Survey RG passages:', error)
     } finally {
-      console.log('Passages added successfully')
+      console.log('NT Survey RG passages loaded successfully')
     }
   })
 
   export async function addNTSurveyRGPassages() {
     try {
-      const langCode = $langCodeAndNameStore.split(',')[0]
-      const [bibleReferences, bibleReferencesFiltered] = await getNTSurveyRGPassages(langCode)
-      for (const bibleRef of bibleReferences) {
-        addBibleReference(
-          langCode,
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+      // Add lang0 NT RG passages to the passageStore for reference in
+      // PassagesBasket.svelte
+      for (const bibleRef of lang0NtBibleReferences) {
+        addBibleReference(bibleRef)
       }
-      for (const bibleRef of bibleReferencesFiltered) {
-        addFilteredBibleReference(
-          langCode,
-          bibleRef.book_code,
-          bibleRef.book_name,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+      for (const bibleRef of lang1NtBibleReferences) {
+        addBibleReference(bibleRef)
       }
     } catch (error) {
       console.error('Failed to add NT Survey RG passages:', error)
@@ -120,18 +120,13 @@
 
   export async function removeNTSurveyRGPassages() {
     try {
-      const langCode = $langCodeAndNameStore.split(',')[0]
-      const [bibleReferences, bibleReferencesFiltered] = await getNTSurveyRGPassages(langCode)
-      console.log(`bibleReferences[0]: ${bibleReferences[0]}`)
-      for (const bibleRef of bibleReferences) {
-        removeBibleReference(
-          langCode,
-          bibleRef.book_code,
-          Number(bibleRef.start_chapter),
-          bibleRef.start_chapter_verse_ref,
-          Number(bibleRef.end_chapter),
-          bibleRef.end_chapter_verse_ref
-        )
+      // Remove the lang0 NT RG passages from the passageStore
+      for (const bibleRef of lang0NtBibleReferences) {
+        removeBibleReference(bibleRef)
+      }
+      // Remove the lang1 NT RG passages from the passageStore
+      for (const bibleRef of lang1NtBibleReferences) {
+        removeBibleReference(bibleRef)
       }
     } catch (error) {
       console.error('Failed to remove NT Survey RG passages:', error)
@@ -139,14 +134,45 @@
       console.log('NT Survey RG Passages removed successfully')
     }
   }
+  $: {
+    console.log('lang0NtBibleReferences:', lang0NtBibleReferences)
+    console.log('lang1NtBibleReferences:', lang1NtBibleReferences)
+    console.log('availableLang0NtBibleReferences:', availableLang0NtBibleReferences)
+    console.log('availableLang1NtBibleReferences:', availableLang1NtBibleReferences)
+  }
+
+  $: checkboxChecked =
+    lang0NtBibleReferences.every((ref) =>
+      $passagesStore.some((storeRef) => matches(storeRef, ref))
+    ) &&
+    ($langCountStore > 1
+      ? lang1NtBibleReferences.every((ref) =>
+          $passagesStore.some((storeRef) => matches(storeRef, ref))
+        )
+      : true)
+
+  // Show checkbox if passages are done loading
+  // NOTE: if one wanted to only show the Add NT checkbox if the
+  // language actually provided some passages in the NT passages
+  // collection then you would do something like check against
+  // availableLang0NtBibleReferences and
+  // availableLang1NtBibleReferences lengths instead
+  $: showNT =
+    ($langCountStore === 1 && lang0NtBibleReferences.length > 0) ||
+    ($langCountStore === 2 &&
+      lang0NtBibleReferences.length > 0 &&
+      lang1NtBibleReferences.length > 0)
+
+  $: labelString = 'Acquiring and loading NT survey RG passages, please be patient'
 </script>
 
 {#if showNT}
-  <div class="mb-4 flex items-center">
+  <div id="add-nt-passages" class="mb-4 flex items-center">
     <input
       id="add-nt-survey-passages-checkbox"
       type="checkbox"
       class="checkbox-target checkbox-style"
+      checked={checkboxChecked}
       on:click={handleNTSurveyCheckboxClick}
     />
     <label
@@ -165,6 +191,8 @@
       {/if}
     </div>
   </div>
+{:else}
+  <ProgressIndicator {labelString} />
 {/if}
 
 <style>

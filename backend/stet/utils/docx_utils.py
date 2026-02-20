@@ -169,6 +169,23 @@ def add_plain_html_to_docx(html: str, paragraph: Paragraph) -> None:
         paragraph.add_run(temp_paragraph.text.strip())
 
 
+def add_preformatted_html_to_docx(html: str, paragraph: Paragraph) -> None:
+    """
+    Convert HTML with <b> tags to DOCX, preserving bold formatting.
+    Used when source text comes from fully specified <r><v> format.
+
+    :param html: The HTML string to convert (may contain <b> tags).
+    :param paragraph: The DOCX paragraph where content will be added.
+    """
+    html_to_docx = HtmlToDocx()
+    temp_doc = Document()
+    html_to_docx.add_html_to_document(html, temp_doc)
+    for temp_paragraph in temp_doc.paragraphs:
+        for run in temp_paragraph.runs:
+            new_run = paragraph.add_run(run.text)
+            new_run.bold = run.bold
+
+
 def add_lined_page_at_end(doc: DocxDocument) -> DocxDocument:
     """
     Adds a single page filled with ruled lines to the end of the document for note-taking.

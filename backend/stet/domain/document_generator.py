@@ -41,6 +41,7 @@ from stet.utils.docx_utils import (
     add_highlighted_html_to_docx_for_words,
     add_lined_page_at_end,
     add_plain_html_to_docx,
+    add_preformatted_html_to_docx,
     adjust_table_columns,
     reduce_spacing_around_tables,
 )
@@ -243,7 +244,9 @@ def generate_docx_document(
                 else verse_ref_dto.target_reference
             )
             for verse_ref in verse_ref_dto.verse_refs:
-                if source_selected_usfm_book:
+                if verse_ref_dto.source_text_with_bolding is not None:
+                    source_verse_text = verse_ref_dto.source_text_with_bolding
+                elif source_selected_usfm_book:
                     source_verse_text = lookup_verse_text(
                         source_selected_usfm_book,
                         verse_ref_dto.chapter_num,
@@ -272,6 +275,9 @@ def generate_docx_document(
                     target_text=target_verse_text,
                     occurrence_index=current,
                     occurrence_total=total,
+                    source_has_preformatted_bolding=(
+                        verse_ref_dto.source_text_with_bolding is not None
+                    ),
                 )
             )
         word_entries.append(word_entry)
@@ -332,7 +338,6 @@ def generate_docx(
                 source_ref_display += (
                     f" ({verse.occurrence_index}/{verse.occurrence_total})"
                 )
-
             target_ref_display = verse.target_reference
             if verse.occurrence_total > 1:
                 target_ref_display += (
@@ -354,7 +359,11 @@ def generate_docx(
             # Process HTML content in source_text and highlight keyword
             source_paragraph = row_cells[0].paragraphs[0]
             source_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
-            if len(word_entry.bolded_phrases) > 0:
+            if verse.source_has_preformatted_bolding:
+                add_preformatted_html_to_docx(
+                    verse.source_text, source_paragraph
+                )
+            elif len(word_entry.bolded_phrases) > 0:
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.bolded_phrases
                 )

@@ -12,6 +12,7 @@ class VerseEntry(NamedTuple):
     target_text: str
     occurrence_index: int = 0  # 1, 2, 3, ...
     occurrence_total: int = 0  # e.g. 3
+    source_has_preformatted_bolding: bool = False  # True when source came from <r><v> format
 
 
 @final
@@ -34,6 +35,7 @@ class VerseReferenceDto(NamedTuple):
     source_reference: str
     target_reference: str
     verse_refs: list[str]
+    source_text_with_bolding: Optional[str] = None  # When set, from <r><v> format
 
 
 @final

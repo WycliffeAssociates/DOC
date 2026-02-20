@@ -1,5 +1,5 @@
 import json
-from typing import Sequence
+from typing import Sequence, cast
 
 import celery.states
 from celery.result import AsyncResult
@@ -20,16 +20,17 @@ logger = settings.logger(__name__)
 async def generate_passages_docx_document(
     passages_document_request: model.PassagesDocumentRequest,
 ) -> JSONResponse:
-    # logger.debug(
-    #     "passages_document_request.bible_references: %s",
-    #     passages_document_request.bible_references,
-    # )
-    # Top level exception handler
+    logger.debug(
+        "passages_document_request: %s",
+        passages_document_request,
+    )
     try:
         task = document_generator.generate_passages_docx_document.apply_async(
             args=(
-                passages_document_request.lang_code,
-                passages_document_request.lang_name,
+                passages_document_request.lang0_code,
+                passages_document_request.lang0_name,
+                passages_document_request.lang1_code,
+                passages_document_request.lang1_name,
                 # Serialize the list of objects to a JSON string
                 json.dumps(
                     passages_document_request.bible_references,
@@ -70,4 +71,4 @@ async def task_status(task_id: str) -> JSONResponse:
 
 @router.get("/passages/stet_verse_list/{lang_code}")
 async def stet_verse_list(lang_code: str) -> Sequence[BibleReference]:
-    return stet_exhaustive_verse_list(lang_code)
+    return cast(Sequence[BibleReference], stet_exhaustive_verse_list(lang_code))

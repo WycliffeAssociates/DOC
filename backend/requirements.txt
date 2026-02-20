@@ -9,16 +9,18 @@ aiofiles==25.1.0
 amqp==5.3.1
     # via kombu
 annotated-doc==0.0.4
-    # via fastapi
+    # via
+    #   fastapi
+    #   typer
 annotated-types==0.7.0
     # via pydantic
-anyio==4.12.0
+anyio==4.12.1
     # via
     #   httpx
     #   starlette
     #   watchfiles
-babel==2.17.0
-    # via docxcompose
+babel==2.18.0
+    # via docxcompose3
 beautifulsoup4==4.14.3
     # via
     #   -r backend/requirements.in
@@ -27,15 +29,15 @@ billiard==4.2.4
     # via celery
 brotli==1.2.0
     # via fonttools
-cachetools==6.2.3
+cachetools==7.0.1
     # via -r backend/requirements.in
-celery==5.6.0
+celery==5.6.2
     # via
     #   -r backend/requirements.in
     #   flower
-celery-types==0.23.0
+celery-types==0.24.0
     # via -r backend/requirements.in
-certifi==2025.11.12
+certifi==2026.1.4
     # via
     #   httpcore
     #   httpx
@@ -60,11 +62,11 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cssselect2==0.8.0
+cssselect2==0.9.0
     # via weasyprint
 dnspython==2.8.0
     # via email-validator
-docxcompose==1.4.0
+docxcompose3==1.4.5
     # via -r backend/requirements.in
 docxtpl==0.20.2
     # via -r backend/requirements.in
@@ -73,23 +75,21 @@ email-validator==2.3.0
     #   -r backend/requirements.in
     #   fastapi
     #   pydantic
-exceptiongroup==1.3.1
-    # via celery
-fastapi[all]==0.124.4
+fastapi[all]==0.129.0
     # via -r backend/requirements.in
-fastapi-cli[standard]==0.0.16
+fastapi-cli[standard]==0.0.21
     # via fastapi
-fastapi-cloud-cli==0.6.0
+fastapi-cloud-cli==0.11.0
     # via fastapi-cli
 fastar==0.8.0
     # via fastapi-cloud-cli
-filelock==3.20.0
+filelock==3.21.1
     # via -r backend/requirements.in
 flower==2.0.1
     # via -r backend/requirements.in
 fonttools[woff]==4.61.1
     # via weasyprint
-gunicorn==23.0.0
+gunicorn==25.0.3
     # via -r backend/requirements.in
 h11==0.16.0
     # via
@@ -105,7 +105,7 @@ httpx==0.28.1
     # via
     #   fastapi
     #   fastapi-cloud-cli
-humanize==4.14.0
+humanize==4.15.0
     # via flower
 idna==3.11
     # via
@@ -120,11 +120,11 @@ jinja2==3.1.6
     #   -r backend/requirements.in
     #   docxtpl
     #   fastapi
-kombu==5.6.1
+kombu==5.6.2
     # via celery
 lxml==6.0.2
     # via
-    #   docxcompose
+    #   docxcompose3
     #   docxtpl
     #   python-docx
 markdown-it-py==4.0.0
@@ -133,23 +133,23 @@ markupsafe==3.0.3
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-mistune==3.1.4
+mistune==3.2.0
     # via -r backend/requirements.in
-orjson==3.11.5
+orjson==3.11.7
     # via
     #   -r backend/requirements.in
     #   fastapi
-packaging==25.0
+packaging==26.0
     # via
     #   gunicorn
     #   kombu
-pillow==12.0.0
+pillow==12.1.1
     # via weasyprint
-prometheus-client==0.23.1
+prometheus-client==0.24.1
     # via flower
 prompt-toolkit==3.0.52
     # via click-repl
-pycparser==2.23
+pycparser==3.0
     # via cffi
 pydantic[email]==2.12.5
     # via
@@ -160,7 +160,7 @@ pydantic[email]==2.12.5
     #   pydantic-settings
 pydantic-core==2.41.5
     # via pydantic
-pydantic-extra-types==2.10.6
+pydantic-extra-types==2.11.0
     # via fastapi
 pydantic-settings==2.12.0
     # via fastapi
@@ -174,7 +174,7 @@ python-dateutil==2.9.0.post0
     # via celery
 python-docx==1.2.0
     # via
-    #   docxcompose
+    #   docxcompose3
     #   docxtpl
     #   htmldocx
 python-dotenv==1.2.1
@@ -182,7 +182,7 @@ python-dotenv==1.2.1
     #   -r backend/requirements.in
     #   pydantic-settings
     #   uvicorn
-python-multipart==0.0.20
+python-multipart==0.0.22
     # via fastapi
 pytz==2025.2
     # via flower
@@ -191,35 +191,35 @@ pyyaml==6.0.3
     #   -r backend/requirements.in
     #   fastapi
     #   uvicorn
-redis==7.1.0
+redis==7.1.1
     # via -r backend/requirements.in
-regex==2025.11.3
+regex==2026.1.15
     # via -r backend/requirements.in
 requests==2.32.5
     # via -r backend/requirements.in
-rich==14.2.0
+rich==14.3.2
     # via
     #   rich-toolkit
     #   typer
-rich-toolkit==0.17.0
+rich-toolkit==0.19.4
     # via
     #   fastapi-cli
     #   fastapi-cloud-cli
 rignore==0.7.6
     # via fastapi-cloud-cli
-sentry-sdk==2.47.0
+sentry-sdk==2.52.0
     # via fastapi-cloud-cli
 shellingham==1.5.4
     # via typer
 six==1.17.0
     # via
-    #   docxcompose
+    #   docxcompose3
     #   python-dateutil
-soupsieve==2.8
+soupsieve==2.8.3
     # via beautifulsoup4
-starlette==0.50.0
+starlette==0.52.1
     # via fastapi
-termcolor==3.2.0
+termcolor==3.3.0
     # via -r backend/requirements.in
 tinycss2==1.5.1
     # via
@@ -227,9 +227,9 @@ tinycss2==1.5.1
     #   weasyprint
 tinyhtml5==2.0.0
     # via weasyprint
-tornado==6.5.3
+tornado==6.5.4
     # via flower
-typer==0.20.0
+typer==0.23.0
     # via
     #   fastapi-cli
     #   fastapi-cloud-cli
@@ -243,9 +243,9 @@ types-orjson==3.6.2
     # via -r backend/requirements.in
 types-pyyaml==6.0.12.20250915
     # via -r backend/requirements.in
-types-requests==2.32.4.20250913
+types-requests==2.32.4.20260107
     # via -r backend/requirements.in
-types-setuptools==80.9.0.20250822
+types-setuptools==82.0.0.20260210
     # via -r backend/requirements.in
 types-termcolor==1.1.6.2
     # via -r backend/requirements.in
@@ -263,10 +263,10 @@ typing-extensions==4.15.0
     #   pydantic-extra-types
     #   python-docx
     #   rich-toolkit
-    #   typer
     #   typing-inspection
 typing-inspection==0.4.2
     # via
+    #   fastapi
     #   pydantic
     #   pydantic-settings
 tzdata==2025.3
@@ -275,12 +275,12 @@ tzlocal==5.3.1
     # via celery
 ujson==5.11.0
     # via fastapi
-urllib3==2.6.2
+urllib3==2.6.3
     # via
     #   requests
     #   sentry-sdk
     #   types-requests
-uvicorn[standard]==0.38.0
+uvicorn[standard]==0.40.0
     # via
     #   -r backend/requirements.in
     #   fastapi
@@ -295,18 +295,18 @@ vine==5.1.0
     #   kombu
 watchfiles==1.1.1
     # via uvicorn
-wcwidth==0.2.14
+wcwidth==0.6.0
     # via prompt-toolkit
-weasyprint==67.0
+weasyprint==68.1
     # via -r backend/requirements.in
 webencodings==0.5.1
     # via
     #   cssselect2
     #   tinycss2
     #   tinyhtml5
-websockets==15.0.1
+websockets==16.0
     # via uvicorn
-zopfli==0.4.0
+zopfli==0.4.1
     # via fonttools
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -22,6 +22,7 @@ class Part2Item(BaseModel):
 
 @final
 class BibleReference(BaseModel):
+    lang_code: Optional[str]
     book_code: str
     book_name: str
     start_chapter: ChapterNum
@@ -32,6 +33,7 @@ class BibleReference(BaseModel):
     def __hash__(self: "BibleReference") -> int:
         return hash(
             (
+                self.lang_code,
                 self.book_code,
                 self.book_name,
                 self.start_chapter,
@@ -45,6 +47,7 @@ class BibleReference(BaseModel):
         if not isinstance(other, BibleReference):
             return NotImplemented
         return (
+            self.lang_code,
             self.book_code,
             self.book_name,
             self.start_chapter,
@@ -52,6 +55,7 @@ class BibleReference(BaseModel):
             self.end_chapter,
             self.end_chapter_verse_ref,
         ) == (
+            other.lang_code,
             other.book_code,
             other.book_name,
             other.start_chapter,

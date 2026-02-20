@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { addBibleReference, addFilteredBibleReference } from '$lib/passages/stores/PassagesStore'
-  import { langCodeAndNameStore } from '$lib/passages/stores/LanguagesStore'
+  import { addBibleReference, addAvailableBibleReference } from '$lib/passages/stores/PassagesStore'
+  import { langCodesStore, langCountStore } from '$lib/passages/stores/LanguagesStore'
+  import type { BibleReference } from '$lib/passages/models'
 
   export let chapters: Record<string, number[]>
   export let checkIcon: string
-  export let bookCodesAndNames: [string, string][]
+  export let bookCodesAndNamesLang0: [string, string][]
+  export let bookCodesAndNamesLang1: [string, string][]
   let selectedBookCode: string = ''
   let selectedChapter: string = ''
   let chaptersForSelectedBook: number[] = []
@@ -35,26 +37,32 @@
 
   function addPassage() {
     if (selectedBookCode && selectedChapter && verseReference) {
-      const bookName =
-        bookCodesAndNames.find(([code]) => code === selectedBookCode)?.[1] ?? 'Unknown'
-      addBibleReference(
-        $langCodeAndNameStore.split(',')[0],
-        selectedBookCode,
-        bookName,
-        Number(selectedChapter),
-        verseReference,
-        null,
-        null
-      )
-      addFilteredBibleReference(
-        $langCodeAndNameStore.split(',')[0],
-        selectedBookCode,
-        bookName,
-        Number(selectedChapter),
-        verseReference,
-        null,
-        null
-      )
+      const bookEntry = bookCodesAndNamesLang0.find(([code]) => code === selectedBookCode)
+      const bookName = bookEntry ? bookEntry[1] : 'Unknown'
+      const bibleRefLang0: BibleReference = {
+        langCode: $langCodesStore[0],
+        bookCode: selectedBookCode,
+        bookName: bookName,
+        startChapter: Number(selectedChapter),
+        startChapterVerseRef: verseReference,
+        endChapter: null,
+        endChapterVerseRef: null
+      }
+      addBibleReference(bibleRefLang0)
+      addAvailableBibleReference(bibleRefLang0)
+      if ($langCountStore > 1) {
+        const bibleRefLang1 = {
+          langCode: $langCodesStore[1],
+          bookCode: selectedBookCode,
+          bookName: bookName,
+          startChapter: Number(selectedChapter),
+          startChapterVerseRef: verseReference,
+          endChapter: null,
+          endChapterVerseRef: null
+        }
+        addBibleReference(bibleRefLang1)
+        addAvailableBibleReference(bibleRefLang1)
+      }
       passageSuccessMessage = '✔'
       setTimeout(() => {
         passageSuccessMessage = ''
@@ -75,7 +83,7 @@
 </script>
 
 <div class="ml-2 mt-4 block text-xl font-bold text-[#33445C]">Other Passages</div>
-<div class="ml-2 flex items-center">
+<div id="add-other-passages" class="ml-2 flex items-center">
   <div class="mr-2">
     <label for="book" class="block text-sm font-medium text-gray-700">Bible Book</label>
     <select
@@ -85,8 +93,11 @@
       bind:value={selectedBookCode}
     >
       <option value="" disabled selected>Choose a book</option>
-      {#each bookCodesAndNames as [code, name]}
+      {#each bookCodesAndNamesLang0 as [code, name]}
         <option value={code}>{name}</option>
+      {/each}
+      {#each bookCodesAndNamesLang1 as [code2, name2]}
+        <option value={code2}>{name2}</option>
       {/each}
     </select>
   </div>

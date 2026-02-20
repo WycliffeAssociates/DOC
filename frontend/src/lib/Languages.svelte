@@ -28,6 +28,7 @@
   let langCodeNameAndTypes: Array<[string, string, boolean]> = []
   let gatewayCodesAndNames: Array<string> = []
   let heartCodesAndNames: Array<string> = []
+  export let handleLangChange: (e: Event, lang: string) => void
 
   onMount(async () => {
     try {
@@ -37,18 +38,6 @@
     }
   })
 
-  function handleLangChange(e: Event, lang: string) {
-    const input = e.currentTarget as HTMLInputElement
-    languagesClickedOrderStore.update((arr) => {
-      if (input.checked) {
-        // append only if not already present
-        return arr.includes(lang) ? arr : [...arr, lang]
-      } else {
-        // remove if unchecked
-        return arr.filter((v) => v !== lang)
-      }
-    })
-  }
 
   $: $langCountStore = $languagesClickedOrderStore ? $languagesClickedOrderStore.length : 0
 

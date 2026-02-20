@@ -10,19 +10,25 @@ endif
 
 .PHONY: pipupgrade
 pipupgrade: checkvenv
-	pip install --upgrade pip
+	# pip-tools is not ready for pip 26
+	pip install pip==25.2
+	# pip install --upgrade pip
 
 .PHONY: pyupgrade
 pyupgrade: checkvenv pipupgrade
 # checks if pip-tools is installed
 ifeq ("$(wildcard .venv/bin/pip-compile)","")
 	@echo "Installing Pip-tools..."
-	@pip install --no-cache-dir pip-tools
+	# @pip install --no-cache-dir pip-tools
+	# pip-tools is not ready for pip 26
+	@pip install --no-cache-dir pip-tools==7.5.2
 endif
 
 ifeq ("$(wildcard .venv/bin/pip-sync)","")
 	@echo "Installing Pip-tools..."
-	@pip install --no-cache-dir pip-tools
+	# @pip install --no-cache-dir pip-tools
+	# pip-tools is not ready for pip 26
+	@pip install --no-cache-dir pip-tools==7.5.2
 endif
 
 .PHONY: install-cython

@@ -4,21 +4,22 @@ test('add passages', async ({ page }) => {
   await page.goto('http://localhost:8001/passages')
   await page.getByText('Español Latin America (Latin').click()
   await page.getByRole('button', { name: 'Next' }).click()
+  const passagesSection = page.locator('#passages-basket')
   await page.getByLabel('Bible Book').selectOption('jos')
   await page.getByLabel('Chapter').selectOption('7')
-  await page.getByPlaceholder('e.g., 1,2,5-').click()
   await page.getByPlaceholder('e.g., 1,2,5-').fill('1-10')
   await page.getByRole('button', { name: 'Add Passage' }).click()
   await page.getByLabel('Bible Book').selectOption('est')
   await page.getByLabel('Chapter').selectOption('7')
-  await page.getByPlaceholder('e.g., 1,2,5-').click()
   await page.getByPlaceholder('e.g., 1,2,5-').fill('3,12')
   await page.getByRole('button', { name: 'Add Passage' }).click()
   await page.getByLabel('Bible Book').selectOption('1th')
   await page.getByLabel('Chapter').selectOption('4')
-  await page.getByPlaceholder('e.g., 1,2,5-').click()
   await page.getByPlaceholder('e.g., 1,2,5-').fill('1,5-8,11')
   await page.getByRole('button', { name: 'Add Passage' }).click()
+  await expect(passagesSection).toContainText('Josué 7:1-10 (es-419)')
+  await expect(passagesSection).toContainText('Ester 7:3,12 (es-419)')
+  await expect(passagesSection).toContainText('1 Tesalonicenses 4:1,5-8,11 (es-419)')
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
@@ -28,50 +29,21 @@ test('select gateway tab after first selecting heart language and hitting next',
 }) => {
   await page.goto('http://localhost:8001/passages')
   await page.getByRole('button', { name: 'Heart' }).click()
-  await page.getByText('Abure abu').click()
+  await page.getByText('Abure').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('link', { name: 'Language' }).click()
-  await page.getByRole('button', { name: 'Gateway' }).click()
-  await page.getByText('Bahasa Indonesia (Indonesian)').click()
+  await page.getByText('Cebuano').click()
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.waitForTimeout(20000)
   await page.getByText("Add NT Survey Reviewers'").click()
-  await expect(page.getByText('Matius 2:1-12')).toBeVisible({ timeout: 32000 })
-  await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.getByText('Matius 2:1-12')).toBeVisible()
-})
-
-test('stet passages not available in production', async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        ...window.location,
-        hostname: 'bibleineverylanguage.org'
-      },
-      configurable: true
-    })
-  })
-  await page.goto('http://localhost:8001/passages')
-  await page.getByText('Cebuano').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('#stet-passages')).not.toBeVisible()
-})
-
-test.skip('stet passages available when not in production', async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        ...window.location,
-        hostname: 'walink.org'
-      },
-      configurable: true
-    })
-  })
-  await page.goto('http://localhost:8001/passages')
-  await page.getByText('Cebuano').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  // Wait for the element that proves loading is done
-  await page.waitForSelector('#stet-passages', { state: 'visible' })
-  await expect(page.locator('#stet-passages')).toBeVisible()
+  await page.waitForTimeout(30000)
+  await expect(page.getByTestId('shown-passages')).toContainText('(ceb)', { timeout: 120000 })
+  const passagesSection = page.getByTestId('shown-passages')
+  const text = await passagesSection.innerText()
+  // console.log('DEBUG TEXT:')
+  // console.log(JSON.stringify(text)) // helpful for spotting hidden chars
+  expect(text).toMatch(/Mat+t?hieu.*2:1-12.*\(abu\)/i)
+  expect(text).toMatch(/Mateo.*2:1-12.*\(ceb\)/i)
 })
 
 test('passages checkboxes', async ({ page }) => {
@@ -162,26 +134,84 @@ test('checkboxes are only shown when language chosen has books in each checkbox 
       timeout: 32_000
     }
   )
-  await expect(page.locator('body')).toContainText(
+  await expect(page.locator('#add-ot-rg1-passages')).toContainText(
     'Add OT Survey RG1 Passages only (Genesis to Deuteronomy)',
     { timeout: 32_000 }
   )
-  await expect(page.locator('body')).toContainText(
+  await expect(page.locator('#add-ot-rg2-passages')).toContainText(
     'Add OT Survey RG2 Passages only (Joshua to Esther)',
     { timeout: 32_000 }
   )
-  await expect(page.locator('body')).toContainText(
+  await expect(page.locator('#add-ot-rg3-passages')).toContainText(
     'Add OT Survey RG3 Passages only (Job to Song of Songs)',
     { timeout: 32_000 }
   )
-  await expect(page.locator('body')).toContainText(
+  await expect(page.locator('#add-ot-rg4-passages')).toContainText(
     'Add OT Survey RG4 Passages only (Isaiah to Malachi)',
     { timeout: 32_000 }
   )
-  await expect(page.locator('body')).toContainText("Add NT Survey Reviewers' Guide (RG) Passages", {
-    timeout: 32_000
-  })
+  await expect(page.locator('#add-nt-passages')).toContainText(
+    "Add NT Survey Reviewers' Guide (RG) Passages",
+    {
+      timeout: 32_000
+    }
+  )
   // await expect(page.locator('#stet-passages')).toContainText('Add STET Passages', {
   //   timeout: 32_000
   // })
+})
+
+test('language change changes passages chosen', async ({ page }) => {
+  await page.goto('http://localhost:8001/passages')
+  await page.getByText('English').click()
+  await page.getByRole('button', { name: 'Heart' }).click()
+  await page.getByText('Abé').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText("Add NT Survey Reviewers'").click()
+  await page.getByRole('button', { name: 'Edit' }).click()
+  await page.locator('.mt-2 > button').first().click()
+  await page.getByText('English').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText("Add NT Survey Reviewers'").click()
+  await expect(page.getByTestId('shown-passages')).toContainText('Matthew 2:1-12 (aba)')
+  await expect(page.getByTestId('shown-passages')).toContainText('Matthew 2:1-12 (en)')
+  await page.getByRole('button', { name: 'Edit' }).click()
+  await page.locator('div:nth-child(4) > button').click()
+  await expect(page.getByTestId('shown-passages')).toContainText('Matthew 2:1-12 (aba)')
+  await expect(page.getByTestId('shown-passages')).not.toContainText('Matthew 2:1-12 (en)')
+})
+
+// We do not provide STET passages checkbox in Passages app currently by request of PO
+test.skip('stet passages not available in production', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...window.location,
+        hostname: 'bibleineverylanguage.org'
+      },
+      configurable: true
+    })
+  })
+  await page.goto('http://localhost:8001/passages')
+  await page.getByText('Cebuano').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.locator('#stet-passages')).not.toBeVisible()
+})
+
+// We do not provide STET passages checkbox in Passages app currently by request of PO
+test.skip('stet passages available when not in production', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...window.location,
+        hostname: 'walink.org'
+      },
+      configurable: true
+    })
+  })
+  await page.goto('http://localhost:8001/passages')
+  await page.getByText('Cebuano').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.waitForSelector('#stet-passages', { state: 'visible' })
+  await expect(page.locator('#stet-passages')).toBeVisible()
 })

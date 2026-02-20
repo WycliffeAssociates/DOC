@@ -10,6 +10,127 @@ from stet.utils.util import is_valid_int
 
 logger = settings.logger(__name__)
 
+_RV_BLOCK_PATTERN = re.compile(r"<r>(.*?)</r>\s*<v>(.*?)</v>", re.DOTALL)
+_REF_PATTERN = re.compile(r"^(.*) (\d+):([0-9,\- ]+)\s?(\(.*\))?$")
+
+
+def _parse_ref_to_dto(
+    reference_: str,
+    lang0_code: str,
+    lang1_code: str,
+    lang0_book_codes_and_names: list[tuple[str, str]],
+    lang1_book_codes_and_names: list[tuple[str, str]],
+    book_names: dict[str, str],
+    lang0_book_codes_and_names__: list[tuple[str, str]],
+    source_text_with_bolding: str | None = None,
+) -> VerseReferenceDto | None:
+    match = _REF_PATTERN.match(reference_)
+    if not match:
+        logger.warning("Couldn't parse %s", reference_)
+        return None
+    book_name = match.group(1).replace("\n", "")
+    book_codes_and_names_ = [
+        (bc, bn) for bc, bn in lang0_book_codes_and_names if bn == book_name
+    ]
+    if not book_codes_and_names_:
+        book_codes_and_names_ = [
+            (bc, bn) for bc, bn in book_names.items() if bn == book_name
+        ]
+    book_code_and_name_ = book_codes_and_names_[0] if book_codes_and_names_ else None
+    if book_code_and_name_:
+        lang0_book_codes_and_names__.append(book_code_and_name_)
+    chapter_num = int(match.group(2))
+    verses = match.group(3)
+    comment = match.group(4)
+    source_reference = (
+        f"{book_name} {chapter_num}:{verses}{comment}" if comment
+        else f"{book_name} {chapter_num}:{verses}"
+    )
+    lang0_book_code = book_code_and_name_[0] if book_code_and_name_ else ""
+    lang1_book_code_and_name_ = next(
+        (x for x in lang1_book_codes_and_names if x[0] == lang0_book_code),
+        None,
+    )
+    lang1_book_name = lang1_book_code_and_name_[1] if lang1_book_code_and_name_ else ""
+    target_reference = f"{lang1_book_name} {chapter_num}:{verses}"
+    verse_refs: list[str] = verses.split(",")
+    valid_verse_refs: list[str] = []
+    for verse_ref in verse_refs:
+        if is_valid_int(verse_ref):
+            valid_verse_refs.append(str(verse_ref))
+            continue
+        vm = re.match(r"(\d+)-(\d+)", verse_ref)
+        if vm:
+            for verse_num in range(int(vm.group(1)), int(vm.group(2)) + 1):
+                valid_verse_refs.append(str(verse_num))
+            continue
+        logger.warning("Couldn't parse verse ref: %s", verse_ref)
+    return VerseReferenceDto(
+        lang0_code=lang0_code,
+        lang1_code=lang1_code,
+        book_code=book_code_and_name_[0] if book_code_and_name_ else "",
+        book_name=book_name,
+        chapter_num=chapter_num,
+        source_reference=source_reference,
+        target_reference=target_reference,
+        verse_refs=valid_verse_refs,
+        source_text_with_bolding=source_text_with_bolding,
+    )
+
+
+def _parse_fully_specified_column3(
+    col3_text: str,
+    word_entry_dto: WordEntryDto,
+    lang0_code: str,
+    lang1_code: str,
+    lang0_book_codes_and_names: list[tuple[str, str]],
+    lang1_book_codes_and_names: list[tuple[str, str]],
+    book_names: dict[str, str],
+    lang0_book_codes_and_names__: list[tuple[str, str]],
+) -> None:
+    for m in _RV_BLOCK_PATTERN.finditer(col3_text):
+        ref_part = m.group(1).strip()
+        verse_part = m.group(2).strip()
+        dto = _parse_ref_to_dto(
+            ref_part,
+            lang0_code,
+            lang1_code,
+            lang0_book_codes_and_names,
+            lang1_book_codes_and_names,
+            book_names,
+            lang0_book_codes_and_names__,
+            source_text_with_bolding=verse_part,
+        )
+        if dto:
+            word_entry_dto.verse_ref_dtos.append(dto)
+
+
+def _parse_bible_reference_column3(
+    col3_text: str,
+    word_entry_dto: WordEntryDto,
+    lang0_code: str,
+    lang1_code: str,
+    lang0_book_codes_and_names: list[tuple[str, str]],
+    lang1_book_codes_and_names: list[tuple[str, str]],
+    book_names: dict[str, str],
+    lang0_book_codes_and_names__: list[tuple[str, str]],
+) -> None:
+    for reference in col3_text.split("\n"):
+        reference_ = reference.strip()
+        if not reference_:
+            continue
+        dto = _parse_ref_to_dto(
+            reference_,
+            lang0_code,
+            lang1_code,
+            lang0_book_codes_and_names,
+            lang1_book_codes_and_names,
+            book_names,
+            lang0_book_codes_and_names__,
+        )
+        if dto:
+            word_entry_dto.verse_ref_dtos.append(dto)
+
 
 def get_word_entry_dtos(
     lang0_code: str,
@@ -51,92 +172,30 @@ def get_word_entry_dtos(
                 previous_paragraph_style_name = paragraph.style.name
             word_entry_dto.definition = definition
             # Get verse references from 3rd column
-            for reference in row.cells[2].text.split("\n"):
-                reference_ = reference.strip()
-                match = re.match(r"^(.*) (\d+):([0-9,\- ]+)\s?(\(.*\))?$", reference_)
-                if not match:
-                    logger.warning("Couldn't parse %s", reference_)
-                    continue
-                if match:
-                    # Extract references
-                    book_name = match.group(1)
-                    # Some languages, e.g., bem, have a \n in the book name
-                    book_name = book_name.replace("\n", "")
-                    # We expect this book name to be in localized form according to the
-                    # language of the STET input document (as indicated by the input
-                    # document's filename, stet_[ietf_code].docx).
-                    book_codes_and_names_ = [
-                        (book_code, book_name_)
-                        for book_code, book_name_ in lang0_book_codes_and_names
-                        if book_name_
-                        == book_name  # Check if DOC and STET input doc agree on book name
-                    ]
-                    # If the names don't lookup in localized form then try to use English
-                    # just in case that was used instead.
-                    if not book_codes_and_names_:
-                        book_codes_and_names_ = [
-                            (book_code, book_name_)
-                            for book_code, book_name_ in book_names.items()
-                            if book_name_ == book_name
-                        ]
-                    book_code_and_name_ = (
-                        book_codes_and_names_[0] if book_codes_and_names_ else None
-                    )
-                    if book_code_and_name_:
-                        lang0_book_codes_and_names__.append(book_code_and_name_)
-                    chapter_num = int(match.group(2))
-                    verses = match.group(3)
-                    comment = match.group(4)
-                    if comment:
-                        source_reference = (
-                            f"{book_name} {chapter_num}:{verses}{comment}"
-                        )
-                    else:
-                        source_reference = f"{book_name} {chapter_num}:{verses}"
-                    lang0_book_code = (
-                        book_code_and_name_[0] if book_code_and_name_ else ""
-                    )
-                    lang1_book_code_and_name_ = next(
-                        (
-                            lang1_book_code_and_name
-                            for lang1_book_code_and_name in lang1_book_codes_and_names
-                            if lang1_book_code_and_name[0] == lang0_book_code
-                        ),
-                        None,
-                    )
-                    lang1_book_name = (
-                        lang1_book_code_and_name_[1]
-                        if lang1_book_code_and_name_
-                        else ""
-                    )
-                    target_reference = f"{lang1_book_name} {chapter_num}:{verses}"
-                    verse_refs: list[str] = verses.split(",")
-                    valid_verse_refs: list[str] = []
-                    for verse_ref in verse_refs:
-                        if is_valid_int(verse_ref):
-                            valid_verse_refs.append(str(verse_ref))
-                            continue
-                        match = re.match(r"(\d+)-(\d+)", verse_ref)
-                        if match:
-                            start_verse = int(match.group(1))
-                            end_verse = int(match.group(2))
-                            verse_num = start_verse
-                            while verse_num <= end_verse:
-                                valid_verse_refs.append(str(verse_num))
-                                verse_num += 1
-                            continue
-                        logger.warning("Couldn't parse verse ref: %s", verse_ref)
-                    verse_reference_dto = VerseReferenceDto(
-                        lang0_code=lang0_code,
-                        lang1_code=lang1_code,
-                        book_code=book_code_and_name_[0] if book_code_and_name_ else "",
-                        book_name=book_name,
-                        chapter_num=chapter_num,
-                        source_reference=source_reference,
-                        target_reference=target_reference,
-                        verse_refs=valid_verse_refs,
-                    )
-                    word_entry_dto.verse_ref_dtos.append(verse_reference_dto)
+            col3_text = row.cells[2].text.strip()
+            if col3_text.startswith("<r>"):
+                # Fully specified format: <r>ref</r><v>verse text with <b>bold</b></v>...
+                _parse_fully_specified_column3(
+                    col3_text,
+                    word_entry_dto,
+                    lang0_code,
+                    lang1_code,
+                    lang0_book_codes_and_names,
+                    lang1_book_codes_and_names,
+                    book_names,
+                    lang0_book_codes_and_names__,
+                )
+            else:
+                _parse_bible_reference_column3(
+                    row.cells[2].text,
+                    word_entry_dto,
+                    lang0_code,
+                    lang1_code,
+                    lang0_book_codes_and_names,
+                    lang1_book_codes_and_names,
+                    book_names,
+                    lang0_book_codes_and_names__,
+                )
             # If 4th column exists, get bolded words from it
             if len(row.cells) > 3 and row.cells[3].text:
                 word_entry_dto.bolded_phrases = [

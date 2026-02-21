@@ -245,7 +245,7 @@
                 Old Testament
               </button>
               <button
-                class="h-10 w-36 rounded-r-md border-b-2
+                class="h-10 w-36 rounded-r-md border-x-2 border-b-2
                         border-r-2 border-t-2 border-[#015ad9] bg-[#015ad9] text-xl font-medium leading-tight text-white transition duration-150 ease-in-out hover:bg-[#015ad9] focus:bg-[#015ad9] focus:outline-none focus:ring-0 active:bg-[#feeed8]"
                 on:click={() => (showOldTestament = false)}
               >

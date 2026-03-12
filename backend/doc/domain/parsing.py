@@ -2,7 +2,17 @@
 This module provides an API for parsing content.
 """
 
-import re
+from re import (
+    compile,
+    escape,
+    findall,
+    search,
+    split as re_split,
+    sub,
+    DOTALL,
+    MULTILINE,
+    Pattern,
+)
 import time
 from glob import glob
 from os import DirEntry, scandir, walk
@@ -72,15 +82,11 @@ from doc.utils.url_utils import (
 )
 from pydantic import HttpUrl
 
-
 logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
 
-_SECTIONHEAD5_RE = re.compile(
-    r'<div\s+class="sectionhead-5">\s*</div>',
-    re.MULTILINE,
-)
+_SECTIONHEAD5_RE = compile(r'<div\s+class="sectionhead-5">\s*</div>')
 
 
 BC_ARTICLE_URL_FMT_STR: str = (
@@ -88,11 +94,11 @@ BC_ARTICLE_URL_FMT_STR: str = (
 )
 
 
-CHAPTER_LABEL_REGEX = re.compile(r"\\cl\s+[^\n]+")
-CHAPTER_LABEL_REGEX2 = re.compile(r"\\cl\s+(.+)")
-CHAPTER_REGEX = re.compile(r"\\c\s+\d+")
-CHAPTER_CAPTURE_REGEX = re.compile(r"(\\c\s+\d+)")
-CHAPTER_CAPTURE_REGEX2 = re.compile(r"\\c\s+(\d+)")
+CHAPTER_LABEL_REGEX = compile(r"\\cl\s+[^\n]+")
+CHAPTER_LABEL_REGEX2 = compile(r"\\cl\s+(.+)")
+CHAPTER_REGEX = compile(r"\\c\s+\d+")
+CHAPTER_CAPTURE_REGEX = compile(r"(\\c\s+\d+)")
+CHAPTER_CAPTURE_REGEX2 = compile(r"\\c\s+(\d+)")
 
 
 def find_usfm_files(
@@ -256,7 +262,7 @@ def split_usfm_by_chapters(
     book_code: str,
     usfm_text: str,
     check_usfm: bool = settings.CHECK_USFM,
-    chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
+    chapter_regex: Pattern[str] = CHAPTER_REGEX,
     resources_with_usfm_defects: Sequence[
         tuple[str, str, str]
     ] = RESOURCES_WITH_USFM_DEFECTS,
@@ -267,8 +273,8 @@ def split_usfm_by_chapters(
     """
     chapter_markers = []
     chapters = []
-    chapter_markers = re.findall(chapter_regex, usfm_text)
-    chapters = re.split(chapter_regex, usfm_text)
+    chapter_markers = findall(chapter_regex, usfm_text)
+    chapters = re_split(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
 
     def needs_fixing() -> bool:
@@ -303,28 +309,28 @@ def split_usfm_by_chapters(
 def ensure_chapter_label(
     chapter_usfm_text: str,
     chapter_num: int,
-    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
-    chapter_regex: re.Pattern[str] = CHAPTER_REGEX,
+    chapter_label_regex: Pattern[str] = CHAPTER_LABEL_REGEX,
+    chapter_regex: Pattern[str] = CHAPTER_REGEX,
 ) -> str:
     r"""
     Modify USFM source to insert an English chapter label if it does not have one.
     Ensure that the chapter label includes the chapter number.
     """
-    if not re.search(chapter_label_regex, chapter_usfm_text):
-        if re.search(chapter_regex, chapter_usfm_text):
-            chapter_usfm_text = re.sub(
+    if not search(chapter_label_regex, chapter_usfm_text):
+        if search(chapter_regex, chapter_usfm_text):
+            chapter_usfm_text = sub(
                 r"(\\c\s+\d+)",
                 "\n" + r"\1" + "\n" + r"\\cl Chapter " + f"{chapter_num}" + "\n",
                 chapter_usfm_text,
             )
             return chapter_usfm_text
     # Ensure chapter label contains the chapter number
-    match = re.search(r"\\cl\s+(.+)", chapter_usfm_text)
+    match = search(r"\\cl\s+(.+)", chapter_usfm_text)
     if match:
         label_text = match.group(1)
         if str(chapter_num) not in label_text:
-            updated_label = f"{re.escape(label_text)} {chapter_num}"
-            chapter_usfm_text = re.sub(
+            updated_label = f"{escape(label_text)} {chapter_num}"
+            chapter_usfm_text = sub(
                 r"\\cl\s+(.+)",
                 rf"\\cl {updated_label}",
                 chapter_usfm_text,
@@ -338,13 +344,13 @@ def ensure_chapter_label(
 
 def ensure_no_chapter_labels(
     chapter_usfm_text: str,
-    chapter_label_regex: re.Pattern[str] = CHAPTER_LABEL_REGEX,
+    chapter_label_regex: Pattern[str] = CHAPTER_LABEL_REGEX,
 ) -> str:
     r"""
     Modify USFM source to remove all chapter labels, \cl.
     """
-    if re.search(chapter_label_regex, chapter_usfm_text):
-        updated_chapter_usfm_text = re.sub(
+    if search(chapter_label_regex, chapter_usfm_text):
+        updated_chapter_usfm_text = sub(
             chapter_label_regex,
             "",
             chapter_usfm_text,
@@ -355,10 +361,10 @@ def ensure_no_chapter_labels(
 
 def get_chapter_num(
     chapter_usfm_text: str,
-    chapter_regex: re.Pattern[str] = CHAPTER_CAPTURE_REGEX2,
+    chapter_regex: Pattern[str] = CHAPTER_CAPTURE_REGEX2,
 ) -> int:
     """Get the chapter number from the USFM chapter source text."""
-    if match := re.search(chapter_regex, chapter_usfm_text):
+    if match := search(chapter_regex, chapter_usfm_text):
         chapter_num = match.group(1)
         return int(chapter_num)
     return -1  # return sentinal
@@ -372,7 +378,7 @@ def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str
     USFM. We strip those out as well as the possibility of ASCII NULL
     bytes.
     """
-    return re.sub(r"[\x00-\x1F]+", "", html_content) if html_content else ""
+    return sub(r"[\x00-\x1F]+", "", html_content) if html_content else ""
 
 
 def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
@@ -385,7 +391,7 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
     }
     extracted_data = {}
     for key, pattern in patterns.items():
-        match = re.search(pattern, frontmatter, re.MULTILINE)
+        match = search(pattern, frontmatter, MULTILINE)
         if match:
             extracted_data[key] = match.group(1).strip()
     return extracted_data
@@ -428,17 +434,17 @@ def maybe_localized_book_name(frontmatter: str) -> str:
 def ensure_chapter_marker(
     chapter_usfm_text: str,
     chapter_num: int,
-    chapter_regex: re.Pattern[str] = CHAPTER_CAPTURE_REGEX,
+    chapter_regex: Pattern[str] = CHAPTER_CAPTURE_REGEX,
 ) -> str:
     r"""
     Modify USFM source to insert a chapter marker, \c <chapter_num>, if it does not have one.
     """
-    if re.search(chapter_regex, chapter_usfm_text):
+    if search(chapter_regex, chapter_usfm_text):
         logger.debug("Chapter marker already existed, didn't add one")
         return chapter_usfm_text
     logger.debug("Chapter marker is missing, adding one...")
     # Try inserting before \cl, if present
-    if match := re.search(r"\\cl\s+[^\n]+", chapter_usfm_text):
+    if match := search(r"\\cl\s+[^\n]+", chapter_usfm_text):
         insert_pos = match.start()
         return (
             chapter_usfm_text[:insert_pos]
@@ -449,8 +455,10 @@ def ensure_chapter_marker(
     return f"\\c {chapter_num}\n" + chapter_usfm_text
 
 
-def remove_sectionhead5_elements(content: str) -> str:
-    return _SECTIONHEAD5_RE.sub(" ", content)
+def remove_sectionhead5_elements(
+    content: str, sectionhead5_re: Pattern[str] = _SECTIONHEAD5_RE
+) -> str:
+    return sectionhead5_re.sub(" ", content)
 
 
 def usfm_book_content(
@@ -729,7 +737,7 @@ def tn_verses_html(
                 resource_requests,
             )
             verse_html_content = cast(str, mistune.markdown(verse_md_content))
-            adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
+            adjusted_verse_html_content = sub(h1, h5, verse_html_content)
             verses_html[verse_ref] = verse_fmt_str.format(
                 # NOTE Use nationalized book name from usfm book if available rather
                 # than English book name as here - we accompish this later in
@@ -871,7 +879,7 @@ def tq_chapter_verses(
                     resource_requests,
                 )
                 verse_html_content = cast(str, mistune.markdown(verse_md_content))
-                adjusted_verse_html_content = re.sub(h1, h5, verse_html_content)
+                adjusted_verse_html_content = sub(h1, h5, verse_html_content)
                 verses_html[verse_ref] = verse_label_fmt_str.format(
                     book_names[book_code],
                     chapter_num,
@@ -945,8 +953,8 @@ def tw_name_content_pairs(
                 translation_words_dict_,
             )
             html_word_content = cast(str, mistune.markdown(translation_word_content))
-            html_word_content = re.sub(h2, h4, html_word_content)
-            html_word_content = re.sub(h1, h3, html_word_content)
+            html_word_content = sub(h2, h4, html_word_content)
+            html_word_content = sub(h1, h3, html_word_content)
             if generate_docx:
                 html_word_content = preprocess_html_for_internal_docx_links(
                     html_word_content
@@ -1000,7 +1008,7 @@ def modify_commentary_label(
 ) -> str:
     # Modify chapter heading if it's the first chapter
     if chapter_num == 1:
-        chapter_commentary_html_content = re.sub(
+        chapter_commentary_html_content = sub(
             r"<h1>(.*?)<\/h1>",
             r"<h1>\1 Commentary</h1>",
             chapter_commentary_html_content,
@@ -1012,7 +1020,7 @@ def replace_relative_with_absolute_links(
     chapter_commentary_html_content: str,
     url_fmt_str: str = BC_ARTICLE_URL_FMT_STR,
 ) -> str:
-    chapter_commentary_html_content = re.sub(
+    chapter_commentary_html_content = sub(
         r'<a\s+href="\/(.*?)">',
         lambda match: '<a href="'
         + url_fmt_str.format(match.group(1))
@@ -1225,10 +1233,10 @@ def ensure_paragraph_before_verses(
     Return the possibly updated verse_content.
     """
     if (
-        re.compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
+        compile(usfm_verse_one_file_regex).match(Path(usfm_file).name) is not None
     ):  # Verse 1 of chapter
         if (
-            re.compile(chapter_marker_not_on_own_line_regex).match(verse_content)
+            compile(chapter_marker_not_on_own_line_regex).match(verse_content)
             is not None
         ):  # Chapter marker not on own line.
             # Make chapter marker occupy its own line and add a USFM paragraph
@@ -1238,7 +1246,7 @@ def ensure_paragraph_before_verses(
             # Docx did not have one. Presumably the 3rd party lib we use to parse
             # HTML to Docx doesn't like spans that are not contained in a block
             # level element.
-            verse_content = re.sub(
+            verse_content = sub(
                 chapter_marker_not_on_own_line_with_match_groups,
                 chapter_marker_not_on_own_line_repair_regex,
                 verse_content,
@@ -1327,7 +1335,7 @@ def clean_verse_content(verse_content: str) -> str:
     into a chapter this ends up creating a duplicate chapter marker.
     We deal with that here.
     """
-    cleaned_verse_content = re.sub(r"^\\c\s+\d+", "", verse_content)
+    cleaned_verse_content = sub(r"^\\c\s+\d+", "", verse_content)
     return cleaned_verse_content
 
 
@@ -1421,23 +1429,19 @@ def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
     # '''
     verse_dict = {}
     # Find all verse spans
-    verse_spans = re.findall(
-        r'<span class="verse">(.*?)</span>', chapter.content, re.DOTALL
-    )
+    verse_spans = findall(r'<span class="verse">(.*?)</span>', chapter.content, DOTALL)
     for verse_span in verse_spans:
         # Extract the verse number from the versemarker
-        verse_number = re.search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
+        verse_number = search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
         if verse_number:
             verse_number_ = verse_number.group(1)
             # Remove versemarker
-            verse_text = re.sub(r'<sup class="versemarker">.*?</sup>', "", verse_span)
+            verse_text = sub(r'<sup class="versemarker">.*?</sup>', "", verse_span)
             # Remove footnotes numbers
-            verse_text = re.sub(
-                r'<sup id=".*?" class="caller">.*?</sup>', "", verse_text
-            )
+            verse_text = sub(r'<sup id=".*?" class="caller">.*?</sup>', "", verse_text)
             # Fix spacing issue when div class="poetry-*" type divs
             # are used, e.g., yielding 'heartsas' for Hebrews 3:8
-            verse_text = re.sub(
+            verse_text = sub(
                 r'<div class="poetry-\d">(.*?)</div>',
                 r" \1",
                 verse_text,
@@ -1503,12 +1507,10 @@ def split_chapter_into_verses_with_formatting(
     # footnote callers) and the second element the target footnotes HTML?
     verse_dict = {}
     # Find all verse spans
-    verse_spans = re.findall(
-        r'<span class="verse">(.*?)</span>', chapter.content, re.DOTALL
-    )
+    verse_spans = findall(r'<span class="verse">(.*?)</span>', chapter.content, DOTALL)
     for verse_span in verse_spans:
         # Extract the verse number from the versemarker
-        verse_number = re.search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
+        verse_number = search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
         if verse_number:
             verse_number_ = verse_number.group(1)
             # Add to the dictionary with verse number as the key and verse text as the value
@@ -1548,19 +1550,15 @@ def split_chapter_into_verses_with_formatting_for_f10(
         # cleaned_html = "".join(str(c) for c in verse_span.contents)
         cleaned_html = str(verse_span)
         # Fix spacing issues introduced by inner spans
-        cleaned_html = re.sub(
+        cleaned_html = sub(
             r"\s+([,;:.!?])", r"\1", cleaned_html
         )  # remove space before punctuation
-        cleaned_html = re.sub(
-            r"\s+'", "'", cleaned_html
-        )  # remove space before apostrophe
-        cleaned_html = re.sub(
-            r"'\s+", "'", cleaned_html
-        )  # remove space after apostrophe
-        cleaned_html = re.sub(
+        cleaned_html = sub(r"\s+'", "'", cleaned_html)  # remove space before apostrophe
+        cleaned_html = sub(r"'\s+", "'", cleaned_html)  # remove space after apostrophe
+        cleaned_html = sub(
             r"\s*-\s*", "-", cleaned_html
         )  # normalize spaces around hyphens
-        cleaned_html = re.sub(r"\s{2,}", " ", cleaned_html)  # collapse double spaces
+        cleaned_html = sub(r"\s{2,}", " ", cleaned_html)  # collapse double spaces
         cleaned_html = cleaned_html.strip()
         # if you want plain text instead, use: cleaned_text = verse_span.get_text(" ", strip=True)
         # store cleaned HTML fragment (still contains <sup> etc.)

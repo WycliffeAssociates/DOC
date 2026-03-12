@@ -86,8 +86,8 @@ logger = settings.logger(__name__)
 
 H1, H2, H3, H4, H5 = "h1", "h2", "h3", "h4", "h5"
 
-_SECTIONHEAD5_RE = compile(r'<div\s+class="sectionhead-5">\s*</div>')
-
+SECTIONHEAD5_RE = compile(r'<div\s+class="sectionhead-5">\s*</div>')
+EMPTY_P_RE = compile(r"<p>\s*</p>")
 
 BC_ARTICLE_URL_FMT_STR: str = (
     "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/src/branch/master/{}"
@@ -455,10 +455,13 @@ def ensure_chapter_marker(
     return f"\\c {chapter_num}\n" + chapter_usfm_text
 
 
-def remove_sectionhead5_elements(
-    content: str, sectionhead5_re: Pattern[str] = _SECTIONHEAD5_RE
+def remove_unwanted_elements(
+    content: str,
+    sectionhead5_re: Pattern[str] = SECTIONHEAD5_RE,
+    empty_paragraph_re: Pattern[str] = EMPTY_P_RE,
 ) -> str:
-    return sectionhead5_re.sub(" ", content)
+    result = sectionhead5_re.sub(" ", content)
+    return empty_paragraph_re.sub("", result)
 
 
 def usfm_book_content(
@@ -522,15 +525,15 @@ def usfm_book_content(
         chapter_html_content = usfm_chapter_html(
             chapter_usfm, input_file, output_file, chapter_num
         )
-        cleaned_chapter_html_content = remove_null_bytes_and_control_characters(
+        cleaned_chapter_html_content_ = remove_null_bytes_and_control_characters(
             chapter_html_content
         )
-        chapter_html_content_sans_s5 = remove_sectionhead5_elements(
-            cleaned_chapter_html_content
+        cleaned_chapter_html_content = remove_unwanted_elements(
+            cleaned_chapter_html_content_
         )
         usfm_chapters[chapter_num] = USFMChapter(
             content=(
-                chapter_html_content_sans_s5 if chapter_html_content_sans_s5 else ""
+                cleaned_chapter_html_content if cleaned_chapter_html_content else ""
             ),
             verses=None,
         )

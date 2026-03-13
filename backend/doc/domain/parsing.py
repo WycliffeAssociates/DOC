@@ -62,7 +62,6 @@ from doc.markdown_transforms.markdown_transformer import (
 )
 from doc.reviewers_guide.model import RGBook
 from doc.reviewers_guide.parser import get_rg_books
-from doc.utils.docx_util import preprocess_html_for_internal_docx_links
 from doc.utils.text_utils import (
     maybe_correct_book_name,
     chapter_label_numeric_part,
@@ -958,10 +957,6 @@ def tw_name_content_pairs(
             html_word_content = cast(str, mistune.markdown(translation_word_content))
             html_word_content = sub(h2, h4, html_word_content)
             html_word_content = sub(h1, h3, html_word_content)
-            if generate_docx:
-                html_word_content = preprocess_html_for_internal_docx_links(
-                    html_word_content
-                )
             pair = TWNameContentPair(
                 localized_translation_word_,
                 translation_word_filepath,

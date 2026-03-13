@@ -46,36 +46,6 @@ def generate_docx_toc(docx_filepath: str) -> str:
     return str(toc_path)
 
 
-def preprocess_html_for_internal_docx_links(html: str) -> str:
-    """
-    Replace internal HTML anchors and headings with markers that survive HTML→DOCX conversion.
-    Example:
-      <h3 id="intro"> → {{BOOKMARK:intro}}
-      <a href="#intro">Christ</a> → {{LINK_START:intro}}Christ{{LINK_END}}
-    """
-    # Mark bookmarks
-    html = re.sub(
-        r'<h3\s+id="([^"]+)">',
-        r"{{BOOKMARK:\1}}<h3>",
-        html,
-        flags=re.IGNORECASE,
-    )
-    # Replace <a href="#id"> links
-    html = re.sub(
-        r'<a\s+href="#([^"]+)"><span>(.*?)</span></a>',
-        r"{{LINK_START:\1}}\2{{LINK_END}}",
-        html,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    html = re.sub(
-        r'<a\s+href="#([^"]+)">(.*?)</a>',
-        r"{{LINK_START:\1}}\2{{LINK_END}}",
-        html,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    return html
-
-
 def _make_text_run(text: str) -> Element:
     r = OxmlElement("w:r")
     t = OxmlElement("w:t")

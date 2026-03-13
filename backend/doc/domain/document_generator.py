@@ -51,7 +51,6 @@ from doc.reviewers_guide.model import RGBook
 from doc.utils.docx_util import (
     add_internal_docx_links,
     generate_docx_toc,
-    preprocess_html_for_internal_docx_links,
     style_superscripts,
 )
 from doc.utils.file_utils import (
@@ -767,8 +766,7 @@ def compose_docx_document(
         else:
             add_one_column_section(doc)
         try:
-            processed_html = preprocess_html_for_internal_docx_links(part.content)
-            html_to_docx.add_html_to_document(processed_html, doc)
+            html_to_docx.add_html_to_document(part.content, doc)
         except ValueError as e:
             logger.exception("Error converting HTML to docx: %s", e)
         if part.use_section_visual_separator:

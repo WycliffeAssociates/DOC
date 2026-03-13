@@ -3,14 +3,13 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
+import re
 import subprocess
 import time
 from datetime import datetime
 from os.path import exists, join
 from typing import Final, Mapping, Optional, Sequence, TypeAlias, cast
 
-# import regex as re # not yet supported in python 3.13 - used for unicode word boundaries for RTL languages
-import re
 from celery import current_task
 from doc.config import settings
 from doc.domain import parsing, resource_lookup, worker
@@ -77,6 +76,7 @@ from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
 from html4docx import HtmlToDocx  # type: ignore
 
+# import regex as re # not yet supported in python 3.13 - used for unicode word boundaries for RTL languages
 
 logger = settings.logger(__name__)
 

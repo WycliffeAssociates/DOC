@@ -47,7 +47,6 @@ from stet.utils.docx_utils import (
 )
 from stet.utils.util import extract_chapter_and_beyond
 
-
 logger = settings.logger(__name__)
 
 
@@ -360,9 +359,7 @@ def generate_docx(
             source_paragraph = row_cells[0].paragraphs[0]
             source_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
             if verse.source_has_preformatted_bolding:
-                add_preformatted_html_to_docx(
-                    verse.source_text, source_paragraph
-                )
+                add_preformatted_html_to_docx(verse.source_text, source_paragraph)
             elif len(word_entry.bolded_phrases) > 0:
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.bolded_phrases

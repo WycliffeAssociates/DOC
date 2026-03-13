@@ -75,7 +75,7 @@ from docx.enum.section import WD_SECTION
 from docx.shared import RGBColor
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
-from htmldocx import HtmlToDocx  # type: ignore
+from html4docx import HtmlToDocx  # type: ignore
 
 
 logger = settings.logger(__name__)

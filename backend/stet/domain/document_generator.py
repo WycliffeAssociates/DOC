@@ -25,7 +25,7 @@ from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from htmldocx import HtmlToDocx  # type: ignore
+from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
 from stet.domain.parser import get_word_entry_dtos

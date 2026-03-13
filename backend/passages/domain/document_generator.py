@@ -24,7 +24,7 @@ from docx import Document
 from docx.oxml import parse_xml
 from docx.shared import Inches, RGBColor
 from docx.table import _Cell, _Row
-from htmldocx import HtmlToDocx  # type: ignore
+from html4docx import HtmlToDocx  # type: ignore
 from passages.domain.model import (
     Passage,
     BibleReferenceWithAvailability,
@@ -33,7 +33,6 @@ from passages.domain.parser import verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
 from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
-
 
 if TYPE_CHECKING:
     from typing import TypeAlias

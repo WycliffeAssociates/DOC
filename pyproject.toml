@@ -17,7 +17,7 @@ dependencies = [
   "fastapi[all]",
   "filelock",
   "flower",
-  "htmldocx",
+  "html-for-docx",
   "html2docx",
   "gunicorn",
   "jinja2",

@@ -15,7 +15,7 @@ fastapi[all]
 filelock
 flower
 gunicorn
-htmldocx
+html-for-docx
 jinja2
 mistune
 orjson

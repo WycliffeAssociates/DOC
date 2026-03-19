@@ -11,7 +11,7 @@ from docx.oxml.table import CT_Tc
 from docx.shared import Pt, RGBColor
 from docx.table import Table
 from docx.text.paragraph import Paragraph
-from htmldocx import HtmlToDocx  # type: ignore
+from html4docx import HtmlToDocx  # type: ignore
 
 
 from docx.table import _Cell, _Row

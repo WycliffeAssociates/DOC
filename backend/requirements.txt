@@ -24,7 +24,7 @@ babel==2.18.0
 beautifulsoup4==4.14.3
     # via
     #   -r backend/requirements.in
-    #   htmldocx
+    #   html-for-docx
 billiard==4.2.4
     # via celery
 brotli==1.2.0
@@ -95,7 +95,7 @@ h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
-htmldocx==0.0.6
+html-for-docx==1.1.4
     # via -r backend/requirements.in
 httpcore==1.0.9
     # via httpx
@@ -176,7 +176,7 @@ python-docx==1.2.0
     # via
     #   docxcompose3
     #   docxtpl
-    #   htmldocx
+    #   html-for-docx
 python-dotenv==1.2.1
     # via
     #   -r backend/requirements.in

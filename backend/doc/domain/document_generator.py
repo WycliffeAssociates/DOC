@@ -3,14 +3,13 @@ Entrypoint for backend. Here incoming document requests are processed
 and eventually a final document produced.
 """
 
+import re
 import subprocess
 import time
 from datetime import datetime
 from os.path import exists, join
 from typing import Final, Mapping, Optional, Sequence, TypeAlias, cast
 
-# import regex as re # not yet supported in python 3.13 - used for unicode word boundaries for RTL languages
-import re
 from celery import current_task
 from doc.config import settings
 from doc.domain import parsing, resource_lookup, worker
@@ -52,7 +51,6 @@ from doc.reviewers_guide.model import RGBook
 from doc.utils.docx_util import (
     add_internal_docx_links,
     generate_docx_toc,
-    preprocess_html_for_internal_docx_links,
     style_superscripts,
 )
 from doc.utils.file_utils import (
@@ -75,8 +73,9 @@ from docx.enum.section import WD_SECTION
 from docx.shared import RGBColor
 from docxcompose.composer import Composer  # type: ignore
 from docxtpl import DocxTemplate  # type: ignore
-from htmldocx import HtmlToDocx  # type: ignore
+from html4docx import HtmlToDocx  # type: ignore
 
+# import regex as re # not yet supported in python 3.13 - used for unicode word boundaries for RTL languages
 
 logger = settings.logger(__name__)
 
@@ -767,8 +766,7 @@ def compose_docx_document(
         else:
             add_one_column_section(doc)
         try:
-            processed_html = preprocess_html_for_internal_docx_links(part.content)
-            html_to_docx.add_html_to_document(processed_html, doc)
+            html_to_docx.add_html_to_document(part.content, doc)
         except ValueError as e:
             logger.exception("Error converting HTML to docx: %s", e)
         if part.use_section_visual_separator:

@@ -53,6 +53,7 @@
   let rgRegex = new RegExp('rg, .*')
   let verseByVerseFeatureFlag: boolean = false // For now, 2026-05-18, verse by verse interleaving features have been held by TS
   let printOptimizationFeatureFlag: boolean = false // For now, 2026-05-18, print optimization feature has been held by TS
+  let twoColumnTnNotesFeatureFlag: boolean = false // For now, 2026-05-18, two column TN notes feature has been held by TS
   let showUsfmSettingsAsOption: boolean = false
   let showTnTwoColAsOption: boolean = false
   let showTqTwoColAsOption: boolean = false
@@ -367,7 +368,7 @@
               >
             </div>
           {/if}
-          {#if $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTnTwoColAsOption}
+          {#if twoColumnTnNotesFeatureFlag && $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTnTwoColAsOption}
             <div class="mb-2 mt-6 flex items-center">
               <Switch
                 bind:checked={$useTwoColumnLayoutForTnNotesStore}

@@ -52,6 +52,7 @@
   let bcRegex = new RegExp('bc, .*')
   let rgRegex = new RegExp('rg, .*')
   let verseByVerseFeatureFlag: boolean = false // For now, 2026-05-18, verse by verse interleaving features have been held by TS
+  let printOptimizationFeatureFlag: boolean = false // For now, 2026-05-18, print optimization feature has been held by TS
   let showUsfmSettingsAsOption: boolean = false
   let showTnTwoColAsOption: boolean = false
   let showTqTwoColAsOption: boolean = false
@@ -312,7 +313,7 @@
             </div>
           {/if}
         {/if}
-        {#if $docTypeStore === 'pdf' || $docTypeStore === 'epub'}
+        {#if printOptimizationFeatureFlag && ($docTypeStore === 'pdf' || $docTypeStore === 'epub')}
           <div class="flex">
             <Switch bind:checked={$layoutForPrintStore} id="layout-for-print-store" />
             <span class="ml-2 text-xl text-[#33445C]">Print optimization</span>

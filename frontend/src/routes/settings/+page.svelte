@@ -51,6 +51,7 @@
   let tqRegex = new RegExp('tq, .*')
   let bcRegex = new RegExp('bc, .*')
   let rgRegex = new RegExp('rg, .*')
+  let verseByVerseFeatureFlag: boolean = false // For now, 2026-05-18, verse by verse interleaving features have been held by TS
   let showUsfmSettingsAsOption: boolean = false
   let showTnTwoColAsOption: boolean = false
   let showTqTwoColAsOption: boolean = false
@@ -253,7 +254,7 @@
             <span class="text-xl text-[#33445C]">Interleave content by book</span>
           </label>
         </div>
-        {#if showUsfmSettingsAsOption}
+        {#if showUsfmSettingsAsOption && verseByVerseFeatureFlag}
           <div class="mb-2">
             <label>
               <input
@@ -290,7 +291,7 @@
               <span class="text-xl text-[#33445C]">Interleave content by chapter</span>
             </label>
           </div>
-          {#if showUsfmSettingsAsOption}
+          {#if showUsfmSettingsAsOption && verseByVerseFeatureFlag}
             <div class="mb-6">
               <label>
                 <input

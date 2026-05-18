@@ -137,7 +137,7 @@ test('rmp galatians', async ({ page }) => {
   await page.getByText('Regular').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Docx').click()
-  await page.getByText('Interleave content by verse').click()
+  await page.getByText('Interleave content by verse one book at a time').click()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 

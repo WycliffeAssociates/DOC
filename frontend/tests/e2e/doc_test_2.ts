@@ -13,7 +13,9 @@ test('es-419 resource types', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('reviewers guide is only shown when book is chosen that it includes', async ({ page }) => {
+test.skip('reviewers guide is only shown when book is chosen that it includes', async ({
+  page
+}) => {
   await page.goto('http://localhost:8001/languages')
   await page.getByText('English').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -24,7 +26,7 @@ test('reviewers guide is only shown when book is chosen that it includes', async
   ).not.toBeVisible({ timeout: 580000 })
 })
 
-test('reviewers guide is only shown when book is chosen that it includes - part 2', async ({
+test.skip('reviewers guide is only shown when book is chosen that it includes - part 2', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/languages')

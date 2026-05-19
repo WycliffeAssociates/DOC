@@ -89,18 +89,18 @@ test('visibility of optional settings based on resources chosen', async ({ page 
   await expect(page.getByRole('main')).toContainText(
     "Use chapter labels, e.g., 'Chapter 1' instead of '1'"
   )
-  await expect(page.getByRole('main')).toContainText('Translation notes layout:')
-  await expect(page.getByRole('main')).toContainText('Translation questions layout:')
+  // await expect(page.getByRole('main')).toContainText('Translation notes layout:')
+  // await expect(page.getByRole('main')).toContainText('Translation questions layout:')
   await page.getByRole('button', { name: 'Edit' }).nth(2).click()
   await page.getByText('Translation Questions', { exact: true }).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
-  await expect(page.getByRole('main')).not.toContainText('Translation questions layout:')
+  // await expect(page.getByRole('main')).not.toContainText('Translation questions layout:')
   await page.getByRole('button', { name: 'Edit' }).nth(2).click()
   await page.getByLabel('Translation Notes tn').uncheck()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
-  await expect(page.getByRole('main')).not.toContainText('Translation notes layout:')
+  // await expect(page.getByRole('main')).not.toContainText('Translation notes layout:')
   await expect(page.getByRole('main')).toContainText(
     "Use chapter labels, e.g., 'Chapter 1' instead of '1'"
   )

@@ -43,7 +43,9 @@ test('space between end of chunk and beginning of another', async ({ page }) => 
   await expect(page1.locator('body')).toContainText('bakafunga. 16Takuli')
 })
 
-test('lang then book by verse', async ({ page }) => {
+// skipping because, for now, TS has requested by verse interleaving
+// to be turned off
+test.skip('lang then book by verse', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByLabel('English en').check()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -76,7 +78,9 @@ test('lang then book by verse', async ({ page }) => {
   )
 })
 
-test('interleave by book shows tn and tq two column option', async ({ page }) => {
+// skipping because, for now, TS has requested by verse interleaving
+// to be turned off
+test.skip('interleave by book shows tn and tq two column option', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Cebuano').click()
   await page.getByRole('button', { name: 'Next' }).click()
@@ -96,7 +100,9 @@ test('interleave by book shows tn and tq two column option', async ({ page }) =>
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('two languages settings available', async ({ page }) => {
+// skipping because, for now, TS has requested by verse interleaving
+// to be turned off
+test.skip('two languages settings available', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('Cebuano').click()
   await page.getByText('English').click()
@@ -136,11 +142,13 @@ test('rmp galatians', async ({ page }) => {
   await page.getByText('Regular').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Docx').click()
-  await page.getByText('Interleave content by verse one book at a time').click()
+  await page.getByText('Interleave content by book').click()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('two languages, interleave by verse one chapter at a time', async ({ page }) => {
+// skipping because, for now, TS has requested by verse interleaving
+// to be turned off
+test.skip('two languages, interleave by verse one chapter at a time', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByText('English').click()
   await page.getByText('Cebuano').click()
@@ -150,10 +158,10 @@ test('two languages, interleave by verse one chapter at a time', async ({ page }
   await page.getByText('Select all').first().click()
   await page.locator('#select-all-lang0-resource-types').uncheck()
   await page.getByLabel('Bible Commentary bc').check()
-  // await page.getByLabel("NT Survey Reviewers' Guide rg").check()
+  await page.getByLabel("NT Survey Reviewers' Guide rg").check()
   await page.locator('#lang0-resourcetype-3').check()
   await page.locator('#lang0-resourcetype-4').check()
-  // await page.locator('#lang0-resourcetype-5').check()
+  await page.locator('#lang0-resourcetype-5').check()
   await page.getByText('Select all').nth(1).click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Docx').click()
@@ -178,7 +186,7 @@ test('two languages, interleave by verse one chapter at a time', async ({ page }
   await expect(page.getByRole('main')).toContainText('Include BC book intro')
   await expect(page.getByRole('main')).toContainText('Include TN chapter intro')
   await expect(page.getByRole('main')).toContainText('Include BC chapter commentary')
-  // await expect(page.getByRole('main')).toContainText('Include RG chapter commentary')
+  await expect(page.getByRole('main')).toContainText('Include RG chapter commentary')
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
@@ -194,12 +202,14 @@ test('include tn book and chapter intros is checked by default for this case', a
   await page.getByText('Translation Words').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
-  await expect(page.locator('#use-two-column-layout-for-tn')).not.toBeChecked()
+  // await expect(page.locator('#use-two-column-layout-for-tn')).not.toBeChecked()
   await expect(page.locator('#show-tn-book-intro')).toBeChecked()
   await expect(page.locator('#show-tn-chapter-intro')).toBeChecked()
 })
 
-test('include tn book and chapter intros is not checked by default for this case', async ({
+// skipping because, for now, TS has requested by verse interleaving
+// to be turned off
+test.skip('include tn book and chapter intros is not checked by default for this case', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/')

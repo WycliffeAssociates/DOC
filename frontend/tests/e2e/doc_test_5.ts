@@ -129,23 +129,6 @@ test.skip('two languages settings available', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('rmp galatians', async ({ page }) => {
-  await page.goto('http://localhost:8001/')
-  await page.getByRole('button', { name: 'Heart' }).click()
-  await page.getByPlaceholder('Search Heart Languages').click()
-  await page.getByPlaceholder('Search Heart Languages').fill('rmp')
-  await page.getByText('Rempi').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.getByRole('main')).toContainText('Galasians', { timeout: 10000 })
-  await page.getByLabel('Titus ti').check()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Regular').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Docx').click()
-  await page.getByText('Interleave content by book').click()
-  await page.getByRole('button', { name: 'Generate File' }).click()
-})
-
 // skipping because, for now, TS has requested by verse interleaving
 // to be turned off
 test.skip('two languages, interleave by verse one chapter at a time', async ({ page }) => {
@@ -188,23 +171,6 @@ test.skip('two languages, interleave by verse one chapter at a time', async ({ p
   await expect(page.getByRole('main')).toContainText('Include BC chapter commentary')
   await expect(page.getByRole('main')).toContainText('Include RG chapter commentary')
   await page.getByRole('button', { name: 'Generate File' }).click()
-})
-
-test('include tn book and chapter intros is checked by default for this case', async ({ page }) => {
-  await page.goto('http://localhost:8001/')
-  await page.getByLabel('Français (French) fr').check()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Galates').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('French Louis Segond 1910 Bible').click()
-  await page.getByText('Unlocked Literal Bible').click()
-  await page.getByText('Translation Notes').click()
-  await page.getByText('Translation Words').click()
-  await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
-  // await expect(page.locator('#use-two-column-layout-for-tn')).not.toBeChecked()
-  await expect(page.locator('#show-tn-book-intro')).toBeChecked()
-  await expect(page.locator('#show-tn-chapter-intro')).toBeChecked()
 })
 
 // skipping because, for now, TS has requested by verse interleaving

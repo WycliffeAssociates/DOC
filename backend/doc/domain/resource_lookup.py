@@ -108,6 +108,7 @@ query MyQuery {
                     repo
                     for repo in data_payload["git_repo"]
                     if repo.get("content", {}).get("resource_type") is not None
+                    and repo.get("content", {}).get("language") is not None
                 ]
                 # Sort for test stability - ensures consistent ordering
                 valid_repos.sort(key=lambda repo: repo["repo_url"])

@@ -183,6 +183,10 @@ clean-mypyc-artifacts:
 	find . ! -path .venv -type f -name "*.so" -exec rm -- {} +
 	find . ! -path .venv -type f -name "*.c" -exec rm -- {} +
 
+.PHONY: prune-docker-images-volumes
+prune-docker-images-volumes:
+	docker system prune --volumes
+
 # https://radon.readthedocs.io/en/latest/commandline.html
 .PHONY: radon-cyclomatic-complexity
 radon-cyclomatic-complexity: checkvenv

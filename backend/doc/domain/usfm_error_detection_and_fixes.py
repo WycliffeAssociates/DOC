@@ -37,9 +37,9 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     # ("bem-x-kabenmushi", "reg", "sng"), # missing language data so filtered out
     # ("bem-x-kabenmushi", "reg", "deu"), # missing language data so filtered out
     # ("bem-x-kabenmushi", "reg", "1ki"), # missing language data so filtered out
+    # ("bem-x-kabenmushi", "reg", "ecc"), # missing language data so filtered out
+    # ("bem-x-kabenmushi", "reg", "2ki"), # missing language data so filtered out
     # ("bem-x-kabenmushi", "reg", "1ch"), # unavailable from data API
-    ("bem-x-kabenmushi", "reg", "ecc"),
-    ("bem-x-kabenmushi", "reg", "2ki"),
     ("bi", "reg", "act"),
     ("bji", "reg", "mat"),
     ("bji", "reg", "1co"),

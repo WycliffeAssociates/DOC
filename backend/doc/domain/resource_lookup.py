@@ -108,6 +108,7 @@ query MyQuery {
                     repo
                     for repo in data_payload["git_repo"]
                     if repo.get("content", {}).get("resource_type") is not None
+                    and repo.get("content", {}).get("language") is not None
                 ]
                 # Sort for test stability - ensures consistent ordering
                 valid_repos.sort(key=lambda repo: repo["repo_url"])
@@ -721,18 +722,18 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
             "tn-condensed",
             en_lang,
         ),
-        make_entry(
-            HttpUrl(
-                # NOTE: this URL is actually not used in DOC because the file no longer exists
-                # there. Instead we provide this file for ourselves and copy it into
-                # place from the root of this project at FastAPI initialization. One day
-                # it would be nice to have this live somewhere online so that
-                # potentially updated versions could be acquired.
-                "https://github.com/WycliffeAssociates/TS-biel-files/blob/master/training/en/Refinement%20and%20Publication/Reviewers'%20Guide/NT%20Survey%20RG%20Files/NT%20Survey%20Reviewers'%20Guide.docx"
-            ),
-            "rg",
-            en_lang,
-        ),
+        # make_entry(
+        #     HttpUrl(
+        #         # NOTE: this URL is actually not used in DOC because the file no longer exists
+        #         # there. Instead we provide this file for ourselves and copy it into
+        #         # place from the root of this project at FastAPI initialization. One day
+        #         # it would be nice to have this live somewhere online so that
+        #         # potentially updated versions could be acquired.
+        #         "https://github.com/WycliffeAssociates/TS-biel-files/blob/master/training/en/Refinement%20and%20Publication/Reviewers'%20Guide/NT%20Survey%20RG%20Files/NT%20Survey%20Reviewers'%20Guide.docx"
+        #     ),
+        #     "rg",
+        #     en_lang,
+        # ),
     ]
     existing_pairs = {
         (entry.content.language.ietf_code, entry.content.resource_type)

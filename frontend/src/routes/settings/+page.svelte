@@ -51,6 +51,10 @@
   let tqRegex = new RegExp('tq, .*')
   let bcRegex = new RegExp('bc, .*')
   let rgRegex = new RegExp('rg, .*')
+  let verseByVerseFeatureFlag: boolean = false // For now, 2026-05-18, verse by verse interleaving features have been held by TS
+  let printOptimizationFeatureFlag: boolean = false // For now, 2026-05-18, print optimization feature has been held by TS
+  let twoColumnTnNotesFeatureFlag: boolean = false // For now, 2026-05-18, two column TN notes feature has been held by TS
+  let twoColumnTqNotesFeatureFlag: boolean = false // For now, 2026-05-18, two column TQ notes feature has been held by TS
   let showUsfmSettingsAsOption: boolean = false
   let showTnTwoColAsOption: boolean = false
   let showTqTwoColAsOption: boolean = false
@@ -253,7 +257,7 @@
             <span class="text-xl text-[#33445C]">Interleave content by book</span>
           </label>
         </div>
-        {#if showUsfmSettingsAsOption}
+        {#if showUsfmSettingsAsOption && verseByVerseFeatureFlag}
           <div class="mb-2">
             <label>
               <input
@@ -290,7 +294,7 @@
               <span class="text-xl text-[#33445C]">Interleave content by chapter</span>
             </label>
           </div>
-          {#if showUsfmSettingsAsOption}
+          {#if showUsfmSettingsAsOption && verseByVerseFeatureFlag}
             <div class="mb-6">
               <label>
                 <input
@@ -311,7 +315,7 @@
             </div>
           {/if}
         {/if}
-        {#if $docTypeStore === 'pdf' || $docTypeStore === 'epub'}
+        {#if printOptimizationFeatureFlag && ($docTypeStore === 'pdf' || $docTypeStore === 'epub')}
           <div class="flex">
             <Switch bind:checked={$layoutForPrintStore} id="layout-for-print-store" />
             <span class="ml-2 text-xl text-[#33445C]">Print optimization</span>
@@ -365,7 +369,7 @@
               >
             </div>
           {/if}
-          {#if $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTnTwoColAsOption}
+          {#if twoColumnTnNotesFeatureFlag && $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTnTwoColAsOption}
             <div class="mb-2 mt-6 flex items-center">
               <Switch
                 bind:checked={$useTwoColumnLayoutForTnNotesStore}
@@ -410,7 +414,7 @@
               {/if}
             </div>
           {/if}
-          {#if $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTqTwoColAsOption}
+          {#if twoColumnTqNotesFeatureFlag && $assemblyStrategyKindStore !== 'lvo' && $assemblyStrategyKindStore !== 'bvo' && showTqTwoColAsOption}
             <div class="mb-2 mt-6 flex items-center">
               <Switch
                 bind:checked={$useTwoColumnLayoutForTqNotesStore}

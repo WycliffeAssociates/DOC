@@ -112,8 +112,76 @@
   $: {
     $limitTwStore = $twResourceRequestedStore && $usfmAvailableStore
   }
+
+  // --- MUTUAL EXCLUSIVITY LOGIC ---
+  // Track the previous state of the store to determine which note option was checked last
+  let previousResourceTypes: Array<string> = []
+
+  $: {
+    // Only run mutual exclusivity checks if the store actually changed
+    if (JSON.stringify($resourceTypesStore) !== JSON.stringify(previousResourceTypes)) {
+      let updatedStore = [...$resourceTypesStore]
+      let storeChanged = false
+
+      // Group resources by language code to handle cross-contamination safely
+      const languagesInStore = [
+        ...new Set(updatedStore.map((item) => getResourceTypeLangCode(item)))
+      ]
+
+      for (const lang of languagesInStore) {
+        // Find items in the current selection for this language
+        const langItems = updatedStore.filter((item) => getResourceTypeLangCode(item) === lang)
+        const hasTN = langItems.some((item) => getResourceTypeName(item) === 'Translation Notes')
+        const hasCTN = langItems.some(
+          (item) => getResourceTypeName(item) === 'Condensed Translation Notes'
+        )
+
+        // If both are present, determine which one was added last
+        if (hasTN && hasCTN) {
+          const prevLangItems = previousResourceTypes.filter(
+            (item) => getResourceTypeLangCode(item) === lang
+          )
+          const prevHadTN = prevLangItems.some(
+            (item) => getResourceTypeName(item) === 'Translation Notes'
+          )
+          const prevHadCTN = prevLangItems.some(
+            (item) => getResourceTypeName(item) === 'Condensed Translation Notes'
+          )
+
+          if (prevHadTN && !prevHadCTN) {
+            // "Condensed" was just checked, remove standard "Translation Notes"
+            updatedStore = updatedStore.filter(
+              (item) =>
+                !(
+                  getResourceTypeLangCode(item) === lang &&
+                  getResourceTypeName(item) === 'Translation Notes'
+                )
+            )
+            storeChanged = true
+          } else {
+            // "Translation Notes" was just checked (or it's an ambiguous state), remove "Condensed"
+            updatedStore = updatedStore.filter(
+              (item) =>
+                !(
+                  getResourceTypeLangCode(item) === lang &&
+                  getResourceTypeName(item) === 'Condensed Translation Notes'
+                )
+            )
+            storeChanged = true
+          }
+        }
+      }
+
+      if (storeChanged) {
+        $resourceTypesStore = updatedStore
+      }
+      previousResourceTypes = [...$resourceTypesStore]
+    }
+  }
+  // ---------------------------------
+
   $: console.log(`lang0ResourceTypesAndNames: ${lang0ResourceTypesAndNames}`)
-  $: console.log(`lang1ResourceTypesAndNames: ${lang0ResourceTypesAndNames}`)
+  $: console.log(`lang1ResourceTypesAndNames: ${lang1ResourceTypesAndNames}`)
   $: console.log(`$twResourceRequestedStore: ${$twResourceRequestedStore}`)
   $: console.log(`$limitTwStore: ${$limitTwStore}`)
   $: console.log(`$resourceTypesStore: ${$resourceTypesStore}`)
@@ -121,7 +189,11 @@
 
   function selectAllLang0ResourceTypes(event: Event) {
     if ((<HTMLInputElement>event.target).checked) {
-      lang0ResourceTypesAndNames.map((item) => $resourceTypesStore.push(item))
+      // Filter out 'Condensed Translation Notes' when Select All is clicked
+      lang0ResourceTypesAndNames
+        .filter((item) => getResourceTypeCode(item) !== 'tn-condensed')
+        .map((item) => $resourceTypesStore.push(item))
+
       $resourceTypesStore = [...new Set($resourceTypesStore)]
       $resourceTypesCountStore = $resourceTypesStore.length
     } else {
@@ -133,7 +205,11 @@
 
   function selectAllLang1ResourceTypes(event: Event) {
     if ((<HTMLInputElement>event.target).checked) {
-      lang1ResourceTypesAndNames.map((item) => $resourceTypesStore.push(item))
+      // Filter out 'Condensed Translation Notes' when Select All is clicked
+      lang1ResourceTypesAndNames
+        .filter((item) => getResourceTypeCode(item) !== 'tn-condensed')
+        .map((item) => $resourceTypesStore.push(item))
+
       $resourceTypesStore = [...new Set($resourceTypesStore)]
       $resourceTypesCountStore = $resourceTypesStore.length
     } else {

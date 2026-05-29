@@ -114,7 +114,6 @@ services:
     image: wycliffeassociates/doc-ui:${IMAGE_TAG}
     environment:
       PUBLIC_BACKEND_API_URL: ${PUBLIC_BACKEND_API_URL:-http://localhost:5005}
-      PUBLIC_GO_BACKEND_API_URL: ${PUBLIC_GO_BACKEND_API_URL:-http://localhost:8080}
       PUBLIC_FILE_SERVER_URL: ${PUBLIC_FILE_SERVER_URL:-http://localhost:8089}
       PUBLIC_LOGROCKET_ID: ${PUBLIC_LOGROCKET_ID:-ct7zyg/bible-in-every-language}
     ports:

@@ -8,13 +8,13 @@ jobs:
     name: Build API image
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: FranzDiebold/github-env-vars-action@v2
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
 
       - name: Build API image with buildx
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           cache-from: type=gha
@@ -24,12 +24,12 @@ jobs:
     name: Build Frontend image
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: FranzDiebold/github-env-vars-action@v2
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
       - name: Build frontend image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           cache-from: type=gha
@@ -39,12 +39,12 @@ jobs:
     name: Build USFMParser image
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: FranzDiebold/github-env-vars-action@v2
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
       - name: Build USFMParser image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./dotnet/USFMParserApi
           cache-from: type=gha
@@ -55,12 +55,12 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [Build-API-Image, Build-USFMParser-Image]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: FranzDiebold/github-env-vars-action@v2
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
       - name: Build local API image with buildx
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           tags: wycliffeassociates/doc:local
@@ -69,7 +69,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build local USFMParser image with buildx
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./dotnet/USFMParserApi
           tags: wycliffeassociates/doc-usfmparser:local
@@ -86,12 +86,12 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [Build-API-Image, Build-Frontend-Image, Build-USFMParser-Image]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: FranzDiebold/github-env-vars-action@v2
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
       - name: Build local api image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           tags: wycliffeassociates/doc:local
@@ -99,7 +99,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Build local frontend image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           tags: wycliffeassociates/doc-ui:local
@@ -108,7 +108,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build local USFMParser image with buildx
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./dotnet/USFMParserApi
           tags: wycliffeassociates/doc-usfmparser:local
@@ -117,7 +117,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build frontend-tests image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/testsDockerfile
@@ -135,12 +135,12 @@ jobs:
     needs: [Test-API-Image, Test-Frontend-Image]
     if: ${{ contains(fromJson('["push"]'), github.event_name) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: FranzDiebold/github-env-vars-action@v2
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -167,7 +167,7 @@ jobs:
           echo "PUBLIC_DOC_VERSION=$CI_SHA_SHORT" >> $GITHUB_ENV
 
       - name: Build and conditional push API image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -178,7 +178,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Build and conditional push UI image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: true
@@ -192,7 +192,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Build and conditional push Parser image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: ./dotnet/USFMParserApi
           push: true

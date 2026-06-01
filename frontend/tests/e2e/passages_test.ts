@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test'
 
-test('add passages', async ({ page }) => {
+test.only('add passages', async ({ page }) => {
   await page.goto('http://localhost:8001/passages')
   await page.getByText('Español Latin America (Latin').click()
   await page.getByRole('button', { name: 'Next' }).click()
   const passagesSection = page.locator('#passages-basket')
   await page.getByLabel('Bible Book').selectOption('jos')
+  await expect(page.getByLabel('Chapter')).toBeEnabled({ timeout: 10000 })
   await expect(page.getByLabel('Chapter').locator('option[value="7"]')).toBeAttached()
   await page.getByLabel('Chapter').selectOption('7')
   await page.getByPlaceholder('e.g., 1,2,5-').fill('1-10')

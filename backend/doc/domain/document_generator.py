@@ -773,7 +773,7 @@ def compose_docx_document(
             add_full_width_hr(doc)
         if part.add_page_break:
             add_page_break(doc)
-    style_superscripts(doc, lift_half_points=6, color=RGBColor(0x99, 0x99, 0x99))
+    style_superscripts(doc, lift_half_points=2, color=RGBColor(0x99, 0x99, 0x99))
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %.2f seconds", t1 - t0)
     return doc

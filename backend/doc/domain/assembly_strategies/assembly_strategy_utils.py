@@ -516,7 +516,6 @@ def get_chapter_intros(
     is_rtl: bool,
     show_tn_chapter_intro: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     if show_tn_chapter_intro:

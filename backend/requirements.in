@@ -1,9 +1,3 @@
-# TODO do we still need cython here? I think pyproject.toml build
-# dependencies brings it in for pydantic so it probably isn't needed
-# here. You have to test pydantic install to see though as it will
-# only use Rust backend if cython is detected
-# cython # For pydantic: https://pydantic-docs.helpmanual.io/install/
-# TODO do we still need aiofiles?
 aiofiles
 beautifulsoup4
 cachetools

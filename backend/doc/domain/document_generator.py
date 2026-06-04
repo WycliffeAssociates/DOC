@@ -758,7 +758,11 @@ def compose_docx_document(
     performing preprocessing and optional separators.
     """
     doc = Document()
-    html_to_docx = HtmlToDocx()
+    parser = HtmlToDocx(
+        tag_style_overrides={
+            "h1": "Title",
+        }
+    )
     t0 = time.time()
     for part in document_parts:
         if part.contained_in_two_column_section:
@@ -766,7 +770,7 @@ def compose_docx_document(
         else:
             add_one_column_section(doc)
         try:
-            html_to_docx.add_html_to_document(part.content, doc)
+            parser.add_html_to_document(part.content, doc)
         except ValueError as e:
             logger.exception("Error converting HTML to docx: %s", e)
         if part.use_section_visual_separator:

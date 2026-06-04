@@ -26,7 +26,6 @@ from docx.enum.text import WD_BREAK
 from docx.oxml import parse_xml, OxmlElement
 from docx.oxml.ns import qn
 
-
 logger = settings.logger(__name__)
 
 
@@ -125,7 +124,7 @@ def tn_chapter_intro(
         and chapter_num in tn_book.chapters
         and tn_book.chapters[chapter_num].intro_html
     ):
-        content.append(tn_book.chapters[chapter_num].intro_html)
+        content.append(demote_headings_by_one(tn_book.chapters[chapter_num].intro_html))
     return "".join(content)
 
 
@@ -977,7 +976,9 @@ def tnc_chapter_intro(
         and chapter_num in tnc_book.chapters
         and tnc_book.chapters[chapter_num].intro_html
     ):
-        content.append(tnc_book.chapters[chapter_num].intro_html)
+        content.append(
+            demote_headings_by_one(tnc_book.chapters[chapter_num].intro_html)
+        )
         if use_section_visual_separator:
             content.append(hr)
     return "".join(content)

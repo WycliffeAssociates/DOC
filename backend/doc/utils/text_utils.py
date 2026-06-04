@@ -2,7 +2,6 @@ from re import compile, match, sub, IGNORECASE, Match
 
 from doc.config import settings
 
-
 logger = settings.logger(__name__)
 
 HEADING_RE = compile(r"</?h([1-6])\b", IGNORECASE)
@@ -126,13 +125,6 @@ def _demote_heading(match: Match[str], levels: int) -> str:
 def demote_headings_by_one(content: str) -> str:
     return HEADING_RE.sub(
         lambda m: _demote_heading(m, levels=1),
-        content,
-    )
-
-
-def demote_headings_by_two(content: str) -> str:
-    return HEADING_RE.sub(
-        lambda m: _demote_heading(m, levels=2),
         content,
     )
 

@@ -167,7 +167,7 @@ def style_superscripts(
     doc: DocxDocument,
     *,
     lift_half_points: int = 2,
-    color: RGBColor = RGBColor(0x66, 0x66, 0x66),
+    color: RGBColor | None = None,
 ) -> None:
     """
     lift_half_points:
@@ -175,7 +175,7 @@ def style_superscripts(
         4 = +2pt
         6 = +3pt
     color:
-        RGBColor for superscripts (e.g. light gray)
+        RGBColor for superscripts (e.g. light gray) or None
     """
     for para in doc.paragraphs:
         runs = para.runs

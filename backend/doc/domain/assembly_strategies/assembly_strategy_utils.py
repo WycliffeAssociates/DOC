@@ -889,9 +889,9 @@ def get_non_usfm_resources_chapter(
             use_section_visual_separator,
         )
     )
-    document_parts.extend(
-        rg_verses_parts(rg_book, chapter_num, is_rtl, use_section_visual_separator)
-    )
+    # document_parts.extend(
+    #     rg_verses_parts(rg_book, chapter_num, is_rtl, use_section_visual_separator)
+    # )
     return document_parts
 
 

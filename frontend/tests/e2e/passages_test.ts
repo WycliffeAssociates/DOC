@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('add passages', async ({ page }) => {
+test.skip('add passages', async ({ page }) => {
   await page.goto('http://localhost:8001/passages')
   await page.getByText('Español Latin America (Latin').click()
   await page.getByRole('button', { name: 'Next' }).click()

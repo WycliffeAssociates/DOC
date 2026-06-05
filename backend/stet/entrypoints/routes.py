@@ -10,7 +10,6 @@ from fastapi import APIRouter, Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from stet.domain import document_generator, model
 
-
 router = APIRouter()
 
 logger = settings.logger(__name__)
@@ -20,10 +19,15 @@ logger = settings.logger(__name__)
 async def source_lang_codes_and_names(
     request: Request,
     stet_dir: str = settings.STET_DIR,
+    production_lang_codes: Sequence[str] = ["en", "es-419", "pt-br"],
 ) -> Sequence[tuple[str, str, bool]]:
     """
-    Return list of all available language code, name tuples for which Translation Services has provided a source document.
+    Return list of all available language code, name tuples for which
+    Translation Services has provided a source document unless the
+    request comes from production server in which case limit the
+    languages according to special rules.
     """
+    logger.debug("headers: %s", dict(request.headers))
     is_production = request.headers.get("x-is-production") == "true"
     logger.debug("is_production: %s", is_production)
     # Scan what source docs are available and make sure to filter
@@ -48,7 +52,10 @@ async def source_lang_codes_and_names(
     languages = []
     for lang_code_and_name in resource_lookup.lang_codes_and_names_having_usfm():
         if is_production:
-            if lang_code_and_name[0] in ietf_codes_for_docs_with_fourth_column:
+            if (
+                lang_code_and_name[0] in production_lang_codes
+                and lang_code_and_name[0] in ietf_codes_for_docs_with_fourth_column
+            ):
                 languages.append(lang_code_and_name)
         else:
             if lang_code_and_name[0] in ietf_codes:

@@ -26,7 +26,6 @@ from docx.enum.text import WD_BREAK
 from docx.oxml import parse_xml, OxmlElement
 from docx.oxml.ns import qn
 
-
 logger = settings.logger(__name__)
 
 
@@ -125,7 +124,7 @@ def tn_chapter_intro(
         and chapter_num in tn_book.chapters
         and tn_book.chapters[chapter_num].intro_html
     ):
-        content.append(tn_book.chapters[chapter_num].intro_html)
+        content.append(demote_headings_by_one(tn_book.chapters[chapter_num].intro_html))
     return "".join(content)
 
 
@@ -516,7 +515,6 @@ def get_chapter_intros(
     is_rtl: bool,
     show_tn_chapter_intro: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     if show_tn_chapter_intro:
@@ -891,9 +889,9 @@ def get_non_usfm_resources_chapter(
             use_section_visual_separator,
         )
     )
-    document_parts.extend(
-        rg_verses_parts(rg_book, chapter_num, is_rtl, use_section_visual_separator)
-    )
+    # document_parts.extend(
+    #     rg_verses_parts(rg_book, chapter_num, is_rtl, use_section_visual_separator)
+    # )
     return document_parts
 
 
@@ -978,7 +976,9 @@ def tnc_chapter_intro(
         and chapter_num in tnc_book.chapters
         and tnc_book.chapters[chapter_num].intro_html
     ):
-        content.append(tnc_book.chapters[chapter_num].intro_html)
+        content.append(
+            demote_headings_by_one(tnc_book.chapters[chapter_num].intro_html)
+        )
         if use_section_visual_separator:
             content.append(hr)
     return "".join(content)

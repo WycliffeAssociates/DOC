@@ -27,7 +27,6 @@ from doc.domain.model import (
 from doc.domain.parsing import handle_split_chapter_into_verses
 from doc.reviewers_guide.model import RGBook
 
-
 logger = settings.logger(__name__)
 
 

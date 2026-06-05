@@ -175,7 +175,7 @@ class Settings(BaseSettings):
     UNORDERED_LIST_END_STR: str = "</ul>"
     VERSE_SPAN_FMT_STR: str = '<span class="verse">{}</span>'
     BOOK_NAME_FMT_STR: str = "<h2 class='book-name'>{}</h2>"
-    RESOURCE_TYPE_NAME_FMT_STR: str = "<h2 class='book-name'>{}</h2>"
+    RESOURCE_TYPE_NAME_FMT_STR: str = "<h1 class='book-name'>{}</h1>"
     HR: str = "<hr/>"
     TW_WORD_LIST_VERTICAL: bool = False
 

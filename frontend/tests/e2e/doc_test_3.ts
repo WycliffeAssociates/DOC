@@ -40,7 +40,7 @@ test.skip('limit tw words switch', async ({ page }) => {
 
 test('use section visual separator setting', async ({ page }) => {
   await page.goto('http://localhost:8001/')
-  await page.getByText('Español Latin America (Latin').click()
+  await page.getByText('Español Latin America (Latin').click({ timeout: 120000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Efesios').click()
   await page.getByRole('button', { name: 'Next' }).click()

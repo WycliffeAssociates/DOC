@@ -97,7 +97,7 @@ test.describe('Desktop Tests', () => {
     await expect(page.getByText('Tok Pisin')).toBeVisible({ timeout: 64_000 })
   })
 
-  test('stet input docs available in production should be limited to those with 4th column', async ({
+  test('stet input docs available in production should be limited to those with 4th column and in [en, es-419, pt-br]', async ({
     page
   }) => {
     // log every request to the backend endpoint

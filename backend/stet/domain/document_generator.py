@@ -61,6 +61,9 @@ def generate_docx_document(
     resource_type_codes_and_names: Mapping[
         str, str
     ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    languages_where_non_ulb_preferred: Sequence[
+        str
+    ] = settings.LANGUAGES_WHERE_NON_ULB_PREFERRED,
 ) -> str:
     """
     Generate the scriptural terms evaluation document.
@@ -116,14 +119,26 @@ def generate_docx_document(
     target_usfm_books = []
     lang0_usfm_resource_type = ""
     lang1_usfm_resource_type = ""
-    if lang0_ulb_usfm_resource_types:  # Prefer ulb if available
-        lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
-    elif lang0_usfm_resource_types:
-        lang0_usfm_resource_type = lang0_usfm_resource_types[0]
-    if lang1_ulb_usfm_resource_types:  # Prefer ulb if available
-        lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
-    elif lang1_usfm_resource_types:
-        lang1_usfm_resource_type = lang1_usfm_resource_types[0]
+    if lang0_code not in languages_where_non_ulb_preferred:
+        if lang0_ulb_usfm_resource_types:  # Prefer ulb if available
+            lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
+        elif lang0_usfm_resource_types:
+            lang0_usfm_resource_type = lang0_usfm_resource_types[0]
+    else:
+        if lang0_usfm_resource_types:  # Prefer non-ulb if available
+            lang0_usfm_resource_type = lang0_usfm_resource_types[0]
+        elif lang0_ulb_usfm_resource_types:
+            lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
+    if lang1_code not in languages_where_non_ulb_preferred:
+        if lang1_ulb_usfm_resource_types:  # Prefer ulb if available
+            lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
+        elif lang1_usfm_resource_types:
+            lang1_usfm_resource_type = lang1_usfm_resource_types[0]
+    else:
+        if lang1_usfm_resource_types:  # Prefer non-ulb if available
+            lang1_usfm_resource_type = lang1_usfm_resource_types[0]
+        elif lang1_ulb_usfm_resource_types:
+            lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
     if lang0_usfm_resource_type and lang1_usfm_resource_type:
         source_usfm_book = None
         target_usfm_book = None

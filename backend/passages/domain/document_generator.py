@@ -101,6 +101,9 @@ def get_usfm_books_and_usfm_resource_type(
     bible_references_with_availability: list[BibleReferenceWithAvailability],
     lang_code: str,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    languages_where_non_ulb_preferred: Sequence[
+        str
+    ] = settings.LANGUAGES_WHERE_NON_ULB_PREFERRED,
 ) -> tuple[list[USFMBook], str]:
     # Invariant: book codes are only those that were available from USFM resources
     book_codes = list(
@@ -128,10 +131,16 @@ def get_usfm_books_and_usfm_resource_type(
     )
     usfm_books = []
     usfm_resource_type = ""
-    if ulb_usfm_resource_types:  # Prefer ulb if available
-        usfm_resource_type = ulb_usfm_resource_types[0]
-    elif usfm_resource_types:
-        usfm_resource_type = usfm_resource_types[0]
+    if lang_code not in languages_where_non_ulb_preferred:
+        if ulb_usfm_resource_types:  # Prefer ulb if available
+            usfm_resource_type = ulb_usfm_resource_types[0]
+        elif usfm_resource_types:
+            usfm_resource_type = usfm_resource_types[0]
+    else:
+        if usfm_resource_types:  # Prefer non-ulb if available
+            usfm_resource_type = usfm_resource_types[0]
+        elif ulb_usfm_resource_types:
+            usfm_resource_type = ulb_usfm_resource_types[0]
     if usfm_resource_type:
         usfm_book = None
         for book_code in book_codes:

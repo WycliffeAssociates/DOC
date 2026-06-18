@@ -20,6 +20,8 @@ class Settings(BaseSettings):
 
     DATA_API_URL: HttpUrl
 
+    LANGUAGES_WHERE_NON_ULB_PREFERRED: Sequence[str] = ["fr"]
+
     # This is only used to see if a lang_code is in the collection
     # otherwise it is a heart language. Eventually the graphql data api may
     # provide gateway/heart boolean value.

@@ -206,22 +206,22 @@ def generate_docx_document(
             )
         )
     current_task.update_state(state="Assembling content")
-    passages_lang0 = get_passages(
+    lang0_passages = get_passages(
         bible_references_with_availability_lang0,
         usfm_resource_type_lang0,
         usfm_books_lang0,
     )
-    passages_lang1 = []
+    lang1_passages = []
     if lang1_code:
-        passages_lang1 = get_passages(
+        lang1_passages = get_passages(
             bible_references_with_availability_lang1,
             usfm_resource_type_lang1,
             usfm_books_lang1,
         )
     current_task.update_state(state="Converting to Docx")
     generate_docx(
-        passages_lang0,
-        passages_lang1,
+        lang0_passages,
+        lang1_passages,
         docx_filepath_,
         lang0_code,
         lang0_name,
@@ -232,8 +232,8 @@ def generate_docx_document(
 
 
 def generate_docx(
-    passages_lang0: list[Passage],
-    passages_lang1: list[Passage],
+    lang0_passages: list[Passage],
+    lang1_passages: list[Passage],
     docx_filepath: str,
     lang0_code: str,
     lang0_name: str,
@@ -254,9 +254,9 @@ def generate_docx(
     html_to_docx = HtmlToDocx()
     has_lang1 = lang1_code is not None and lang1_name is not None
     if has_lang1:
-        assert len(passages_lang0) == len(passages_lang1), (
+        assert len(lang0_passages) == len(lang1_passages), (
             f"Passage count mismatch: "
-            f"{len(passages_lang0)} vs {len(passages_lang1)}"
+            f"{len(lang0_passages)} vs {len(lang1_passages)}"
         )
     columns: list[str] = ["lang0"]
     if has_lang1:
@@ -280,9 +280,9 @@ def generate_docx(
         table.columns[i].width = w
     col_index = {name: i for i, name in enumerate(columns)}
     pairs = (
-        zip(passages_lang0, passages_lang1)
+        zip(lang0_passages, lang1_passages)
         if has_lang1
-        else ((p, None) for p in passages_lang0)
+        else ((p, None) for p in lang0_passages)
     )
     for p0, p1 in pairs:
         row = table.add_row()

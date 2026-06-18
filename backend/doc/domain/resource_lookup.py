@@ -289,22 +289,6 @@ def get_resource_types(
                 ]
             elif resource_type in usfm_resource_types:
                 book_assets = find_usfm_files(resource_filepath)
-            elif resource_type == "rg":
-                between_texts, bible_reference_strs = find_bible_references(
-                    join(en_rg, docx_file_path)
-                )
-                bible_references = [
-                    parse_bible_reference(bible_reference)
-                    for bible_reference in bible_reference_strs
-                ]
-                book_codes_ = {
-                    bible_reference.book_code
-                    for bible_reference in bible_references
-                    if bible_reference
-                }
-                book_assets = [
-                    book_code for book_code in book_codes if book_code in book_codes_
-                ]
             if book_assets or resource_type == "tw":
                 resource_types.append(
                     (

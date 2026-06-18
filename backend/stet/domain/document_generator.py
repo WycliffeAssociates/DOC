@@ -10,7 +10,7 @@ from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment
 from doc.domain.parsing import (
     lookup_verse_text,
-    split_chapter_into_verses,
+    handle_split_chapter_into_verses,
     usfm_book_content,
 )
 from doc.domain.resource_lookup import (
@@ -161,9 +161,12 @@ def generate_docx_document(
                     lang0_resource_dir,
                     False,
                 )
-                for chapter_num_, chapter_ in source_usfm_book.chapters.items():
-                    source_usfm_book.chapters[chapter_num_].verses = (
-                        split_chapter_into_verses(chapter_)
+                for (
+                    chapter_num_,
+                    chapter_,
+                ) in source_usfm_book.chapters.items():
+                    chapter_.verses = handle_split_chapter_into_verses(
+                        source_usfm_book, chapter_, True
                     )
                 source_usfm_books.append(source_usfm_book)
             lang1_resource_lookup_dto_ = resource_lookup_dto(
@@ -181,9 +184,12 @@ def generate_docx_document(
                     lang1_resource_dir,
                     False,
                 )
-                for chapter_num_, chapter_ in target_usfm_book.chapters.items():
-                    target_usfm_book.chapters[chapter_num_].verses = (
-                        split_chapter_into_verses(chapter_)
+                for (
+                    chapter_num_,
+                    chapter_,
+                ) in target_usfm_book.chapters.items():
+                    chapter_.verses = handle_split_chapter_into_verses(
+                        target_usfm_book, chapter_, True
                     )
                 target_usfm_books.append(target_usfm_book)
     # Count total occurrences per reference (using source_reference as key)

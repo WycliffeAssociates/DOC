@@ -2,6 +2,7 @@
 This module provides an API for parsing content.
 """
 
+from bs4 import BeautifulSoup
 from re import (
     compile,
     escape,
@@ -1408,50 +1409,10 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
     return verse
 
 
-# Used by STET and PASSAGES apps
-def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
-    # Sample HTML content with multiple verse elements
-    # html_content = '''
-    # <span class="verse">
-    # <sup class="versemarker">19</sup>
-    # For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
-    # <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
-    # <div class="sectionhead-5"></div>
-    # </span>
-    # <span class="verse">
-    # <sup class="versemarker">20</sup>
-    # I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
-    # <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
-    # <div class="sectionhead-5"></div>
-    # </span>
-    # '''
-    verse_dict = {}
-    # Find all verse spans
-    verse_spans = findall(r'<span class="verse">(.*?)</span>', chapter.content, DOTALL)
-    for verse_span in verse_spans:
-        # Extract the verse number from the versemarker
-        verse_number = search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
-        if verse_number:
-            verse_number_ = verse_number.group(1)
-            # Remove versemarker
-            verse_text = sub(r'<sup class="versemarker">.*?</sup>', "", verse_span)
-            # Remove footnotes numbers
-            verse_text = sub(r'<sup id=".*?" class="caller">.*?</sup>', "", verse_text)
-            # Fix spacing issue when div class="poetry-*" type divs
-            # are used, e.g., yielding 'heartsas' for Hebrews 3:8
-            verse_text = sub(
-                r'<div class="poetry-\d">(.*?)</div>',
-                r" \1",
-                verse_text,
-            )
-            # Add to the dictionary with verse number as the key and verse text as the value
-            verse_dict[verse_number_] = verse_text
-    return verse_dict
-
-
 def handle_split_chapter_into_verses(
     usfm_book: USFMBook,
     usfm_chapter: USFMChapter,
+    remove_versemarker: bool = False,
     resource_type_codes_and_names: Mapping[
         str, str
     ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
@@ -1460,13 +1421,18 @@ def handle_split_chapter_into_verses(
         usfm_book.lang_code == "fr"
         and usfm_book.resource_type_name == resource_type_codes_and_names["f10"]
     ):
-        return split_chapter_into_verses_with_formatting_for_f10(usfm_chapter)
+        return split_chapter_into_verses_with_formatting_for_f10(
+            usfm_chapter, remove_versemarker
+        )
     else:
-        return split_chapter_into_verses_with_formatting(usfm_chapter)
+        return split_chapter_into_verses_with_formatting(
+            usfm_chapter, remove_versemarker
+        )
 
 
 def split_chapter_into_verses_with_formatting(
     chapter: USFMChapter,
+    remove_versemarker: bool = False,
     empty_paragraph: str = "<p></p>",
     sectionhead5_element: str = '<div class="sectionhead-5"></div>',
 ) -> dict[VerseRef, str]:
@@ -1500,20 +1466,24 @@ def split_chapter_into_verses_with_formatting(
     <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
     <BLANKLINE>
     """
+    soup = BeautifulSoup(chapter.content, "html.parser")
     # TODO What to do about footnote targets? Perhaps have the value be a
     # tuple with first element of the verse HTML (which includes the
     # footnote callers) and the second element the target footnotes HTML?
     verse_dict = {}
     # Find all verse spans
-    verse_spans = findall(r'<span class="verse">(.*?)</span>', chapter.content, DOTALL)
-    for verse_span in verse_spans:
+    for verse_span in soup.find_all("span", class_="verse"):
         # Extract the verse number from the versemarker
-        verse_number = search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
+        sup = verse_span.find("sup", class_="versemarker")
+        if not sup or not sup.string:
+            continue
+        verse_number = sup.string.strip()
+        if remove_versemarker:
+            sup.decompose()
         if verse_number:
-            verse_number_ = verse_number.group(1)
             # Add to the dictionary with verse number as the key and verse text as the value
-            verse_dict[verse_number_] = (
-                verse_span.strip()
+            verse_dict[verse_number] = (
+                str(verse_span)
                 .replace(empty_paragraph, "")
                 .replace(sectionhead5_element, "")
             )
@@ -1522,6 +1492,7 @@ def split_chapter_into_verses_with_formatting(
 
 def split_chapter_into_verses_with_formatting_for_f10(
     chapter: USFMChapter,
+    remove_versemarker: bool = False,
     empty_paragraph: str = "<p></p>",
     sectionhead5_element: str = '<div class="sectionhead-5"></div>',
 ) -> dict[str, str]:
@@ -1539,6 +1510,8 @@ def split_chapter_into_verses_with_formatting_for_f10(
         if not sup or not sup.string:
             continue
         verse_number = sup.string.strip()
+        if remove_versemarker:
+            sup.decompose()
         # unwrap all word-entry spans: replace <span class="word-entry">X</span>
         # with X (preserving whitespace/punctuation)
         for we in verse_span.find_all("span", class_="word-entry"):

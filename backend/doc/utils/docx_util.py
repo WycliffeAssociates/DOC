@@ -56,6 +56,33 @@ def _make_text_run(text: str) -> Element:
     return r
 
 
+def override_and_clean_hyperlinks(doc: DocxDocument, style_id: str) -> None:
+    """
+    Finds all hyperlinks, strips any forced inline formatting (like blue color),
+    and applies the correct template character style ID using raw XML manipulation.
+    """
+    for paragraph in doc.paragraphs:
+        hyperlinks = paragraph._p.findall(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}hyperlink"
+        )
+        for hyperlink in hyperlinks:
+            runs = hyperlink.findall(qn("w:r"))
+            for r in runs:
+                rPr = r.find(qn("w:rPr"))
+                if rPr is None:
+                    rPr = OxmlElement("w:rPr")
+                    r.insert(0, rPr)
+                existing_style = rPr.find(qn("w:rStyle"))
+                if existing_style is not None:
+                    rPr.remove(existing_style)
+                for child in list(rPr):
+                    if child.tag in (qn("w:color"), qn("w:u"), qn("w:shd")):
+                        rPr.remove(child)
+                rStyle = OxmlElement("w:rStyle")
+                rStyle.set(qn("w:val"), style_id)
+                rPr.insert(0, rStyle)
+
+
 def _make_internal_hyperlink_element(text: str, bookmark_name: str) -> Element:
     hyperlink = OxmlElement("w:hyperlink")
     hyperlink.set(qn("w:anchor"), bookmark_name)

@@ -51,6 +51,7 @@ from doc.reviewers_guide.model import RGBook
 from doc.utils.docx_util import (
     add_internal_docx_links,
     generate_docx_toc,
+    override_and_clean_hyperlinks,
     style_superscripts,
 )
 from doc.utils.file_utils import (
@@ -778,6 +779,15 @@ def compose_docx_document(
         if part.add_page_break:
             add_page_break(doc)
     style_superscripts(doc, lift_half_points=2, color=None)
+    # html4doc defeats normal use of hyperlink inline styling in Word
+    # via a customized (otherwise standard) Hyperlink style, but
+    # this handles it by doing a pass over the document after the fact
+    # and forcing hyperlinks to render using a specific style we
+    # created to match the PO's desired look.
+    # PlainHyperlinkChar is a character style we created in
+    # template.docx, but its actual style ID is PlainHyperlinkChar0
+    # under the hood.
+    override_and_clean_hyperlinks(doc, "PlainHyperlinkChar0")
     t1 = time.time()
     logger.info("Time for converting HTML to Docx: %.2f seconds", t1 - t0)
     return doc

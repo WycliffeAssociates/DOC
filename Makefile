@@ -1,5 +1,17 @@
+.PHONY: startdocker
+startdocker:
+	@if pgrep -xq "Docker"; then \
+		echo "Docker is already running."; \
+	else \
+		echo "Starting Docker..."; \
+		open -a Docker; \
+		echo "Waiting for Docker to fully initialize..."; \
+		until docker info >/dev/null 2>&1; do sleep 1; done; \
+		echo "Docker is ready!"; \
+	fi
+
 .PHONY: checkvenv
-checkvenv:
+checkvenv: startdocker
 # raises error if environment is not active
 ifeq ("$(VIRTUAL_ENV)","")
 	@echo "Venv is not activated!"
@@ -184,7 +196,7 @@ clean-mypyc-artifacts:
 	find . ! -path .venv -type f -name "*.c" -exec rm -- {} +
 
 .PHONY: prune-docker-images-volumes
-prune-docker-images-volumes:
+prune-docker-images-volumes: checkvenv
 	docker system prune --volumes
 
 # https://radon.readthedocs.io/en/latest/commandline.html

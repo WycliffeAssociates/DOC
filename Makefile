@@ -145,7 +145,7 @@ e2e-docx-tests: clean-local-docker-output-dir
 
 
 .PHONY: frontend-tests
-frontend-tests:
+frontend-tests: startdocker
 	# NOTE If we are experiencing some issues with the docker
 	# compose running of frontend tests, we can still use the
 	# non-Dockerized approach successfully. Doing so requires that

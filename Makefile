@@ -1,10 +1,14 @@
 .PHONY: startdocker
 startdocker:
-	@if pgrep -xq "Docker"; then \
+	@if docker info >/dev/null 2>&1; then \
 		echo "Docker is already running."; \
 	else \
 		echo "Starting Docker..."; \
-		open -a Docker; \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			open -a Docker; \
+		else \
+			sudo systemctl start docker; \
+		fi; \
 		echo "Waiting for Docker to fully initialize..."; \
 		until docker info >/dev/null 2>&1; do sleep 1; done; \
 		echo "Docker is ready!"; \

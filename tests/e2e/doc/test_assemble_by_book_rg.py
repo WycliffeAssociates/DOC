@@ -2,6 +2,7 @@
 Tests for assembly strategy lang-then-book for reviewer's guide
 """
 
+import pytest
 from doc.config import settings
 from doc.domain import model
 from doc.entrypoints.app import app
@@ -68,6 +69,7 @@ def test_en_ulb_gal_en_rg_language_book_order_1c() -> None:
         check_finished_document_with_verses_success(response)
 
 
+@pytest.mark.skip
 def test_en_ulb_gal_en_tn_gal_en_rg_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

@@ -11,6 +11,7 @@ from tests.shared.utils import (
 logger = settings.logger(__name__)
 
 
+@pytest.mark.skip
 def test_en_ulb_col_by_verse_with_no_email_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

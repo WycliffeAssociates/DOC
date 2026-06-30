@@ -545,7 +545,7 @@ def usfm_book_content(
         national_book_name=(
             localized_book_name
             if localized_book_name
-            else BOOK_NAMES[resource_lookup_dto.book_code]
+            else book_names[resource_lookup_dto.book_code]
         ),
         resource_type_name=resource_lookup_dto.resource_type_name,
         chapters=usfm_chapters if usfm_chapters else {},

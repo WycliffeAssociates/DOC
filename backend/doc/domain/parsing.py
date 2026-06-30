@@ -2,7 +2,7 @@
 This module provides an API for parsing content.
 """
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from re import (
     compile,
     escape,
@@ -277,14 +277,19 @@ def split_usfm_by_chapters(
     chapters = re_split(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
 
+    defective_lang_codes = {resource[0] for resource in resources_with_usfm_defects}
+
     def needs_fixing() -> bool:
         """
-        Determine if a chapter needs fixing based on configuration.
+        Determine whether this resource should be checked for known USFM defects.
+
+        If CHECK_ALL_BOOKS_FOR_LANGUAGE is enabled, then the presence of any
+        known defective resource for a language causes all books for that
+        language to be checked for similar defects. Otherwise, only explicitly
+        listed resource tuples are checked.
         """
         if check_all_books_for_language:
-            return lang_code in [
-                resource[0] for resource in resources_with_usfm_defects
-            ]
+            return lang_code in defective_lang_codes
         return (
             lang_code,
             resource_type,
@@ -528,9 +533,7 @@ def usfm_book_content(
         cleaned_chapter_html_content_ = remove_null_bytes_and_control_characters(
             chapter_html_content
         )
-        cleaned_chapter_html_content = remove_unwanted_elements(
-            cleaned_chapter_html_content_
-        )
+        cleaned_chapter_html_content = clean_content_html(cleaned_chapter_html_content_)
         usfm_chapters[chapter_num] = USFMChapter(
             content=(
                 cleaned_chapter_html_content if cleaned_chapter_html_content else ""
@@ -1409,37 +1412,13 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
     return verse
 
 
-def handle_split_chapter_into_verses(
-    usfm_book: USFMBook,
-    usfm_chapter: USFMChapter,
-    remove_versemarker: bool = False,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
-) -> dict[VerseRef, str]:
-    if (
-        usfm_book.lang_code == "fr"
-        and usfm_book.resource_type_name == resource_type_codes_and_names["f10"]
-    ):
-        return split_chapter_into_verses_with_formatting_for_f10(
-            usfm_chapter, remove_versemarker
-        )
-    else:
-        return split_chapter_into_verses_with_formatting(
-            usfm_chapter, remove_versemarker
-        )
-
-
 def split_chapter_into_verses_with_formatting(
     chapter: USFMChapter,
-    remove_versemarker: bool = False,
-    empty_paragraph: str = "<p></p>",
-    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
 ) -> dict[VerseRef, str]:
     """
-    Given a USFMChapter instance, return the same instance with its
-    verses attribute set to a dictionary where the key is the verse
-    number and the value is the verse HTML.
+    Parse chapter.content as HTML, extract each <span class="verse">,
+    unwrap <span class="word-entry"> elements (preserving their text),
+    and return a dict mapping verse number -> cleaned HTML fragment for that verse.
 
     Sample HTML content with multiple verse elements:
 
@@ -1467,78 +1446,31 @@ def split_chapter_into_verses_with_formatting(
     <BLANKLINE>
     """
     soup = BeautifulSoup(chapter.content, "html.parser")
-    # TODO What to do about footnote targets? Perhaps have the value be a
-    # tuple with first element of the verse HTML (which includes the
-    # footnote callers) and the second element the target footnotes HTML?
-    verse_dict = {}
-    # Find all verse spans
+    verse_dict: dict[VerseRef, str] = {}
     for verse_span in soup.find_all("span", class_="verse"):
-        # Extract the verse number from the versemarker
         sup = verse_span.find("sup", class_="versemarker")
         if not sup or not sup.string:
             continue
         verse_number = sup.string.strip()
-        if remove_versemarker:
-            sup.decompose()
-        if verse_number:
-            # Add to the dictionary with verse number as the key and verse text as the value
-            verse_dict[verse_number] = (
-                str(verse_span)
-                .replace(empty_paragraph, "")
-                .replace(sectionhead5_element, "")
-            )
-    return verse_dict
-
-
-def split_chapter_into_verses_with_formatting_for_f10(
-    chapter: USFMChapter,
-    remove_versemarker: bool = False,
-    empty_paragraph: str = "<p></p>",
-    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
-) -> dict[str, str]:
-    """
-    Parse chapter.content as HTML, extract each <span class="verse">,
-    unwrap <span class="word-entry"> elements (preserving their text),
-    and return a dict mapping verse number -> cleaned HTML fragment for that verse.
-    """
-    soup = BeautifulSoup(chapter.content, "html.parser")
-    verse_dict: dict[str, str] = {}
-    # find all verse spans (parser handles nesting correctly)
-    for verse_span in soup.find_all("span", class_="verse"):
-        # find the verse number from <sup class="versemarker">NN</sup>
-        sup = verse_span.find("sup", class_="versemarker")
-        if not sup or not sup.string:
-            continue
-        verse_number = sup.string.strip()
-        if remove_versemarker:
-            sup.decompose()
-        # unwrap all word-entry spans: replace <span class="word-entry">X</span>
-        # with X (preserving whitespace/punctuation)
+        # Remove the versemarker number sup
+        sup.decompose()
+        # fr f10 uses word-entry tags
         for we in verse_span.find_all("span", class_="word-entry"):
             we.unwrap()
-        # Option: normalize whitespace (optional)
-        # If you want to preserve original spacing/punctuation exactly, skip this.
-        # cleaned_html = "".join(str(c) for c in verse_span.contents)
-        cleaned_html = str(verse_span)
-        # Fix spacing issues introduced by inner spans
-        cleaned_html = sub(
-            r"\s+([,;:.!?])", r"\1", cleaned_html
-        )  # remove space before punctuation
-        cleaned_html = sub(r"\s+'", "'", cleaned_html)  # remove space before apostrophe
-        cleaned_html = sub(r"'\s+", "'", cleaned_html)  # remove space after apostrophe
-        cleaned_html = sub(
-            r"\s*-\s*", "-", cleaned_html
-        )  # normalize spaces around hyphens
-        cleaned_html = sub(r"\s{2,}", " ", cleaned_html)  # collapse double spaces
-        cleaned_html = cleaned_html.strip()
-        # if you want plain text instead, use: cleaned_text = verse_span.get_text(" ", strip=True)
-        # store cleaned HTML fragment (still contains <sup> etc.)
-        verse_dict[verse_number] = (
-            cleaned_html.strip()
-            .replace(empty_paragraph, "")
-            .replace(sectionhead5_element, "")
-        )
+        cleaned_html = clean_content_html(str(verse_span))
+        verse_dict[verse_number] = cleaned_html
     return verse_dict
+
+
+def clean_content_html(raw_content: str) -> str:
+    soup = BeautifulSoup(raw_content, "html.parser")
+    cleaned_html = str(soup)
+    cleaned_html = sub(r"\s+([,;:.!?])", r"\1", cleaned_html)
+    cleaned_html = sub(r"\s+'", "'", cleaned_html)
+    cleaned_html = sub(r"'\s+", "'", cleaned_html)
+    cleaned_html = sub(r"\s*-\s*", "-", cleaned_html)
+    cleaned_html = sub(r"\s{2,}", " ", cleaned_html).strip()
+    return cleaned_html
 
 
 if __name__ == "__main__":

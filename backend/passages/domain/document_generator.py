@@ -8,7 +8,9 @@ from doc.domain import worker
 from doc.domain.bible_books import BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment, USFMBook
-from doc.domain.parsing import handle_split_chapter_into_verses, usfm_book_content
+from doc.domain.parsing import (
+    usfm_book_content,
+)
 from doc.domain.resource_lookup import (
     book_codes_for_lang_from_usfm_only,
     prepare_resource_filepath,
@@ -29,7 +31,7 @@ from passages.domain.model import (
     Passage,
     BibleReferenceWithAvailability,
 )
-from passages.domain.parser import verse_text_html
+from passages.domain.parser import split_chapter_into_verses, verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
 from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
@@ -159,8 +161,8 @@ def get_usfm_books_and_usfm_resource_type(
                     False,
                 )
                 for chapter_num_, chapter_ in usfm_book.chapters.items():
-                    usfm_book.chapters[chapter_num_].verses = (
-                        handle_split_chapter_into_verses(usfm_book, chapter_, True)
+                    usfm_book.chapters[chapter_num_].verses = split_chapter_into_verses(
+                        chapter_
                     )
                 usfm_books.append(usfm_book)
     return usfm_books, usfm_resource_type

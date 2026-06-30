@@ -10,7 +10,6 @@ from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment
 from doc.domain.parsing import (
     lookup_verse_text,
-    handle_split_chapter_into_verses,
     usfm_book_content,
 )
 from doc.domain.resource_lookup import (
@@ -28,7 +27,7 @@ from docx.oxml.ns import qn
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
-from stet.domain.parser import get_word_entry_dtos
+from stet.domain.parser import get_word_entry_dtos, split_chapter_into_verses
 from stet.domain.strings import (
     LOCALIZED_DATE_FORMAT_STRINGS,
     TRANSLATED_FOOTER_PHRASES_TABLE,
@@ -165,9 +164,7 @@ def generate_docx_document(
                     chapter_num_,
                     chapter_,
                 ) in source_usfm_book.chapters.items():
-                    chapter_.verses = handle_split_chapter_into_verses(
-                        source_usfm_book, chapter_, True
-                    )
+                    chapter_.verses = split_chapter_into_verses(chapter_)
                 source_usfm_books.append(source_usfm_book)
             lang1_resource_lookup_dto_ = resource_lookup_dto(
                 lang1_code, lang1_usfm_resource_type, book_code
@@ -188,9 +185,7 @@ def generate_docx_document(
                     chapter_num_,
                     chapter_,
                 ) in target_usfm_book.chapters.items():
-                    chapter_.verses = handle_split_chapter_into_verses(
-                        target_usfm_book, chapter_, True
-                    )
+                    chapter_.verses = split_chapter_into_verses(chapter_)
                 target_usfm_books.append(target_usfm_book)
     # Count total occurrences per reference (using source_reference as key)
     reference_counter: Counter[str] = Counter()

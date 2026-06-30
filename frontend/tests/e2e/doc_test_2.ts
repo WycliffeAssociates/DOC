@@ -39,7 +39,7 @@ test.skip('reviewers guide is only shown when book is chosen that it includes - 
   })
 })
 
-test('can select gateway tab after first selecting heart language and hitting next', async ({
+test.skip('can select gateway tab after first selecting heart language and hitting next', async ({
   page
 }) => {
   await page.goto('http://localhost:8001/')

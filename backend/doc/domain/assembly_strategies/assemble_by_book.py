@@ -24,7 +24,7 @@ from doc.domain.model import (
     TWBook,
     USFMBook,
 )
-from doc.domain.parsing import handle_split_chapter_into_verses
+from doc.domain.parsing import split_chapter_into_verses_with_formatting
 from doc.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
@@ -475,7 +475,7 @@ def assemble_usfm_by_verse_book_at_a_time(
             chapter_num,
             chapter,
         ) in usfm_book.chapters.items():
-            chapter.verses = handle_split_chapter_into_verses(usfm_book, chapter)
+            chapter.verses = split_chapter_into_verses_with_formatting(chapter)
             chapter_intros = get_chapter_intros(
                 tn_book,
                 tnc_book,
@@ -531,8 +531,10 @@ def assemble_usfm_by_verse_book_at_a_time(
                     # ulb, f10, show the second USFM content here
                     if usfm_book2:
                         usfm_book2_chapter = usfm_book2.chapters[chapter_num]
-                        usfm_book2_chapter.verses = handle_split_chapter_into_verses(
-                            usfm_book2, usfm_book2_chapter
+                        usfm_book2_chapter.verses = (
+                            split_chapter_into_verses_with_formatting(
+                                usfm_book2_chapter
+                            )
                         )
                         if (
                             usfm_book2_chapter.verses

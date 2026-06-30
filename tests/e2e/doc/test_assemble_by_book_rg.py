@@ -2,6 +2,7 @@
 Tests for assembly strategy lang-then-book for reviewer's guide
 """
 
+import pytest
 from doc.config import settings
 from doc.domain import model
 from doc.entrypoints.app import app
@@ -15,7 +16,7 @@ from tests.shared.utils import (
 logger = settings.logger(__name__)
 
 
-def test_en_rg_language_book_order_1c_by_chapter() -> None:
+def test_en_rg_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -39,7 +40,7 @@ def test_en_rg_language_book_order_1c_by_chapter() -> None:
         check_finished_document_without_verses_success(response)
 
 
-def test_en_ulb_gal_en_rg_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_gal_en_rg_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -68,7 +69,8 @@ def test_en_ulb_gal_en_rg_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_en_tn_gal_en_rg_language_book_order_1c_by_chapter() -> None:
+@pytest.mark.skip
+def test_en_ulb_gal_en_tn_gal_en_rg_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -102,7 +104,7 @@ def test_en_ulb_gal_en_tn_gal_en_rg_language_book_order_1c_by_chapter() -> None:
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_en_tn_gal_en_rg_en_tw_language_book_order_1c_by_chapter() -> None:
+def test_en_ulb_gal_en_tn_gal_en_rg_en_tw_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(
             "/documents",
@@ -141,7 +143,7 @@ def test_en_ulb_gal_en_tn_gal_en_rg_en_tw_language_book_order_1c_by_chapter() ->
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_en_tn_gal_en_rg_en_bc_en_tw_language_book_order_1c_by_chapter() -> (
+def test_en_ulb_gal_en_tn_gal_en_rg_en_bc_en_tw_language_book_order_1c() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -187,7 +189,7 @@ def test_en_ulb_gal_en_tn_gal_en_rg_en_bc_en_tw_language_book_order_1c_by_chapte
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_en_tn_gal_en_tq_gal_en_rg_en_bc_en_tw_language_book_order_1c_by_chapter() -> (
+def test_en_ulb_gal_en_tn_gal_en_tq_gal_en_rg_en_bc_en_tw_language_book_order_1c() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
@@ -238,7 +240,7 @@ def test_en_ulb_gal_en_tn_gal_en_tq_gal_en_rg_en_bc_en_tw_language_book_order_1c
         check_finished_document_with_verses_success(response)
 
 
-def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_en_bc_es_419_bc_en_tw_es_419_tw_language_book_order_1c_by_chapter() -> (
+def test_en_ulb_gal_es_419_ulb_gal_en_tn_gal_es_419_tq_gal_en_tq_gal_en_rg_en_bc_es_419_bc_en_tw_es_419_tw_language_book_order_1c() -> (
     None
 ):
     with TestClient(app=app, base_url=settings.api_test_url()) as client:

@@ -4,7 +4,7 @@ from typing import Sequence
 import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
-from doc.domain import resource_lookup
+from stet.domain import resource_lookup
 from docx import Document
 from fastapi import APIRouter, Request, HTTPException, status
 from fastapi.responses import JSONResponse

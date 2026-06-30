@@ -1,5 +1,21 @@
+.PHONY: startdocker
+startdocker:
+	@if docker info >/dev/null 2>&1; then \
+		echo "Docker is already running."; \
+	else \
+		echo "Starting Docker..."; \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			open -a Docker; \
+		else \
+			sudo systemctl start docker; \
+		fi; \
+		echo "Waiting for Docker to fully initialize..."; \
+		until docker info >/dev/null 2>&1; do sleep 1; done; \
+		echo "Docker is ready!"; \
+	fi
+
 .PHONY: checkvenv
-checkvenv:
+checkvenv: startdocker
 # raises error if environment is not active
 ifeq ("$(VIRTUAL_ENV)","")
 	@echo "Venv is not activated!"
@@ -133,7 +149,7 @@ e2e-docx-tests: clean-local-docker-output-dir
 
 
 .PHONY: frontend-tests
-frontend-tests:
+frontend-tests: startdocker
 	# NOTE If we are experiencing some issues with the docker
 	# compose running of frontend tests, we can still use the
 	# non-Dockerized approach successfully. Doing so requires that
@@ -184,7 +200,7 @@ clean-mypyc-artifacts:
 	find . ! -path .venv -type f -name "*.c" -exec rm -- {} +
 
 .PHONY: prune-docker-images-volumes
-prune-docker-images-volumes:
+prune-docker-images-volumes: checkvenv
 	docker system prune --volumes
 
 # https://radon.readthedocs.io/en/latest/commandline.html
@@ -301,7 +317,8 @@ local-run-celery:
 
 .PHONY: local-run-flower
 local-run-flower:
- 	celery --broker=redis:// --result-backend=redis:// flower
+	celery --broker=redis:// --result-backend=redis:// flower
+
 # This is one to run after running local-e2e-tests or any tests which
 # has yielded HTML and PDFs that need to be checked for linking
 # correctness.

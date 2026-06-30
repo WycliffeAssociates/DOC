@@ -10,7 +10,6 @@ from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment
 from doc.domain.parsing import (
     lookup_verse_text,
-    split_chapter_into_verses,
     usfm_book_content,
 )
 from doc.domain.resource_lookup import (
@@ -28,7 +27,7 @@ from docx.oxml.ns import qn
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
-from stet.domain.parser import get_word_entry_dtos
+from stet.domain.parser import get_word_entry_dtos, split_chapter_into_verses
 from stet.domain.strings import (
     LOCALIZED_DATE_FORMAT_STRINGS,
     TRANSLATED_FOOTER_PHRASES_TABLE,
@@ -61,6 +60,9 @@ def generate_docx_document(
     resource_type_codes_and_names: Mapping[
         str, str
     ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    languages_where_non_ulb_preferred: Sequence[
+        str
+    ] = settings.LANGUAGES_WHERE_NON_ULB_PREFERRED,
 ) -> str:
     """
     Generate the scriptural terms evaluation document.
@@ -116,14 +118,26 @@ def generate_docx_document(
     target_usfm_books = []
     lang0_usfm_resource_type = ""
     lang1_usfm_resource_type = ""
-    if lang0_ulb_usfm_resource_types:  # Prefer ulb if available
-        lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
-    elif lang0_usfm_resource_types:
-        lang0_usfm_resource_type = lang0_usfm_resource_types[0]
-    if lang1_ulb_usfm_resource_types:  # Prefer ulb if available
-        lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
-    elif lang1_usfm_resource_types:
-        lang1_usfm_resource_type = lang1_usfm_resource_types[0]
+    if lang0_code not in languages_where_non_ulb_preferred:
+        if lang0_ulb_usfm_resource_types:  # Prefer ulb if available
+            lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
+        elif lang0_usfm_resource_types:
+            lang0_usfm_resource_type = lang0_usfm_resource_types[0]
+    else:
+        if lang0_usfm_resource_types:  # Prefer non-ulb if available
+            lang0_usfm_resource_type = lang0_usfm_resource_types[0]
+        elif lang0_ulb_usfm_resource_types:
+            lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
+    if lang1_code not in languages_where_non_ulb_preferred:
+        if lang1_ulb_usfm_resource_types:  # Prefer ulb if available
+            lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
+        elif lang1_usfm_resource_types:
+            lang1_usfm_resource_type = lang1_usfm_resource_types[0]
+    else:
+        if lang1_usfm_resource_types:  # Prefer non-ulb if available
+            lang1_usfm_resource_type = lang1_usfm_resource_types[0]
+        elif lang1_ulb_usfm_resource_types:
+            lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
     if lang0_usfm_resource_type and lang1_usfm_resource_type:
         source_usfm_book = None
         target_usfm_book = None
@@ -146,10 +160,11 @@ def generate_docx_document(
                     lang0_resource_dir,
                     False,
                 )
-                for chapter_num_, chapter_ in source_usfm_book.chapters.items():
-                    source_usfm_book.chapters[chapter_num_].verses = (
-                        split_chapter_into_verses(chapter_)
-                    )
+                for (
+                    chapter_num_,
+                    chapter_,
+                ) in source_usfm_book.chapters.items():
+                    chapter_.verses = split_chapter_into_verses(chapter_)
                 source_usfm_books.append(source_usfm_book)
             lang1_resource_lookup_dto_ = resource_lookup_dto(
                 lang1_code, lang1_usfm_resource_type, book_code
@@ -166,10 +181,11 @@ def generate_docx_document(
                     lang1_resource_dir,
                     False,
                 )
-                for chapter_num_, chapter_ in target_usfm_book.chapters.items():
-                    target_usfm_book.chapters[chapter_num_].verses = (
-                        split_chapter_into_verses(chapter_)
-                    )
+                for (
+                    chapter_num_,
+                    chapter_,
+                ) in target_usfm_book.chapters.items():
+                    chapter_.verses = split_chapter_into_verses(chapter_)
                 target_usfm_books.append(target_usfm_book)
     # Count total occurrences per reference (using source_reference as key)
     reference_counter: Counter[str] = Counter()

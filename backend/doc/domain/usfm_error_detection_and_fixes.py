@@ -275,7 +275,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
 ]
 
 
-# List of regex patterns to detect issues before applying corrections
 PATTERN_MATCHERS = {
     "remove_null_bytes_and_control_characters": r"[\x00-\x1F]+",
     "fix_dot_after_verse_number": r"(\\v\s*\d+)\s*\.\s*(\S)",
@@ -379,13 +378,8 @@ def fix_missing_space_before_number(
     pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
 ) -> str:
     if match := compiled_patterns["fix_missing_space_before_number"].search(content):
-        # logger.debug(
-        #     "match.group(1): %s",
-        #     match.group(1),
-        # )
         character_before_number = content[match.start() - 1]
         character_before_before_number = content[match.start() - 2]
-        # logger.debug("character_before_number: %s", character_before_number)
         if (
             character_before_number.isdigit()
             and match.group(1).isdigit()
@@ -476,13 +470,9 @@ def fix_standalone_verse_numbers(
         is_ascending = all(
             earlier < later for earlier, later in zip(matches, matches[1:])
         )
-        # logger.debug("is_ascending: %s", is_ascending)
         num_matches = len(matches)
-
         if (
-            not compiled_patterns["fix_standalone_verse_numbers"].search(
-                context_for_standalone_verse
-            )
+            not compile(r"""\\v \d+""").search(context_for_standalone_verse)
             and not num_matches >= num_of_occurrences
         ) or is_ascending:  # Check for non-ascending numbers
             return sub(
@@ -527,9 +517,7 @@ def fix_standalone_verse_number_and_period(
         logger.debug("is_ascending: %s", is_ascending)
         num_matches = len(matches)
         if (
-            not compiled_patterns["fix_standalone_verse_number_and_period"].search(
-                context_for_standalone_verse_and_period
-            )
+            not compile(r"""\\v \d+""").search(context_for_standalone_verse_and_period)
             and not num_matches >= num_of_occurrences
         ) or is_ascending:  # Check for non-ascending numbers
             return sub(
@@ -603,8 +591,7 @@ RULES: list[Rule] = [
     ),
     make_rule("fix_standalone_verse_numbers", fix_standalone_verse_numbers),
     make_rule(
-        "fix_standalone_verse_number_and_period",
-        fix_standalone_verse_number_and_period,
+        "fix_standalone_verse_number_and_period", fix_standalone_verse_number_and_period
     ),
     make_rule("replace_n_with_v", replace_n_with_v),
     make_rule("replace_vv_with_v", replace_vv_with_v),

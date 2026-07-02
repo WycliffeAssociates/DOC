@@ -559,6 +559,7 @@ def assemble_content(
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
     rg_books: Sequence[RGBook],
+    link_rather_than_include_tw_definitions: bool = settings.LINK_RATHER_THAN_INCLUDE_TW_DEFINITIONS,
 ) -> list[DocumentPart]:
     """
     Assemble and return the content from all requested resources according to the
@@ -652,7 +653,11 @@ def assemble_content(
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)
-    if tw_books and not document_request.layout_for_print:
+    if (
+        tw_books
+        and not link_rather_than_include_tw_definitions
+        and not document_request.layout_for_print
+    ):
         t0 = time.time()
         # Add the translation words definition section for each language requested.
         unique_tw_books = filter_unique_by_lang_code(tw_books)

@@ -180,6 +180,10 @@ class Settings(BaseSettings):
     RESOURCE_TYPE_NAME_FMT_STR: str = "<h1 class='book-name'>{}</h1>"
     HR: str = "<hr/>"
     TW_WORD_LIST_VERTICAL: bool = False
+    BIEL_TW_RESOURCE_URL_FMT_STR: str = (
+        "<span><a href='https://bibleineverylanguage.org/resources/languages/{}?resource-type=tw'>{}</a></span>"
+    )
+    LINK_RATHER_THAN_INCLUDE_TW_DEFINITIONS: bool = True
 
     DOWNLOAD_ASSETS: bool = False  # If true then download assets, else clone assets
 

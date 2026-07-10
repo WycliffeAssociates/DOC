@@ -185,7 +185,8 @@ BC_MARKDOWN_LINK_RE = re.compile(
     r"\[(?P<link_text>.+?)\] *\(\.\.\/(?P<link_ref>articles.+?)\)"
 )
 
+
 SEE_PARENTHETICAL_RE = re.compile(
-    r"\(\s*See:\s*.*?\)",
+    r"\((?P<prefix_text>[^():]+:)\s*.*?\)",
     re.IGNORECASE,
 )

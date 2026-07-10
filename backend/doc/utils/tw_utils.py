@@ -183,6 +183,9 @@ def translation_words_content(
     link_rather_than_include_tw_definitions: bool = settings.LINK_RATHER_THAN_INCLUDE_TW_DEFINITIONS,
     resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
     biel_tw_resource_path_fmt_str: str = settings.BIEL_TW_RESOURCE_URL_FMT_STR,
+    tw_resource_path_fmt_str: str = settings.TW_RESOURCE_URL_FMT_STR,
+    div_open: str = "<div>",
+    div_close: str = "</div>",
 ) -> list[DocumentPart]:
     is_rtl = tw_book and tw_book.lang_direction == LangDirEnum.RTL
     document_parts: list[DocumentPart] = []
@@ -199,7 +202,7 @@ def translation_words_content(
         if link_rather_than_include_tw_definitions:
             document_parts.append(
                 DocumentPart(
-                    content="<div>"
+                    content=div_open
                     + ", ".join(
                         [
                             biel_tw_resource_path_fmt_str.format(
@@ -208,7 +211,7 @@ def translation_words_content(
                             for localized_word, word in unique_words
                         ]
                     )
-                    + "</div>",
+                    + div_close,
                     is_rtl=is_rtl,
                     use_section_visual_separator=False,
                 )
@@ -216,13 +219,18 @@ def translation_words_content(
         else:
             document_parts.append(
                 DocumentPart(
-                    content="<ul>"
+                    content=div_open
                     + ", ".join(
                         [
-                            f"<span><a href='#{tw_book.lang_code}-{word}'>{localized_word}</a></span>"
+                            tw_resource_path_fmt_str.format(
+                                tw_book.lang_code, word, localized_word
+                            )
                             for localized_word, word in unique_words
                         ]
                     )
+                    + div_close,
+                    is_rtl=is_rtl,
+                    use_section_visual_separator=False,
                 )
             )
     return document_parts

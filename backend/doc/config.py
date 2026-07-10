@@ -183,6 +183,7 @@ class Settings(BaseSettings):
     BIEL_TW_RESOURCE_URL_FMT_STR: str = (
         "<span><a href='https://bibleineverylanguage.org/resources/languages/{}?resource-type=tw'>{}</a></span>"
     )
+    TW_RESOURCE_URL_FMT_STR: str = "<span><a href='#{}-{}'>{}</a></span>"
     LINK_RATHER_THAN_INCLUDE_TW_DEFINITIONS: bool = True
 
     DOWNLOAD_ASSETS: bool = False  # If true then download assets, else clone assets

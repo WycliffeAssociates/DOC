@@ -358,10 +358,24 @@ def generate_docx(
                 target_ref_display += (
                     f" ({verse.occurrence_index}/{verse.occurrence_total})"
                 )
-            source_run = row_cells[0].paragraphs[0].add_run(source_ref_display)
+            source_paragraph = row_cells[0].paragraphs[0]
+            source_run = source_paragraph.add_run(verse.source_reference)
             source_run.bold = True
-            target_run = row_cells[1].paragraphs[0].add_run(target_ref_display)
+            if verse.occurrence_total > 1:
+                occurrence_run = source_paragraph.add_run(
+                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
+                )
+                occurrence_run.bold = True
+                occurrence_run.italic = True
+            target_paragraph = row_cells[1].paragraphs[0]
+            target_run = target_paragraph.add_run(verse.target_reference)
             target_run.bold = True
+            if verse.occurrence_total > 1:
+                occurrence_run = target_paragraph.add_run(
+                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
+                )
+                occurrence_run.bold = True
+                occurrence_run.italic = True
             status_run = (
                 row_cells[2]
                 .paragraphs[0]
@@ -411,7 +425,6 @@ def generate_docx(
     doc = add_lined_page_at_end(doc)
     reduce_spacing_around_tables(doc)
     doc.save(docx_filepath)
-
 
 @worker.app.task
 def generate_stet_docx_document(

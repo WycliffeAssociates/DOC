@@ -2,7 +2,6 @@
 
 import re
 
-
 # Handle TW wikilink inner text
 TW_RC_LINK_RE = re.compile(
     (
@@ -184,4 +183,9 @@ TN_OBS_MARKDOWN_LINK_RE = re.compile(
 # More particularly:  [Covenant with David](../articles/covenantdavid.md)
 BC_MARKDOWN_LINK_RE = re.compile(
     r"\[(?P<link_text>.+?)\] *\(\.\.\/(?P<link_ref>articles.+?)\)"
+)
+
+SEE_PARENTHETICAL_RE = re.compile(
+    r"\(\s*See:\s*.*?\)",
+    re.IGNORECASE,
 )

@@ -898,7 +898,9 @@ def get_book_names_from_usfm_metadata(
         frontmatter, _, _ = split_usfm_by_chapters(
             lang_code, resource_type, book_code, usfm
         )
-        localized_book_name = maybe_localized_book_name(frontmatter)
+        localized_book_name = maybe_localized_book_name(
+            frontmatter, lang_code, resource_type
+        )
         # localized_book_name = maybe_correct_book_name(lang_code, localized_book_name)
         book_codes_and_names_localized[book_code] = localized_book_name
     logger.debug("book_codes_and_names_localized: %s", book_codes_and_names_localized)

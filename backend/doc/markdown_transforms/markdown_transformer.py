@@ -125,7 +125,7 @@ def transform_tw_links(
         source, lang_code, resource_requests, translation_words_dict
     )
 
-    source = transform_see_parenthetical_links(source)
+    source = remove_see_colon_prefixed_parenthicals(source)
     return source
 
 
@@ -160,7 +160,7 @@ def transform_ta_and_tn_links(
     source = transform_tn_missing_book_code_markdown_links_no_paren(source)
     source = transform_tn_obs_markdown_links(source)
     source = transform_rc_question_links(source)
-    source = transform_see_parenthetical_links(source)
+    source = remove_see_colon_prefixed_parenthicals(source)
     return source
 
 
@@ -1050,12 +1050,12 @@ def wiki_link_parser(
     return links
 
 
-def transform_see_parenthetical_links(
+def remove_see_colon_prefixed_parenthicals(
     source: str,
     see_parenthetical_re: re.Pattern[str] = SEE_PARENTHETICAL_RE,
 ) -> str:
     """
-    Remove any parenthetical string beginning with 'See:'.
-    Example: '(See: something)' -> ''
+    Remove any parenthetical string beginning with localized '(See:'.
+    Example: '(Veja: foobar)' -> ''
     """
     return see_parenthetical_re.sub("", source)

@@ -135,7 +135,7 @@ test: clean-local-docker-output-dir
 	docker compose -f docker-compose.yml -f docker-compose.api-test.yml -f docker-compose.override.yml up  test-runner
 
 .PHONY: unit-tests
-unit-tests:
+unit-tests: startdocker
 	docker compose -f docker-compose.yml -f docker-compose.api-test.yml -f docker-compose.override.yml up  test-runner
 
 .PHONY: e2e-tests

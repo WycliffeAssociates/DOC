@@ -319,9 +319,8 @@ local-run-celery:
 local-run-flower:
 	celery --broker=redis:// --result-backend=redis:// flower
 
-# This is one to run after running local-e2e-tests or any tests which
-# has yielded HTML and PDFs that need to be checked for linking
-# correctness.
+# Run after running local-e2e-tests or any tests which has yielded HTML
+# and PDFs that need to be checked for linking correctness.
 .PHONY: local-check-anchor-links
 local-check-anchor-links: checkvenv
 	python tests/e2e/test_anchor_linking.py

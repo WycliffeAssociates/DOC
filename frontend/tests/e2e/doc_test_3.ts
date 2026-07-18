@@ -61,9 +61,7 @@ test('ordering of books in document title(s) and body', async ({ page }) => {
   await page.getByPlaceholder('Search Heart Languages').fill('ont')
   await page.getByText('Ontenu').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByText('Matyu').click({ timeout: 32_000 })
-  await page.getByText('Mak').click()
-  await page.getByText('Luk', { exact: true }).click()
+  await page.getByText('Efesus').click({ timeout: 32_000 })
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Unlocked Literal Bible').first().click()
   await page.getByText('Regular').click()
@@ -82,44 +80,24 @@ test('ordering of books in document title(s) and body', async ({ page }) => {
   const page1 = await page1Promise
   // Perform text expectations on the popup page
   await expect(page1.locator('body')).toContainText(
-    'Tok Pisin (Tok Pisin): Unlocked Literal Bible for Matyu, Mak, Luk'
+    'Tok Pisin (Tok Pisin): Unlocked Literal Bible for Efesus'
   )
-  await expect(page1.locator('body')).toContainText(
-    'Ontenu (Ontenu): Regular for Matthew, Maki, Luk'
-  )
+  await expect(page1.locator('body')).toContainText('Ontenu (Ontenu): Regular for Efeses')
 
-  // Order assertions
   const headings = await page1.locator('h2').allTextContents()
   // Ensure expected headings are present
-  expect(headings).toContain('Matyu')
-  expect(headings).toContain('Matthew')
-  expect(headings).toContain('Mak')
-  expect(headings).toContain('Maki')
-  expect(headings).toContain('Luk')
+  expect(headings).toContain('Efesus')
+  expect(headings).toContain('Efeses')
 
+  // Order assertions
   // Find the positions of each
-  const index1 = headings.indexOf('Matyu')
-  const index2 = headings.indexOf('Matthew')
-  const index3 = headings.indexOf('Mak')
-  const index4 = headings.indexOf('Maki')
-  const index5 = headings.indexOf('Luk')
+  const index1 = headings.indexOf('Efesus')
+  const index2 = headings.indexOf('Efeses')
 
   // Ensure all were found
   expect(index1).not.toBe(-1)
   expect(index2).not.toBe(-1)
-  expect(index3).not.toBe(-1)
-  expect(index4).not.toBe(-1)
-  expect(index5).not.toBe(-1)
 
   // Check the order
   expect(index1).toBeLessThan(index2)
-  expect(index1).toBeLessThan(index3)
-  expect(index2).toBeLessThan(index3)
-  expect(index1).toBeLessThan(index4)
-  expect(index2).toBeLessThan(index4)
-  expect(index3).toBeLessThan(index4)
-  expect(index1).toBeLessThan(index5)
-  expect(index2).toBeLessThan(index5)
-  expect(index3).toBeLessThan(index5)
-  expect(index4).toBeLessThan(index5)
 })

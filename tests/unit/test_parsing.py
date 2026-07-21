@@ -1,7 +1,12 @@
 import re
 
 import pytest
-from doc.domain.parsing import ensure_chapter_label, ensure_chapter_marker
+from doc.domain.parsing import (
+    ensure_chapter_label,
+    ensure_chapter_marker,
+    maybe_localized_book_name,
+)
+from doc.domain import model, resource_lookup
 
 
 def test_ensure_chapter_marker_unchanged_if_exists() -> None:
@@ -79,6 +84,22 @@ def test_keeps_existing_chapter_label() -> None:
 def test_no_chapter_marker() -> None:
     input_text = "\n\\v 1 In the beginning..."
     assert ensure_chapter_label(input_text, 1) == input_text
+
+
+def test_fr_f10_book_name_lookup_prefs() -> None:
+    usfm_metadata = r"""\id JUD
+\h ÉPÎTRE DE SAINT JUDE
+\toc1 ÉPÎTRE DE SAINT JUDE
+\toc2 Épître de Jude
+\toc3 Jude
+\mt1 ÉPÎTRE DE SAINT JUDE
+
+\s5
+"""
+    expected = "Épître de Jude"
+    localized_book_name = maybe_localized_book_name(usfm_metadata, "fr", "f10")
+    assert localized_book_name != "Épître de saint jude"
+    assert localized_book_name == expected
 
 
 if __name__ == "__main__":

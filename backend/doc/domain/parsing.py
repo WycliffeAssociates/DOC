@@ -387,7 +387,6 @@ def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str
 
 
 def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
-    # Define the regex patterns to match \h, \mt, and \toc
     patterns = {
         "h": r"\\h\s+(.*?)(?=\s+\\|\n|$)",
         "mt": r"\\mt\s+(.*?)(?=\s+\\|\n|$)",
@@ -402,37 +401,63 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
     return extracted_data
 
 
-def maybe_localized_book_name(frontmatter: str) -> str:
-    r"""
-    Rule for obtaining localized book name:
+# Global defaults for fallback/reference
+DEFAULT_BOOK_NAME_LOOKUP_ORDER = ["h", "mt", "toc1", "toc2"]
 
-    In USFM:
+SPECIALIZED_BOOK_NAME_LOOKUP_MAP: dict[tuple[str, str], list[str]] = {
+    ("fr", "f10"): ["toc2"],
+}
 
-    1. Look to see if the \h marker is present — if so, use that value.
-    2. Else look to see if the \mt1 marker is present — if so, use that value.
-    3. Else look to see if the \toc1 marker is present - if so, use that value.
-    4. Else look to see if the \toc2 marker is present - if so, use that value.
+# Define combinations that should skip normalization
+SKIP_NORMALIZATION_SET: set[tuple[str, str]] = {
+    ("fr", "f10"),  # Skip normalization for French f10
+}
 
-    Outside USFM:
 
-    5. Else use the book name from the source language if available.
-    6. Otherwise use the English book name.
-
-    Steps 5 and 6 happen outside this function.
+def maybe_localized_book_name(
+    frontmatter: str,
+    language: str,
+    resource_type: str,
+    default_book_name_lookup_order: list[str] = DEFAULT_BOOK_NAME_LOOKUP_ORDER,
+    specialized_book_name_lookup_map: dict[
+        tuple[str, str], list[str]
+    ] = SPECIALIZED_BOOK_NAME_LOOKUP_MAP,
+    skip_normalization_set: set[tuple[str, str]] = SKIP_NORMALIZATION_SET,
+) -> str:
+    """
+    Rule for obtaining localized book name based on language and resource type.
+    Falls back to empirical default sequence if no specialization exists.
+    Allows skipping normalization for specific language/resource combinations.
     """
     frontmatter_data = extract_usfm_frontmatter(frontmatter)
-    localized_book_name = (
-        frontmatter_data.get("h")
-        or frontmatter_data.get("mt")
-        or frontmatter_data.get("mt1")
-        or frontmatter_data.get("toc1")
-        or frontmatter_data.get("toc2")
-        or ""
+    # Normalize inputs for lookup consistency
+    lang_key = language.lower()
+    res_key = resource_type.lower()
+    lookup_key = (lang_key, res_key)
+    # 1. Determine the marker lookup order (Specialized vs Default)
+    marker_order = specialized_book_name_lookup_map.get(
+        lookup_key, default_book_name_lookup_order
     )
-    logger.debug("localized_book_name: %s", localized_book_name)
+    # 2. Iterate through the preferred markers and grab the first one that exists
+    localized_book_name = ""
+    for marker in marker_order:
+        value = frontmatter_data.get(marker)
+        if value:
+            localized_book_name = value
+            break
+    logger.debug(
+        "Using marker order %s for (%s, %s). Found: %s",
+        marker_order,
+        language,
+        resource_type,
+        localized_book_name,
+    )
+    # 3. Normalize and clean up if a name was found and not explicitly skipped
     if localized_book_name:
-        localized_book_name = normalize_localized_book_name(localized_book_name)
-        logger.debug("normalized localized_book_name: %s", localized_book_name)
+        if lookup_key in skip_normalization_set:
+            logger.debug("Skipping normalization for %s", lookup_key)
+        else:
+            localized_book_name = normalize_localized_book_name(localized_book_name)
     return localized_book_name
 
 
@@ -562,7 +587,11 @@ def get_localized_book_name(
     resource_lookup_dto: ResourceLookupDto,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 ) -> str:
-    localized_book_name = maybe_localized_book_name(frontmatter)
+    localized_book_name = maybe_localized_book_name(
+        frontmatter,
+        resource_lookup_dto.lang_code,
+        resource_lookup_dto.resource_type,
+    )
     if not localized_book_name:
         book_codes_and_names_from_manifest_ = book_codes_and_names_from_manifest(
             resource_dir

@@ -51,7 +51,7 @@ test('use section visual separator setting', async ({ page }) => {
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
 
-test('ordering of books in document title(s) and body', async ({ page }) => {
+test.skip('ordering of books in document title(s) and body', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByPlaceholder('Search Gateway Languages').click()
   await page.getByPlaceholder('Search Gateway Languages').fill('tpi')

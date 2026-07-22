@@ -55,7 +55,7 @@ test.skip('can select gateway tab after first selecting heart language and hitti
   await page.getByText('Regular').click({ timeout: 120_000 })
   await page.getByText('Unlocked Literal Bible').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('radio', { name: 'PDF' }).click()
+  // await page.getByRole('radio', { name: 'PDF' }).click()
   await page.getByLabel('Interleave content by chapter').check()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })
@@ -68,7 +68,7 @@ test('optional settings', async ({ page }) => {
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Regular').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('radio', { name: 'PDF' }).click()
+  // await page.getByRole('radio', { name: 'PDF' }).click()
   await expect(page.getByRole('main')).toContainText('▶ Show Optional Settings')
   await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
   await expect(page.getByRole('main')).toContainText(

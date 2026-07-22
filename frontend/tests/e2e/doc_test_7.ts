@@ -10,7 +10,7 @@ test('visibility of optional settings based on resources chosen', async ({ page 
   await page.getByLabel('French Louis Segond 1910').uncheck()
   await page.getByLabel('Translation Words tw').uncheck()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('radio', { name: 'PDF' }).click()
+  // await page.getByRole('radio', { name: 'PDF' }).click()
   await page.getByRole('button', { name: '▶ Show Optional Settings' }).click()
   await expect(page.getByRole('main')).toContainText(
     "Use chapter labels, e.g., 'Chapter 1' instead of '1'"
@@ -59,7 +59,7 @@ test('burmese', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Unlocked Literal Bible')
   await page.getByLabel('Select all').check()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('radio', { name: 'PDF' }).click()
-  await page.getByText('Use PrinceXml to produce the').click()
+  // await page.getByRole('radio', { name: 'PDF' }).click()
+  // await page.getByText('Use PrinceXml to produce the').click()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })

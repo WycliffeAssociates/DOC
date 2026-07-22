@@ -8,6 +8,7 @@ TRANSLATED_HEADER_PHRASES_TABLE: dict[str, str] = {
     "ru": "Инструмент оценки духовных терминов (STET)",
     "sw": "Chombo cha Kutathmini Maneno ya Kiroho (STET)",
     "tpi": "Tul bilong skelim ol spirit tok bilong buk trenslesen (STET)",
+    "vi": "Công cụ Đánh giá Thuật ngữ Tâm linh (STET)",
 }
 
 TRANSLATED_FOOTER_PHRASES_TABLE: dict[str, str] = {
@@ -20,6 +21,7 @@ TRANSLATED_FOOTER_PHRASES_TABLE: dict[str, str] = {
     "ru": "Сформировано",
     "sw": "Imetolewa tarehe",
     "tpi": "Wok i bin kamap long",
+    "vi": "Được tạo vào",
 }
 
 LOCALIZED_DATE_FORMAT_STRINGS: dict[str, str] = {
@@ -32,6 +34,7 @@ LOCALIZED_DATE_FORMAT_STRINGS: dict[str, str] = {
     "ru": "%d.%m.%Y %H:%M:%S",
     "sw": "%d/%m/%Y %H:%M:%S",
     "tpi": "%d/%m/%Y %H:%M:%S",
+    "vi": "%d/%m/%Y %H:%M:%S",
 }
 
 TRANSLATED_TABLE_COLUMN_HEADERS = {
@@ -54,4 +57,5 @@ TRANSLATED_TABLE_COLUMN_HEADERS = {
     ),
     "sw": ("Marejeo Chanzo", "Marejeo Lengwa", "Hali", "OK"),
     "tpi": ("Narapela baibel ves", "Tokples ves", "Sek", "OK"),
+    "vi": ("Tham chiếu nguồn", "Tham chiếu đích", "Trạng thái", "Đạt"),
 }

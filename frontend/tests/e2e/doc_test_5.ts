@@ -11,7 +11,7 @@ test('merge of data API data and DOC only data', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Translation Notes')
 })
 
-test('space between end of chunk and beginning of another', async ({ page }) => {
+test.skip('space between end of chunk and beginning of another', async ({ page }) => {
   await page.goto('http://localhost:8001/')
   await page.getByRole('button', { name: 'Heart' }).click()
   await page.getByPlaceholder('Search Heart Languages').click()

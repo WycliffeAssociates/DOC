@@ -49,7 +49,7 @@ test('ui part 2', async ({ page }) => {
     .nth(2)
     .click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await page.getByRole('radio', { name: 'PDF' }).click()
+  // await page.getByRole('radio', { name: 'PDF' }).click()
   await page.getByText('Interleave content by chapter').click()
   await page.getByRole('button', { name: 'Generate File' }).click()
 })

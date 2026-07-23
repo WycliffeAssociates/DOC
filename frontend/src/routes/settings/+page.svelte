@@ -194,7 +194,7 @@
             <span class="text-xl text-[#33445C]">Docx</span>
           </label>
         </div>
-        {#if !PUBLIC_TURN_OFF_EPUB}
+        {#if PUBLIC_TURN_OFF_EPUB === 'false'}
           <div class="mb-2">
             <label>
               <input
@@ -212,7 +212,7 @@
             </label>
           </div>
         {/if}
-        {#if !PUBLIC_TURN_OFF_PDF}
+        {#if PUBLIC_TURN_OFF_PDF === 'false'}
           <div class="mb-2">
             <label>
               <input
@@ -230,7 +230,7 @@
             </label>
           </div>
         {/if}
-        {#if !PUBLIC_TURN_OFF_PDF && $docTypeStore === 'pdf'}
+        {#if PUBLIC_TURN_OFF_PDF === 'false' && $docTypeStore === 'pdf'}
           <div class="mb-2 mt-6 flex">
             <Switch bind:checked={$usePrinceStore} id="use-prince" />
             <span class="ml-2 text-xl text-[#33445C]"

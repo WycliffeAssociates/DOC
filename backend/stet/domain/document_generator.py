@@ -31,10 +31,11 @@ from doc.utils.request_key import (
 )
 from doc.utils.text_utils import maybe_correct_book_name
 from docx import Document
+from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Length, Mm, Pt
+from docx.shared import Inches, Length
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import PassageEntry, WordEntry
@@ -335,17 +336,12 @@ def generate_docx(
     translated_footer_phrases_table: dict[str, str] = TRANSLATED_FOOTER_PHRASES_TABLE,
     localized_date_format_strings: dict[str, str] = LOCALIZED_DATE_FORMAT_STRINGS,
     translated_header_phrases_table: dict[str, str] = TRANSLATED_HEADER_PHRASES_TABLE,
-    margin_width: Length = Pt(54),
-    a4_width: Length = Mm(210),
-    a4_height: Length = Mm(297),
+    margin_width: Length = Inches(0.75),
+    a4_width: Length = Inches(8.27),
+    a4_height: Length = Inches(11.69),
 ) -> None:
     """
-    Generates a DOCX document from a list of word entries and saves it to the given file path.
-    :param word_entries: A list of word entries containing the word, strongs numbers, definition, and verses.
-    :param docx_filepath: The file path where the generated DOCX document will be saved.
-    :param lang0_code: Source language code for the document header.
-    :param lang1_code: Target language code for the document header.
-    :param use_increased_line_spacing: Indicate whether to increase line spacing to double that of normal.
+    Generates a DOCX document optimized for A4 paper printing from a list of word entries.
     """
     doc = Document()
     section = doc.sections[0]
@@ -353,8 +349,8 @@ def generate_docx(
     section.page_height = a4_height
     section.left_margin = margin_width
     section.right_margin = margin_width
-    section.top_margin = Pt(54)
-    section.bottom_margin = Pt(54)
+    section.top_margin = Inches(0.75)
+    section.bottom_margin = Inches(0.75)
     printable_width_emu: int = int(a4_width) - (2 * int(margin_width))
     printable_width: Length = Length(printable_width_emu)
     col_widths: list[Length] = [
@@ -364,21 +360,28 @@ def generate_docx(
     ]
     html_to_docx = HtmlToDocx()
     for word_entry in word_entries:
-        # Add the word heading
         heading: str = (
             f"{','.join(word_entry.words)} ({word_entry.strongs_numbers})"
             if word_entry.strongs_numbers
             else "".join(word_entry.words)
         )
         doc.add_heading(heading, level=1)
-        # Convert the HTML definition to DOCX content
         if word_entry.definition:
             html_to_docx.add_html_to_document(word_entry.definition, doc)
-        # Create a table with three columns
         table = doc.add_table(rows=1, cols=3)
         table.style = "Table Grid"
-        # Set the header of the table and apply bold formatting
-        hdr_cells = table.rows[0].cells
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        table.autofit = False
+        table.allow_autofit = False
+        table.width = printable_width
+        for i, w in enumerate(col_widths):
+            table.columns[i].width = w
+        hdr_row = table.rows[0]
+        trPr = hdr_row._tr.get_or_add_trPr()
+        trPr.append(OxmlElement("w:tblHeader"))
+        hdr_cells = hdr_row.cells
+        for i, cell in enumerate(hdr_cells):
+            cell.width = col_widths[i]
         hdr_cells[0].text = translated_table_column_headers[lang0_code][0]
         hdr_cells[1].text = translated_table_column_headers[lang0_code][1]
         hdr_cells[2].text = translated_table_column_headers[lang0_code][2]
@@ -420,9 +423,12 @@ def generate_docx(
             )
             status_run.bold = True
             row_cells[2].paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            # Row for texts
-            row_cells = table.add_row().cells
-            # Process HTML content in source_text and highlight keyword
+            text_row = table.add_row()
+            trPr = text_row._tr.get_or_add_trPr()
+            trPr.append(OxmlElement("w:cantSplit"))
+            row_cells = text_row.cells
+            for i, w in enumerate(col_widths):
+                row_cells[i].width = w
             source_paragraph = row_cells[0].paragraphs[0]
             if use_increased_line_spacing:
                 source_paragraph.paragraph_format.line_spacing = (
@@ -438,11 +444,10 @@ def generate_docx(
                     source_paragraph,
                     word_entry.bolded_phrases,
                 )
-            else:  # Bolded phrases in 4th column were not provided
+            else:
                 add_highlighted_html_to_docx_for_words(
                     passage_entry.source_text, source_paragraph, word_entry.words
                 )
-            # Add target_text with wider line spacing
             target_paragraph = row_cells[1].paragraphs[0]
             if use_increased_line_spacing:
                 target_paragraph.paragraph_format.line_spacing = (
@@ -454,13 +459,11 @@ def generate_docx(
             checkbox_paragraph = checkbox_cell.paragraphs[0]
             checkbox_paragraph.text = "\u2610"
             checkbox_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            tc = checkbox_cell._tc  # Access the XML element of the table cell
-            tcPr = tc.get_or_add_tcPr()  # Get or add the cell properties
-            vAlign = OxmlElement("w:vAlign")  # Create the vertical alignment element
-            vAlign.set(qn("w:val"), "center")  # Set alignment to "center"
-            tcPr.append(vAlign)  # Append the vertical alignment to cell properties
-        # Adjust column widths to prioritize the first two columns
-        adjust_table_columns(table)
+            tc = checkbox_cell._tc
+            tcPr = tc.get_or_add_tcPr()
+            vAlign = OxmlElement("w:vAlign")
+            vAlign.set(qn("w:val"), "center")
+            tcPr.append(vAlign)
     footer_phrase = translated_footer_phrases_table[lang0_code]
     current_datetime = datetime.now().strftime(
         localized_date_format_strings[lang0_code]

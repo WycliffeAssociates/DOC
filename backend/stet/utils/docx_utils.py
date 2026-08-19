@@ -186,6 +186,11 @@ def add_preformatted_html_to_docx(html: str, paragraph: Paragraph) -> None:
             new_run.bold = run.bold
 
 
+from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
+from docx.enum.section import WD_SECTION
+from docx.shared import Mm, Pt
+
+
 def add_lined_page_at_end(doc: DocxDocument) -> DocxDocument:
     """
     Adds a single page filled with ruled lines to the end of the document for note-taking.
@@ -193,23 +198,29 @@ def add_lined_page_at_end(doc: DocxDocument) -> DocxDocument:
     :param doc: The Word document to which the ruled page will be added.
     :return: The modified Word document.
     """
-    section = doc.add_section(
-        start_type=WD_SECTION.NEW_PAGE
-    )  # Add a new section for a new page
-    section.left_margin = section.right_margin = Pt(72)  # 1-inch margins
-    section.top_margin = section.bottom_margin = Pt(72)
+    section = doc.add_section(start_type=WD_SECTION.NEW_PAGE)
+    # Set A4 paper dimensions
+    section.page_width = Mm(210)
+    section.page_height = Mm(297)
+    section.left_margin = section.right_margin = Pt(54)
+    section.top_margin = section.bottom_margin = Pt(54)
     usable_height = section.page_height - section.top_margin - section.bottom_margin
-    line_spacing = Pt(18)  # Approx. 1.5x line spacing for handwriting clarity
+    usable_width = section.page_width - section.left_margin - section.right_margin
+    line_spacing = Pt(24)  # ~8.5mm college-ruled spacing
     num_lines = int(usable_height / line_spacing)
-    # Add a single paragraph with blank lines separated by line breaks
     lined_paragraph = doc.add_paragraph()
-    lined_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     lined_paragraph.paragraph_format.space_before = Pt(0)
     lined_paragraph.paragraph_format.space_after = Pt(0)
     lined_paragraph.paragraph_format.line_spacing = line_spacing
-    for _ in range(num_lines - 3):
-        lined_paragraph.add_run("_" * 100)  # Add a visible placeholder for each line
-        lined_paragraph.add_run("\n")  # Add a line break to simulate ruled lines
+    # Add a right-aligned tab stop set at the exact right margin edge with a bottom line leader
+    lined_paragraph.paragraph_format.tab_stops.add_tab_stop(
+        usable_width, WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.LINES
+    )
+    # Insert a tab character for each line to extend the rule to the right margin
+    for i in range(num_lines - 1):
+        lined_paragraph.add_run("\t")
+        if i < num_lines - 2:
+            lined_paragraph.add_run("\n")
     return doc
 
 

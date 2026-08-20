@@ -25,7 +25,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Length
+from docx.shared import Length, Mm, Pt
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
@@ -314,9 +314,9 @@ def generate_docx(
     translated_footer_phrases_table: dict[str, str] = TRANSLATED_FOOTER_PHRASES_TABLE,
     localized_date_format_strings: dict[str, str] = LOCALIZED_DATE_FORMAT_STRINGS,
     translated_header_phrases_table: dict[str, str] = TRANSLATED_HEADER_PHRASES_TABLE,
-    margin_width: Length = Inches(0.75),
-    a4_width: Length = Inches(8.27),
-    a4_height: Length = Inches(11.69),
+    margin_width: Length = Pt(54),
+    a4_width: Length = Mm(210),
+    a4_height: Length = Mm(297),
 ) -> None:
     """
     Generates a DOCX document optimized for A4 paper printing from a list of word entries.
@@ -327,8 +327,8 @@ def generate_docx(
     section.page_height = a4_height
     section.left_margin = margin_width
     section.right_margin = margin_width
-    section.top_margin = Inches(0.75)
-    section.bottom_margin = Inches(0.75)
+    section.top_margin = Pt(54)
+    section.bottom_margin = Pt(54)
     printable_width_emu: int = int(a4_width) - (2 * int(margin_width))
     printable_width: Length = Length(printable_width_emu)
     col_widths: list[Length] = [

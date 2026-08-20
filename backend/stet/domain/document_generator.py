@@ -34,6 +34,7 @@ from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.shared import Length, Mm, Pt
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import PassageEntry, WordEntry
@@ -334,6 +335,9 @@ def generate_docx(
     translated_footer_phrases_table: dict[str, str] = TRANSLATED_FOOTER_PHRASES_TABLE,
     localized_date_format_strings: dict[str, str] = LOCALIZED_DATE_FORMAT_STRINGS,
     translated_header_phrases_table: dict[str, str] = TRANSLATED_HEADER_PHRASES_TABLE,
+    margin_width: Length = Pt(54),
+    a4_width: Length = Mm(210),
+    a4_height: Length = Mm(297),
 ) -> None:
     """
     Generates a DOCX document from a list of word entries and saves it to the given file path.
@@ -344,6 +348,20 @@ def generate_docx(
     :param use_increased_line_spacing: Indicate whether to increase line spacing to double that of normal.
     """
     doc = Document()
+    section = doc.sections[0]
+    section.page_width = a4_width
+    section.page_height = a4_height
+    section.left_margin = margin_width
+    section.right_margin = margin_width
+    section.top_margin = Pt(54)
+    section.bottom_margin = Pt(54)
+    printable_width_emu: int = int(a4_width) - (2 * int(margin_width))
+    printable_width: Length = Length(printable_width_emu)
+    col_widths: list[Length] = [
+        Length(int(printable_width_emu * 0.45)),
+        Length(int(printable_width_emu * 0.45)),
+        Length(int(printable_width_emu * 0.10)),
+    ]
     html_to_docx = HtmlToDocx()
     for word_entry in word_entries:
         # Add the word heading

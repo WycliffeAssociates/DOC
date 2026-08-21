@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SelectElement } from './types'
+  import { PUBLIC_TURN_OFF_EPUB, PUBLIC_TURN_OFF_PDF } from '$env/static/public'
   import Switch from '$lib/Switch.svelte'
   import WizardBreadcrumb from '$lib/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/WizardBasket.svelte'
@@ -193,39 +194,43 @@
             <span class="text-xl text-[#33445C]">Docx</span>
           </label>
         </div>
-        <div class="mb-2">
-          <label>
-            <input
-              name="docType"
-              value={'epub'}
-              bind:group={$docTypeStore}
-              type="radio"
-              on:change={() => {
-                $settingsUpdatedStore = true
-                $errorStore = ''
-              }}
-              class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-            />
-            <span class="text-xl text-[#33445C]">ePub</span>
-          </label>
-        </div>
-        <div class="mb-2">
-          <label>
-            <input
-              name="docType"
-              value={'pdf'}
-              bind:group={$docTypeStore}
-              type="radio"
-              on:change={() => {
-                $settingsUpdatedStore = true
-                $errorStore = ''
-              }}
-              class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-            />
-            <span class="text-xl text-[#33445C]">PDF</span>
-          </label>
-        </div>
-        {#if $docTypeStore === 'pdf'}
+        {#if PUBLIC_TURN_OFF_EPUB === 'false'}
+          <div class="mb-2">
+            <label>
+              <input
+                name="docType"
+                value={'epub'}
+                bind:group={$docTypeStore}
+                type="radio"
+                on:change={() => {
+                  $settingsUpdatedStore = true
+                  $errorStore = ''
+                }}
+                class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+              />
+              <span class="text-xl text-[#33445C]">ePub</span>
+            </label>
+          </div>
+        {/if}
+        {#if PUBLIC_TURN_OFF_PDF === 'false'}
+          <div class="mb-2">
+            <label>
+              <input
+                name="docType"
+                value={'pdf'}
+                bind:group={$docTypeStore}
+                type="radio"
+                on:change={() => {
+                  $settingsUpdatedStore = true
+                  $errorStore = ''
+                }}
+                class="h-4 w-4 border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+              />
+              <span class="text-xl text-[#33445C]">PDF</span>
+            </label>
+          </div>
+        {/if}
+        {#if PUBLIC_TURN_OFF_PDF === 'false' && $docTypeStore === 'pdf'}
           <div class="mb-2 mt-6 flex">
             <Switch bind:checked={$usePrinceStore} id="use-prince" />
             <span class="ml-2 text-xl text-[#33445C]"

@@ -1,18 +1,26 @@
-import re
-from typing import Sequence
+from collections.abc import Callable
+from re import Match, Pattern, compile, findall, finditer, sub
+from typing import Mapping, Sequence, TypeAlias
 
 from doc.config import settings
 
 logger = settings.logger(__name__)
 
-# Resources known to have USFM defects found through automatic
-# randomized testing and subsequent manual investigation. As an aside:
-# When we find one defective USFM resource for a language then the
-# language might have others. In keeping with that fact one can set
-# the value of settings.CHECK_ALL_BOOKS_FOR_LANGUAGE in .env file.
-# This list is also used in tests and in that context
-# settings.CHECK_ALL_BOOKS_FOR_LANGUAGE is not checked but each
-# resource listed below is tested.
+
+Detector: TypeAlias = Callable[[str], Match[str] | None]
+Fixer: TypeAlias = Callable[[str], str]
+ContextFormatter: TypeAlias = Callable[[str, Match[str]], str]
+Rule: TypeAlias = tuple[str, Detector, Fixer, ContextFormatter | None]
+
+
+# Resources known to have USFM defects found through randomized testing
+# and subsequent manual investigation. Some entries were added after
+# confirming that the detected issue was fixable in a reasonable way.
+#
+# This list is also used to broaden checking: when
+# settings.CHECK_ALL_BOOKS_FOR_LANGUAGE is enabled, if one resource for a
+# language is known to have a defect, then all books for that language are
+# checked for similar defects.
 RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("aaz-x-amarasibarat", "reg", "2pe"),
     ("abu", "reg", "php"),
@@ -20,7 +28,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("adh", "reg", "1th"),
     ("adn", "reg", "mat"),
     ("agd-x-namel", "reg", "2th"),
-    ("ahm", "reg", "php"),
     ("ahm", "reg", "php"),
     ("ajg-x-adjtalagbe", "reg", "mat"),
     ("aoa", "reg", "col"),
@@ -52,7 +59,6 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("blo", "reg", "php"),
     ("blo", "reg", "heb"),
     ("blo", "reg", "1jn"),
-    ("blo", "reg", "col"),
     ("bne", "reg", "gal"),
     ("bof", "reg", "mat"),
     ("bou", "reg", "gen"),
@@ -269,8 +275,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
 ]
 
 
-# List of regex patterns to detect issues before applying corrections
-pattern_matchers = {
+PATTERN_MATCHERS = {
     "remove_null_bytes_and_control_characters": r"[\x00-\x1F]+",
     "fix_dot_after_verse_number": r"(\\v\s*\d+)\s*\.\s*(\S)",
     "fix_verse_marker_without_v": r"\\(\d+)\s*\.?\s*(\S+)",
@@ -290,12 +295,57 @@ pattern_matchers = {
     "replace_cc_with_c": r"(\\c \d+)\s+(\\c \d+)",
 }
 
-compiled_patterns = {
-    key: re.compile(pattern) for key, pattern in pattern_matchers.items()
-}
+COMPILED_PATTERNS = {key: compile(pattern) for key, pattern in PATTERN_MATCHERS.items()}
 
 
-def remove_null_bytes_and_control_characters(content: str) -> str:
+def make_detector(
+    pattern_name: str,
+    compiled_patterns: Mapping[str, Pattern[str]] = COMPILED_PATTERNS,
+) -> Detector:
+    def detector(content: str) -> Match[str] | None:
+        return compiled_patterns[pattern_name].search(content)
+
+    return detector
+
+
+def default_context_formatter(content: str, match: Match[str]) -> str:
+    return content[max(0, match.start() - 5) : min(len(content), match.end() + 5)]
+
+
+def log_detection(
+    rule_name: str,
+    match: Match[str],
+    content: str,
+    lang_code: str,
+    resource_type: str,
+    book_code: str,
+    context_formatter: ContextFormatter | None = None,
+) -> None:
+    formatter = context_formatter or default_context_formatter
+    context = formatter(content, match)
+    logger.debug(
+        "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s",
+        rule_name,
+        match.group(),
+        context,
+        lang_code,
+        resource_type,
+        book_code,
+    )
+
+
+def make_rule(
+    rule_name: str,
+    fixer: Fixer,
+    context_formatter: ContextFormatter | None = None,
+) -> Rule:
+    return (rule_name, make_detector(rule_name), fixer, context_formatter)
+
+
+def remove_null_bytes_and_control_characters(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     """
     Remove any NULL bytes and all control characters.
 
@@ -303,28 +353,33 @@ def remove_null_bytes_and_control_characters(content: str) -> str:
     USFM. We strip those out as well as the possibility of ASCII NULL
     bytes.
     """
-    return re.sub(
+    return sub(
         pattern_matchers["remove_null_bytes_and_control_characters"], "", content
     )
 
 
-def fix_dot_after_verse_number(content: str) -> str:
-    return re.sub(pattern_matchers["fix_dot_after_verse_number"], r"\1 \2", content)
+def fix_dot_after_verse_number(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
+    return sub(pattern_matchers["fix_dot_after_verse_number"], r"\1 \2", content)
 
 
-def fix_verse_marker_without_v(content: str) -> str:
-    return re.sub(pattern_matchers["fix_verse_marker_without_v"], r"\\v \1 \2", content)
+def fix_verse_marker_without_v(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
+    return sub(pattern_matchers["fix_verse_marker_without_v"], r"\\v \1 \2", content)
 
 
-def fix_missing_space_before_number(content: str) -> str:
+def fix_missing_space_before_number(
+    content: str,
+    compiled_patterns: Mapping[str, Pattern[str]] = COMPILED_PATTERNS,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     if match := compiled_patterns["fix_missing_space_before_number"].search(content):
-        # logger.debug(
-        #     "match.group(1): %s",
-        #     match.group(1),
-        # )
         character_before_number = content[match.start() - 1]
         character_before_before_number = content[match.start() - 2]
-        # logger.debug("character_before_number: %s", character_before_number)
         if (
             character_before_number.isdigit()
             and match.group(1).isdigit()
@@ -336,15 +391,15 @@ def fix_missing_space_before_number(content: str) -> str:
                 "Actually, it wasn't missing a space before number after all upon further checking"
             )
             return content
-        else:
-            return re.sub(
-                pattern_matchers["fix_missing_space_before_number"], r" \1", content
-            )
+        return sub(pattern_matchers["fix_missing_space_before_number"], r" \1", content)
     return content
 
 
-def fix_missing_space_after_number(content: str) -> str:
-    matches = re.findall(compiled_patterns["fix_missing_space_after_number"], content)
+def fix_missing_space_after_number(
+    content: str,
+    compiled_patterns: Mapping[str, Pattern[str]] = COMPILED_PATTERNS,
+) -> str:
+    matches = findall(compiled_patterns["fix_missing_space_after_number"], content)
     for match in matches:
         if not match[2].isdigit() and match[2][0] not in [
             ":",
@@ -358,17 +413,24 @@ def fix_missing_space_after_number(content: str) -> str:
         ]:  # Skip e.g., '(Zak 13:9)'
             replacement = match[1] + " " + match[2]
             pattern2 = f"{match[1]}{match[2]}"
-            content = re.sub(pattern2, replacement, content)
+            content = sub(pattern2, replacement, content)
     return content
 
 
-def fix_missing_space_before_verse_marker(content: str) -> str:
-    return re.sub(
+def fix_missing_space_before_verse_marker(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
+    return sub(
         pattern_matchers["fix_missing_space_before_verse_marker"], r"\1 \2", content
     )
 
 
-def fix_standalone_verse_numbers(content: str) -> str:
+def fix_standalone_verse_numbers(
+    content: str,
+    compiled_patterns: Mapping[str, Pattern[str]] = COMPILED_PATTERNS,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     # We have to try to determine if a standalone integer should be
     # interpreted as a verse with missing verse marker or as a valid piece
     # of non-structural content. E.g., in ayn, mat, chapter 1, verse 17, the
@@ -404,30 +466,31 @@ def fix_standalone_verse_numbers(content: str) -> str:
         # Extract all standalone numbers (likely verse numbers) from
         # content but skip the first part, 6 characters, of content
         # which could contain a chapter marker and its value.
-        matches = [int(m.group()) for m in re.finditer(r"\b\d+\b", content[7:])]
-        # logger.debug("standalone number matches: %s", matches)
+        matches = [int(m.group()) for m in finditer(r"\b\d+\b", content[7:])]
         is_ascending = all(
             earlier < later for earlier, later in zip(matches, matches[1:])
         )
-        # logger.debug("is_ascending: %s", is_ascending)
         num_matches = len(matches)
         if (
-            not re.compile(r"""\\v \d+""").search(context_for_standalone_verse)
+            not compile(r"""\\v \d+""").search(context_for_standalone_verse)
             and not num_matches >= num_of_occurrences
         ) or is_ascending:  # Check for non-ascending numbers
-            return re.sub(
+            return sub(
                 pattern_matchers["fix_standalone_verse_numbers"],
                 r"\\v \1",
                 content,
             )
-        else:
-            logger.info(
-                "Actually, we can't be certain it was a standalone verse number after all upon further checking"
-            )
+        logger.info(
+            "Actually, we can't be certain it was a standalone verse number after all upon further checking"
+        )
     return content
 
 
-def fix_standalone_verse_number_and_period(content: str) -> str:
+def fix_standalone_verse_number_and_period(
+    content: str,
+    compiled_patterns: Mapping[str, Pattern[str]] = COMPILED_PATTERNS,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     # E.g., in Russian (ru) some of the USFM exhibits verse markers of the
     # form 1. rather than \v 1
     if match := compiled_patterns["fix_standalone_verse_number_and_period"].search(
@@ -446,7 +509,7 @@ def fix_standalone_verse_number_and_period(content: str) -> str:
         # Extract all standalone number and period (likely verse numbers) from
         # content but skip the first part, 6 characters, of content
         # which could contain a chapter marker and its value.
-        matches = [int(m.group(1)) for m in re.finditer(r"\b(\d+)\.", content[7:])]
+        matches = [int(m.group(1)) for m in finditer(r"\b(\d+)\.", content[7:])]
         logger.debug("standalone verse number and period matches: %s", matches)
         is_ascending = all(
             earlier < later for earlier, later in zip(matches, matches[1:])
@@ -454,53 +517,89 @@ def fix_standalone_verse_number_and_period(content: str) -> str:
         logger.debug("is_ascending: %s", is_ascending)
         num_matches = len(matches)
         if (
-            not re.compile(r"""\\v \d+""").search(
-                context_for_standalone_verse_and_period
-            )
+            not compile(r"""\\v \d+""").search(context_for_standalone_verse_and_period)
             and not num_matches >= num_of_occurrences
         ) or is_ascending:  # Check for non-ascending numbers
-            return re.sub(
+            return sub(
                 pattern_matchers["fix_standalone_verse_number_and_period"],
                 r"\\v \1 \2",
                 content,
             )
-        else:
-            logger.info(
-                "Actually, we can't be certain it was a standalone verse number and period after all upon further checking"
-            )
+        logger.info(
+            "Actually, we can't be certain it was a standalone verse number and period after all upon further checking"
+        )
     return content
 
 
-def replace_n_with_v(content: str) -> str:
+def replace_n_with_v(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     """Replace \n used mistakenly as verse markers with \v"""
-    return re.sub(pattern_matchers["replace_n_with_v"], r"""\\v""", content)
+    return sub(pattern_matchers["replace_n_with_v"], r"\\v", content)
 
 
-def replace_cc_with_c(content: str) -> str:
+def replace_cc_with_c(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     """
     Replace two consecutive chapter markers with whitespace or newline between them with only one chapter marker
     """
-    return re.sub(pattern_matchers["replace_cc_with_c"], r"\1" + "\n", content)
+    return sub(pattern_matchers["replace_cc_with_c"], r"\1" + "\n", content)
 
 
-def replace_vv_with_v(content: str) -> str:
+def replace_vv_with_v(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     """Replace \v\v, caused by other correcting functions, with \v"""
-    return re.sub(pattern_matchers["replace_vv_with_v"], "\\v", content)
+    return sub(pattern_matchers["replace_vv_with_v"], r"\\v", content)
 
 
-def replace_sv_with_s(content: str) -> str:
+def replace_sv_with_s(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     r"""Replace \s\v, caused by other correcting functions, with \s"""
-    return re.sub(pattern_matchers["replace_sv_with_s"], "\\s", content)
+    return sub(pattern_matchers["replace_sv_with_s"], r"\\s", content)
 
 
-def fix_space_after_section_marker(content: str) -> str:
+def fix_space_after_section_marker(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     """Reunite section marker with its value, caused by other correcting functions"""
-    return re.sub(pattern_matchers["fix_space_after_section_marker"], r"\\s\1", content)
+    return sub(pattern_matchers["fix_space_after_section_marker"], r"\\s\1", content)
 
 
-def replace_qv_with_q(content: str) -> str:
+def replace_qv_with_q(
+    content: str,
+    pattern_matchers: Mapping[str, str] = PATTERN_MATCHERS,
+) -> str:
     r"""Replace \q\v <integer>, caused by other correcting functions, with \q<integer>"""
-    return re.sub(pattern_matchers["replace_qv_with_q"], r"\\q\1", content)
+    return sub(pattern_matchers["replace_qv_with_q"], r"\\q\1", content)
+
+
+RULES: list[Rule] = [
+    make_rule("fix_dot_after_verse_number", fix_dot_after_verse_number),
+    make_rule("fix_verse_marker_without_v", fix_verse_marker_without_v),
+    make_rule("fix_missing_space_before_number", fix_missing_space_before_number),
+    make_rule("fix_missing_space_after_number", fix_missing_space_after_number),
+    make_rule(
+        "fix_missing_space_before_verse_marker", fix_missing_space_before_verse_marker
+    ),
+    make_rule("fix_standalone_verse_numbers", fix_standalone_verse_numbers),
+    make_rule(
+        "fix_standalone_verse_number_and_period", fix_standalone_verse_number_and_period
+    ),
+    make_rule("replace_n_with_v", replace_n_with_v),
+    make_rule("replace_vv_with_v", replace_vv_with_v),
+    make_rule("replace_sv_with_s", replace_sv_with_s),
+    make_rule("fix_space_after_section_marker", fix_space_after_section_marker),
+    make_rule("replace_qv_with_q", replace_qv_with_q),
+    make_rule("replace_cc_with_c", replace_cc_with_c),
+]
 
 
 def fix_usfm(
@@ -508,239 +607,22 @@ def fix_usfm(
     lang_code: str,
     resource_type: str,
     book_code: str,
+    rules: Sequence[Rule] = RULES,
 ) -> str:
     """
     Detect and correct many USFM structural issues in USFM source.
     """
-    # logger.debug("Possibly defective USFM content: %s", usfm_content)
-    corrected_usfm_content: str = usfm_content
-    # NOTE This is called in a different place now, leaving commented out for now.
-    # if compiled_patterns["remove_null_bytes_and_control_characters"].search(
-    #     corrected_usfm_content
-    # ):
-    #     logger.debug(
-    #         "USFM defect, %s, detected for resource: %s-%s-%s, about to attempt fix...",
-    #         "remove_null_bytes_and_control_characters",
-    #         resource_lookup_dto.lang_code,
-    #         resource_lookup_dto.resource_type,
-    #         resource_lookup_dto.book_code,
-    #     )
-    #     corrected_usfm_content = remove_null_bytes_and_control_characters(
-    #         corrected_usfm_content
-    #     )
-    if match := compiled_patterns["fix_dot_after_verse_number"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "fix_dot_after_verse_number",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_dot_after_verse_number(corrected_usfm_content)
-    if match := compiled_patterns["fix_verse_marker_without_v"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "fix_verse_marker_without_v",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_verse_marker_without_v(corrected_usfm_content)
-    if match := compiled_patterns["fix_missing_space_before_number"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "fix_missing_space_before_number",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_missing_space_before_number(corrected_usfm_content)
-    if match := compiled_patterns["fix_missing_space_after_number"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "Potential USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, then will attempt fix...",
-            "fix_missing_space_after_number",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_missing_space_after_number(corrected_usfm_content)
-    if match := compiled_patterns["fix_missing_space_before_verse_marker"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "fix_missing_space_before_verse_marker",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_missing_space_before_verse_marker(
-            corrected_usfm_content
-        )
-    if match := compiled_patterns["fix_standalone_verse_numbers"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "Possible USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, attempt to fix...",
-            "fix_standalone_verse_numbers",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_standalone_verse_numbers(corrected_usfm_content)
-    if match := compiled_patterns["fix_standalone_verse_number_and_period"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "Possible USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, if confirmed, attempt to fix...",
-            "fix_standalone_verse_number_and_period",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_standalone_verse_number_and_period(
-            corrected_usfm_content
-        )
-    if match := compiled_patterns["replace_n_with_v"].search(corrected_usfm_content):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "replace_n_with_v",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = replace_n_with_v(corrected_usfm_content)
-    if match := compiled_patterns["replace_vv_with_v"].search(corrected_usfm_content):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "replace_vv_with_v",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = replace_vv_with_v(corrected_usfm_content)
-    if match := compiled_patterns["replace_sv_with_s"].search(corrected_usfm_content):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "replace_sv_with_s",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = replace_sv_with_s(corrected_usfm_content)
-    if match := compiled_patterns["fix_space_after_section_marker"].search(
-        corrected_usfm_content
-    ):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "fix_space_after_section_marker",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = fix_space_after_section_marker(corrected_usfm_content)
-    if match := compiled_patterns["replace_qv_with_q"].search(corrected_usfm_content):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "replace_qv_with_q",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = replace_qv_with_q(corrected_usfm_content)
-    if match := compiled_patterns["replace_cc_with_c"].search(corrected_usfm_content):
-        logger.debug(
-            "USFM defect %s detected, specifically %s, context: %s, for resource: %s-%s-%s, about to attempt fix...",
-            "replace_cc_with_c",
-            match.group(),
-            corrected_usfm_content[
-                max(0, match.start() - 5) : min(
-                    len(corrected_usfm_content), match.end() + 5
-                )
-            ],
-            lang_code,
-            resource_type,
-            book_code,
-        )
-        corrected_usfm_content = replace_cc_with_c(corrected_usfm_content)
+    corrected_usfm_content = usfm_content
+    for rule_name, detect, fix, context_formatter in rules:
+        if match := detect(corrected_usfm_content):
+            log_detection(
+                rule_name,
+                match,
+                corrected_usfm_content,
+                lang_code,
+                resource_type,
+                book_code,
+                context_formatter,
+            )
+            corrected_usfm_content = fix(corrected_usfm_content)
     return corrected_usfm_content

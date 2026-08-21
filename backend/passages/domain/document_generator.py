@@ -8,7 +8,9 @@ from doc.domain import worker
 from doc.domain.bible_books import BOOK_NAMES
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment, USFMBook
-from doc.domain.parsing import split_chapter_into_verses, usfm_book_content
+from doc.domain.parsing import (
+    usfm_book_content,
+)
 from doc.domain.resource_lookup import (
     book_codes_for_lang_from_usfm_only,
     prepare_resource_filepath,
@@ -29,7 +31,7 @@ from passages.domain.model import (
     Passage,
     BibleReferenceWithAvailability,
 )
-from passages.domain.parser import verse_text_html
+from passages.domain.parser import split_chapter_into_verses, verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
 from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
@@ -101,6 +103,9 @@ def get_usfm_books_and_usfm_resource_type(
     bible_references_with_availability: list[BibleReferenceWithAvailability],
     lang_code: str,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    languages_where_non_ulb_preferred: Sequence[
+        str
+    ] = settings.LANGUAGES_WHERE_NON_ULB_PREFERRED,
 ) -> tuple[list[USFMBook], str]:
     # Invariant: book codes are only those that were available from USFM resources
     book_codes = list(
@@ -128,10 +133,16 @@ def get_usfm_books_and_usfm_resource_type(
     )
     usfm_books = []
     usfm_resource_type = ""
-    if ulb_usfm_resource_types:  # Prefer ulb if available
-        usfm_resource_type = ulb_usfm_resource_types[0]
-    elif usfm_resource_types:
-        usfm_resource_type = usfm_resource_types[0]
+    if lang_code not in languages_where_non_ulb_preferred:
+        if ulb_usfm_resource_types:  # Prefer ulb if available
+            usfm_resource_type = ulb_usfm_resource_types[0]
+        elif usfm_resource_types:
+            usfm_resource_type = usfm_resource_types[0]
+    else:
+        if usfm_resource_types:  # Prefer non-ulb if available
+            usfm_resource_type = usfm_resource_types[0]
+        elif ulb_usfm_resource_types:
+            usfm_resource_type = ulb_usfm_resource_types[0]
     if usfm_resource_type:
         usfm_book = None
         for book_code in book_codes:
@@ -197,22 +208,22 @@ def generate_docx_document(
             )
         )
     current_task.update_state(state="Assembling content")
-    passages_lang0 = get_passages(
+    lang0_passages = get_passages(
         bible_references_with_availability_lang0,
         usfm_resource_type_lang0,
         usfm_books_lang0,
     )
-    passages_lang1 = []
+    lang1_passages = []
     if lang1_code:
-        passages_lang1 = get_passages(
+        lang1_passages = get_passages(
             bible_references_with_availability_lang1,
             usfm_resource_type_lang1,
             usfm_books_lang1,
         )
     current_task.update_state(state="Converting to Docx")
     generate_docx(
-        passages_lang0,
-        passages_lang1,
+        lang0_passages,
+        lang1_passages,
         docx_filepath_,
         lang0_code,
         lang0_name,
@@ -223,8 +234,8 @@ def generate_docx_document(
 
 
 def generate_docx(
-    passages_lang0: list[Passage],
-    passages_lang1: list[Passage],
+    lang0_passages: list[Passage],
+    lang1_passages: list[Passage],
     docx_filepath: str,
     lang0_code: str,
     lang0_name: str,
@@ -245,9 +256,9 @@ def generate_docx(
     html_to_docx = HtmlToDocx()
     has_lang1 = lang1_code is not None and lang1_name is not None
     if has_lang1:
-        assert len(passages_lang0) == len(passages_lang1), (
+        assert len(lang0_passages) == len(lang1_passages), (
             f"Passage count mismatch: "
-            f"{len(passages_lang0)} vs {len(passages_lang1)}"
+            f"{len(lang0_passages)} vs {len(lang1_passages)}"
         )
     columns: list[str] = ["lang0"]
     if has_lang1:
@@ -271,9 +282,9 @@ def generate_docx(
         table.columns[i].width = w
     col_index = {name: i for i, name in enumerate(columns)}
     pairs = (
-        zip(passages_lang0, passages_lang1)
+        zip(lang0_passages, lang1_passages)
         if has_lang1
-        else ((p, None) for p in passages_lang0)
+        else ((p, None) for p in lang0_passages)
     )
     for p0, p1 in pairs:
         row = table.add_row()

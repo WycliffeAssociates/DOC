@@ -8,6 +8,7 @@ from doc.domain.bible_books import BOOK_NUMBERS
 from doc.domain.model import ResourceRequest
 from doc.markdown_transforms.link_regexes import (
     RC_QUESTION_LINK_RE,
+    SEE_PARENTHETICAL_RE,
     TA_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_HTTPS_LINK_RE,
     TA_PREFIXED_MARKDOWN_LINK_RE,
@@ -33,7 +34,6 @@ from doc.markdown_transforms.model import (
 )
 from doc.utils.file_utils import read_file
 from doc.utils.tw_utils import localized_translation_word
-
 
 logger = settings.logger(__name__)
 
@@ -124,6 +124,8 @@ def transform_tw_links(
     source = transform_rc_obe_tw_links(
         source, lang_code, resource_requests, translation_words_dict
     )
+
+    source = remove_see_colon_prefixed_parenthicals(source)
     return source
 
 
@@ -158,6 +160,7 @@ def transform_ta_and_tn_links(
     source = transform_tn_missing_book_code_markdown_links_no_paren(source)
     source = transform_tn_obs_markdown_links(source)
     source = transform_rc_question_links(source)
+    source = remove_see_colon_prefixed_parenthicals(source)
     return source
 
 
@@ -1045,3 +1048,14 @@ def wiki_link_parser(
         for link in finditer(wiki_link_re, source)
     ]
     return links
+
+
+def remove_see_colon_prefixed_parenthicals(
+    source: str,
+    see_parenthetical_re: re.Pattern[str] = SEE_PARENTHETICAL_RE,
+) -> str:
+    """
+    Remove any parenthetical string beginning with localized '(See:'.
+    Example: '(Veja: foobar)' -> ''
+    """
+    return see_parenthetical_re.sub("", source)

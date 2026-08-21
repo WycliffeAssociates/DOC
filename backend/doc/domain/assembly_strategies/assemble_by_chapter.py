@@ -37,9 +37,8 @@ from doc.domain.model import (
     TWBook,
     USFMBook,
 )
-from doc.domain.parsing import handle_split_chapter_into_verses
+from doc.domain.parsing import split_chapter_into_verses_with_formatting
 from doc.reviewers_guide.model import RGBook
-
 
 logger = settings.logger(__name__)
 
@@ -625,13 +624,13 @@ def assemble_usfm_by_verse_chapter_at_a_time(
             primary_verses = None
             secondary_verses = None
             if usfm_book and usfm_chapter:
-                usfm_chapter.verses = handle_split_chapter_into_verses(
-                    usfm_book, usfm_chapter
+                usfm_chapter.verses = split_chapter_into_verses_with_formatting(
+                    usfm_chapter
                 )
                 primary_verses = usfm_chapter.verses
             if usfm_book2 and usfm_book2_chapter:
-                usfm_book2_chapter.verses = handle_split_chapter_into_verses(
-                    usfm_book2, usfm_book2_chapter
+                usfm_book2_chapter.verses = split_chapter_into_verses_with_formatting(
+                    usfm_book2_chapter
                 )
                 secondary_verses = usfm_book2_chapter.verses
             if usfm_book and primary_verses:

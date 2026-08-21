@@ -2,6 +2,7 @@
 Tests for assembly strategy book-then-language
 """
 
+import pytest
 from doc.config import settings
 from doc.domain import model
 from doc.entrypoints.app import app
@@ -12,6 +13,8 @@ from tests.shared.utils import check_finished_document_with_verses_success
 logger = settings.logger(__name__)
 
 
+# en tn is not currently available from data API
+@pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col_fr_tw_col_by_verse_chapter_at_a_time_1c_c() -> (
     None
 ):
@@ -73,6 +76,8 @@ def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_fr_f10_col_fr_tn_col_fr_tq_col
         check_finished_document_with_verses_success(response)
 
 
+# en tn is not currently available from data API
+@pytest.mark.skip
 def test_en_ulb_col_en_tn_col_en_tq_col_en_tw_col_pt_br_ulb_col_pt_br_tn_col_pt_br_tq_col_pt_br_tw_col_by_chapter_1c() -> (
     None
 ):

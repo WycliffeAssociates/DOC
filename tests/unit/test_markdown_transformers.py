@@ -148,3 +148,16 @@ def test_remove_pagination_symbols_from_commentary() -> None:
 """
     source = markdown_transformer.remove_pagination_symbols(source)
     assert expected == source
+
+
+def test_remove_localized_see_colon_patterns_only() -> None:
+    source = """Nullam eu ante vel est convallis dignissim.  Fusce suscipit, wisi nec facilisis facilisis, est dui fermentum leo, quis tempor ligula erat quis odio.  Nunc porta vulputate tellus.  Nunc rutrum turpis sed pede.  Sed bibendum.  Aliquam posuere.  Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis varius mi purus non odio.  Pellentesque condimentum, magna ut suscipit hendrerit, ipsum augue ornare nulla, non luctus diam neque sit amet urna.  Curabitur vulputate vestibulum lorem.  Fusce sagittis, libero non molestie mollis, magna orci ultrices dolor, at vulputate neque nulla lacinia eros.  Sed id ligula quis est convallis tempor precious in his sight (Isaiah 43:4).  Curabitur lacinia pulvinar nibh keep provisions (see 2 Chronicles 8:3).  Nam a sapien devour one another (Galatians 5:15).
+(See: [[rc://...]])
+(Veja: Altar)
+"""
+    expected = """Nullam eu ante vel est convallis dignissim.  Fusce suscipit, wisi nec facilisis facilisis, est dui fermentum leo, quis tempor ligula erat quis odio.  Nunc porta vulputate tellus.  Nunc rutrum turpis sed pede.  Sed bibendum.  Aliquam posuere.  Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis varius mi purus non odio.  Pellentesque condimentum, magna ut suscipit hendrerit, ipsum augue ornare nulla, non luctus diam neque sit amet urna.  Curabitur vulputate vestibulum lorem.  Fusce sagittis, libero non molestie mollis, magna orci ultrices dolor, at vulputate neque nulla lacinia eros.  Sed id ligula quis est convallis tempor precious in his sight (Isaiah 43:4).  Curabitur lacinia pulvinar nibh keep provisions (see 2 Chronicles 8:3).  Nam a sapien devour one another (Galatians 5:15).
+
+
+"""
+    source = markdown_transformer.remove_see_colon_prefixed_parenthicals(source)
+    assert expected == source

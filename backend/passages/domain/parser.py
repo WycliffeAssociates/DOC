@@ -1,11 +1,12 @@
+from re import split, sub
 from typing import Mapping
 
+from bs4 import BeautifulSoup, NavigableString
 from doc.config import settings
 from doc.domain.bible_books import BOOK_CHAPTER_VERSES
-from doc.domain.model import USFMBook
+from doc.domain.model import USFMBook, USFMChapter
 from doc.domain.parsing import lookup_verse_text
 from doc.reviewers_guide.model import BibleReference
-
 
 logger = settings.logger(__name__)
 
@@ -102,3 +103,63 @@ def verse_text_html(
                     f'<span class="verse"><sup class="versemarker">{bible_reference.start_chapter_verse_ref.strip()}</sup>{verse_text___}</span>'
                 )
     return "".join(verse_text)
+
+
+def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
+    # Sample HTML content with multiple verse elements
+    # html_content = '''
+    # <span class="verse">
+    # <sup class="versemarker">19</sup>
+    # For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
+    # <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
+    # <div class="sectionhead-5"></div>
+    # </span>
+    # <span class="verse">
+    # <sup class="versemarker">20</sup>
+    # I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
+    # <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
+    # <div class="sectionhead-5"></div>
+    # </span>
+    # '''
+    verse_dict: dict[str, str] = {}
+    soup = BeautifulSoup(chapter.content, "html.parser")
+    for verse_span in soup.find_all("span", class_="verse"):
+        versemarker = verse_span.find("sup", class_="versemarker")
+        if not versemarker or not versemarker.get_text(strip=True):
+            continue
+        verse_number = versemarker.get_text(strip=True)
+        # Remove verse marker
+        versemarker.decompose()
+        # Remove footnote callers
+        for caller in verse_span.find_all("sup", class_="caller"):
+            caller.decompose()
+        # Fix spacing issue for poetry divs
+        for poetry_div in verse_span.find_all(
+            "div", class_=lambda c: c and c.startswith("poetry-")
+        ):
+            poetry_div.insert_before(NavigableString(" "))
+        # Handle fr f10 word-entry tags
+        for we in verse_span.find_all("span", class_="word-entry"):
+            we.unwrap()
+        # Get inner HTML of the verse span
+        verse_text = "".join(str(child) for child in verse_span.contents).strip()
+        # verse_text = clean_verse_html(verse_text)
+        verse_dict[verse_number] = verse_text
+    return verse_dict
+
+
+def clean_verse_html(
+    raw_verse: str,
+    empty_paragraph: str = "<p></p>",
+    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
+) -> str:
+    cleaned_html = raw_verse
+    cleaned_html = sub(r"\s+([,;:.!?])", r"\1", cleaned_html)
+    cleaned_html = sub(r"\s+'", "'", cleaned_html)
+    cleaned_html = sub(r"'\s+", "'", cleaned_html)
+    cleaned_html = sub(r"\s*-\s*", "-", cleaned_html)
+    cleaned_html = sub(r"\s{2,}", " ", cleaned_html).strip()
+    cleaned_html = cleaned_html.replace(empty_paragraph, "").replace(
+        sectionhead5_element, ""
+    )
+    return cleaned_html

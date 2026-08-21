@@ -2,6 +2,7 @@
 This module provides an API for parsing content.
 """
 
+from bs4 import BeautifulSoup, NavigableString
 from re import (
     compile,
     escape,
@@ -276,14 +277,19 @@ def split_usfm_by_chapters(
     chapters = re_split(chapter_regex, usfm_text)
     frontmatter = chapters.pop(0).strip()
 
+    defective_lang_codes = {resource[0] for resource in resources_with_usfm_defects}
+
     def needs_fixing() -> bool:
         """
-        Determine if a chapter needs fixing based on configuration.
+        Determine whether this resource should be checked for known USFM defects.
+
+        If CHECK_ALL_BOOKS_FOR_LANGUAGE is enabled, then the presence of any
+        known defective resource for a language causes all books for that
+        language to be checked for similar defects. Otherwise, only explicitly
+        listed resource tuples are checked.
         """
         if check_all_books_for_language:
-            return lang_code in [
-                resource[0] for resource in resources_with_usfm_defects
-            ]
+            return lang_code in defective_lang_codes
         return (
             lang_code,
             resource_type,
@@ -381,7 +387,6 @@ def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str
 
 
 def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
-    # Define the regex patterns to match \h, \mt, and \toc
     patterns = {
         "h": r"\\h\s+(.*?)(?=\s+\\|\n|$)",
         "mt": r"\\mt\s+(.*?)(?=\s+\\|\n|$)",
@@ -396,37 +401,63 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
     return extracted_data
 
 
-def maybe_localized_book_name(frontmatter: str) -> str:
-    r"""
-    Rule for obtaining localized book name:
+# Global defaults for fallback/reference
+DEFAULT_BOOK_NAME_LOOKUP_ORDER = ["h", "mt", "toc1", "toc2"]
 
-    In USFM:
+SPECIALIZED_BOOK_NAME_LOOKUP_MAP: dict[tuple[str, str], list[str]] = {
+    ("fr", "f10"): ["toc2"],
+}
 
-    1. Look to see if the \h marker is present — if so, use that value.
-    2. Else look to see if the \mt1 marker is present — if so, use that value.
-    3. Else look to see if the \toc1 marker is present - if so, use that value.
-    4. Else look to see if the \toc2 marker is present - if so, use that value.
+# Define combinations that should skip normalization
+SKIP_NORMALIZATION_SET: set[tuple[str, str]] = {
+    ("fr", "f10"),  # Skip normalization for French f10
+}
 
-    Outside USFM:
 
-    5. Else use the book name from the source language if available.
-    6. Otherwise use the English book name.
-
-    Steps 5 and 6 happen outside this function.
+def maybe_localized_book_name(
+    frontmatter: str,
+    language: str,
+    resource_type: str,
+    default_book_name_lookup_order: list[str] = DEFAULT_BOOK_NAME_LOOKUP_ORDER,
+    specialized_book_name_lookup_map: dict[
+        tuple[str, str], list[str]
+    ] = SPECIALIZED_BOOK_NAME_LOOKUP_MAP,
+    skip_normalization_set: set[tuple[str, str]] = SKIP_NORMALIZATION_SET,
+) -> str:
+    """
+    Rule for obtaining localized book name based on language and resource type.
+    Falls back to empirical default sequence if no specialization exists.
+    Allows skipping normalization for specific language/resource combinations.
     """
     frontmatter_data = extract_usfm_frontmatter(frontmatter)
-    localized_book_name = (
-        frontmatter_data.get("h")
-        or frontmatter_data.get("mt")
-        or frontmatter_data.get("mt1")
-        or frontmatter_data.get("toc1")
-        or frontmatter_data.get("toc2")
-        or ""
+    # Normalize inputs for lookup consistency
+    lang_key = language.lower()
+    res_key = resource_type.lower()
+    lookup_key = (lang_key, res_key)
+    # 1. Determine the marker lookup order (Specialized vs Default)
+    marker_order = specialized_book_name_lookup_map.get(
+        lookup_key, default_book_name_lookup_order
     )
-    logger.debug("localized_book_name: %s", localized_book_name)
+    # 2. Iterate through the preferred markers and grab the first one that exists
+    localized_book_name = ""
+    for marker in marker_order:
+        value = frontmatter_data.get(marker)
+        if value:
+            localized_book_name = value
+            break
+    logger.debug(
+        "Using marker order %s for (%s, %s). Found: %s",
+        marker_order,
+        language,
+        resource_type,
+        localized_book_name,
+    )
+    # 3. Normalize and clean up if a name was found and not explicitly skipped
     if localized_book_name:
-        localized_book_name = normalize_localized_book_name(localized_book_name)
-        logger.debug("normalized localized_book_name: %s", localized_book_name)
+        if lookup_key in skip_normalization_set:
+            logger.debug("Skipping normalization for %s", lookup_key)
+        else:
+            localized_book_name = normalize_localized_book_name(localized_book_name)
     return localized_book_name
 
 
@@ -527,9 +558,7 @@ def usfm_book_content(
         cleaned_chapter_html_content_ = remove_null_bytes_and_control_characters(
             chapter_html_content
         )
-        cleaned_chapter_html_content = remove_unwanted_elements(
-            cleaned_chapter_html_content_
-        )
+        cleaned_chapter_html_content = clean_content_html(cleaned_chapter_html_content_)
         usfm_chapters[chapter_num] = USFMChapter(
             content=(
                 cleaned_chapter_html_content if cleaned_chapter_html_content else ""
@@ -544,7 +573,7 @@ def usfm_book_content(
         national_book_name=(
             localized_book_name
             if localized_book_name
-            else BOOK_NAMES[resource_lookup_dto.book_code]
+            else book_names[resource_lookup_dto.book_code]
         ),
         resource_type_name=resource_lookup_dto.resource_type_name,
         chapters=usfm_chapters if usfm_chapters else {},
@@ -558,7 +587,11 @@ def get_localized_book_name(
     resource_lookup_dto: ResourceLookupDto,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
 ) -> str:
-    localized_book_name = maybe_localized_book_name(frontmatter)
+    localized_book_name = maybe_localized_book_name(
+        frontmatter,
+        resource_lookup_dto.lang_code,
+        resource_lookup_dto.resource_type,
+    )
     if not localized_book_name:
         book_codes_and_names_from_manifest_ = book_codes_and_names_from_manifest(
             resource_dir
@@ -1408,172 +1441,110 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
     return verse
 
 
-# Used by STET and PASSAGES apps
-def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
-    # Sample HTML content with multiple verse elements
-    # html_content = '''
-    # <span class="verse">
-    # <sup class="versemarker">19</sup>
-    # For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
-    # <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
-    # <div class="sectionhead-5"></div>
-    # </span>
-    # <span class="verse">
-    # <sup class="versemarker">20</sup>
-    # I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
-    # <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
-    # <div class="sectionhead-5"></div>
-    # </span>
-    # '''
-    verse_dict = {}
-    # Find all verse spans
-    verse_spans = findall(r'<span class="verse">(.*?)</span>', chapter.content, DOTALL)
-    for verse_span in verse_spans:
-        # Extract the verse number from the versemarker
-        verse_number = search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
-        if verse_number:
-            verse_number_ = verse_number.group(1)
-            # Remove versemarker
-            verse_text = sub(r'<sup class="versemarker">.*?</sup>', "", verse_span)
-            # Remove footnotes numbers
-            verse_text = sub(r'<sup id=".*?" class="caller">.*?</sup>', "", verse_text)
-            # Fix spacing issue when div class="poetry-*" type divs
-            # are used, e.g., yielding 'heartsas' for Hebrews 3:8
-            verse_text = sub(
-                r'<div class="poetry-\d">(.*?)</div>',
-                r" \1",
-                verse_text,
-            )
-            # Add to the dictionary with verse number as the key and verse text as the value
-            verse_dict[verse_number_] = verse_text
-    return verse_dict
-
-
-def handle_split_chapter_into_verses(
-    usfm_book: USFMBook,
-    usfm_chapter: USFMChapter,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
-) -> dict[VerseRef, str]:
-    if (
-        usfm_book.lang_code == "fr"
-        and usfm_book.resource_type_name == resource_type_codes_and_names["f10"]
-    ):
-        return split_chapter_into_verses_with_formatting_for_f10(usfm_chapter)
-    else:
-        return split_chapter_into_verses_with_formatting(usfm_chapter)
-
-
 def split_chapter_into_verses_with_formatting(
     chapter: USFMChapter,
-    empty_paragraph: str = "<p></p>",
-    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
 ) -> dict[VerseRef, str]:
     """
-    Given a USFMChapter instance, return the same instance with its
-    verses attribute set to a dictionary where the key is the verse
-    number and the value is the verse HTML.
+    Parse chapter.content as HTML, extract each <span class="verse">,
+    unwrap <span class="word-entry"> elements (preserving their text),
+    and return a dict mapping verse number -> cleaned HTML fragment for that verse.
 
     Sample HTML content with multiple verse elements:
 
     >>> html_content = '''
     ... <span class="verse">
-    ... <sup class="versemarker">19</sup>
-    ... For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
-    ... <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
-    ... <div class="sectionhead-5"></div>
+    ... <sup class="versemarker">1</sup>
+    ... <span class="word-entry"> Généalogie </span>
+    ... <span class="word-entry">  </span>
+    ...  de
+    ... <span class="word-entry"> Jésus </span>
+    ... -
+    ... <span class="word-entry"> Christ </span>
+    ... ,
+    ... <span class="word-entry"> fils </span>
+    ...  de
+    ... <span class="word-entry"> David </span>
+    ... ,
+    ... <span class="word-entry"> fils </span>
+    ...  d'
+    ... <span class="word-entry"> Abraham </span>
+    ... .
+    ...
     ... </span>
     ... <span class="verse">
-    ... <sup class="versemarker">20</sup>
-    ... I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
-    ... <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
-    ... <div class="sectionhead-5"></div>
+    ... <sup class="versemarker">2</sup>
+    ... <span class="word-entry"> Abraham </span>
+    ...
+    ... <span class="word-entry"> engendra </span>
+    ...
+    ... <span class="word-entry"> Isaac </span>
+    ... ;
+    ... <span class="word-entry">  </span>
+    ...
+    ... <span class="word-entry"> Isaac </span>
+    ...
+    ... <span class="word-entry"> engendra </span>
+    ...
+    ... <span class="word-entry"> Jacob </span>
+    ... ;
+    ... <span class="word-entry">  </span>
+    ...
+    ... <span class="word-entry"> Jacob </span>
+    ...
+    ... <span class="word-entry"> engendra </span>
+    ...
+    ... <span class="word-entry"> Juda </span>
+    ...
+    ... <span class="word-entry"> et </span>
+    ...
+    ... <span class="word-entry"> ses </span>
+    ...
+    ... <span class="word-entry"> frères </span>
+    ... ;
     ... </span>
     ... '''
     >>> from doc.domain.parsing import split_chapter_into_verses_with_formatting
     >>> chapter = USFMChapter(content=html_content, verses=None)
     >>> chapter.verses = split_chapter_into_verses_with_formatting(chapter)
-    >>> print(chapter.verses["19"])
-    <sup class="versemarker">19</sup>
-    For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
-    <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
-    <BLANKLINE>
-    """
-    # TODO What to do about footnote targets? Perhaps have the value be a
-    # tuple with first element of the verse HTML (which includes the
-    # footnote callers) and the second element the target footnotes HTML?
-    verse_dict = {}
-    # Find all verse spans
-    verse_spans = findall(r'<span class="verse">(.*?)</span>', chapter.content, DOTALL)
-    for verse_span in verse_spans:
-        # Extract the verse number from the versemarker
-        verse_number = search(r'<sup class="versemarker">(\d+)</sup>', verse_span)
-        if verse_number:
-            verse_number_ = verse_number.group(1)
-            # Add to the dictionary with verse number as the key and verse text as the value
-            verse_dict[verse_number_] = (
-                verse_span.strip()
-                .replace(empty_paragraph, "")
-                .replace(sectionhead5_element, "")
-            )
-    return verse_dict
-
-
-def split_chapter_into_verses_with_formatting_for_f10(
-    chapter: USFMChapter,
-    empty_paragraph: str = "<p></p>",
-    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
-) -> dict[str, str]:
-    """
-    Parse chapter.content as HTML, extract each <span class="verse">,
-    unwrap <span class="word-entry"> elements (preserving their text),
-    and return a dict mapping verse number -> cleaned HTML fragment for that verse.
+    >>> print(chapter.verses["1"])
+    <span class="verse"> Généalogie de Jésus-Christ, fils de David, fils d'Abraham. </span>
     """
     soup = BeautifulSoup(chapter.content, "html.parser")
-    verse_dict: dict[str, str] = {}
-    # find all verse spans (parser handles nesting correctly)
+    verse_dict: dict[VerseRef, str] = {}
     for verse_span in soup.find_all("span", class_="verse"):
-        # find the verse number from <sup class="versemarker">NN</sup>
         sup = verse_span.find("sup", class_="versemarker")
         if not sup or not sup.string:
             continue
         verse_number = sup.string.strip()
-        # unwrap all word-entry spans: replace <span class="word-entry">X</span>
-        # with X (preserving whitespace/punctuation)
+        # Remove the versemarker number sup
+        sup.decompose()
+        # fr f10 uses word-entry tags
         for we in verse_span.find_all("span", class_="word-entry"):
             we.unwrap()
-        # Option: normalize whitespace (optional)
-        # If you want to preserve original spacing/punctuation exactly, skip this.
-        # cleaned_html = "".join(str(c) for c in verse_span.contents)
-        cleaned_html = str(verse_span)
-        # Fix spacing issues introduced by inner spans
-        cleaned_html = sub(
-            r"\s+([,;:.!?])", r"\1", cleaned_html
-        )  # remove space before punctuation
-        cleaned_html = sub(r"\s+'", "'", cleaned_html)  # remove space before apostrophe
-        cleaned_html = sub(r"'\s+", "'", cleaned_html)  # remove space after apostrophe
-        cleaned_html = sub(
-            r"\s*-\s*", "-", cleaned_html
-        )  # normalize spaces around hyphens
-        cleaned_html = sub(r"\s{2,}", " ", cleaned_html)  # collapse double spaces
-        cleaned_html = cleaned_html.strip()
-        # if you want plain text instead, use: cleaned_text = verse_span.get_text(" ", strip=True)
-        # store cleaned HTML fragment (still contains <sup> etc.)
-        verse_dict[verse_number] = (
-            cleaned_html.strip()
-            .replace(empty_paragraph, "")
-            .replace(sectionhead5_element, "")
-        )
+        cleaned_html = clean_content_html(str(verse_span))
+        verse_dict[verse_number] = cleaned_html
     return verse_dict
+
+
+def clean_content_html(raw_content: str) -> str:
+    soup = BeautifulSoup(raw_content, "html.parser")
+    cleaned_html = str(soup)
+    cleaned_html = sub(r"\s+([,;:.!?])", r"\1", cleaned_html)
+    cleaned_html = sub(r"\s+'", "'", cleaned_html)
+    cleaned_html = sub(r"'\s+", "'", cleaned_html)
+    cleaned_html = sub(r"\s*-\s*", "-", cleaned_html)
+    cleaned_html = sub(r"\s{2,}", " ", cleaned_html).strip()
+    return cleaned_html
 
 
 if __name__ == "__main__":
 
     # To run the doctests in this module, in the root of the project do:
-    # python backend/document/domain/resource_lookup.py
+    # PYTHONPATH=backend python backend/doc/domain/parsing.py
     # or
-    # python backend/document/domain/resource_lookup.py -v
+    # PYTHONPATH=backend python backend/doc/domain/parsing.py -v
+    # These doctests are not collected by pytest: pyproject.toml sets
+    # testpaths = ["tests"] with no doctest collection, so run them by hand.
     # See https://docs.python.org/3/library/doctest.html
     # for more details.
     import doctest

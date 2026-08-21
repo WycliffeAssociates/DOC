@@ -1,17 +1,24 @@
-import re
+from re import (
+    DOTALL,
+    compile,
+    match,
+    split,
+    sub,
+)
 
+from bs4 import BeautifulSoup, NavigableString
 from doc.config import settings
 from doc.domain.bible_books import BOOK_NAMES
+from doc.domain.model import USFMChapter
 from doc.domain.resource_lookup import book_codes_for_lang_from_usfm_only
 from docx import Document
 from stet.domain.model import VerseReferenceDto, WordEntryDto
 from stet.utils.util import is_valid_int
 
-
 logger = settings.logger(__name__)
 
-_RV_BLOCK_PATTERN = re.compile(r"<r>(.*?)</r>\s*<v>(.*?)</v>", re.DOTALL)
-_REF_PATTERN = re.compile(r"^(.*) (\d+):([0-9,\- ]+)\s?(\(.*\))?$")
+_RV_BLOCK_PATTERN = compile(r"<r>(.*?)</r>\s*<v>(.*?)</v>", DOTALL)
+_REF_PATTERN = compile(r"^(.*) (\d+):([0-9,\- ]+)\s?(\(.*\))?$")
 
 
 def _parse_ref_to_dto(
@@ -24,11 +31,11 @@ def _parse_ref_to_dto(
     lang0_book_codes_and_names__: list[tuple[str, str]],
     source_text_with_bolding: str | None = None,
 ) -> VerseReferenceDto | None:
-    match = _REF_PATTERN.match(reference_)
-    if not match:
+    match_ = _REF_PATTERN.match(reference_)
+    if not match_:
         logger.warning("Couldn't parse %s", reference_)
         return None
-    book_name = match.group(1).replace("\n", "")
+    book_name = match_.group(1).replace("\n", "")
     book_codes_and_names_ = [
         (bc, bn) for bc, bn in lang0_book_codes_and_names if bn == book_name
     ]
@@ -39,11 +46,12 @@ def _parse_ref_to_dto(
     book_code_and_name_ = book_codes_and_names_[0] if book_codes_and_names_ else None
     if book_code_and_name_:
         lang0_book_codes_and_names__.append(book_code_and_name_)
-    chapter_num = int(match.group(2))
-    verses = match.group(3)
-    comment = match.group(4)
+    chapter_num = int(match_.group(2))
+    verses = match_.group(3)
+    comment = match_.group(4)
     source_reference = (
-        f"{book_name} {chapter_num}:{verses}{comment}" if comment
+        f"{book_name} {chapter_num}:{verses}{comment}"
+        if comment
         else f"{book_name} {chapter_num}:{verses}"
     )
     lang0_book_code = book_code_and_name_[0] if book_code_and_name_ else ""
@@ -59,7 +67,7 @@ def _parse_ref_to_dto(
         if is_valid_int(verse_ref):
             valid_verse_refs.append(str(verse_ref))
             continue
-        vm = re.match(r"(\d+)-(\d+)", verse_ref)
+        vm = match(r"(\d+)-(\d+)", verse_ref)
         if vm:
             for verse_num in range(int(vm.group(1)), int(vm.group(2)) + 1):
                 valid_verse_refs.append(str(verse_num))
@@ -149,12 +157,12 @@ def get_word_entry_dtos(
             # Create entry item
             word_entry_dto = WordEntryDto()
             # Extract word from 1st column
-            match = re.match(r"(.*)(\n)?(.*)?", row.cells[0].text)
-            if not match:
+            match_ = match(r"(.*)(\n)?(.*)?", row.cells[0].text)
+            if not match_:
                 raise ValueError(f"Couldn't parse word(s): {row.cells[0].text}")
-            words = match.group(1)
+            words = match_.group(1)
             word_entry_dto.words = [word.strip() for word in words.split(",")]
-            raw_strongs = match.group(3)
+            raw_strongs = match_.group(3)
             word_entry_dto.strongs_numbers = raw_strongs.strip()
             definition = ""
             previous_paragraph_style_name = ""
@@ -203,3 +211,63 @@ def get_word_entry_dtos(
                 ]
             word_entry_dtos.append(word_entry_dto)
     return word_entry_dtos, list(set(lang0_book_codes_and_names__))
+
+
+def split_chapter_into_verses(chapter: USFMChapter) -> dict[str, str]:
+    # Sample HTML content with multiple verse elements
+    # html_content = '''
+    # <span class="verse">
+    # <sup class="versemarker">19</sup>
+    # For through the law I died to the law, so that I might live for God. I have been crucified with Christ.
+    # <sup id="footnote-caller-1" class="caller"><a href="#footnote-target-1">1</a></sup>
+    # <div class="sectionhead-5"></div>
+    # </span>
+    # <span class="verse">
+    # <sup class="versemarker">20</sup>
+    # I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.
+    # <sup id="footnote-caller-2" class="caller"><a href="#footnote-target-2">2</a></sup>
+    # <div class="sectionhead-5"></div>
+    # </span>
+    # '''
+    verse_dict: dict[str, str] = {}
+    soup = BeautifulSoup(chapter.content, "html.parser")
+    for verse_span in soup.find_all("span", class_="verse"):
+        versemarker = verse_span.find("sup", class_="versemarker")
+        if not versemarker or not versemarker.get_text(strip=True):
+            continue
+        verse_number = versemarker.get_text(strip=True)
+        # Remove verse marker
+        versemarker.decompose()
+        # Remove footnote callers
+        for caller in verse_span.find_all("sup", class_="caller"):
+            caller.decompose()
+        # Fix spacing issue for poetry divs
+        for poetry_div in verse_span.find_all(
+            "div", class_=lambda c: c and c.startswith("poetry-")
+        ):
+            poetry_div.insert_before(NavigableString(" "))
+        # Handle fr f10 word-entry tags
+        for we in verse_span.find_all("span", class_="word-entry"):
+            we.unwrap()
+        # Get inner HTML of the verse span
+        verse_text = "".join(str(child) for child in verse_span.contents).strip()
+        verse_text = clean_verse_html(verse_text)
+        verse_dict[verse_number] = verse_text
+    return verse_dict
+
+
+def clean_verse_html(
+    raw_verse: str,
+    empty_paragraph: str = "<p></p>",
+    sectionhead5_element: str = '<div class="sectionhead-5"></div>',
+) -> str:
+    cleaned_html = raw_verse
+    cleaned_html = sub(r"\s+([,;:.!?])", r"\1", cleaned_html)
+    cleaned_html = sub(r"\s+'", "'", cleaned_html)
+    cleaned_html = sub(r"'\s+", "'", cleaned_html)
+    cleaned_html = sub(r"\s*-\s*", "-", cleaned_html)
+    cleaned_html = sub(r"\s{2,}", " ", cleaned_html).strip()
+    cleaned_html = cleaned_html.replace(empty_paragraph, "").replace(
+        sectionhead5_element, ""
+    )
+    return cleaned_html

@@ -55,15 +55,6 @@ fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(
 )
 
 
-# List of languages which do not have USFM available for any books. We use this
-# to filter these out of STET's list of source and target
-# languages so that the user doesn't have the frustrating experience of
-# selecting a language which might have non-USFM resources available but
-# not USFM so that when their resulting doc is generated no scripture is
-# present. It makes it seem like a bug in STET and is bad UX.
-LANG_CODES_WITH_NO_USFM: frozenset[str] = frozenset(["ru"])
-
-
 @cached(fetch_source_data_cache)
 def fetch_source_data(
     data_api_url: HttpUrl = settings.DATA_API_URL,
@@ -77,7 +68,7 @@ def fetch_source_data(
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
     >>> result.git_repo[0]
-    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/0success/cli_1jn_text_reg'), content=Content(resource_type='reg', language=Language(english_name='Chakali', ietf_code='cli', national_name='Chakali', direction=<LangDirEnum.LTR: 'ltr'>)))
+    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/0success/cli_1co_text_reg'), content=Content(resource_type='reg', language=Language(english_name='Chakali', ietf_code='cli', national_name='Chakali', direction=<LangDirEnum.LTR: 'ltr'>)))
     """
     graphql_query = """
 query MyQuery {
@@ -147,7 +138,7 @@ def lang_codes_and_names(
     ('abz', 'Abui', False)
     >>> heart_lang_codes = [lang_code_and_name[0] for lang_code_and_name in resource_lookup.lang_codes_and_names() if not lang_code_and_name[2]]
     >>> sorted(heart_lang_codes)[0]
-    'aao'
+    'aac'
     """
     data = fetch_source_data()
     values = []
@@ -169,46 +160,6 @@ def lang_codes_and_names(
                 values.append(
                     (ietf_code, f"{localized_name} ({english_name})", is_gateway)
                 )
-    except Exception:
-        logger.exception("Failed due to the following exception.")
-    unique_values = unique_tuples(values)
-    return sorted(unique_values, key=lambda value: value[1])
-
-
-def lang_codes_and_names_having_usfm(
-    lang_code_filter_list: frozenset[str] = LANG_CODES_WITH_NO_USFM,
-    gateway_languages: frozenset[str] = settings.GATEWAY_LANGUAGES,
-) -> Sequence[tuple[str, str, bool]]:
-    """
-    >>> from doc.domain import resource_lookup
-    >>> ();result = resource_lookup.lang_codes_and_names_having_usfm();() # doctest: +ELLIPSIS
-    (...)
-    >>> result[0]
-    ('abz', 'Abui', False)
-    >>> heart_lang_codes = [lang_code_and_name[0] for lang_code_and_name in resource_lookup.lang_codes_and_names_having_usfm() if not lang_code_and_name[2]]
-    >>> sorted(heart_lang_codes)[0]
-    'aao'
-    """
-    data = fetch_source_data()
-    values = []
-    if data is None or not data.git_repo:
-        logger.info("Data API is down or no git_repo found!")
-        return []
-    try:
-        for repo_info in data.git_repo:
-            language_info = repo_info.content
-            language = language_info.language
-            ietf_code = language.ietf_code
-            english_name = language.english_name if language.english_name else ""
-            localized_name = language.national_name
-            is_gateway = ietf_code in gateway_languages
-            if ietf_code not in lang_code_filter_list:
-                if english_name in localized_name:
-                    values.append((ietf_code, localized_name, is_gateway))
-                else:
-                    values.append(
-                        (ietf_code, f"{localized_name} ({english_name})", is_gateway)
-                    )
     except Exception:
         logger.exception("Failed due to the following exception.")
     unique_values = unique_tuples(values)
@@ -289,22 +240,6 @@ def get_resource_types(
                 ]
             elif resource_type in usfm_resource_types:
                 book_assets = find_usfm_files(resource_filepath)
-            elif resource_type == "rg":
-                between_texts, bible_reference_strs = find_bible_references(
-                    join(en_rg, docx_file_path)
-                )
-                bible_references = [
-                    parse_bible_reference(bible_reference)
-                    for bible_reference in bible_reference_strs
-                ]
-                book_codes_ = {
-                    bible_reference.book_code
-                    for bible_reference in bible_references
-                    if bible_reference
-                }
-                book_assets = [
-                    book_code for book_code in book_codes if book_code in book_codes_
-                ]
             if book_assets or resource_type == "tw":
                 resource_types.append(
                     (
@@ -623,7 +558,7 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     >>> ();data = resource_lookup.book_codes_for_lang("pt-br");() # doctest: +ELLIPSIS
     (...)
     >>> list(data)
-    [('gen', 'Gênesis'), ('exo', 'Êxodo'), ('lev', 'Levítico'), ('num', 'Números'), ('deu', 'Deuteronômio'), ('jos', 'Josué'), ('jdg', 'Juízes'), ('rut', 'Rute'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reis'), ('2ki', '2 Reis'), ('1ch', '1 Crônicas'), ('2ch', '2 Crônicas'), ('ezr', 'Esdras'), ('neh', 'Neemias'), ('est', 'Ester'), ('job', 'Jó'), ('psa', 'Salmos'), ('pro', 'Provérbios'), ('ecc', 'Eclesiastes'), ('sng', 'Cantares'), ('isa', 'Isaías'), ('jer', 'Jeremias'), ('lam', 'Lamentações'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseias'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Obadias'), ('jon', 'Jonas'), ('mic', 'Miqueias'), ('nam', 'Naum'), ('hab', 'Habacuque'), ('zep', 'Sofonias'), ('hag', 'Ageu'), ('zec', 'Zacarias'), ('mal', 'Malaquias'), ('mat', 'Mateus'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'João'), ('act', 'Atos'), ('rom', 'Romanos'), ('1co', '1 Coríntios'), ('2co', '2 Coríntios'), ('gal', 'Gálatas'), ('eph', 'Efésios'), ('php', 'Filipenses'), ('col', 'Colossenses'), ('1th', '1 Tessalonicenses'), ('2th', '2 Tessalonicenses'), ('1ti', '1 Timóteo'), ('2ti', '2 Timóteo'), ('tit', 'Tito'), ('phm', 'Filemom'), ('heb', 'Hebreus'), ('jas', 'Tiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 João'), ('2jn', '2 João'), ('3jn', '3 João'), ('jud', 'Judas'), ('rev', 'Apocalipse')]
+    [('gen', 'Gênesis'), ('exo', 'Êxodo'), ('lev', 'Levíticos'), ('num', 'Números'), ('deu', 'Deuteronômio'), ('jos', 'Josué'), ('jdg', 'Juízes'), ('rut', 'Rute'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reis'), ('2ki', '2 Reis'), ('1ch', '1 Crônicas'), ('2ch', '2 Crônicas'), ('ezr', 'Esdras'), ('neh', 'Neemias'), ('est', 'Ester'), ('job', 'Jó'), ('psa', 'Salmos'), ('pro', 'Provérbios'), ('ecc', 'Eclesiastes'), ('sng', 'Cantares de salomão'), ('isa', 'Isaías'), ('jer', 'Jeremias'), ('lam', 'Lamentações'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseias'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Obadias'), ('jon', 'Jonas'), ('mic', 'Miqueias'), ('nam', 'Naum'), ('hab', 'Habacuque'), ('zep', 'Sofonias'), ('hag', 'Ageu'), ('zec', 'Zacarias'), ('mal', 'Malaquias'), ('mat', 'Mateus'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'João'), ('act', 'Atos'), ('rom', 'Romanos'), ('1co', '1 Coríntios'), ('2co', '2 Coríntios'), ('gal', 'Gálatas'), ('eph', 'Efésios'), ('php', 'Filipenses'), ('col', 'Colossenses'), ('1th', '1 Tessalonicenses'), ('2th', '2 Tessalonicenses'), ('1ti', '1 Timóteo'), ('2ti', '2 Timóteo'), ('tit', 'Tito'), ('phm', 'Filemom'), ('heb', 'Hebreus'), ('jas', 'Tiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 João'), ('2jn', '2 João'), ('3jn', '3 João'), ('jud', 'Judas'), ('rev', 'Apocalipse')]
     >>> ();data = resource_lookup.book_codes_for_lang("es-419");() # doctest: +ELLIPSIS
     (...)
     >>> list(data)
@@ -631,7 +566,7 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
     >>> ();data = resource_lookup.shared_book_codes("pt-br", "es-419");() # doctest: +ELLIPSIS
     (...)
     >>> list(data)
-    [('gen', 'Gênesis'), ('exo', 'Êxodo'), ('lev', 'Levítico'), ('num', 'Números'), ('deu', 'Deuteronômio'), ('jos', 'Josué'), ('jdg', 'Juízes'), ('rut', 'Rute'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reis'), ('2ki', '2 Reis'), ('1ch', '1 Crônicas'), ('2ch', '2 Crônicas'), ('ezr', 'Esdras'), ('neh', 'Neemias'), ('est', 'Ester'), ('job', 'Jó'), ('psa', 'Salmos'), ('pro', 'Provérbios'), ('ecc', 'Eclesiastes'), ('sng', 'Cantares'), ('isa', 'Isaías'), ('jer', 'Jeremias'), ('lam', 'Lamentações'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseias'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Obadias'), ('jon', 'Jonas'), ('mic', 'Miqueias'), ('nam', 'Naum'), ('hab', 'Habacuque'), ('zep', 'Sofonias'), ('hag', 'Ageu'), ('zec', 'Zacarias'), ('mal', 'Malaquias'), ('mat', 'Mateus'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'João'), ('act', 'Atos'), ('rom', 'Romanos'), ('1co', '1 Coríntios'), ('2co', '2 Coríntios'), ('gal', 'Gálatas'), ('eph', 'Efésios'), ('php', 'Filipenses'), ('col', 'Colossenses'), ('1th', '1 Tessalonicenses'), ('2th', '2 Tessalonicenses'), ('1ti', '1 Timóteo'), ('2ti', '2 Timóteo'), ('tit', 'Tito'), ('phm', 'Filemom'), ('heb', 'Hebreus'), ('jas', 'Tiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 João'), ('2jn', '2 João'), ('3jn', '3 João'), ('jud', 'Judas'), ('rev', 'Apocalipse')]
+    [('gen', 'Gênesis'), ('exo', 'Êxodo'), ('lev', 'Levíticos'), ('num', 'Números'), ('deu', 'Deuteronômio'), ('jos', 'Josué'), ('jdg', 'Juízes'), ('rut', 'Rute'), ('1sa', '1 Samuel'), ('2sa', '2 Samuel'), ('1ki', '1 Reis'), ('2ki', '2 Reis'), ('1ch', '1 Crônicas'), ('2ch', '2 Crônicas'), ('ezr', 'Esdras'), ('neh', 'Neemias'), ('est', 'Ester'), ('job', 'Jó'), ('psa', 'Salmos'), ('pro', 'Provérbios'), ('ecc', 'Eclesiastes'), ('sng', 'Cantares de salomão'), ('isa', 'Isaías'), ('jer', 'Jeremias'), ('lam', 'Lamentações'), ('ezk', 'Ezequiel'), ('dan', 'Daniel'), ('hos', 'Oseias'), ('jol', 'Joel'), ('amo', 'Amós'), ('oba', 'Obadias'), ('jon', 'Jonas'), ('mic', 'Miqueias'), ('nam', 'Naum'), ('hab', 'Habacuque'), ('zep', 'Sofonias'), ('hag', 'Ageu'), ('zec', 'Zacarias'), ('mal', 'Malaquias'), ('mat', 'Mateus'), ('mrk', 'Marcos'), ('luk', 'Lucas'), ('jhn', 'João'), ('act', 'Atos'), ('rom', 'Romanos'), ('1co', '1 Coríntios'), ('2co', '2 Coríntios'), ('gal', 'Gálatas'), ('eph', 'Efésios'), ('php', 'Filipenses'), ('col', 'Colossenses'), ('1th', '1 Tessalonicenses'), ('2th', '2 Tessalonicenses'), ('1ti', '1 Timóteo'), ('2ti', '2 Timóteo'), ('tit', 'Tito'), ('phm', 'Filemom'), ('heb', 'Hebreus'), ('jas', 'Tiago'), ('1pe', '1 Pedro'), ('2pe', '2 Pedro'), ('1jn', '1 João'), ('2jn', '2 João'), ('3jn', '3 João'), ('jud', 'Judas'), ('rev', 'Apocalipse')]
 
     """
     lang0_book_codes = book_codes_for_lang(lang0_code)
@@ -963,7 +898,9 @@ def get_book_names_from_usfm_metadata(
         frontmatter, _, _ = split_usfm_by_chapters(
             lang_code, resource_type, book_code, usfm
         )
-        localized_book_name = maybe_localized_book_name(frontmatter)
+        localized_book_name = maybe_localized_book_name(
+            frontmatter, lang_code, resource_type
+        )
         # localized_book_name = maybe_correct_book_name(lang_code, localized_book_name)
         book_codes_and_names_localized[book_code] = localized_book_name
     logger.debug("book_codes_and_names_localized: %s", book_codes_and_names_localized)
@@ -1213,14 +1150,14 @@ def nt_survey_rg_passages(
     resource_dir: str = settings.EN_RG_DIR,
 ) -> list[BibleReference]:
     """
-        Returns the list of all NT RG passages from the docx_file_path, but with
+    Returns the list of all NT RG passages from the docx_file_path, but with
     book names localized for language chosen.
 
-        >>> from doc.domain import resource_lookup
-        >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
-        (...)
-        >>> rg_books[0]
-        BibleReference(book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
+    >>> from doc.domain import resource_lookup
+    >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
+    (...)
+    >>> rg_books[0]
+    BibleReference(lang_code='en', book_code='mat', book_name='Matthew', start_chapter=2, start_chapter_verse_ref='1-12', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1263,7 +1200,7 @@ def ot_survey_rg1_passages(
     >>> ();rg_books = resource_lookup.ot_survey_rg1_passages();() # doctest: +ELLIPSIS
     (...)
     >>> rg_books[0]
-    BibleReference(book_code='gen', book_name='Genesis', start_chapter=1, start_chapter_verse_ref='1', end_chapter=2, end_chapter_verse_ref='3')
+    BibleReference(lang_code='en', book_code='gen', book_name='Genesis', start_chapter=1, start_chapter_verse_ref='1', end_chapter=2, end_chapter_verse_ref='3')
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1306,7 +1243,7 @@ def ot_survey_rg2_passages(
     >>> ();rg_books = resource_lookup.ot_survey_rg2_passages();() # doctest: +ELLIPSIS
     (...)
     >>> rg_books[0]
-    BibleReference(book_code='jos', book_name='Joshua', start_chapter=1, start_chapter_verse_ref='1-9', end_chapter=None, end_chapter_verse_ref=None)
+    BibleReference(lang_code='en', book_code='jos', book_name='Joshua', start_chapter=1, start_chapter_verse_ref='1-9', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1349,7 +1286,7 @@ def ot_survey_rg3_passages(
     >>> ();rg_books = resource_lookup.ot_survey_rg3_passages();() # doctest: +ELLIPSIS
     (...)
     >>> rg_books[0]
-    BibleReference(book_code='job', book_name='Job', start_chapter=1, start_chapter_verse_ref='6-22', end_chapter=None, end_chapter_verse_ref=None)
+    BibleReference(lang_code='en', book_code='job', book_name='Job', start_chapter=1, start_chapter_verse_ref='6-22', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(
@@ -1392,7 +1329,7 @@ def ot_survey_rg4_passages(
     >>> ();rg_books = resource_lookup.ot_survey_rg4_passages();() # doctest: +ELLIPSIS
     (...)
     >>> rg_books[0]
-    BibleReference(book_code='isa', book_name='Isaiah', start_chapter=1, start_chapter_verse_ref='1-9', end_chapter=None, end_chapter_verse_ref=None)
+    BibleReference(lang_code='en', book_code='isa', book_name='Isaiah', start_chapter=1, start_chapter_verse_ref='1-9', end_chapter=None, end_chapter_verse_ref=None)
     """
     path = join(resource_dir, docx_file_path)
     rg_books = get_rg_books(

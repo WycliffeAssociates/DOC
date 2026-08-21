@@ -2,19 +2,16 @@ from datetime import datetime
 from typing import cast, Optional, TYPE_CHECKING
 
 from docx import Document
-from docx.enum.section import WD_SECTION
 from docx.document import Document as DocxDocument
+from docx.enum.section import WD_SECTION
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tc
-from docx.shared import Pt, RGBColor
-from docx.table import Table
+from docx.shared import Length, Pt, RGBColor
+from docx.table import Table, _Cell, _Row
 from docx.text.paragraph import Paragraph
 from html4docx import HtmlToDocx  # type: ignore
-
-
-from docx.table import _Cell, _Row
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -284,49 +281,47 @@ def reduce_spacing_around_tables(
 def add_footer(doc: DocxDocument) -> DocxDocument:
     section = doc.sections[0]
     footer = section.footer
-    # Calculate usable content width
+    # Calculate usable content width and explicitly wrap in Length
     assert section.page_width is not None
     assert section.left_margin is not None
     assert section.right_margin is not None
-    usable_width = section.page_width - section.left_margin - section.right_margin
+    usable_width = Length(
+        section.page_width - section.left_margin - section.right_margin
+    )
     # Create or get the footer paragraph
     footer_paragraph = (
         footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
     )
-    footer_paragraph.alignment = None  # Disable global alignment to use tab stops
+    footer_paragraph.alignment = None  # Disable global alignment for tab stops
     # Configure tab stops
-    p_pr = footer_paragraph._p.get_or_add_pPr()  # Access paragraph properties
-    tabs = p_pr.find(qn("w:tabs"))  # Find existing 'w:tabs' element if it exists
+    p_pr = footer_paragraph._p.get_or_add_pPr()
+    tabs = p_pr.find(qn("w:tabs"))
     if tabs is None:
-        tabs = OxmlElement("w:tabs")  # Create the 'w:tabs' element
+        tabs = OxmlElement("w:tabs")
         p_pr.append(tabs)
-    # Add a center tab stop at half of usable content width
-    center_position = int(usable_width / 2)  # Center of the usable area
+    # Add center tab stop (in twips)
+    center_position = usable_width.twips // 2
     center_tab = OxmlElement("w:tab")
     center_tab.set(qn("w:val"), "center")
     center_tab.set(qn("w:pos"), str(center_position))
     tabs.append(center_tab)
-    # Add a right-aligned tab stop slightly before the right margin
-    right_position = int(usable_width)
+    # Add right tab stop flush with right margin (in twips)
+    right_position = usable_width.twips
     right_tab = OxmlElement("w:tab")
     right_tab.set(qn("w:val"), "right")
-    right_tab.set(
-        qn("w:pos"), str(right_position - 720)
-    )  # 720 twips (0.5 inches) padding
+    right_tab.set(qn("w:pos"), str(right_position))
     tabs.append(right_tab)
-    # Add the page number field
-    footer_paragraph.add_run("\t")  # Tab to center position
-    field_code = "PAGE"
+    # Add page number field
+    footer_paragraph.add_run("\t")  # Tab to center
     field = OxmlElement("w:fldSimple")
-    field.set(qn("w:instr"), field_code)
+    field.set(qn("w:instr"), "PAGE")
     page_run = footer_paragraph.add_run()
     page_run._r.append(field)
-    page_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for page number
-    # Add the "Generated on" text
-    footer_paragraph.add_run("\t")  # Tab to right position
+    page_run.font.color.rgb = RGBColor(169, 169, 169)
+    # Add "Generated on" timestamp
+    footer_paragraph.add_run("\t")  # Tab to right
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    date_text = f"Generated on {current_datetime}"
-    date_run = footer_paragraph.add_run(date_text)
-    date_run.font.color.rgb = RGBColor(169, 169, 169)  # Grey color for timestamp
-    date_run.font.size = Pt(10)  # Optional: Adjust font size for consistency
+    date_run = footer_paragraph.add_run(f"Generated on {current_datetime}")
+    date_run.font.color.rgb = RGBColor(169, 169, 169)
+    date_run.font.size = Pt(10)
     return doc

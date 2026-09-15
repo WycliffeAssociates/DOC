@@ -173,9 +173,9 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("nak-x-bileki", "reg", "2ti"),
     ("nak-x-bileki", "reg", "jas"),
     ("nak-x-bileki", "reg", "mrk"),
-    ("ndc-x-chibangwe", "reg", "mrk"),
-    ("ndc-x-chidanda", "reg", "luk"),
-    ("ndc-x-chidanda", "reg", "gal"),
+    # ("ndc-x-chibangwe", "reg", "mrk"), # unavailable from data API
+    # ("ndc-x-chidanda", "reg", "luk"),  # unavailable from data API
+    # ("ndc-x-chidanda", "reg", "gal"),  # unavailable from data API
     ("nfd", "reg", "gal"),
     ("nfd", "reg", "2th"),
     ("nfd", "reg", "2ti"),

@@ -28,7 +28,12 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     add_two_column_section,
     two_column_spanning_hr_trick,
 )
-from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
+from doc.domain.bible_books import (
+    BOOK_ID_MAP,
+    BOOK_NAMES,
+    OLD_TESTAMENT_CODES,
+    NEW_TESTAMENT_CODES,
+)
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import (
     AssemblyLayoutEnum,
@@ -88,7 +93,6 @@ Key: TypeAlias = tuple[LangCode, BookCode]
 ReplacementEntry: TypeAlias = tuple[re.Pattern[str], str]  # (pattern, replacement)
 ReplacementMap: TypeAlias = dict[Key, ReplacementEntry]
 
-BOOK_NAMES: Final[Mapping[BookCode, str]] = BOOK_NAMES
 
 
 def initialize_document_request_and_key(
@@ -953,6 +957,8 @@ def get_languages_title_page_strings(
     usfm_books: Sequence[USFMBook],
     book_names: dict[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
+    old_testament_codes: set[str] = OLD_TESTAMENT_CODES,
+    new_testament_codes: set[str] = NEW_TESTAMENT_CODES,
 ) -> tuple[str, str]:
     """
     Construct sensical phrases to display for title1 and title2 for
@@ -961,27 +967,46 @@ def get_languages_title_page_strings(
     lang_codes = list(dict.fromkeys(dto.lang_code for dto in resource_lookup_dtos))
 
     def get_language_details(lang_code: str) -> str:
-        book_names_ = []
-        resource_type_names = []
         dtos = [dto for dto in resource_lookup_dtos if dto.lang_code == lang_code]
+        if not dtos:
+            return ""
+        # Map book codes to their resolved localized names
+        book_name_map: dict[str, str] = {}
+        resource_type_names = []
         for dto in dtos:
-            usfm_books_ = [
-                usfm_book
-                for usfm_book in usfm_books
-                if usfm_book.book_code == dto.book_code
-                and usfm_book.lang_code == lang_code
-            ]
-            if usfm_books_:
-                book_name = usfm_books_[0].national_book_name
-            else:
-                book_name = book_names[dto.book_code]
-            if book_name not in book_names_:
-                book_names_.append(book_name)
+            code = dto.book_code.lower()
+            if code not in book_name_map:
+                usfm_matches = [
+                    ub
+                    for ub in usfm_books
+                    if ub.book_code.lower() == code and ub.lang_code == lang_code
+                ]
+                if usfm_matches:
+                    book_name_map[code] = usfm_matches[0].national_book_name
+                else:
+                    book_name_map[code] = book_names.get(code, code)
             if dto.resource_type_name not in resource_type_names:
                 resource_type_names.append(dto.resource_type_name)
-        if dtos:
-            return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(resource_type_names)} for {', '.join(book_names_)}"
-        return ""
+        dto_codes = set(book_name_map.keys())
+        # Check testament coverage
+        has_full_ot = old_testament_codes.issubset(dto_codes)
+        has_full_nt = new_testament_codes.issubset(dto_codes)
+        # Build formatted display list sorted by canonical order using book_id_map
+        formatted_items: list[str] = []
+        if has_full_ot and has_full_nt:
+            formatted_items.append("Old and New Testaments")
+        else:
+            if has_full_ot:
+                formatted_items.append("Old Testament")
+                dto_codes -= old_testament_codes
+            if has_full_nt:
+                formatted_items.append("New Testament")
+                dto_codes -= new_testament_codes
+            # Add remaining individual books sorted by canonical order
+            remaining_codes = sorted(dto_codes, key=lambda c: book_id_map.get(c, 999))
+            for code in remaining_codes:
+                formatted_items.append(book_name_map[code])
+        return f"{dtos[0].lang_name} ({dtos[0].localized_lang_name}): {', '.join(resource_type_names)} for {', '.join(formatted_items)}"
 
     lang0_title = get_language_details(lang_codes[0]) if lang_codes else ""
     lang1_title = get_language_details(lang_codes[1]) if len(lang_codes) > 1 else ""

@@ -7,6 +7,7 @@ TRANSLATED_HEADER_PHRASES_TABLE: dict[str, str] = {
     "rmn-x-yerliroman": "Инструмент за оценка на духовни термини (STET)",
     "ru": "Инструмент оценки духовных терминов (STET)",
     "sw": "Chombo cha Kutathmini Maneno ya Kiroho (STET)",
+    "tl": "Kagamitan sa Pagsusuri ng mga Espiritwal na Salita (STET)",
     "tpi": "Tul bilong skelim ol spirit tok bilong buk trenslesen (STET)",
     "vi": "Công cụ Đánh giá Thuật ngữ Tâm linh (STET)",
 }
@@ -20,6 +21,7 @@ TRANSLATED_FOOTER_PHRASES_TABLE: dict[str, str] = {
     "rmn-x-yerliroman": "Генерирано на",
     "ru": "Сформировано",
     "sw": "Imetolewa tarehe",
+    "tl": "Nabuo noong",
     "tpi": "Wok i bin kamap long",
     "vi": "Được tạo vào",
 }
@@ -33,6 +35,7 @@ LOCALIZED_DATE_FORMAT_STRINGS: dict[str, str] = {
     "rmn-x-yerliroman": "%d.%m.%Y %H:%M:%S",
     "ru": "%d.%m.%Y %H:%M:%S",
     "sw": "%d/%m/%Y %H:%M:%S",
+    "tl": "%m/%d/%Y %H:%M:%S",
     "tpi": "%d/%m/%Y %H:%M:%S",
     "vi": "%d/%m/%Y %H:%M:%S",
 }
@@ -56,6 +59,7 @@ TRANSLATED_TABLE_COLUMN_HEADERS = {
         "Удовл",
     ),
     "sw": ("Marejeo Chanzo", "Marejeo Lengwa", "Hali", "OK"),
+    "tl": ("Pinagmulang Sangguniun", "Lalagyang Sangguniun", "Katayuan", "OK"),
     "tpi": ("Narapela baibel ves", "Tokples ves", "Sek", "OK"),
     "vi": ("Tham chiếu nguồn", "Tham chiếu đích", "Trạng thái", "Đạt"),
 }

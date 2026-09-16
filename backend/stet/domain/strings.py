@@ -1,5 +1,6 @@
 TRANSLATED_HEADER_PHRASES_TABLE: dict[str, str] = {
     "en": "Spiritual Terms Evaluation Tool (STET)",
+    "ceb": "Kagamitan sa Pagrepaso sa Espirituhanong mga Termino (STET)",
     "es-419": "Herramienta de Evaluación de Términos Espirituales (STET)",
     "fr": "Évaluation des Termes Spirituels (STET)",
     "gu": "આધ્યાત્મિક શબ્દો મૂલ્યાંકન સાધન (STET)",
@@ -13,6 +14,7 @@ TRANSLATED_HEADER_PHRASES_TABLE: dict[str, str] = {
 
 TRANSLATED_FOOTER_PHRASES_TABLE: dict[str, str] = {
     "en": "Generated on",
+    "ceb": "Gihimo noong",
     "es-419": "Generado el",
     "fr": "Généré le",
     "gu": "તૈયાર કરેલ તારીખ",
@@ -26,6 +28,7 @@ TRANSLATED_FOOTER_PHRASES_TABLE: dict[str, str] = {
 
 LOCALIZED_DATE_FORMAT_STRINGS: dict[str, str] = {
     "en": "%m/%d/%Y %H:%M:%S",
+    "ceb": "%d/%m/%Y %H:%M:%S",
     "es-419": "%d/%m/%Y %H:%M:%S",
     "fr": "%d/%m/%Y %H:%M:%S",
     "gu": "%d/%m/%Y %H:%M:%S",
@@ -39,6 +42,7 @@ LOCALIZED_DATE_FORMAT_STRINGS: dict[str, str] = {
 
 TRANSLATED_TABLE_COLUMN_HEADERS = {
     "en": ("Source Reference", "Target Reference", "Status", "OK"),
+    "ceb": ("Gikanang Reperensya", "Target nga Reperensya", "Posisyon", "OK"),
     "es-419": ("Fuente", "Idioma Materna", "Estado", "OK"),
     "fr": ("Référence de source", "Référence Cible", "Statut", "OK"),
     "gu": ("સ્ત્રોત લખાણનો સંદર્ભ", "લક્ષ્ય લખાણનો સંદર્ભ", "સ્થિતિ", "બરાબર છે"),

@@ -147,7 +147,7 @@ class Settings(BaseSettings):
     # there are any) that we want to be available to users. These are all
     # that I found of relevance in the data API.
     RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
-        "ayt": "Bahasa Indonesian Bible",
+        "ayt": "Alkitab Yang Terbuka (Easy-to-Read Indonesian Bible)",
         "bc": "Bible Commentary",
         "blv": "Portuguese Bíblia Livre",
         "bpb": "Bulgarian Protestant Bible",
@@ -156,7 +156,7 @@ class Settings(BaseSettings):
         "nav": "New Arabic Version (Ketab El Hayat)",
         "reg": "Regular",
         "rg": "NT Survey Reviewers' Guide",
-        "tbi": "Bahasa Indonesian Bible",
+        "tbi": "Terjemahan Baru (Indonesian New Translation Bible)",
         "tn": "Translation Notes",
         "tn-condensed": "Condensed Translation Notes",
         "tq": "Translation Questions",

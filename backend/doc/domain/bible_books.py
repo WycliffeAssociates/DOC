@@ -147,6 +147,10 @@ BOOK_NUMBERS: Mapping[str, str] = {
     "rev": "66",
 }
 
+# Dynamically derive OT/NT book sets using BOOK_NUMBERS
+OLD_TESTAMENT_CODES = {code for code, num in BOOK_NUMBERS.items() if int(num) <= 39}
+NEW_TESTAMENT_CODES = {code for code, num in BOOK_NUMBERS.items() if int(num) >= 40}
+
 BOOK_CHAPTER_VERSES: Mapping[str, Mapping[str, str]] = {
     "gen": {
         "1": "31",

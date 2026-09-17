@@ -52,6 +52,7 @@ logger = settings.logger(__name__)
 def generate_docx_document(
     lang0_code: str,
     lang1_code: str,
+    use_increased_line_spacing: bool,
     document_request_key_: str,
     docx_filepath_: str,
     working_dir: str = settings.WORKING_DIR,
@@ -297,7 +298,9 @@ def generate_docx_document(
             )
         word_entries.append(word_entry)
     current_task.update_state(state="Converting to Docx")
-    generate_docx(word_entries, docx_filepath_, lang0_code, lang1_code)
+    generate_docx(
+        word_entries, docx_filepath_, lang0_code, lang1_code, use_increased_line_spacing
+    )
     return docx_filepath_
 
 
@@ -306,6 +309,7 @@ def generate_docx(
     docx_filepath: str,
     lang0_code: str,
     lang1_code: str,
+    use_increased_line_spacing: bool,
     translated_table_column_headers: dict[
         str, tuple[str, str, str, str]
     ] = TRANSLATED_TABLE_COLUMN_HEADERS,
@@ -319,6 +323,7 @@ def generate_docx(
     :param docx_filepath: The file path where the generated DOCX document will be saved.
     :param lang0_code: Source language code for the document header.
     :param lang1_code: Target language code for the document header.
+    :param use_increased_line_spacing: Indicate whether to increase line spacing to double that of normal.
     """
     doc = Document()
     html_to_docx = HtmlToDocx()
@@ -387,7 +392,10 @@ def generate_docx(
             row_cells = table.add_row().cells
             # Process HTML content in source_text and highlight keyword
             source_paragraph = row_cells[0].paragraphs[0]
-            source_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
+            if use_increased_line_spacing:
+                source_paragraph.paragraph_format.line_spacing = (
+                    2.0  # Adjust line spacing
+                )
             if verse.source_has_preformatted_bolding:
                 add_preformatted_html_to_docx(verse.source_text, source_paragraph)
             elif len(word_entry.bolded_phrases) > 0:
@@ -400,7 +408,10 @@ def generate_docx(
                 )
             # Add target_text with wider line spacing
             target_paragraph = row_cells[1].paragraphs[0]
-            target_paragraph.paragraph_format.line_spacing = 2.0  # Adjust line spacing
+            if use_increased_line_spacing:
+                target_paragraph.paragraph_format.line_spacing = (
+                    2.0  # Adjust line spacing
+                )
             add_plain_html_to_docx(verse.target_text, target_paragraph)
             # Vertically centered Unicode checkbox
             checkbox_cell = row_cells[2]
@@ -426,23 +437,32 @@ def generate_docx(
     reduce_spacing_around_tables(doc)
     doc.save(docx_filepath)
 
+
 @worker.app.task
 def generate_stet_docx_document(
     lang0_code: str,
     lang1_code: str,
     email_address: str,
+    use_increased_line_spacing: bool,
 ) -> Json[str]:
     logger.debug(
         "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s",
         lang0_code,
         lang1_code,
         email_address,
+        use_increased_line_spacing,
     )
-    document_request_key_ = f"{lang0_code}_{lang1_code}_stet"
+    document_request_key_ = (
+        f"{lang0_code}_{lang1_code}_{'2l' if use_increased_line_spacing else '1l'}_stet"
+    )
     docx_filepath_ = docx_filepath(document_request_key_)
     if file_needs_update(docx_filepath_):
         generate_docx_document(
-            lang0_code, lang1_code, document_request_key_, docx_filepath_
+            lang0_code,
+            lang1_code,
+            use_increased_line_spacing,
+            document_request_key_,
+            docx_filepath_,
         )
         if should_send_email(email_address):
             attachments = [

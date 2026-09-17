@@ -93,6 +93,7 @@ async def generate_docx_document(
                 stet_document_request.lang0_code,
                 stet_document_request.lang1_code,
                 stet_document_request.email_address,
+                stet_document_request.use_increased_line_spacing,
             )
         )
     except HTTPException as exc:

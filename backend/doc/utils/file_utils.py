@@ -16,7 +16,6 @@ from urllib.request import urlopen
 import yaml
 from doc.config import settings
 
-
 logger = settings.logger(__name__)
 
 # User agent value required by domain host to allow serving
@@ -159,4 +158,7 @@ def docx_filepath(
     output_dir: str = settings.DOCUMENT_OUTPUT_DIR,
 ) -> str:
     """Given document_request_key, return the docx output file path."""
-    return join(output_dir, "{}{}.docx".format(prefix, document_request_key))
+    return join(
+        output_dir,
+        "{}{}.docx".format(prefix, document_request_key),
+    )

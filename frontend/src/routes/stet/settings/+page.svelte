@@ -1,8 +1,14 @@
 <script lang="ts">
+  import Switch from '$lib/stet/Switch.svelte'
   import WizardBreadcrumb from '$lib/stet/WizardBreadcrumb.svelte'
   import WizardBasket from '$lib/stet/WizardBasket.svelte'
   import WizardBasketModal from '$lib/WizardBasketModal.svelte'
-  import { emailStore, documentRequestKeyStore } from '$lib/stet/stores/SettingsStore'
+  import {
+    emailStore,
+    documentRequestKeyStore,
+    settingsUpdatedStore,
+    useIncreasedLineSpacingStore
+  } from '$lib/stet/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stet/stores/NotificationStore'
   import { langCountStore } from '$lib/stet/stores/LanguagesStore'
   import GenerateDocument from './GenerateDocument.svelte'
@@ -38,7 +44,6 @@
     <h3 class="mb-4 bg-white text-4xl font-normal leading-[48px] text-[#33445C]">
       Generate document
     </h3>
-
     <!-- mobile basket modal launcher -->
     <div class="mr-4 text-right sm:hidden">
       <button on:click={() => (showWizardBasketModal = true)}>
@@ -60,6 +65,16 @@
     </div>
     <!-- main content -->
     <main class="flex-1 overflow-y-auto p-4">
+      <h3 class="mb-2 mt-2 text-2xl text-[#33445C]">Optional Settings</h3>
+      <div class="ml-4">
+        <div class="mb-2 mt-6 flex">
+          <Switch bind:checked={$useIncreasedLineSpacingStore} id="use-increased-line-spacing" />
+          <span class="ml-2 text-xl text-[#33445C]"
+            >Increase line spacing to double so that there is space to write between lines</span
+          >
+        </div>
+      </div>
+
       <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Notification</h3>
       <div class="ml-4">
         {#if !$documentReadyStore}

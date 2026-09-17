@@ -1,4 +1,4 @@
-FROM node:23-bookworm-slim AS build-stage
+FROM node:26-bookworm-slim AS build-stage
 
 WORKDIR /app
 

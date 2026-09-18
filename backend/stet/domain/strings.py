@@ -1,5 +1,5 @@
 TRANSLATED_HEADER_PHRASES_TABLE: dict[str, str] = {
-    "bg": "Инструмент за оценка на духовни термини (STET)",
+    "bg": "Инструмент за оценка  проверка на духовни термини (STET)",
     "ceb": "Kagamitan sa Pagsusi sa Espirituhanong mga Termino (STET)",
     "en": "Spiritual Terms Evaluation Tool (STET)",
     "es-419": "Herramienta de evaluación de términos espirituales (STET)",
@@ -49,7 +49,7 @@ LOCALIZED_DATE_FORMAT_STRINGS: dict[str, str] = {
 TRANSLATED_TABLE_COLUMN_HEADERS = {
     "bg": (
         "Препратка към изходния текст",
-        "Препратка към целевия текст",
+        "Препратка към целевия преведения текст",
         "Текущо състояние",
         "OK",
     ),

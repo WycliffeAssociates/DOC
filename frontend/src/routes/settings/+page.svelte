@@ -45,9 +45,7 @@
 
   // Only show optional settings that are relevant to the resources
   // the user has chosen.
-  let usfmRegex = new RegExp(
-    'avd,.*|ayt,.*|blv,.*|cuv,.*|f10,.*|nav,.*|reg,.*|ugnt,.*|uhb,.*|ulb,.*|usfm,.*'
-  )
+  let usfmRegex = new RegExp('\b(avd|ayt|blv|bpb|cuv|f10|nav|reg|tbi|ugnt|uhb|ulb|usfm)\b')
   let tnRegex = new RegExp('tn, .*')
   let tqRegex = new RegExp('tq, .*')
   let bcRegex = new RegExp('bc, .*')

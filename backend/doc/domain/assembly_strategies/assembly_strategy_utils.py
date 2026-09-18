@@ -3,7 +3,7 @@ Utility functions used by assembly_strategies.
 """
 
 from re import search
-from typing import Optional, Sequence
+from typing import Mapping, Optional, Sequence
 
 from doc.config import settings
 from doc.domain.bible_books import BOOK_ID_MAP
@@ -1195,6 +1195,42 @@ def filter_books_by_lang_code(
         selected_bc_books,
         selected_rg_books,
     )
+
+
+def order_usfm_resources(
+    usfm_books: Sequence[USFMBook],
+    resource_type_codes_and_names: Mapping[
+        str, str
+    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+) -> tuple[USFMBook, USFMBook]:
+    usfm_book0 = usfm_books[0]
+    if (
+        usfm_book0.lang_code == "fr"
+        and usfm_book0.resource_type_name
+        in [
+            resource_type_codes_and_names.get("ulb", ""),
+        ]
+        or usfm_book0.resource_type_name
+        in [
+            resource_type_codes_and_names.get("udb", ""),
+        ]
+        or usfm_book0.lang_code == "id"
+        and usfm_book0.resource_type_name
+        in [
+            resource_type_codes_and_names.get("ayt", ""),
+        ]
+        or usfm_book0.lang_code == "pt-br"
+        and usfm_book0.resource_type_name
+        in [
+            resource_type_codes_and_names.get("blv", ""),
+        ]
+    ):
+        usfm_book = usfm_books[1]
+        usfm_book2 = usfm_books[0]
+    else:
+        usfm_book = usfm_books[0]
+        usfm_book2 = usfm_books[1]
+    return usfm_book, usfm_book2
 
 
 if __name__ == "__main__":

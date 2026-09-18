@@ -10,6 +10,7 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     get_usfm_and_tw,
     get_usfm_and_tw_verse,
     get_non_usfm_resources_verse,
+    order_usfm_resources,
     rg_chapter_verses,
 )
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
@@ -47,9 +48,6 @@ def assemble_content_by_book(
     show_tn_chapter_intro: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     lang_codes = collect_unique_lang_codes(
@@ -69,23 +67,8 @@ def assemble_content_by_book(
             usfm_book2 = None
             if len(selected_usfm_books) == 1:
                 usfm_book = selected_usfm_books[0]
-            elif (
-                len(selected_usfm_books) == 2
-            ):  # Second USFM chosen, e.g., fr f10, tl udb, pt-br blv.
-                # Assuming f10 should be treated as secondary to ulb for fr and blv as a
-                # secondary to ulb for pt-br.
-                # TODO Later we might do resources types by clicked order at which point we would likely
-                # just use the body of the else clause below.
-                if selected_usfm_books[0].resource_type_name in [
-                    resource_type_codes_and_names.get("f10", ""),
-                    resource_type_codes_and_names.get("udb", ""),
-                    resource_type_codes_and_names.get("blv", ""),
-                ]:
-                    usfm_book = selected_usfm_books[1]
-                    usfm_book2 = selected_usfm_books[0]
-                else:
-                    usfm_book = selected_usfm_books[0]
-                    usfm_book2 = selected_usfm_books[1]
+            elif len(selected_usfm_books) == 2:
+                usfm_book, usfm_book2 = order_usfm_resources(selected_usfm_books)
             tn_book = next(
                 (
                     tn_book
@@ -227,9 +210,6 @@ def assemble_content_by_verse_book_at_a_time(
     show_rg_chapter_commentary: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     lang_codes = collect_unique_lang_codes(
@@ -249,20 +229,8 @@ def assemble_content_by_verse_book_at_a_time(
             usfm_book2 = None
             if len(selected_usfm_books) == 1:
                 usfm_book = selected_usfm_books[0]
-            elif len(selected_usfm_books) == 2:  # Second USFM chosen, e.g., fr f10
-                # TODO Later we might do resources types by clicked order at which point we would likely
-                # just use the else clause below.
-                # Assuming f10 should be treated as secondary to ulb for fr
-                if selected_usfm_books[0].resource_type_name in [
-                    resource_type_codes_and_names.get("f10", ""),
-                    resource_type_codes_and_names.get("udb", ""),
-                    resource_type_codes_and_names.get("blv", ""),
-                ]:
-                    usfm_book = selected_usfm_books[1]
-                    usfm_book2 = selected_usfm_books[0]
-                else:
-                    usfm_book = selected_usfm_books[0]
-                    usfm_book2 = selected_usfm_books[1]
+            elif len(selected_usfm_books) == 2:
+                usfm_book, usfm_book2 = order_usfm_resources(selected_usfm_books)
             tn_book = next(
                 (
                     tn_book

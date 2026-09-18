@@ -16,6 +16,7 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     get_non_usfm_resources_chapter,
     get_usfm_and_tw,
     get_usfm_and_tw_verse,
+    order_usfm_resources,
     rg_chapter_verses,
     tn_chapter_intro,
     tnc_chapter_intro,
@@ -276,9 +277,6 @@ def assemble_usfm_by_chapter(
     show_tn_chapter_intro: bool,
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     fmt_str: str = settings.BOOK_NAME_FMT_STR,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[DocumentPart]:
     is_rtl = usfm_books[0].lang_direction == LangDirEnum.RTL if usfm_books else False
     document_parts: list[DocumentPart] = []
@@ -312,20 +310,8 @@ def assemble_usfm_by_chapter(
             usfm_book2 = None
             if len(selected_usfm_books) == 1:
                 usfm_book = selected_usfm_books[0]
-            elif len(selected_usfm_books) == 2:  # Second USFM chosen, e.g., fr f10
-                # Assuming f10 should be treated as secondary to ulb for fr
-                # TODO Later we might do resources types by clicked order at which point we would likely
-                # just use the else clause below.
-                if selected_usfm_books[0].resource_type_name in [
-                    resource_type_codes_and_names.get("f10", ""),
-                    resource_type_codes_and_names.get("udb", ""),
-                    resource_type_codes_and_names.get("blv", ""),
-                ]:
-                    usfm_book = selected_usfm_books[1]
-                    usfm_book2 = selected_usfm_books[0]
-                else:
-                    usfm_book = selected_usfm_books[0]
-                    usfm_book2 = selected_usfm_books[1]
+            elif len(selected_usfm_books) == 2:
+                usfm_book, usfm_book2 = order_usfm_resources(selected_usfm_books)
             if usfm_book:
                 document_parts.append(
                     DocumentPart(
@@ -437,9 +423,6 @@ def assemble_usfm_by_verse_chapter_at_a_time(
     show_rg_chapter_commentary: bool,
     book_chapters: Mapping[str, int] = BOOK_CHAPTERS,
     fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[DocumentPart]:
     is_rtl = usfm_books[0].lang_direction == LangDirEnum.RTL if usfm_books else False
     document_parts: list[DocumentPart] = []
@@ -521,16 +504,7 @@ def assemble_usfm_by_verse_chapter_at_a_time(
             if len(selected_usfm_books) == 1:
                 usfm_book = selected_usfm_books[0]
             elif len(selected_usfm_books) == 2:
-                if selected_usfm_books[0].resource_type_name in [
-                    resource_type_codes_and_names.get("f10", ""),
-                    resource_type_codes_and_names.get("udb", ""),
-                    resource_type_codes_and_names.get("blv", ""),
-                ]:
-                    usfm_book2 = selected_usfm_books[0]
-                    usfm_book = selected_usfm_books[1]
-                else:
-                    usfm_book = selected_usfm_books[0]
-                    usfm_book2 = selected_usfm_books[1]
+                usfm_book, usfm_book2 = order_usfm_resources(selected_usfm_books)
             if usfm_book and chapter_num in usfm_book.chapters:
                 usfm_chapter = usfm_book.chapters[chapter_num]
             if usfm_book2 and chapter_num in usfm_book2.chapters:

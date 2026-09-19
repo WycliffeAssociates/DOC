@@ -12,7 +12,9 @@ class VerseEntry(NamedTuple):
     target_text: str
     occurrence_index: int = 0  # 1, 2, 3, ...
     occurrence_total: int = 0  # e.g. 3
-    source_has_preformatted_bolding: bool = False  # True when source came from <r><v> format
+    source_has_preformatted_bolding: bool = (
+        False  # True when source came from <r><v> format
+    )
 
 
 @final
@@ -54,4 +56,5 @@ class StetDocumentRequest(BaseModel):
     lang0_code: str
     # The target language
     lang1_code: str
+    use_increased_line_spacing: bool
     email_address: Optional[EmailStr]

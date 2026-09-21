@@ -134,5 +134,7 @@ test('test ceb, vi, bu, present', async ({ page }) => {
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Wikang Tagalog').click()
   await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.getByRole('main')).toContainText('Optional Settings')
+  await expect(page.getByRole('main')).toContainText('Increase line spacing ')
   await page.getByRole('button', { name: 'Generate File' }).click()
 })

@@ -25,7 +25,13 @@
     useTwoColumnLayoutForTqNotesStore
   } from '$lib/stores/SettingsStore'
   import { documentReadyStore, errorStore } from '$lib/stores/NotificationStore'
-  import { resourceTypesStore, resourceTypesCountStore } from '$lib/stores/ResourceTypesStore'
+  import {
+    resourceTypesStore,
+    resourceTypesCountStore,
+    limitTwStore,
+    twResourceRequestedStore,
+    usfmAvailableStore
+  } from '$lib/stores/ResourceTypesStore'
   import { langCodesStore, langCountStore } from '$lib/stores/LanguagesStore'
   import { bookCountStore } from '$lib/stores/BooksStore'
   import GenerateDocument from './GenerateDocument.svelte'
@@ -45,44 +51,56 @@
 
   // Only show optional settings that are relevant to the resources
   // the user has chosen.
-  let usfmRegex = new RegExp('\b(avd|ayt|blv|bpb|cuv|f10|nav|reg|tbi|ugnt|uhb|ulb|usfm)\b')
-  let tnRegex = new RegExp('tn, .*')
-  let tqRegex = new RegExp('tq, .*')
-  let bcRegex = new RegExp('bc, .*')
-  let rgRegex = new RegExp('rg, .*')
+  const validUsfms = new Set([
+    'avd',
+    'ayt',
+    'blv',
+    'bpb',
+    'cuv',
+    'f10',
+    'nav',
+    'reg',
+    'tbi',
+    'ugnt',
+    'uhb',
+    'ulb',
+    'usfm'
+  ])
+  const validTns = new Set(['tn', 'tn-condensed'])
+  const validTqs = new Set(['tq'])
+  const validBcs = new Set(['bc'])
+  const validTws = new Set(['tw'])
+  let showUsfmSettingsAsOption: boolean = false
   let verseByVerseFeatureFlag: boolean = false // For now, 2026-05-18, verse by verse interleaving features have been held by TS
   let printOptimizationFeatureFlag: boolean = false // For now, 2026-05-18, print optimization feature has been held by TS
   let twoColumnTnNotesFeatureFlag: boolean = false // For now, 2026-05-18, two column TN notes feature has been held by TS
   let twoColumnTqNotesFeatureFlag: boolean = false // For now, 2026-05-18, two column TQ notes feature has been held by TS
-  let showUsfmSettingsAsOption: boolean = false
+  let limitTWFeatureFlag: boolean = false // TS requested to link to TW words online rather than include them
   let showTnTwoColAsOption: boolean = false
   let showTqTwoColAsOption: boolean = false
   let showTnBookIntroAsOption: boolean = false
   let showBcBookIntroAsOption: boolean = false
   let showTnChapterIntroAsOption: boolean = false
   let showBcChapterCommentaryAsOption: boolean = false
-  let showRgChapterCommentaryAsOption: boolean = false
   $: {
-    if ($resourceTypesStore) {
-      if ($resourceTypesStore.some((item) => usfmRegex.test(item))) {
-        showUsfmSettingsAsOption = true
-      }
-      if ($resourceTypesStore.some((item) => tnRegex.test(item))) {
-        showTnTwoColAsOption = true
-        showTnBookIntroAsOption = true
-        showTnChapterIntroAsOption = true
-      }
-      if ($resourceTypesStore.some((item) => tqRegex.test(item))) {
-        showTqTwoColAsOption = true
-      }
-      if ($resourceTypesStore.some((item) => bcRegex.test(item))) {
-        showBcBookIntroAsOption = true
-        showBcChapterCommentaryAsOption = true
-      }
-      if ($resourceTypesStore.some((item) => rgRegex.test(item))) {
-        showRgChapterCommentaryAsOption = true
-      }
-    }
+    const resourceTypes = $resourceTypesStore ?? []
+    const hasResource = (validTypes: Set<string>) =>
+      resourceTypes.some((item) => item.split(',').some((code) => validTypes.has(code.trim())))
+    const hasUsfm = hasResource(validUsfms)
+    const hasTn = hasResource(validTns)
+    const hasTq = hasResource(validTqs)
+    const hasBc = hasResource(validBcs)
+    const hasTw = hasResource(validTws)
+    $usfmAvailableStore = hasUsfm
+    showUsfmSettingsAsOption = hasUsfm
+    showTnTwoColAsOption = hasTn
+    showTnBookIntroAsOption = hasTn
+    showTnChapterIntroAsOption = hasTn
+    showTqTwoColAsOption = hasTq
+    showBcBookIntroAsOption = hasBc
+    showBcChapterCommentaryAsOption = hasBc
+    $twResourceRequestedStore = hasTw
+    $limitTwStore = $twResourceRequestedStore && $usfmAvailableStore
   }
   $: console.log(`resourceTypesStore: ${$resourceTypesStore}`)
 
@@ -140,6 +158,8 @@
   }
 
   let showWizardBasketModal = false
+
+  $: console.log(`showUsfmSettingsAsOption: ${showUsfmSettingsAsOption}`)
 </script>
 
 <WizardBreadcrumb />
@@ -329,18 +349,18 @@
             >
           </div>
         {/if}
-        <!-- {#if $twResourceRequestedStore && $usfmAvailableStore} -->
-        <!--   <div class="mb-2 mt-6 flex"> -->
-        <!--     <Switch bind:checked={$limitTwStore} id="limit-tw-store" /> -->
-        <!--     <span class="ml-2 text-xl text-[#33445C]">Limit TW words</span> -->
-        <!--   </div> -->
-        <!--   <div> -->
-        <!--     <span class="text-lg text-[#33445C]" -->
-        <!--       >Enabling this option will filter TW words down to only those that occur in the -->
-        <!--       scripture for the books chosen</span -->
-        <!--     > -->
-        <!--   </div> -->
-        <!-- {/if} -->
+        {#if limitTWFeatureFlag && $twResourceRequestedStore && $usfmAvailableStore}
+          <div class="mb-2 mt-6 flex">
+            <Switch bind:checked={$limitTwStore} id="limit-tw-store" />
+            <span class="ml-2 text-xl text-[#33445C]">Limit TW words</span>
+          </div>
+          <div>
+            <span class="text-lg text-[#33445C]"
+              >Enabling this option will filter TW words down to only those that occur in the
+              scripture for the books chosen</span
+            >
+          </div>
+        {/if}
       </div>
       <button
         class="mb-4 mt-2 w-1/2 rounded-md
@@ -478,7 +498,7 @@
               <span class="ml-2 text-xl text-[#33445C]">Include BC book intro</span>
             </div>
           {/if}
-          {#if showTnBookIntroAsOption}
+          {#if showTnChapterIntroAsOption}
             <div class="mb-2 mt-6 flex items-center">
               <Switch bind:checked={$showTnChapterIntroStore} id="show-tn-chapter-intro" />
               <span class="ml-2 text-xl text-[#33445C]">Include TN chapter intro</span>
@@ -502,15 +522,6 @@
                 id="show-rg-chapter-commentary"
               />
               <span class="ml-2 text-xl text-[#33445C]">Include BC chapter commentary</span>
-            </div>
-          {/if}
-          {#if showRgChapterCommentaryAsOption && ($assemblyStrategyKindStore === 'lvo' || $assemblyStrategyKindStore === 'bvo')}
-            <div class="mb-2 mt-6 flex items-center">
-              <Switch
-                bind:checked={$showRgChapterCommentaryStore}
-                id="show-rg-chapter-commentary"
-              />
-              <span class="ml-2 text-xl text-[#33445C]">Include RG chapter commentary</span>
             </div>
           {/if}
         </div>

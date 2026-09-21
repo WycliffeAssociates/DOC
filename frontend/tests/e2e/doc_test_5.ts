@@ -7,7 +7,8 @@ test('merge of data API data and DOC only data', async ({ page }) => {
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Matius').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.locator('body')).toContainText('Bahasa Indonesian Bible')
+  await expect(page.locator('body')).toContainText('Terjemahan Baru')
+  await expect(page.locator('body')).toContainText('Alkitab Yang Terbuka')
   await expect(page.locator('body')).toContainText('Translation Notes')
 })
 

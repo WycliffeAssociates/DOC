@@ -123,3 +123,16 @@ test.describe('Desktop Tests', () => {
     await expect(page.getByText('Tok Pisin')).not.toBeVisible({ timeout: 64_000 })
   })
 })
+
+test('test ceb, vi, bu, present', async ({ page }) => {
+  await page.goto('http://localhost:8001/stet')
+  await expect(page.getByRole('main')).toContainText('Cebuano')
+  await expect(page.getByRole('main')).toContainText('Tiếng Việt (Vietnamese)')
+  await expect(page.getByRole('main')).toContainText('Wikang Tagalog')
+  await expect(page.getByRole('main')).toContainText('български език (Bulgarian)')
+  await page.getByText('Cebuano').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByText('Wikang Tagalog').click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Generate File' }).click()
+})

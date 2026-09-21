@@ -93,26 +93,6 @@
 
   let showWizardBasketModal = false
 
-  // Set whether a USFM type is available for any of the languages
-  // requested so that we can use this fact in the UI to trigger the
-  // presence or absence of the toggle to limit TW words.
-  let usfmRegexp = /\S*(avd|ayt|blv|cuv|f10|nav|reg|ugnt|uhb|ulb|usfm)\S*/
-  $: {
-    $usfmAvailableStore = $resourceTypesStore.some((item) => usfmRegexp.test(item)) || false
-  }
-
-  // Set whether TW has been requested for any of the languages
-  // requested so that we can use this fact in the UI to trigger the
-  // presence or absence of the toggle to limit TW words.
-  let twRegexp = new RegExp('.*tw.*')
-  $: {
-    $twResourceRequestedStore =
-      $resourceTypesStore && $resourceTypesStore.some((item) => twRegexp.test(item))
-  }
-  $: {
-    $limitTwStore = $twResourceRequestedStore && $usfmAvailableStore
-  }
-
   // --- MUTUAL EXCLUSIVITY LOGIC ---
   // Track the previous state of the store to determine which note option was checked last
   let previousResourceTypes: Array<string> = []

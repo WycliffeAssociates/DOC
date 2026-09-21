@@ -129,11 +129,13 @@ class Settings(BaseSettings):
     USFM_RESOURCE_TYPES: Sequence[str] = [
         "avd",
         "ayt",
+        "bpb",
         "blv",
         "cuv",
         "f10",
         "nav",
         "reg",
+        "tbi",
         # "udb",  # Content team doesn't want udb used for any language, e.g., en, mr, tl, gu
         "ugnt",
         "uhb",
@@ -145,14 +147,16 @@ class Settings(BaseSettings):
     # there are any) that we want to be available to users. These are all
     # that I found of relevance in the data API.
     RESOURCE_TYPE_CODES_AND_NAMES: Mapping[str, str] = {
-        "ayt": "Bahasa Indonesian Bible",
+        "ayt": "Alkitab Yang Terbuka (Easy-to-Read Indonesian Bible)",
         "bc": "Bible Commentary",
         "blv": "Portuguese Bíblia Livre",
+        "bpb": "Bulgarian Protestant Bible",
         "cuv": "新标点和合本",
         "f10": "French Louis Segond 1910 Bible",
         "nav": "New Arabic Version (Ketab El Hayat)",
         "reg": "Regular",
         "rg": "NT Survey Reviewers' Guide",
+        "tbi": "Terjemahan Baru (Indonesian New Translation Bible)",
         "tn": "Translation Notes",
         "tn-condensed": "Condensed Translation Notes",
         "tq": "Translation Questions",

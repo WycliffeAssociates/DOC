@@ -54,6 +54,10 @@ fetch_source_data_cache: TTLCache[str, SourceData] = TTLCache(
     maxsize=1, ttl=settings.DATA_API_CACHE_TTL_SECONDS
 )
 
+fetch_non_primary_source_data_cache: TTLCache[str, SourceData] = TTLCache(
+    maxsize=1, ttl=settings.DATA_API_CACHE_TTL_SECONDS
+)
+
 
 @cached(fetch_source_data_cache)
 def fetch_source_data(
@@ -126,6 +130,79 @@ query MyQuery {
         return SourceData(git_repo=[])
 
 
+@cached(fetch_non_primary_source_data_cache)
+def fetch_non_primary_source_data(
+    data_api_url: HttpUrl = settings.DATA_API_URL,
+    user_agent_str: str = settings.USER_AGENT_STR,
+    x_requested_with_value: str = settings.X_REQUESTED_WITH_VALUE,
+) -> Optional[SourceData]:
+    """
+    Downloads data from a GraphQL API.
+
+    >>> from doc.domain import resource_lookup
+    >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
+    (...)
+    >>> result.git_repo[0]
+    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/WA-Catalog/bg_bpb'),
+    content=Content(resource_type='bpb', language=Language(english_name='Bulgarian', ietf_code='bg', national_name='български език', direction=<LangDirEnum.LTR: 'ltr'>)))
+    """
+    graphql_query = """
+query MyQuery {
+  git_repo(
+    where: {content: {language: {ietf_code: {_eq: "bg"}}}}
+  ) {
+    repo_url
+    content {
+      resource_type
+      language {
+        english_name
+        ietf_code
+        national_name
+        direction
+      }
+    }
+  }
+}
+    """
+    query_json = {"query": graphql_query}
+    headers = {"User-Agent": user_agent_str, "X-Requested-With": x_requested_with_value}
+    try:
+        response = requests.post(str(data_api_url), json=query_json, headers=headers)
+        if response.status_code == 200:
+            data_payload = response.json().get("data", {})
+            if "git_repo" in data_payload:
+                valid_repos = [
+                    repo
+                    for repo in data_payload["git_repo"]
+                    if repo.get("content", {}).get("resource_type") is not None
+                    and repo.get("content", {}).get("language") is not None
+                    and "WA-Catalog" in repo.get("repo_url", {})
+                ]
+                # Sort for test stability - ensures consistent ordering
+                valid_repos.sort(key=lambda repo: repo["repo_url"])
+                return SourceData.model_validate({"git_repo": valid_repos})
+            else:
+                logger.info("Invalid payload structure, no data.")
+                return SourceData(git_repo=[])
+        else:
+            logger.info(
+                "Failed to get data from data API, graphql API might be down..."
+            )
+            return SourceData(git_repo=[])
+    except requests.RequestException as e:
+        logger.exception("Request failed: %s", e)
+        logger.info("Failed to get data from data API, API might be down...")
+        return SourceData(git_repo=[])
+    except ValidationError as e:
+        logger.exception(
+            "Request failed due to invalid data returned from data API: %s", e
+        )
+        logger.info(
+            "Some of the data returned by data API is invalid, check logs for details"
+        )
+        return SourceData(git_repo=[])
+
+
 def lang_codes_and_names(
     # lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
     gateway_languages: frozenset[str] = settings.GATEWAY_LANGUAGES,
@@ -141,6 +218,7 @@ def lang_codes_and_names(
     'aac'
     """
     data = fetch_source_data()
+    non_primary_data = fetch_non_primary_source_data()
     values = []
     if data is None or not data.git_repo:
         logger.info("Data API is down or no git_repo found!")
@@ -159,6 +237,39 @@ def lang_codes_and_names(
             else:
                 values.append(
                     (ietf_code, f"{localized_name} ({english_name})", is_gateway)
+                )
+    except Exception:
+        logger.exception("Failed due to the following exception.")
+    if non_primary_data is None or not non_primary_data.git_repo:
+        logger.info("Data API is down or no git_repo found!")
+        return []
+    try:
+        for non_primary_repo_info in non_primary_data.git_repo:
+            non_primary_language_info = non_primary_repo_info.content
+            non_primary_language = non_primary_language_info.language
+            non_primary_ietf_code = non_primary_language.ietf_code
+            non_primary_english_name = (
+                non_primary_language.english_name
+                if non_primary_language.english_name
+                else ""
+            )
+            non_primary_localized_name = non_primary_language.national_name
+            non_primary_is_gateway = non_primary_ietf_code in gateway_languages
+            if non_primary_english_name in non_primary_localized_name:
+                values.append(
+                    (
+                        non_primary_ietf_code,
+                        non_primary_localized_name,
+                        non_primary_is_gateway,
+                    )
+                )
+            else:
+                values.append(
+                    (
+                        non_primary_ietf_code,
+                        f"{non_primary_localized_name} ({non_primary_english_name})",
+                        non_primary_is_gateway,
+                    )
                 )
     except Exception:
         logger.exception("Failed due to the following exception.")
@@ -622,6 +733,12 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
             repo_url=url, content=Content(resource_type=resource_type, language=lang)
         )
 
+    bg_lang = Language(
+        english_name="Bulgarian",
+        ietf_code="bg",
+        national_name="български език",
+        direction=LangDirEnum.LTR,
+    )
     id_lang = Language(
         english_name="Indonesian",
         ietf_code="id",
@@ -635,6 +752,23 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
         direction=LangDirEnum.LTR,
     )
     extra_entries = [
+        make_entry(
+            HttpUrl("https://content.bibletranslationtools.org/WA-Catalog/bg_bpb"),
+            "bpb",
+            bg_lang,
+        ),
+        make_entry(
+            HttpUrl(
+                "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn_condensed"
+            ),
+            "tn-condensed",
+            en_lang,
+        ),
+        make_entry(
+            HttpUrl("https://content.bibletranslationtools.org/WA-Catalog/id_tbi"),
+            "tbi",
+            id_lang,
+        ),
         make_entry(
             HttpUrl("https://content.bibletranslationtools.org/WA-Catalog/id_ayt"),
             "ayt",
@@ -650,25 +784,6 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
             "tw",
             id_lang,
         ),
-        make_entry(
-            HttpUrl(
-                "https://content.bibletranslationtools.org/WycliffeAssociates/en_tn_condensed"
-            ),
-            "tn-condensed",
-            en_lang,
-        ),
-        # make_entry(
-        #     HttpUrl(
-        #         # NOTE: this URL is actually not used in DOC because the file no longer exists
-        #         # there. Instead we provide this file for ourselves and copy it into
-        #         # place from the root of this project at FastAPI initialization. One day
-        #         # it would be nice to have this live somewhere online so that
-        #         # potentially updated versions could be acquired.
-        #         "https://github.com/WycliffeAssociates/TS-biel-files/blob/master/training/en/Refinement%20and%20Publication/Reviewers'%20Guide/NT%20Survey%20RG%20Files/NT%20Survey%20Reviewers'%20Guide.docx"
-        #     ),
-        #     "rg",
-        #     en_lang,
-        # ),
     ]
     existing_pairs = {
         (entry.content.language.ietf_code, entry.content.resource_type)

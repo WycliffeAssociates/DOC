@@ -56,5 +56,5 @@ class StetDocumentRequest(BaseModel):
     lang0_code: str
     # The target language
     lang1_code: str
-    use_increased_line_spacing: bool
+    use_increased_line_spacing: bool = False
     email_address: Optional[EmailStr]

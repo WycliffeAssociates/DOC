@@ -61,9 +61,7 @@ def generate_docx_document(
     resource_type_codes_and_names: Mapping[
         str, str
     ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
-    languages_where_non_ulb_preferred: Sequence[
-        str
-    ] = settings.LANGUAGES_WHERE_NON_ULB_PREFERRED,
+    preferred_resources: Mapping[str, str] = settings.PREFERRED_RESOURCES,
 ) -> str:
     """
     Generate the scriptural terms evaluation document.
@@ -117,28 +115,34 @@ def generate_docx_document(
     ]
     source_usfm_books = []
     target_usfm_books = []
-    lang0_usfm_resource_type = ""
-    lang1_usfm_resource_type = ""
-    if lang0_code not in languages_where_non_ulb_preferred:
-        if lang0_ulb_usfm_resource_types:  # Prefer ulb if available
-            lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
-        elif lang0_usfm_resource_types:
-            lang0_usfm_resource_type = lang0_usfm_resource_types[0]
-    else:
-        if lang0_usfm_resource_types:  # Prefer non-ulb if available
-            lang0_usfm_resource_type = lang0_usfm_resource_types[0]
-        elif lang0_ulb_usfm_resource_types:
-            lang0_usfm_resource_type = lang0_ulb_usfm_resource_types[0]
-    if lang1_code not in languages_where_non_ulb_preferred:
-        if lang1_ulb_usfm_resource_types:  # Prefer ulb if available
-            lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
-        elif lang1_usfm_resource_types:
-            lang1_usfm_resource_type = lang1_usfm_resource_types[0]
-    else:
-        if lang1_usfm_resource_types:  # Prefer non-ulb if available
-            lang1_usfm_resource_type = lang1_usfm_resource_types[0]
-        elif lang1_ulb_usfm_resource_types:
-            lang1_usfm_resource_type = lang1_ulb_usfm_resource_types[0]
+
+    def resolve_resource_type(
+        lang_code: str,
+        available_types: list[str],
+        ulb_types: list[str],
+        preferred_map: Mapping[str, str],
+    ) -> str:
+        preferred_type = preferred_map.get(lang_code)
+        if preferred_type and preferred_type in available_types:
+            return preferred_type
+        if ulb_types:
+            return ulb_types[0]
+        if available_types:
+            return available_types[0]
+        return ""
+
+    lang0_usfm_resource_type = resolve_resource_type(
+        lang0_code,
+        lang0_usfm_resource_types,
+        lang0_ulb_usfm_resource_types,
+        preferred_resources,
+    )
+    lang1_usfm_resource_type = resolve_resource_type(
+        lang1_code,
+        lang1_usfm_resource_types,
+        lang1_ulb_usfm_resource_types,
+        preferred_resources,
+    )
     if lang0_usfm_resource_type and lang1_usfm_resource_type:
         source_usfm_book = None
         target_usfm_book = None

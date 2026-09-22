@@ -103,9 +103,7 @@ def get_usfm_books_and_usfm_resource_type(
     bible_references_with_availability: list[BibleReferenceWithAvailability],
     lang_code: str,
     usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    languages_where_non_ulb_preferred: Sequence[
-        str
-    ] = settings.LANGUAGES_WHERE_NON_ULB_PREFERRED,
+    preferred_resources: Mapping[str, str] = settings.PREFERRED_RESOURCES,
 ) -> tuple[list[USFMBook], str]:
     # Invariant: book codes are only those that were available from USFM resources
     book_codes = list(
@@ -117,32 +115,29 @@ def get_usfm_books_and_usfm_resource_type(
     resource_types_codes = list(
         {lang_resource_type_tuple[0] for lang_resource_type_tuple in resource_types_}
     )
-    usfm_resource_types = list(
-        {
-            resource_type_
-            for resource_type_ in resource_types_codes
-            if resource_type_ in usfm_resource_types
-        }
-    )
-    ulb_usfm_resource_types = list(
-        {
-            usfm_resource_type_
-            for usfm_resource_type_ in usfm_resource_types
-            if "ulb" in usfm_resource_type_
-        }
-    )
-    usfm_books = []
+    available_usfm_resource_types = [
+        resource_type_
+        for resource_type_ in resource_types_codes
+        if resource_type_ in usfm_resource_types
+    ]
+    ulb_usfm_resource_types = [
+        usfm_resource_type_
+        for usfm_resource_type_ in available_usfm_resource_types
+        if "ulb" in usfm_resource_type_
+    ]
+    # Preference logic:
+    # 1. Use mapping entry if configured for lang_code and available
+    # 2. Otherwise prefer ULB
+    # 3. Otherwise fallback to any available USFM resource type
     usfm_resource_type = ""
-    if lang_code not in languages_where_non_ulb_preferred:
-        if ulb_usfm_resource_types:  # Prefer ulb if available
-            usfm_resource_type = ulb_usfm_resource_types[0]
-        elif usfm_resource_types:
-            usfm_resource_type = usfm_resource_types[0]
-    else:
-        if usfm_resource_types:  # Prefer non-ulb if available
-            usfm_resource_type = usfm_resource_types[0]
-        elif ulb_usfm_resource_types:
-            usfm_resource_type = ulb_usfm_resource_types[0]
+    preferred_type = preferred_resources.get(lang_code)
+    if preferred_type and preferred_type in available_usfm_resource_types:
+        usfm_resource_type = preferred_type
+    elif ulb_usfm_resource_types:
+        usfm_resource_type = ulb_usfm_resource_types[0]
+    elif available_usfm_resource_types:
+        usfm_resource_type = available_usfm_resource_types[0]
+    usfm_books = []
     if usfm_resource_type:
         usfm_book = None
         for book_code in book_codes:

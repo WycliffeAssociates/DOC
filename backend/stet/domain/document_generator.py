@@ -450,7 +450,7 @@ def generate_stet_docx_document(
     use_increased_line_spacing: bool,
 ) -> Json[str]:
     logger.debug(
-        "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s",
+        "passed args: lang0_code: %s, lang1_code: %s, email_adress: %s, use_increased_line_spacing: %s",
         lang0_code,
         lang1_code,
         email_address,

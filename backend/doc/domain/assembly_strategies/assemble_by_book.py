@@ -8,9 +8,9 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     get_book_intros,
     get_chapter_intros,
     get_non_usfm_resources_chapter,
+    get_non_usfm_resources_verse,
     get_usfm_and_tw,
     get_usfm_and_tw_verse,
-    get_non_usfm_resources_verse,
     order_usfm_resources,
 )
 from doc.domain.model import (

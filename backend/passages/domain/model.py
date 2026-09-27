@@ -1,10 +1,8 @@
 from typing import Optional, NamedTuple, final, TypeAlias
 
 from doc.domain.model import ChapterNum
-from doc.reviewers_guide.model import BibleReference
+from passages.reviewers_guide.model import BibleReference
 from pydantic import BaseModel, EmailStr
-
-
 
 
 @final

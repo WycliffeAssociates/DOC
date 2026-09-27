@@ -11,7 +11,6 @@ from doc.domain.assembly_strategies.assembly_strategy_utils import (
     get_usfm_and_tw_verse,
     get_non_usfm_resources_verse,
     order_usfm_resources,
-    rg_chapter_verses,
 )
 from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
@@ -26,7 +25,6 @@ from doc.domain.model import (
     USFMBook,
 )
 from doc.domain.parsing import split_chapter_into_verses_with_formatting
-from doc.reviewers_guide.model import RGBook
 
 logger = settings.logger(__name__)
 
@@ -38,7 +36,6 @@ def assemble_content_by_book(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     use_section_visual_separator: bool,
     use_two_column_layout_for_tn_notes: bool,
@@ -51,10 +48,10 @@ def assemble_content_by_book(
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     lang_codes = collect_unique_lang_codes(
-        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books, rg_books
+        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books
     )
     book_codes = collect_unique_book_codes(
-        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books, rg_books
+        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books
     )
     for lang_code in lang_codes:
         for book_code in book_codes:
@@ -106,14 +103,6 @@ def assemble_content_by_book(
                 ),
                 None,
             )
-            rg_book = next(
-                (
-                    rg_book
-                    for rg_book in rg_books
-                    if rg_book.lang_code == lang_code and rg_book.book_code == book_code
-                ),
-                None,
-            )
             if usfm_book is not None:
                 document_parts.extend(
                     assemble_usfm_by_book(
@@ -124,7 +113,6 @@ def assemble_content_by_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
-                        rg_book,
                         use_section_visual_separator,
                         use_two_column_layout_for_tn_notes,
                         use_two_column_layout_for_tq_notes,
@@ -143,7 +131,6 @@ def assemble_content_by_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
-                        rg_book,
                         use_section_visual_separator,
                         use_two_column_layout_for_tn_notes,
                         use_two_column_layout_for_tq_notes,
@@ -162,7 +149,6 @@ def assemble_content_by_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
-                        rg_book,
                         use_section_visual_separator,
                         use_two_column_layout_for_tq_notes,
                         show_bc_book_intro,
@@ -172,7 +158,7 @@ def assemble_content_by_book(
                 usfm_book is None
                 and tn_book is None
                 and tq_book is None
-                and (tw_book is not None or bc_book is not None or rg_book is not None)
+                and (tw_book is not None or bc_book is not None)
             ):
                 document_parts.extend(
                     assemble_tw_by_book(
@@ -183,7 +169,6 @@ def assemble_content_by_book(
                         tw_book,
                         usfm_book2,
                         bc_book,
-                        rg_book,
                         use_section_visual_separator,
                         show_bc_book_intro,
                     )
@@ -198,7 +183,6 @@ def assemble_content_by_verse_book_at_a_time(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
     assembly_layout_kind: AssemblyLayoutEnum,
     use_section_visual_separator: bool,
     use_two_column_layout_for_tn_notes: bool,
@@ -207,16 +191,15 @@ def assemble_content_by_verse_book_at_a_time(
     show_bc_book_intro: bool,
     show_tn_chapter_intro: bool,
     show_bc_chapter_commentary: bool,
-    show_rg_chapter_commentary: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     lang_codes = collect_unique_lang_codes(
-        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books, rg_books
+        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books
     )
     book_codes = collect_unique_book_codes(
-        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books, rg_books
+        usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books
     )
     for lang_code in lang_codes:
         for book_code in book_codes:
@@ -268,14 +251,6 @@ def assemble_content_by_verse_book_at_a_time(
                 ),
                 None,
             )
-            rg_book = next(
-                (
-                    rg_book
-                    for rg_book in rg_books
-                    if rg_book.lang_code == lang_code and rg_book.book_code == book_code
-                ),
-                None,
-            )
             if usfm_book:
                 document_parts.extend(
                     assemble_usfm_by_verse_book_at_a_time(
@@ -286,7 +261,6 @@ def assemble_content_by_verse_book_at_a_time(
                         tw_book,
                         usfm_book2,
                         bc_book,
-                        rg_book,
                         use_section_visual_separator,
                         use_two_column_layout_for_tn_notes,
                         use_two_column_layout_for_tq_notes,
@@ -305,7 +279,6 @@ def assemble_content_by_verse_book_at_a_time(
                         tq_books,
                         tw_books,
                         bc_books,
-                        rg_books,
                         assembly_layout_kind,
                         use_section_visual_separator,
                         use_two_column_layout_for_tn_notes,
@@ -326,7 +299,6 @@ def assemble_usfm_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
     use_two_column_layout_for_tn_notes: bool,
     use_two_column_layout_for_tq_notes: bool,
@@ -387,7 +359,6 @@ def assemble_usfm_by_book(
                     tnc_book,
                     tq_book,
                     bc_book,
-                    rg_book,
                     chapter_num,
                     is_rtl,
                     use_two_column_layout_for_tn_notes,
@@ -416,7 +387,6 @@ def assemble_usfm_by_verse_book_at_a_time(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
     use_two_column_layout_for_tn_notes: bool,
     use_two_column_layout_for_tq_notes: bool,
@@ -454,21 +424,6 @@ def assemble_usfm_by_verse_book_at_a_time(
                 use_section_visual_separator,
             )
             document_parts.extend(chapter_intros)
-            rg_verses = rg_chapter_verses(rg_book, chapter_num)
-            if rg_book and rg_verses:
-                document_parts.append(
-                    DocumentPart(
-                        content=fmt_str.format(rg_book.resource_type_name),
-                        is_rtl=is_rtl,
-                    )
-                )
-                document_parts.append(
-                    DocumentPart(
-                        content=rg_verses,
-                        is_rtl=is_rtl,
-                        use_section_visual_separator=use_section_visual_separator,
-                    )
-                )
             if chapter.verses:
                 for verse_ref, verse in chapter.verses.items():
                     document_parts.extend(
@@ -531,7 +486,6 @@ def assemble_tn_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
     use_two_column_layout_for_tn_notes: bool,
     use_two_column_layout_for_tq_notes: bool,
@@ -568,7 +522,6 @@ def assemble_tn_by_book(
                 tnc_book,
                 tq_book,
                 bc_book,
-                rg_book,
                 chapter_num,
                 is_rtl,
                 use_two_column_layout_for_tn_notes,
@@ -587,7 +540,6 @@ def assemble_tq_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
     use_two_column_layout_for_tq_notes: bool,
     show_bc_book_intro: bool,
@@ -621,7 +573,6 @@ def assemble_tq_by_book(
                 tnc_book,
                 tq_book,
                 bc_book,
-                rg_book,
                 chapter_num,
                 is_rtl,
                 False,
@@ -640,7 +591,6 @@ def assemble_tw_by_book(
     tw_book: Optional[TWBook],
     usfm_book2: Optional[USFMBook],
     bc_book: Optional[BCBook],
-    rg_book: Optional[RGBook],
     use_section_visual_separator: bool,
     show_bc_book_intro: bool,
 ) -> list[DocumentPart]:
@@ -656,7 +606,7 @@ def assemble_tw_by_book(
         use_section_visual_separator,
     )
     document_parts.extend(book_intros)
-    chapters = bc_book.chapters if bc_book else rg_book.chapters if rg_book else []
+    chapters = bc_book.chapters if bc_book else []
     for chapter_num in chapters:
         chapter_intros = get_chapter_intros(
             tn_book,
@@ -673,7 +623,6 @@ def assemble_tw_by_book(
             tnc_book,
             tq_book,
             bc_book,
-            rg_book,
             chapter_num,
             is_rtl,
             False,

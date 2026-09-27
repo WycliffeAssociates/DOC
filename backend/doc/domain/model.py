@@ -15,7 +15,6 @@ from doc.utils.number_utils import is_even
 from pydantic import BaseModel, EmailStr, HttpUrl
 from pydantic.functional_validators import model_validator
 
-
 # These type aliases give us more self-documenting code, but of course
 # aren't strictly necessary.
 VerseRef = str
@@ -26,14 +25,12 @@ EN_TN_CONDENSED_RESOURCE_TYPE: str = "tn-condensed"
 TQ_RESOURCE_TYPE: str = "tq"
 TW_RESOURCE_TYPE: str = "tw"
 BC_RESOURCE_TYPE: str = "bc"
-RG_RESOURCE_TYPE: str = "rg"
 NON_USFM_RESOURCE_TYPES: Sequence[str] = [
     TN_RESOURCE_TYPE,
     EN_TN_CONDENSED_RESOURCE_TYPE,
     TQ_RESOURCE_TYPE,
     TW_RESOURCE_TYPE,
     BC_RESOURCE_TYPE,
-    RG_RESOURCE_TYPE,
 ]
 
 
@@ -195,7 +192,6 @@ class DocumentRequest(BaseModel):
     show_bc_book_intro: bool = True
     show_tn_chapter_intro: bool = True
     show_bc_chapter_commentary: bool = True
-    show_rg_chapter_commentary: bool = True
     # Indicate where the document request originated from. We default to
     # TEST so that tests don't have to specify and every other client, e.g.,
     # UI, should specify in order for
@@ -215,7 +211,6 @@ class DocumentRequest(BaseModel):
             TQ_RESOURCE_TYPE,
             TW_RESOURCE_TYPE,
             BC_RESOURCE_TYPE,
-            RG_RESOURCE_TYPE,
         ]
         all_resource_types = [*usfm_resource_types, *non_usfm_resource_types]
         if not self.resource_requests:

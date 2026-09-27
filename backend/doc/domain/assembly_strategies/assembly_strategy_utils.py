@@ -16,8 +16,6 @@ from doc.domain.model import (
     USFMBook,
     TWBook,
 )
-from doc.reviewers_guide.model import RGBook
-from doc.reviewers_guide.render_to_html import render_chapter
 from doc.utils.tw_utils import translation_words_content
 from doc.utils.text_utils import demote_headings_by_one
 from docx.document import Document as DocxDocument
@@ -168,21 +166,6 @@ def tq_chapter_verses(
         content.append(
             tq_verse_notes_enclosing_div_fmt_str.format("".join(tq_verses.values()))
         )
-    return "".join(content)
-
-
-def rg_chapter_verses(
-    rg_book: Optional[RGBook],
-    chapter_num: int,
-) -> str:
-    """
-    Return the HTML for verses that are in the chapter with
-    chapter_num.
-    """
-    content = []
-    if rg_book and chapter_num in rg_book.chapters:
-        rg_verses = render_chapter(rg_book.chapters[chapter_num])
-        content.append(rg_verses)
     return "".join(content)
 
 
@@ -817,38 +800,11 @@ def tq_verses_parts(
     return document_parts
 
 
-def rg_verses_parts(
-    rg_book: Optional[RGBook],
-    chapter_num: int,
-    is_rtl: bool,
-    use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
-) -> Sequence[DocumentPart]:
-    document_parts: list[DocumentPart] = []
-    rg_verses = rg_chapter_verses(rg_book, chapter_num)
-    if rg_verses and rg_book:
-        document_parts.append(
-            DocumentPart(
-                content=resource_type_name_fmt_str.format(rg_book.resource_type_name),
-                is_rtl=is_rtl,
-            )
-        )
-        document_parts.append(
-            DocumentPart(
-                content=rg_verses,
-                is_rtl=is_rtl,
-                use_section_visual_separator=use_section_visual_separator,
-            )
-        )
-    return document_parts
-
-
 def get_non_usfm_resources_chapter(
     tn_book: Optional[TNBook],
     tnc_book: Optional[TNCBook],
     tq_book: Optional[TQBook],
     bc_book: Optional[BCBook],
-    rg_book: Optional[RGBook],
     chapter_num: int,
     is_rtl: bool,
     use_two_column_layout_for_tn_notes: bool,
@@ -984,10 +940,6 @@ def tnc_chapter_intro(
     return "".join(content)
 
 
-def has_footnotes(html_content: str) -> bool:
-    return bool(search(r'<div[^>]*class="footnotes"', html_content))
-
-
 def tnc_book_intro(
     tnc_book: Optional[TNCBook],
     use_section_visual_separator: bool,
@@ -1061,7 +1013,6 @@ def collect_unique_lang_codes(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
 ) -> list[str]:
     """Extract unique language codes from all book sequences."""
     all_lang_codes: list[str] = []
@@ -1071,7 +1022,6 @@ def collect_unique_lang_codes(
     all_lang_codes.extend(tq_book.lang_code for tq_book in tq_books)
     all_lang_codes.extend(tw_book.lang_code for tw_book in tw_books)
     all_lang_codes.extend(bc_book.lang_code for bc_book in bc_books)
-    all_lang_codes.extend(rg_book.lang_code for rg_book in rg_books)
     # Preserve order while removing duplicates
     seen: set[str] = set()
     result: list[str] = []
@@ -1089,7 +1039,6 @@ def collect_unique_book_codes(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[str]:
     """Extract unique book codes from all book sequences."""
@@ -1099,7 +1048,6 @@ def collect_unique_book_codes(
     book_codes.update(tnc_book.book_code for tnc_book in tnc_books)
     book_codes.update(tq_book.book_code for tq_book in tq_books)
     book_codes.update(bc_book.book_code for bc_book in bc_books)
-    book_codes.update(rg_book.book_code for rg_book in rg_books)
     return sorted(book_codes, key=lambda book_code: book_id_map[book_code])
 
 
@@ -1109,7 +1057,6 @@ def filter_books_by_book_code(
     tnc_books: Sequence[TNCBook],
     tq_books: Sequence[TQBook],
     bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
     book_code: str,
 ) -> tuple[
     list[USFMBook],
@@ -1117,7 +1064,6 @@ def filter_books_by_book_code(
     list[TNCBook],
     list[TQBook],
     list[BCBook],
-    list[RGBook],
 ]:
     selected_usfm_books = [
         usfm_book for usfm_book in usfm_books if usfm_book.book_code == book_code
@@ -1134,16 +1080,12 @@ def filter_books_by_book_code(
     selected_bc_books = [
         bc_book for bc_book in bc_books if bc_book.book_code == book_code
     ]
-    selected_rg_books = [
-        rg_book for rg_book in rg_books if rg_book.book_code == book_code
-    ]
     return (
         selected_usfm_books,
         selected_tn_books,
         selected_tnc_books,
         selected_tq_books,
         selected_bc_books,
-        selected_rg_books,
     )
 
 
@@ -1154,7 +1096,6 @@ def filter_books_by_lang_code(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
     lang_code: str,
 ) -> tuple[
     list[USFMBook],
@@ -1163,7 +1104,6 @@ def filter_books_by_lang_code(
     list[TQBook],
     list[TWBook],
     list[BCBook],
-    list[RGBook],
 ]:
     selected_usfm_books = [
         usfm_book for usfm_book in usfm_books if usfm_book.lang_code == lang_code
@@ -1183,9 +1123,6 @@ def filter_books_by_lang_code(
     selected_bc_books = [
         bc_book for bc_book in bc_books if bc_book.lang_code == lang_code
     ]
-    selected_rg_books = [
-        rg_book for rg_book in rg_books if rg_book.lang_code == lang_code
-    ]
     return (
         selected_usfm_books,
         selected_tn_books,
@@ -1193,7 +1130,6 @@ def filter_books_by_lang_code(
         selected_tq_books,
         selected_tw_books,
         selected_bc_books,
-        selected_rg_books,
     )
 
 

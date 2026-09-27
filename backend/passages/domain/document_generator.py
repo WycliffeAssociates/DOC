@@ -18,7 +18,7 @@ from doc.domain.resource_lookup import (
     resource_lookup_dto,
     resource_types,
 )
-from doc.reviewers_guide.model import BibleReference
+from passages.reviewers_guide.model import BibleReference
 from doc.utils.docx_util import ensure_reference_styles
 from doc.utils.file_utils import docx_filepath, file_needs_update
 from doc.utils.text_utils import maybe_correct_book_name

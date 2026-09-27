@@ -1,6 +1,6 @@
 """Functions to render RGBook and its constituent parts to HTML"""
 
-from doc.reviewers_guide.model import (
+from passages.reviewers_guide.model import (
     BibleReference,
     ParsedText,
     Part1Item,

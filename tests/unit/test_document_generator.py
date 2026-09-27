@@ -97,6 +97,5 @@ def test_document_request_key_too_long_for_semantic_result() -> None:
         show_bc_book_intro=True,
         show_tn_chapter_intro=True,
         show_bc_chapter_commentary=True,
-        show_rg_chapter_commentary=True,
     )
     assert re.search(r"[0-9]+_[0-9]+", key)

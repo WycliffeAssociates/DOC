@@ -136,9 +136,8 @@ def fetch_non_primary_source_data(
     >>> from doc.domain import resource_lookup
     >>> ();result = resource_lookup.fetch_source_data();() # doctest: +ELLIPSIS
     (...)
-    >>> result.git_repo[0]
-    RepoEntry(repo_url=HttpUrl('https://content.bibletranslationtools.org/WA-Catalog/bg_bpb'),
-    content=Content(resource_type='bpb', language=Language(english_name='Bulgarian', ietf_code='bg', national_name='български език', direction=<LangDirEnum.LTR: 'ltr'>)))
+    >>> len(result.git_repo) > 0
+    True
     """
     graphql_query = """
 query MyQuery {

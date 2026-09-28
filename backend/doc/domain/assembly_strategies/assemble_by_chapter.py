@@ -814,7 +814,6 @@ def assemble_tw_by_chapter(
 ) -> list[DocumentPart]:
     is_rtl = tw_books[0].lang_direction == LangDirEnum.RTL if tw_books else False
     document_parts: list[DocumentPart] = []
-    # FIXME avoid use of zip_longest - restructure into two loops
     for bc_book in bc_books:
         book_intros = get_book_intros(
             None,

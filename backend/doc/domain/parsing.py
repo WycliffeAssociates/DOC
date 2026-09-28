@@ -7,6 +7,7 @@ from re import (
     compile,
     escape,
     findall,
+    match,
     search,
     split as re_split,
     sub,
@@ -225,7 +226,6 @@ def usfm_chapter_html(
     content: str,
     input_file: str,
     output_file: str,
-    chapter_num: int,
 ) -> Optional[str]:
     t0 = time.time()
     with open(input_file, "w") as f:
@@ -370,17 +370,6 @@ def get_chapter_num(
         chapter_num = match.group(1)
         return int(chapter_num)
     return -1  # return sentinal
-
-
-def remove_null_bytes_and_control_characters(html_content: Optional[str]) -> str:
-    """
-    Remove any NULL bytes and all control characters.
-
-    Some languages' accidentally have ASCI control characters in their
-    USFM. We strip those out as well as the possibility of ASCII NULL
-    bytes.
-    """
-    return sub(r"[\x00-\x1F]+", "", html_content) if html_content else ""
 
 
 def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
@@ -549,18 +538,16 @@ def usfm_book_content(
         resource_filepath_sans_suffix = join(working_dir, resource_filename_sans_suffix)
         input_file = f"{resource_filepath_sans_suffix}.usfm"
         output_file = f"{resource_filepath_sans_suffix}.html"
-        chapter_html_content = usfm_chapter_html(
-            chapter_usfm, input_file, output_file, chapter_num
-        )
-        cleaned_chapter_html_content_ = remove_null_bytes_and_control_characters(
-            chapter_html_content
-        )
-        cleaned_chapter_html_content = clean_content_html(cleaned_chapter_html_content_)
+        chapter_html = usfm_chapter_html(chapter_usfm, input_file, output_file)
+        if chapter_html:
+            cleaned_chapter_html = clean_chapter_html(chapter_html)
+            verses = split_into_verses(cleaned_chapter_html)
+        else:
+            cleaned_chapter_html = ""
+            verses = None
         usfm_chapters[chapter_num] = USFMChapter(
-            content=(
-                cleaned_chapter_html_content if cleaned_chapter_html_content else ""
-            ),
-            verses=None,
+            content=cleaned_chapter_html,
+            verses=verses,
         )
     return USFMBook(
         lang_code=resource_lookup_dto.lang_code,
@@ -1416,13 +1403,43 @@ def lookup_verse_text(usfm_book: USFMBook, chapter_num: int, verse_ref: str) -> 
     return verse
 
 
-def split_chapter_into_verses_with_formatting(
-    chapter: USFMChapter,
-) -> dict[VerseRef, str]:
+def _remove_empty_elements(
+    soup: BeautifulSoup,
+    selectors: Optional[Sequence[str]] = None,
+) -> None:
+    """Remove elements matching selectors that have no text content and no children."""
+    if selectors is None:
+        selectors = ("p", "div.sectionhead-5")
+    for selector in selectors:
+        for element in soup.select(selector):
+            if not element.get_text(strip=True) and not element.find_all():
+                element.decompose()
+
+
+def _normalize_verse_interior(interior: str) -> str:
+    """Collapse whitespace artifacts left by unwrapping word-entry spans."""
+    parts = re_split(r'(?=<sup class="caller")', interior)
+    normalized = []
+    for part in parts:
+        part = sub(r"\n+", " ", part).strip()  # newlines → spaces
+        part = sub(r"  +", " ", part)  # multiple spaces → one
+        part = sub(
+            r'(<sup class="versemarker"[^>]*>.*?</sup>)\s+', r"\1", part
+        )  # remove space after versemarker
+        part = sub(r"\s*-\s*", "-", part)  # spaces around hyphens
+        part = sub(r"\s*([,;.])\s*", r"\1 ", part).strip()  # punctuation spacing
+        part = sub(r"'\s*", "'", part)  # spaces after apostrophes
+        normalized.append(part)
+    return "\n".join(normalized)
+
+
+def clean_chapter_html(
+    chapter: str,
+) -> str:
     """
-    Parse chapter.content as HTML, extract each <span class="verse">,
+    Parse chapter as HTML, extract each <span class="verse">,
     unwrap <span class="word-entry"> elements (preserving their text),
-    and return a dict mapping verse number -> cleaned HTML fragment for that verse.
+    and return cleaned HTML for that chapter.
 
     Sample HTML content with multiple verse elements:
 
@@ -1478,38 +1495,51 @@ def split_chapter_into_verses_with_formatting(
     ... ;
     ... </span>
     ... '''
-    >>> from doc.domain.parsing import split_chapter_into_verses_with_formatting
-    >>> chapter = USFMChapter(content=html_content, verses=None)
-    >>> chapter.verses = split_chapter_into_verses_with_formatting(chapter)
-    >>> print(chapter.verses["1"])
-    <span class="verse"> Généalogie de Jésus-Christ, fils de David, fils d'Abraham. </span>
+    >>> from doc.domain.parsing import clean_chapter_html
+    >>> chapter = clean_chapter_html(html_content)
+    >>> soup = BeautifulSoup(chapter, 'html.parser')
+    >>> verse = soup.find_all("span", class_="verse")[0]
+    >>> print(verse)
+    <span class="verse">
+    Généalogie de Jésus-Christ, fils de David, fils d'Abraham.
+    </span>
     """
-    soup = BeautifulSoup(chapter.content, "html.parser")
+    soup = BeautifulSoup(chapter, "html.parser")
+    _remove_empty_elements(soup)
+    verse_dict: dict[VerseRef, str] = {}
+    for verse_span in soup.find_all("span", class_="verse"):
+        for we in verse_span.find_all("span", class_="word-entry"):
+            we.unwrap()
+        raw = str(verse_span)
+        # Clean up and normalize whitespace after word-entry removal
+        m = match(r"(<span[^>]*>)\n?(.*?)\n?(</span>)$", raw, DOTALL)
+        if m:
+            open_tag, interior, close_tag = m.groups()
+            cleaned = f"{open_tag}\n{_normalize_verse_interior(interior)}\n{close_tag}"
+        else:
+            cleaned = raw
+        # Replace the original verse_span with the cleaned version
+        verse_span.replace_with(BeautifulSoup(cleaned, "html.parser"))
+    return str(soup)
+
+
+def split_into_verses(
+    cleaned_chapter: str,
+) -> dict[VerseRef, str]:
+    """
+    Extract each <span class="verse"> from chapter as HTML
+    and return a dict mapping verse number -> verse.
+    """
+    soup = BeautifulSoup(cleaned_chapter, "html.parser")
     verse_dict: dict[VerseRef, str] = {}
     for verse_span in soup.find_all("span", class_="verse"):
         sup = verse_span.find("sup", class_="versemarker")
         if not sup or not sup.string:
             continue
         verse_number = sup.string.strip()
-        # Remove the versemarker number sup
         sup.decompose()
-        # fr f10 uses word-entry tags
-        for we in verse_span.find_all("span", class_="word-entry"):
-            we.unwrap()
-        cleaned_html = clean_content_html(str(verse_span))
-        verse_dict[verse_number] = cleaned_html
+        verse_dict[verse_number] = str(verse_span)
     return verse_dict
-
-
-def clean_content_html(raw_content: str) -> str:
-    soup = BeautifulSoup(raw_content, "html.parser")
-    cleaned_html = str(soup)
-    cleaned_html = sub(r"\s+([,;:.!?])", r"\1", cleaned_html)
-    cleaned_html = sub(r"\s+'", "'", cleaned_html)
-    cleaned_html = sub(r"'\s+", "'", cleaned_html)
-    cleaned_html = sub(r"\s*-\s*", "-", cleaned_html)
-    cleaned_html = sub(r"\s{2,}", " ", cleaned_html).strip()
-    return cleaned_html
 
 
 if __name__ == "__main__":

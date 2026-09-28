@@ -31,7 +31,7 @@ from passages.domain.model import (
     BibleReferenceWithAvailability,
     Passage,
 )
-from passages.domain.parser import split_chapter_into_verses, verse_text_html
+from passages.domain.parser import verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
 from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
@@ -155,10 +155,6 @@ def get_usfm_books_and_usfm_resource_type(
                     resource_dir,
                     False,
                 )
-                for chapter_num_, chapter_ in usfm_book.chapters.items():
-                    usfm_book.chapters[chapter_num_].verses = split_chapter_into_verses(
-                        chapter_
-                    )
                 usfm_books.append(usfm_book)
     return usfm_books, usfm_resource_type
 

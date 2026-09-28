@@ -1,3 +1,4 @@
+import pytest
 from doc.config import settings
 from doc.domain import model
 from doc.entrypoints.app import app

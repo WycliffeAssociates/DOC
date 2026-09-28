@@ -26,7 +26,7 @@ def nt_survey_rg_passages(
     Returns the list of all NT RG passages from the docx_file_path, but with
     book names localized for language chosen.
 
-    >>> from doc.domain import resource_lookup
+    >>> from passages.domain import resource_lookup
     >>> ();rg_books = resource_lookup.nt_survey_rg_passages() ;() # doctest: +ELLIPSIS
     (...)
     >>> rg_books[0]

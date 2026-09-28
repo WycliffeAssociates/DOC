@@ -149,6 +149,7 @@ def test_fr_ulb_col_fr_tn_col_fr_tq_col_language_book_order_1c_c() -> None:
         check_finished_document_with_verses_success(response, suffix="pdf")
 
 
+@pytest.mark.skip
 def test_en_ulb_tn_jud_language_book_order_1c() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

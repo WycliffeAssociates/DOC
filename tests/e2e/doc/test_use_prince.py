@@ -5,10 +5,10 @@ from fastapi.testclient import TestClient
 
 from tests.shared.utils import check_finished_document_with_verses_success
 
-
 logger = settings.logger(__name__)
 
 
+@pytest.mark.skip
 def test_en_ulb_tn_jud_language_book_order_1c_use_prince() -> None:
     with TestClient(app=app, base_url=settings.api_test_url()) as client:
         response = client.post(

@@ -6,7 +6,7 @@ from doc.config import settings
 from doc.domain.bible_books import BOOK_CHAPTER_VERSES
 from doc.domain.model import USFMBook, USFMChapter
 from doc.domain.parsing import lookup_verse_text
-from doc.reviewers_guide.model import BibleReference
+from passages.reviewers_guide.model import BibleReference
 
 logger = settings.logger(__name__)
 

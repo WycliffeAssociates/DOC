@@ -5,7 +5,7 @@ from pprint import pprint
 from doc.config import settings
 from doc.domain.bible_books import BOOK_NAMES
 from doc.domain.model import ChapterNum, LangDirEnum
-from doc.reviewers_guide.model import (
+from passages.reviewers_guide.model import (
     RGBook,
     RGChapter,
     Part1Item,
@@ -14,7 +14,6 @@ from doc.reviewers_guide.model import (
     ParsedText,
 )
 from docx import Document
-
 
 # Pattern for chapter and verse references after Bible books
 CHAPTER_VERSE_PATTERN = re.compile(r"^\d+:\d+(-\d+(:\d+)?)?$")

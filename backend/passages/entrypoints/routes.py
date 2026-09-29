@@ -4,12 +4,11 @@ from typing import Sequence, cast
 import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
-from doc.reviewers_guide.model import BibleReference
+from passages.reviewers_guide.model import BibleReference
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
-from passages.domain import document_generator, model
+from passages.domain import document_generator, model, resource_lookup
 from passages.domain.document_generator import stet_exhaustive_verse_list
-
 
 router = APIRouter()
 
@@ -72,3 +71,48 @@ async def task_status(task_id: str) -> JSONResponse:
 @router.get("/passages/stet_verse_list/{lang_code}")
 async def stet_verse_list(lang_code: str) -> Sequence[BibleReference]:
     return cast(Sequence[BibleReference], stet_exhaustive_verse_list(lang_code))
+
+
+@router.get("/nt_survey_rg_passages/{lang_code}")
+async def nt_survey_rg_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified NT Survey Reviewer's Guide passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.nt_survey_rg_passages(lang_code)
+    return bible_references
+
+
+@router.get("/ot_survey_rg1_passages/{lang_code}")
+async def ot_survey_rg1_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 1 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg1_passages(lang_code)
+    return bible_references
+
+
+@router.get("/ot_survey_rg2_passages/{lang_code}")
+async def ot_survey_rg2_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 2 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg2_passages(lang_code)
+    return bible_references
+
+
+@router.get("/ot_survey_rg3_passages/{lang_code}")
+async def ot_survey_rg3_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 3 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg3_passages(lang_code)
+    return bible_references
+
+
+@router.get("/ot_survey_rg4_passages/{lang_code}")
+async def ot_survey_rg4_passages(lang_code: str) -> Sequence[BibleReference]:
+    """
+    Return list of reified OT Survey Reviewer's Guide 4 passages as BibleReference instances.
+    """
+    bible_references = resource_lookup.ot_survey_rg4_passages(lang_code)
+    return bible_references

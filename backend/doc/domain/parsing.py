@@ -30,7 +30,6 @@ from doc.domain.bible_books import BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
     BC_RESOURCE_TYPE,
     EN_TN_CONDENSED_RESOURCE_TYPE,
-    RG_RESOURCE_TYPE,
     TN_RESOURCE_TYPE,
     TQ_RESOURCE_TYPE,
     TW_RESOURCE_TYPE,
@@ -61,8 +60,6 @@ from doc.markdown_transforms.markdown_transformer import (
     transform_tw_links,
     remove_pagination_symbols,
 )
-from doc.reviewers_guide.model import RGBook
-from doc.reviewers_guide.parser import get_rg_books
 from doc.utils.text_utils import (
     maybe_correct_book_name,
     chapter_label_numeric_part,
@@ -1157,9 +1154,7 @@ def books(
     tq_resource_type: str = TQ_RESOURCE_TYPE,
     tw_resource_type: str = TW_RESOURCE_TYPE,
     bc_resource_type: str = BC_RESOURCE_TYPE,
-    rg_resource_type: str = RG_RESOURCE_TYPE,
     docx_file_path: str = "en_rg_nt_survey.docx",
-    en_rg_dir: str = settings.EN_RG_DIR,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> tuple[
     Sequence[USFMBook],
@@ -1168,7 +1163,6 @@ def books(
     Sequence[TQBook],
     Sequence[TWBook],
     Sequence[BCBook],
-    Sequence[RGBook],
 ]:
     usfm_books = []
     tn_books = []
@@ -1176,8 +1170,6 @@ def books(
     tq_books = []
     tw_books = []
     bc_books = []
-    rg_books = []
-    filtered_rg_books = []
     for resource_lookup_dto, resource_dir in zip(resource_lookup_dtos, resource_dirs):
         if resource_lookup_dto.resource_type in usfm_resource_types:
             usfm_book = usfm_book_content(
@@ -1217,22 +1209,6 @@ def books(
                 resource_lookup_dto, resource_dir, resource_requests, layout_for_print
             )
             bc_books.append(bc_book)
-        elif resource_lookup_dto.resource_type == rg_resource_type:
-            path = join(en_rg_dir, docx_file_path)
-            logger.debug("About to get_rg_books from: %s", path)
-            rg_books = get_rg_books(
-                path,
-                resource_lookup_dto.lang_code,
-                resource_lookup_dto.lang_name,
-                resource_lookup_dto.resource_type_name,
-                resource_lookup_dto.lang_direction,
-            )
-            filtered_rg_books = [
-                rg_book
-                for rg_book in rg_books
-                if rg_book.lang_code == resource_lookup_dto.lang_code
-                and rg_book.book_code == resource_lookup_dto.book_code
-            ]
     return (
         usfm_books,
         tn_books,
@@ -1240,7 +1216,6 @@ def books(
         tq_books,
         tw_books,
         bc_books,
-        filtered_rg_books,
     )
 
 

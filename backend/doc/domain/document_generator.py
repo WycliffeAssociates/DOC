@@ -52,7 +52,6 @@ from doc.domain.model import (
     TWBook,
     USFMBook,
 )
-from doc.reviewers_guide.model import RGBook
 from doc.utils.docx_util import (
     add_internal_docx_links,
     generate_docx_toc,
@@ -94,7 +93,6 @@ ReplacementEntry: TypeAlias = tuple[re.Pattern[str], str]  # (pattern, replaceme
 ReplacementMap: TypeAlias = dict[Key, ReplacementEntry]
 
 
-
 def initialize_document_request_and_key(
     document_request_json: str,
 ) -> tuple[DocumentRequest, str]:
@@ -118,7 +116,6 @@ def initialize_document_request_and_key(
         document_request.show_tn_chapter_intro,
         document_request.show_bc_book_intro,
         document_request.show_bc_chapter_commentary,
-        document_request.show_rg_chapter_commentary,
     )
     return document_request, document_request_key_
 
@@ -210,7 +207,6 @@ def locate_acquire_and_build_resource_objects(
     Sequence[TQBook],
     Sequence[TWBook],
     Sequence[BCBook],
-    Sequence[RGBook],
 ]:
     current_task.update_state(state="Locating assets")
     resource_lookup_dtos = []
@@ -241,15 +237,13 @@ def locate_acquire_and_build_resource_objects(
     )
     current_task.update_state(state="Parsing asset files")
     t0 = time.time()
-    usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books, rg_books = (
-        parsing.books(
-            found_resource_lookup_dtos,
-            resource_dirs,
-            document_request.resource_requests,
-            document_request.layout_for_print,
-            document_request.use_chapter_labels,
-            document_request.generate_docx,
-        )
+    usfm_books, tn_books, tnc_books, tq_books, tw_books, bc_books = parsing.books(
+        found_resource_lookup_dtos,
+        resource_dirs,
+        document_request.resource_requests,
+        document_request.layout_for_print,
+        document_request.use_chapter_labels,
+        document_request.generate_docx,
     )
     localize_non_usfm_book_names(
         usfm_books, list(tn_books), list(tnc_books), list(tq_books)
@@ -264,7 +258,6 @@ def locate_acquire_and_build_resource_objects(
         tq_books,
         tw_books,
         bc_books,
-        rg_books,
     )
 
 
@@ -295,7 +288,6 @@ def generate_document(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
         ) = locate_acquire_and_build_resource_objects(document_request)
         current_task.update_state(state="Assembling content")
         document_parts = assemble_content(
@@ -307,7 +299,6 @@ def generate_document(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
         )
         content_str = compose_document(document_parts)
         if usfm_books:
@@ -379,7 +370,6 @@ def generate_docx_document(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
         ) = locate_acquire_and_build_resource_objects(document_request)
         current_task.update_state(state="Assembling content")
         document_parts = assemble_content(
@@ -391,7 +381,6 @@ def generate_docx_document(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
         )
         title1, title2 = get_languages_title_page_strings(
             found_resource_lookup_dtos, usfm_books
@@ -439,7 +428,6 @@ def document_request_key(
     show_bc_book_intro: bool,
     show_tn_chapter_intro: bool,
     show_bc_chapter_commentary: bool,
-    show_rg_chapter_commentary: bool,
     max_filename_len: int = 240,
     underscore: str = "_",
     hyphen: str = "-",
@@ -472,9 +460,9 @@ def document_request_key(
         ]
     )
     if any(contains_tw(resource_request) for resource_request in resource_requests):
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}_{"rgct" if show_rg_chapter_commentary else "rgcf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{"clt" if use_chapter_labels else "clf"}_{"lwt" if limit_words else "lwf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}'
     else:
-        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}_{"rgct" if show_rg_chapter_commentary else "rgcf"}'
+        document_request_key = f'{resource_request_keys}_{assembly_strategy_kind.value}_{assembly_layout_kind.value}_{"clt" if use_chapter_labels else "clf"}_{"sst" if use_section_visual_separator else "ssf"}_{"2ctn" if use_two_column_layout_for_tn_notes else "1ctn"}_{"2ctq" if use_two_column_layout_for_tq_notes else "1ctq"}_{"tnbt" if show_tn_book_intro else "tnbf"}_{"bcbt" if show_bc_book_intro else "bcbf"}_{"tnct" if show_tn_chapter_intro else "tncf"}_{"bcct" if show_bc_chapter_commentary else "bccf"}'
     if len(document_request_key) >= max_filename_len:
         # The generated filename could be too long for the OS where this is
         # running. Therefore, use the current time as a document_request_key
@@ -562,7 +550,6 @@ def assemble_content(
     tq_books: Sequence[TQBook],
     tw_books: Sequence[TWBook],
     bc_books: Sequence[BCBook],
-    rg_books: Sequence[RGBook],
     link_rather_than_include_tw_definitions: bool = settings.LINK_RATHER_THAN_INCLUDE_TW_DEFINITIONS,
 ) -> list[DocumentPart]:
     """
@@ -582,7 +569,6 @@ def assemble_content(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
@@ -602,7 +588,6 @@ def assemble_content(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
@@ -611,7 +596,6 @@ def assemble_content(
             document_request.show_bc_book_intro,
             document_request.show_tn_chapter_intro,
             document_request.show_bc_chapter_commentary,
-            document_request.show_rg_chapter_commentary,
         )
     elif (
         document_request.assembly_strategy_kind
@@ -624,7 +608,6 @@ def assemble_content(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
@@ -644,7 +627,6 @@ def assemble_content(
             tq_books,
             tw_books,
             bc_books,
-            rg_books,
             cast(AssemblyLayoutEnum, document_request.assembly_layout_kind),
             document_request.use_section_visual_separator,
             document_request.use_two_column_layout_for_tn_notes,
@@ -653,7 +635,6 @@ def assemble_content(
             document_request.show_bc_book_intro,
             document_request.show_tn_chapter_intro,
             document_request.show_bc_chapter_commentary,
-            document_request.show_rg_chapter_commentary,
         )
     t1 = time.time()
     logger.info("Time for interleaving document: %s", t1 - t0)

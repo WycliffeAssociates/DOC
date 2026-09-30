@@ -1427,7 +1427,10 @@ def _normalize_verse_interior(interior: str) -> str:
             r'(<sup class="versemarker"[^>]*>.*?</sup>)\s+', r"\1", part
         )  # remove space after versemarker
         part = sub(r"\s*-\s*", "-", part)  # spaces around hyphens
-        part = sub(r"\s*([,;.])\s*", r"\1 ", part).strip()  # punctuation spacing
+        part = sub(r"\s+([,;.])", r"\1", part)  # remove space before punctuation
+        part = sub(
+            r"([,;])(?!\d)(?!\s)", r"\1 ", part
+        )  # add space after punctuation if missing, not before digits
         part = sub(r"'\s*", "'", part)  # spaces after apostrophes
         normalized.append(part)
     return "\n".join(normalized)

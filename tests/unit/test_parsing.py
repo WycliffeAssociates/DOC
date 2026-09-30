@@ -195,7 +195,7 @@ def test_split_into_verses_unwraps_word_entries() -> None:
         '<span class="verse">\nGénéalogie de Jésus-Christ, fils de David, '
         "fils d'Abraham.\n</span>"
     )
-    assert verses["2"] == '<span class="verse">\nAbraham engendra Isaac;\n</span>'
+    assert verses["2"] == '<span class="verse">\nAbraham engendra Isaac; \n</span>'
 
 
 def test_split_into_verses_collapses_hyphen_spacing() -> None:

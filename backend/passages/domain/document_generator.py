@@ -10,6 +10,7 @@ from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment, USFMBook
 from doc.domain.parsing import (
     usfm_book_content,
+    split_into_verses,
 )
 from doc.domain.resource_lookup import (
     book_codes_for_lang_from_usfm_only,
@@ -18,7 +19,6 @@ from doc.domain.resource_lookup import (
     resource_lookup_dto,
     resource_types,
 )
-from passages.reviewers_guide.model import BibleReference
 from doc.utils.docx_util import ensure_reference_styles
 from doc.utils.file_utils import docx_filepath, file_needs_update
 from doc.utils.text_utils import maybe_correct_book_name
@@ -33,8 +33,10 @@ from passages.domain.model import (
 )
 from passages.domain.parser import verse_text_html
 from passages.domain.stet_verse_list_parser import BOOK_INDEX, parse_bible_blocks
+from passages.reviewers_guide.model import BibleReference
 from passages.utils.docx_utils import add_footer, add_header
 from pydantic import Json
+from passages.domain.parser import clean_chapter_html
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -155,6 +157,11 @@ def get_usfm_books_and_usfm_resource_type(
                     resource_dir,
                     False,
                 )
+                for chapter_num_, chapter_ in usfm_book.chapters.items():
+                    cleaned_chapter = clean_chapter_html(chapter_.content)
+                    usfm_book.chapters[chapter_num_].verses = split_into_verses(
+                        cleaned_chapter
+                    )
                 usfm_books.append(usfm_book)
     return usfm_books, usfm_resource_type
 

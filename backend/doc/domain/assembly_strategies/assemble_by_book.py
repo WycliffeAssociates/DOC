@@ -24,7 +24,6 @@ from doc.domain.model import (
     TWBook,
     USFMBook,
 )
-from doc.domain.parsing import split_chapter_into_verses_with_formatting
 
 logger = settings.logger(__name__)
 
@@ -413,7 +412,6 @@ def assemble_usfm_by_verse_book_at_a_time(
             chapter_num,
             chapter,
         ) in usfm_book.chapters.items():
-            chapter.verses = split_chapter_into_verses_with_formatting(chapter)
             chapter_intros = get_chapter_intros(
                 tn_book,
                 tnc_book,
@@ -454,11 +452,6 @@ def assemble_usfm_by_verse_book_at_a_time(
                     # ulb, f10, show the second USFM content here
                     if usfm_book2:
                         usfm_book2_chapter = usfm_book2.chapters[chapter_num]
-                        usfm_book2_chapter.verses = (
-                            split_chapter_into_verses_with_formatting(
-                                usfm_book2_chapter
-                            )
-                        )
                         if (
                             usfm_book2_chapter.verses
                             and verse_ref in usfm_book2_chapter.verses

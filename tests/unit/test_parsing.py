@@ -2,10 +2,11 @@ import re
 
 import pytest
 from doc.domain.parsing import (
+    clean_chapter_html,
     ensure_chapter_label,
     ensure_chapter_marker,
     maybe_localized_book_name,
-    split_chapter_into_verses_with_formatting,
+    split_into_verses,
 )
 from doc.domain import model, resource_lookup
 from doc.domain.model import USFMChapter
@@ -154,63 +155,58 @@ I have been crucified with Christ and I no longer live.
 """
 
 
-def test_split_chapter_into_verses_with_formatting_keys() -> None:
-    chapter = USFMChapter(content=GALATIANS_HTML, verses=None)
-    verses = split_chapter_into_verses_with_formatting(chapter)
+def test_split_into_verses_keys() -> None:
+    verses = split_into_verses(GALATIANS_HTML)
     assert list(verses.keys()) == ["19", "20"]
 
 
-def test_split_chapter_into_verses_with_formatting_strips_verse_number_whitespace() -> (
-    None
-):
+def test_split_into_verses_strips_verse_number_whitespace() -> None:
     # The versemarker sup for verse 19 is written as "<sup ...> 19 </sup>".
-    chapter = USFMChapter(content=GALATIANS_HTML, verses=None)
-    verses = split_chapter_into_verses_with_formatting(chapter)
+    cleaned_chapter = clean_chapter_html(GALATIANS_HTML)
+    verses = split_into_verses(cleaned_chapter)
     assert "19" in verses
     assert " 19 " not in verses
 
 
-def test_split_chapter_into_verses_with_formatting_removes_versemarker_only() -> None:
-    chapter = USFMChapter(content=GALATIANS_HTML, verses=None)
-    verses = split_chapter_into_verses_with_formatting(chapter)
+def test_split_into_verses_removes_versemarker_only() -> None:
+    cleaned_chapter = clean_chapter_html(GALATIANS_HTML)
+    verses = split_into_verses(cleaned_chapter)
     for verse in verses.values():
         assert "versemarker" not in verse
     # Other markup inside the verse span survives.
     assert verses["19"] == (
-        '<span class="verse"> For through the law I died to the law, '
+        '<span class="verse">\nFor through the law I died to the law, '
         "so that I might live for God.\n"
         '<sup class="caller" id="footnote-caller-1">'
         '<a href="#footnote-target-1">1</a></sup>\n'
-        '<div class="sectionhead-5"></div>\n</span>'
+        "</span>"
     )
 
 
-def test_split_chapter_into_verses_with_formatting_unwraps_word_entries() -> None:
-    chapter = USFMChapter(content=FRENCH_WORD_ENTRY_HTML, verses=None)
-    verses = split_chapter_into_verses_with_formatting(chapter)
+def test_split_into_verses_unwraps_word_entries() -> None:
+    cleaned_chapter = clean_chapter_html(FRENCH_WORD_ENTRY_HTML)
+    verses = split_into_verses(cleaned_chapter)
     assert list(verses.keys()) == ["1", "2"]
     for verse in verses.values():
         assert "word-entry" not in verse
     # The wrapped text survives in place, with whitespace collapsed and
     # whitespace before punctuation removed.
     assert verses["1"] == (
-        '<span class="verse"> Généalogie de Jésus-Christ, fils de David, '
-        "fils d'Abraham. </span>"
+        '<span class="verse">\nGénéalogie de Jésus-Christ, fils de David, '
+        "fils d'Abraham.\n</span>"
     )
-    assert verses["2"] == '<span class="verse"> Abraham engendra Isaac;\n</span>'
+    assert verses["2"] == '<span class="verse">\nAbraham engendra Isaac; \n</span>'
 
 
-def test_split_chapter_into_verses_with_formatting_collapses_hyphen_spacing() -> None:
+def test_split_into_verses_collapses_hyphen_spacing() -> None:
     """Spacing around a hyphen is intentionally collapsed (see clean_content_html)."""
-    chapter = USFMChapter(content=FRENCH_WORD_ENTRY_HTML, verses=None)
-    verses = split_chapter_into_verses_with_formatting(chapter)
+    cleaned_chapter = clean_chapter_html(FRENCH_WORD_ENTRY_HTML)
+    verses = split_into_verses(cleaned_chapter)
     assert "Jésus-Christ" in verses["1"]
     assert "Jésus - Christ" not in verses["1"]
 
 
-def test_split_chapter_into_verses_with_formatting_skips_verses_without_versemarker() -> (
-    None
-):
+def test_split_into_verses_skips_verses_without_versemarker() -> None:
     html_content = """
 <span class="verse">
 No versemarker sup at all here.
@@ -224,22 +220,22 @@ An empty versemarker sup here.
 A well formed verse.
 </span>
 """
-    chapter = USFMChapter(content=html_content, verses=None)
-    verses = split_chapter_into_verses_with_formatting(chapter)
+    chapter = html_content
+    cleaned_chapter = clean_chapter_html(chapter)
+    verses = split_into_verses(cleaned_chapter)
     assert list(verses.keys()) == ["3"]
-    assert verses["3"] == '<span class="verse"> A well formed verse.\n</span>'
+    assert verses["3"] == '<span class="verse">\nA well formed verse.\n</span>'
 
 
-def test_split_chapter_into_verses_with_formatting_without_verse_spans() -> None:
-    chapter = USFMChapter(
-        content="<p>Chapter content with no verse spans.</p>", verses=None
-    )
-    assert split_chapter_into_verses_with_formatting(chapter) == {}
+def test_split_into_verses_without_verse_spans() -> None:
+    chapter = "<p>Chapter content with no verse spans.</p>"
+
+    assert split_into_verses(chapter) == {}
 
 
-def test_split_chapter_into_verses_with_formatting_empty_content() -> None:
-    chapter = USFMChapter(content="", verses=None)
-    assert split_chapter_into_verses_with_formatting(chapter) == {}
+def test_split_into_verses_empty_content() -> None:
+    chapter = ""
+    assert split_into_verses(chapter) == {}
 
 
 if __name__ == "__main__":

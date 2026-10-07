@@ -27,7 +27,8 @@ from docx.oxml.ns import qn
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
-from stet.domain.parser import get_word_entry_dtos, split_chapter_into_verses
+from stet.domain.parser import clean_chapter_html, get_word_entry_dtos
+from doc.domain.parsing import split_into_verses
 from stet.domain.strings import (
     LOCALIZED_DATE_FORMAT_STRINGS,
     TRANSLATED_FOOTER_PHRASES_TABLE,
@@ -169,7 +170,11 @@ def generate_docx_document(
                     chapter_num_,
                     chapter_,
                 ) in source_usfm_book.chapters.items():
-                    chapter_.verses = split_chapter_into_verses(chapter_)
+                    # STET needs additional specialized cleaning
+                    cleaned_source_chapter = clean_chapter_html(chapter_.content)
+                    # Since we cleaned specially, let's re-generate
+                    # the verses from the cleaned HTML.
+                    chapter_.verses = split_into_verses(cleaned_source_chapter)
                 source_usfm_books.append(source_usfm_book)
             lang1_resource_lookup_dto_ = resource_lookup_dto(
                 lang1_code, lang1_usfm_resource_type, book_code
@@ -190,7 +195,11 @@ def generate_docx_document(
                     chapter_num_,
                     chapter_,
                 ) in target_usfm_book.chapters.items():
-                    chapter_.verses = split_chapter_into_verses(chapter_)
+                    # STET needs additional specialized cleaning
+                    cleaned_target_chapter = clean_chapter_html(chapter_.content)
+                    # Since we cleaned specially, let's re-generate
+                    # the verses from the cleaned HTML.
+                    chapter_.verses = split_into_verses(cleaned_target_chapter)
                 target_usfm_books.append(target_usfm_book)
     # Count total occurrences per reference (using source_reference as key)
     reference_counter: Counter[str] = Counter()

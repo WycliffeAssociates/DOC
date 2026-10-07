@@ -22,7 +22,7 @@ Rule: TypeAlias = tuple[str, Detector, Fixer, ContextFormatter | None]
 # language is known to have a defect, then all books for that language are
 # checked for similar defects.
 RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
-    ("aaz-x-amarasibarat", "reg", "2pe"),
+    # ("aaz-x-amarasibarat", "reg", "2pe"), # unavailable from data API
     ("abu", "reg", "php"),
     ("ach-SS-acholi", "reg", "gal"),
     ("adh", "reg", "1th"),
@@ -63,7 +63,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bof", "reg", "mat"),
     ("bou", "reg", "gen"),
     ("btd-x-boang", "reg", "mat"),
-    ("btd-x-boang", "reg", "1ti"),
+    # ("btd-x-boang", "reg", "1ti"), # unavailable from data API
     ("btd-x-boang", "reg", "phm"),
     ("btm", "reg", "phm"),
     ("btm", "reg", "1th"),
@@ -111,7 +111,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("gwg", "reg", "rom"),
     ("hay-x-nyaihangiro", "reg", "1jn"),
     ("hay-x-nyaihangiro", "reg", "phm"),
-    ("iba-x-desatempunak", "reg", "phm"),
+    # ("iba-x-desatempunak", "reg", "phm"), # unavailable from data API
     ("iba-x-ibanempran", "reg", "2co"),
     ("iba-x-ibanempran", "reg", "eph"),
     ("iba-x-ibanempran", "reg", "jud"),
@@ -146,7 +146,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("ksm", "reg", "col"),
     ("ksm", "reg", "2pe"),
     ("kyt", "reg", "2ti"),
-    ("kyt", "reg", "eph"),
+    # ("kyt", "reg", "eph"), # unavailable from data API
     ("lbx-x-capuracu", "reg", "mrk"),
     ("lch-ZM-luchazi", "reg", "gen"),
     ("ldo", "reg", "1co"),

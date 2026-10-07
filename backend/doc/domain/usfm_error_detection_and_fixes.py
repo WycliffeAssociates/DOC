@@ -131,8 +131,8 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("kki", "reg", "1th"),
     ("kng-x-kilemfu", "reg", "jud"),
     ("kng-x-kilemfu", "reg", "eph"),
-    ("kod", "reg", "2ti"),
-    ("kod", "reg", "phm"),
+    # ("kod", "reg", "2ti"), # unavailable from data API
+    # ("kod", "reg", "phm"), # unavailable from data API
     # ("kqi", "reg", "2th"), # unavailable from data API
     # ("kqi", "reg", "2ti"), # unavailable from data API
     # ("kqi", "reg", "mrk"), # unavailable from data API
@@ -250,7 +250,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("ttl-x-totelnamib", "reg", "3jn"),
     ("txy", "reg", "1co"),
     ("txy", "reg", "2jn"),
-    ("tyn", "reg", "jud"),
+    # ("tyn", "reg", "jud"), # contains git commit commit merge conflict markers
     ("tyn", "reg", "mrk"),
     # ("vin", "reg", "2co"), # unavailable from data API
     # ("vin", "reg", "1th"), # unavailable from data API

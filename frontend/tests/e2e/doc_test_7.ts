@@ -35,6 +35,7 @@ test('burmese', async ({ page }) => {
   await page.getByPlaceholder('Search Gateway Languages').fill('my')
   await page.getByText('ျမန္မာစာ (Burmese)').click()
   await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.getByText('ရှင်မဿဲခရစ်ဝင်။')).toBeVisible()
   await page.getByText('ရှင်မဿဲခရစ်ဝင်။').click()
   await page.getByText('ရှင်မာကုခရစ်ဝင်။').click()
   await page.getByText('ရှင်လုကာခရစ်ဝင်။').click()

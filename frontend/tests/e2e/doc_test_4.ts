@@ -7,6 +7,7 @@ test('languages are sorted in clicked order', async ({ page }) => {
   await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.locator('.w-full > div:nth-child(3)')).toContainText('Français (French)')
   await expect(page.locator('.w-full > div:nth-child(4)')).toContainText('Cebuano')
+  await expect(page.getByText('Matthieu')).toBeVisible()
   await page.getByText('Matthieu').click()
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByText('Unlocked Literal Bible ulb').first().click()

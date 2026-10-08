@@ -267,7 +267,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("xem-x-karambai", "reg", "eph"),
     # ("xkg", "reg", "3jn"),  # failed to fix; source looks fine but could have UTF issues (BUG?)
     ("xmt", "reg", "eph"),
-    ("xwg", "reg", "luk"),
+    # ("xwg", "reg", "luk"), # unavailable from data API
     ("zga-x-mahanji", "reg", "php"),
     ("ziw", "reg", "1th"),
     ("ziw", "reg", "1jn"),

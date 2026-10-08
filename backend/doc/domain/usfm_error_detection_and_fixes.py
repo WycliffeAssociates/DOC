@@ -22,7 +22,7 @@ Rule: TypeAlias = tuple[str, Detector, Fixer, ContextFormatter | None]
 # language is known to have a defect, then all books for that language are
 # checked for similar defects.
 RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
-    ("aaz-x-amarasibarat", "reg", "2pe"),
+    # ("aaz-x-amarasibarat", "reg", "2pe"), # unavailable from data API
     ("abu", "reg", "php"),
     ("ach-SS-acholi", "reg", "gal"),
     ("adh", "reg", "1th"),
@@ -63,7 +63,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("bof", "reg", "mat"),
     ("bou", "reg", "gen"),
     ("btd-x-boang", "reg", "mat"),
-    ("btd-x-boang", "reg", "1ti"),
+    # ("btd-x-boang", "reg", "1ti"), # unavailable from data API
     ("btd-x-boang", "reg", "phm"),
     ("btm", "reg", "phm"),
     ("btm", "reg", "1th"),
@@ -111,7 +111,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("gwg", "reg", "rom"),
     ("hay-x-nyaihangiro", "reg", "1jn"),
     ("hay-x-nyaihangiro", "reg", "phm"),
-    ("iba-x-desatempunak", "reg", "phm"),
+    # ("iba-x-desatempunak", "reg", "phm"), # unavailable from data API
     ("iba-x-ibanempran", "reg", "2co"),
     ("iba-x-ibanempran", "reg", "eph"),
     ("iba-x-ibanempran", "reg", "jud"),
@@ -131,8 +131,8 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("kki", "reg", "1th"),
     ("kng-x-kilemfu", "reg", "jud"),
     ("kng-x-kilemfu", "reg", "eph"),
-    ("kod", "reg", "2ti"),
-    ("kod", "reg", "phm"),
+    # ("kod", "reg", "2ti"), # unavailable from data API
+    # ("kod", "reg", "phm"), # unavailable from data API
     # ("kqi", "reg", "2th"), # unavailable from data API
     # ("kqi", "reg", "2ti"), # unavailable from data API
     # ("kqi", "reg", "mrk"), # unavailable from data API
@@ -146,7 +146,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("ksm", "reg", "col"),
     ("ksm", "reg", "2pe"),
     ("kyt", "reg", "2ti"),
-    ("kyt", "reg", "eph"),
+    # ("kyt", "reg", "eph"), # unavailable from data API
     ("lbx-x-capuracu", "reg", "mrk"),
     ("lch-ZM-luchazi", "reg", "gen"),
     ("ldo", "reg", "1co"),
@@ -250,7 +250,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("ttl-x-totelnamib", "reg", "3jn"),
     ("txy", "reg", "1co"),
     ("txy", "reg", "2jn"),
-    ("tyn", "reg", "jud"),
+    # ("tyn", "reg", "jud"), # contains git commit commit merge conflict markers
     ("tyn", "reg", "mrk"),
     # ("vin", "reg", "2co"), # unavailable from data API
     # ("vin", "reg", "1th"), # unavailable from data API
@@ -267,7 +267,7 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("xem-x-karambai", "reg", "eph"),
     # ("xkg", "reg", "3jn"),  # failed to fix; source looks fine but could have UTF issues (BUG?)
     ("xmt", "reg", "eph"),
-    ("xwg", "reg", "luk"),
+    # ("xwg", "reg", "luk"), # unavailable from data API
     ("zga-x-mahanji", "reg", "php"),
     ("ziw", "reg", "1th"),
     ("ziw", "reg", "1jn"),

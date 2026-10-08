@@ -1,16 +1,22 @@
 import type { PlaywrightTestConfig } from '@playwright/test'
-import { fileURLToPath } from 'node:url'
 
 const config: PlaywrightTestConfig = {
   testDir: 'tests',
   testMatch: '**/*.ts',
-
-  // Safely parallelize across 50% of available CPU cores in CI environments
-  workers: process.env.CI ? '50%' : undefined,
-
-  // ESM-compatible global teardown path
-  globalTeardown: fileURLToPath(new URL('./tests/global-teardown.ts', import.meta.url)),
-  timeout: 380000 // 6.3 minutes per test; e2e tests can take a long time
+  workers: process.env.CI ? 2 : undefined,
+  globalTimeout: process.env.CI ? 30 * 60 * 1000 : undefined, // 30 min suite cap
+  timeout: process.env.CI ? 120000 : 60000,
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? 'github' : 'list',
+  expect: {
+    // Assertion timeout separate from test timeout
+    timeout: 15000
+  },
+  use: {
+    // Navigation/action timeout — how long Playwright waits for a single action
+    actionTimeout: 30000,
+    navigationTimeout: 30000
+  }
 }
 
 export default config

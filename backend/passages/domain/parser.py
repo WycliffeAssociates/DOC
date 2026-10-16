@@ -49,7 +49,6 @@ def _verses_in_range(
             span = _make_verse_span(idx, raw)
             if span:
                 spans.append(span)
-                logger.debug("verse_text: %s", span)
     return spans
 
 
@@ -79,7 +78,6 @@ def _verses_for_ref(
                 span = _make_verse_span(part, raw)
                 if span:
                     spans.append(span)
-                    logger.debug("verse_text: %s", span)
     return spans
 
 

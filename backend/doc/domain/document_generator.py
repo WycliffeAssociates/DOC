@@ -442,7 +442,10 @@ IGNORED_DOCUMENT_REQUEST_FIELDS: Final[frozenset[str]] = frozenset(
 )
 
 
-def document_request_key(document_request: DocumentRequest) -> str:
+def document_request_key(
+    document_request: DocumentRequest,
+    hashed_document_request_fields: frozenset[str] = HASHED_DOCUMENT_REQUEST_FIELDS,
+) -> str:
     """
     Create and return the document_request_key. The
     document_request_key uniquely identifies a document request and is
@@ -466,7 +469,7 @@ def document_request_key(document_request: DocumentRequest) -> str:
     )
     settings_ = {
         field: getattr(document_request, field)
-        for field in sorted(HASHED_DOCUMENT_REQUEST_FIELDS - {"resource_requests"})
+        for field in sorted(hashed_document_request_fields - {"resource_requests"})
     }
     # limit_words only has an effect when TW content is requested, so
     # don't let it split the cache for requests that have none.

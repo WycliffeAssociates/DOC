@@ -14,8 +14,8 @@ get distinct keys while identical requests always get the same key.
 
 import hashlib
 import json
-import re
 from enum import Enum
+from re import Pattern, compile
 from typing import Iterable, Mapping, Sequence, TypeAlias
 
 # Bump this to invalidate every previously cached document, e.g., after a
@@ -40,16 +40,16 @@ CanonicalValue: TypeAlias = (
     JsonScalar | Enum | Sequence["CanonicalValue"] | Mapping[str, "CanonicalValue"]
 )
 
-_NON_SLUG_CHARS = re.compile(r"[^a-z0-9]+")
+_NON_SLUG_CHARS = compile(r"[^a-z0-9]+")
 
 
-def slugify(value: object) -> str:
+def slugify(value: object, non_slug_chars: Pattern[str] = _NON_SLUG_CHARS) -> str:
     """
     Reduce value to lower case ASCII letters and digits separated by
     single hyphens so that it is always safe to use in a filename.
     Never returns an empty string.
     """
-    slug = _NON_SLUG_CHARS.sub("-", str(value).lower()).strip("-")
+    slug = non_slug_chars.sub("-", str(value).lower()).strip("-")
     return slug or "x"
 
 
@@ -116,12 +116,15 @@ def resources_slug(
     lang_codes: Sequence[object],
     resource_types: Sequence[object],
     book_codes: Sequence[object],
+    max_langs_slug_len: int = MAX_LANGS_SLUG_LEN,
+    max_types_slug_len: int = MAX_TYPES_SLUG_LEN,
+    max_books_slug_len: int = MAX_BOOKS_SLUG_LEN,
 ) -> str:
     """Return the slug for the languages, resource types, and books requested."""
     return "_".join(
         [
-            slug_group(lang_codes, "langs", MAX_LANGS_SLUG_LEN),
-            slug_group(resource_types, "types", MAX_TYPES_SLUG_LEN),
-            slug_group(book_codes, "books", MAX_BOOKS_SLUG_LEN),
+            slug_group(lang_codes, "langs", max_langs_slug_len),
+            slug_group(resource_types, "types", max_types_slug_len),
+            slug_group(book_codes, "books", max_books_slug_len),
         ]
     )

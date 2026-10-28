@@ -27,7 +27,8 @@ from docx.oxml.ns import qn
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import VerseEntry, WordEntry
-from stet.domain.parser import clean_chapter_html, get_word_entry_dtos
+from stet.domain.parser import get_word_entry_dtos
+from stet.utils.html_utils import clean_chapter_html
 from doc.domain.parsing import split_into_verses
 from stet.domain.strings import (
     LOCALIZED_DATE_FORMAT_STRINGS,
@@ -304,9 +305,7 @@ def generate_docx_document(
                     target_text=target_verse_text,
                     occurrence_index=current,
                     occurrence_total=total,
-                    source_has_preformatted_bolding=(
-                        verse_ref_dto.source_text_with_bolding is not None
-                    ),
+                    source_text_with_bolding=verse_ref_dto.source_text_with_bolding,
                 )
             )
         word_entries.append(word_entry)
@@ -409,8 +408,10 @@ def generate_docx(
                 source_paragraph.paragraph_format.line_spacing = (
                     2.0  # Adjust line spacing
                 )
-            if verse.source_has_preformatted_bolding:
-                add_preformatted_html_to_docx(verse.source_text, source_paragraph)
+            if verse.source_text_with_bolding:
+                add_preformatted_html_to_docx(
+                    verse.source_text_with_bolding, source_paragraph
+                )
             elif len(word_entry.bolded_phrases) > 0:
                 add_highlighted_html_to_docx_for_words(
                     verse.source_text, source_paragraph, word_entry.bolded_phrases

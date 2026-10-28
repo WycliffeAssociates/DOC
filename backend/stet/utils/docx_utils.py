@@ -3,20 +3,19 @@ from __future__ import annotations
 import re
 from typing import Optional, cast, TYPE_CHECKING
 
+from doc.config import settings
 from docx import Document
 from docx.document import Document as DocxDocument
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT
 from docx.enum.section import WD_SECTION
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tc
 from docx.shared import Pt, RGBColor
-from docx.table import Table
+from docx.table import Table, _Cell, _Row
 from docx.text.paragraph import Paragraph
 from html4docx import HtmlToDocx  # type: ignore[import-untyped]
 
-
-from docx.table import _Cell, _Row
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -183,7 +182,7 @@ def add_preformatted_html_to_docx(html: str, paragraph: Paragraph) -> None:
     for temp_paragraph in temp_doc.paragraphs:
         for run in temp_paragraph.runs:
             new_run = paragraph.add_run(run.text)
-            new_run.bold = run.bold
+            new_run.bold = bool(run.bold)
 
 
 def add_lined_page_at_end(doc: DocxDocument) -> DocxDocument:

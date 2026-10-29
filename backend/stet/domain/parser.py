@@ -6,13 +6,12 @@ from re import (
     sub,
 )
 
-from bs4 import BeautifulSoup, NavigableString
 from doc.config import settings
 from doc.domain.bible_books import BOOK_NAMES
 from doc.domain.model import USFMChapter
 from doc.domain.resource_lookup import book_codes_for_lang_from_usfm_only
 from docx import Document
-from stet.domain.model import VerseReferenceDto, WordEntryDto
+from stet.domain.model import PassageReferenceDto, WordEntryDto
 from stet.utils.util import is_valid_int
 
 logger = settings.logger(__name__)
@@ -30,7 +29,7 @@ def _parse_ref_to_dto(
     book_names: dict[str, str],
     lang0_book_codes_and_names__: list[tuple[str, str]],
     source_text_with_bolding: str | None = None,
-) -> VerseReferenceDto | None:
+) -> PassageReferenceDto | None:
     match_ = _REF_PATTERN.match(reference_)
     if not match_:
         logger.warning("Couldn't parse %s", reference_)
@@ -73,7 +72,7 @@ def _parse_ref_to_dto(
                 valid_verse_refs.append(str(verse_num))
             continue
         logger.warning("Couldn't parse verse ref: %s", verse_ref)
-    return VerseReferenceDto(
+    return PassageReferenceDto(
         lang0_code=lang0_code,
         lang1_code=lang1_code,
         book_code=book_code_and_name_[0] if book_code_and_name_ else "",
@@ -86,8 +85,8 @@ def _parse_ref_to_dto(
     )
 
 
-def _parse_fully_specified_column3(
-    col3_text: str,
+def _parse_fully_specified_column4(
+    col4_text: str,
     word_entry_dto: WordEntryDto,
     lang0_code: str,
     lang1_code: str,
@@ -96,7 +95,7 @@ def _parse_fully_specified_column3(
     book_names: dict[str, str],
     lang0_book_codes_and_names__: list[tuple[str, str]],
 ) -> None:
-    for m in _RV_BLOCK_PATTERN.finditer(col3_text):
+    for m in _RV_BLOCK_PATTERN.finditer(col4_text):
         ref_part = m.group(1).strip()
         verse_part = m.group(2).strip()
         dto = _parse_ref_to_dto(
@@ -110,7 +109,7 @@ def _parse_fully_specified_column3(
             source_text_with_bolding=verse_part,
         )
         if dto:
-            word_entry_dto.verse_ref_dtos.append(dto)
+            word_entry_dto.passage_ref_dtos.append(dto)
 
 
 def _parse_bible_reference_column3(
@@ -137,7 +136,7 @@ def _parse_bible_reference_column3(
             lang0_book_codes_and_names__,
         )
         if dto:
-            word_entry_dto.verse_ref_dtos.append(dto)
+            word_entry_dto.passage_ref_dtos.append(dto)
 
 
 def get_word_entry_dtos(
@@ -179,21 +178,8 @@ def get_word_entry_dtos(
                         definition += f"{paragraph.text.strip()}\n"
                 previous_paragraph_style_name = paragraph.style.name
             word_entry_dto.definition = definition
-            # Get verse references from 3rd column
-            col3_text = row.cells[2].text.strip()
-            if col3_text.startswith("<r>"):
-                # Fully specified format: <r>ref</r><v>verse text with <b>bold</b></v>...
-                _parse_fully_specified_column3(
-                    col3_text,
-                    word_entry_dto,
-                    lang0_code,
-                    lang1_code,
-                    lang0_book_codes_and_names,
-                    lang1_book_codes_and_names,
-                    book_names,
-                    lang0_book_codes_and_names__,
-                )
-            else:
+            if not (len(row.cells) > 3 and row.cells[3].text.strip().startswith("<r>")):
+                # Get verse references from 3rd column
                 _parse_bible_reference_column3(
                     row.cells[2].text,
                     word_entry_dto,
@@ -206,23 +192,22 @@ def get_word_entry_dtos(
                 )
             # If 4th column exists, get bolded words from it
             if len(row.cells) > 3 and row.cells[3].text:
-                word_entry_dto.bolded_phrases = [
-                    keyword.strip() for keyword in row.cells[3].text.split(",")
-                ]
+                if row.cells[3].text.strip().startswith("<r>"):
+                    # Fully specified format: <r>ref</r><v>verse text with <b>bold</b></v>...
+                    _parse_fully_specified_column4(
+                        row.cells[3].text,
+                        word_entry_dto,
+                        lang0_code,
+                        lang1_code,
+                        lang0_book_codes_and_names,
+                        lang1_book_codes_and_names,
+                        book_names,
+                        lang0_book_codes_and_names__,
+                    )
+                else:
+                    # Comma delimited bolded phrases
+                    word_entry_dto.bolded_phrases = [
+                        keyword.strip() for keyword in row.cells[3].text.split(",")
+                    ]
             word_entry_dtos.append(word_entry_dto)
     return word_entry_dtos, list(set(lang0_book_codes_and_names__))
-
-
-def clean_chapter_html(chapter: str) -> str:
-    verse_dict: dict[str, str] = {}
-    soup = BeautifulSoup(chapter, "html.parser")
-    for verse_span in soup.find_all("span", class_="verse"):
-        # Remove footnote callers
-        for caller in verse_span.find_all("sup", class_="caller"):
-            caller.decompose()
-        # Fix spacing issue for poetry divs
-        for poetry_div in verse_span.find_all(
-            "div", class_=lambda c: c and c.startswith("poetry-")
-        ):
-            poetry_div.insert_before(NavigableString(" "))
-    return str(soup)

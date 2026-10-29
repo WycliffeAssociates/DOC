@@ -26,8 +26,9 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
-from stet.domain.model import VerseEntry, WordEntry
-from stet.domain.parser import clean_chapter_html, get_word_entry_dtos
+from stet.domain.model import PassageEntry, WordEntry
+from stet.domain.parser import get_word_entry_dtos
+from stet.utils.html_utils import clean_chapter_html
 from doc.domain.parsing import split_into_verses
 from stet.domain.strings import (
     LOCALIZED_DATE_FORMAT_STRINGS,
@@ -204,27 +205,27 @@ def generate_docx_document(
     # Count total occurrences per reference (using source_reference as key)
     reference_counter: Counter[str] = Counter()
     for word_entry_dto in word_entry_dtos:
-        for verse_ref_dto in word_entry_dto.verse_ref_dtos:
+        for passage_ref_dto in word_entry_dto.passage_ref_dtos:
             # If one verse_ref_dto can contain multiple verses → count them
-            ref = verse_ref_dto.source_reference
-            reference_counter[ref] += len(verse_ref_dto.verse_refs)
+            ref = passage_ref_dto.source_reference
+            reference_counter[ref] += len(passage_ref_dto.verse_refs)
     # Track current occurrence number as we process
     occurrence_tracker: defaultdict[str, int] = defaultdict(int)
     current_task.update_state(state="Assembling content")
     for word_entry_dto in word_entry_dtos:
-        source_verse_text = ""
-        target_verse_text = ""
+        source_passage_text = ""
+        target_passage_text = ""
         word_entry = WordEntry()
         word_entry.words = word_entry_dto.words
         word_entry.bolded_phrases = word_entry_dto.bolded_phrases
         word_entry.strongs_numbers = word_entry_dto.strongs_numbers
         word_entry.definition = cast(str, mistune.markdown(word_entry_dto.definition))
-        for verse_ref_dto in word_entry_dto.verse_ref_dtos:
+        for passage_ref_dto in word_entry_dto.passage_ref_dtos:
             source_selected_usfm_books = [
                 usfm_book_
                 for usfm_book_ in source_usfm_books
                 if usfm_book_.lang_code == lang0_code
-                and usfm_book_.book_code == verse_ref_dto.book_code
+                and usfm_book_.book_code == passage_ref_dto.book_code
                 and usfm_book_.resource_type_name
                 == resource_type_codes_and_names[lang0_usfm_resource_type]
             ]
@@ -232,12 +233,12 @@ def generate_docx_document(
                 usfm_book_
                 for usfm_book_ in target_usfm_books
                 if usfm_book_.lang_code == lang1_code
-                and usfm_book_.book_code == verse_ref_dto.book_code
+                and usfm_book_.book_code == passage_ref_dto.book_code
                 and usfm_book_.resource_type_name
                 == resource_type_codes_and_names[lang1_usfm_resource_type]
             ]
-            source_verse_text = ""
-            target_verse_text = ""
+            source_passage_text = ""
+            target_passage_text = ""
             source_selected_usfm_book = None
             target_selected_usfm_book = None
             if source_selected_usfm_books:
@@ -255,58 +256,56 @@ def generate_docx_document(
                     target_selected_usfm_book.national_book_name,
                 )
             non_book_name_portion_of_source_reference = extract_chapter_and_beyond(
-                verse_ref_dto.source_reference
+                passage_ref_dto.source_reference
             )
             non_book_name_portion_of_target_reference = extract_chapter_and_beyond(
-                verse_ref_dto.target_reference
+                passage_ref_dto.target_reference
             )
             localized_source_reference = (
                 f"{source_selected_usfm_book.national_book_name} {non_book_name_portion_of_source_reference}"
                 if source_selected_usfm_book
                 and non_book_name_portion_of_source_reference
-                else verse_ref_dto.source_reference
+                else passage_ref_dto.source_reference
             )
             localized_target_reference = (
                 f"{target_selected_usfm_book.national_book_name} {non_book_name_portion_of_target_reference}"
                 if target_selected_usfm_book
                 and non_book_name_portion_of_target_reference
-                else verse_ref_dto.target_reference
+                else passage_ref_dto.target_reference
             )
-            for verse_ref in verse_ref_dto.verse_refs:
-                if verse_ref_dto.source_text_with_bolding is not None:
-                    source_verse_text = verse_ref_dto.source_text_with_bolding
+            for verse_ref in passage_ref_dto.verse_refs:
+                if passage_ref_dto.source_text_with_bolding is not None:
+                    source_passage_text = passage_ref_dto.source_text_with_bolding
                 elif source_selected_usfm_book:
-                    source_verse_text = lookup_verse_text(
+                    source_passage_text = lookup_verse_text(
                         source_selected_usfm_book,
-                        verse_ref_dto.chapter_num,
+                        passage_ref_dto.chapter_num,
                         verse_ref.strip(),
                     )
                 else:
-                    source_verse_text = ""
+                    source_passage_text = ""
                 if target_selected_usfm_book:
-                    target_verse_text = lookup_verse_text(
+                    target_passage_text = lookup_verse_text(
                         target_selected_usfm_book,
-                        verse_ref_dto.chapter_num,
+                        passage_ref_dto.chapter_num,
                         verse_ref.strip(),
                     )
                 else:
-                    target_verse_text = ""
+                    target_passage_text = ""
             # Occurrence logic
-            ref_key = verse_ref_dto.source_reference
+            ref_key = passage_ref_dto.source_reference
             total = reference_counter[ref_key]
             occurrence_tracker[ref_key] += 1
             current = occurrence_tracker[ref_key]
-            word_entry.verses.append(
-                VerseEntry(
+            word_entry.passage_entries.append(
+                PassageEntry(
                     source_reference=localized_source_reference,
-                    source_text=source_verse_text,
+                    source_text=source_passage_text,
                     target_reference=localized_target_reference,
-                    target_text=target_verse_text,
+                    target_text=target_passage_text,
                     occurrence_index=current,
                     occurrence_total=total,
-                    source_has_preformatted_bolding=(
-                        verse_ref_dto.source_text_with_bolding is not None
-                    ),
+                    source_text_with_bolding=passage_ref_dto.source_text_with_bolding,
                 )
             )
         word_entries.append(word_entry)
@@ -363,34 +362,30 @@ def generate_docx(
         for hdr_cell in hdr_cells:
             hdr_cell.paragraphs[0].runs[0].bold = True
         # Add verses to the table
-        for verse in word_entry.verses:
+        for passage_entry in word_entry.passage_entries:
             # Row for references
             row_cells = table.add_row().cells
-            source_ref_display = verse.source_reference
-            if verse.occurrence_total > 1:
-                source_ref_display += (
-                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
-                )
-            target_ref_display = verse.target_reference
-            if verse.occurrence_total > 1:
-                target_ref_display += (
-                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
-                )
+            source_ref_display = passage_entry.source_reference
+            if passage_entry.occurrence_total > 1:
+                source_ref_display += f" ({passage_entry.occurrence_index}/{passage_entry.occurrence_total})"
+            target_ref_display = passage_entry.target_reference
+            if passage_entry.occurrence_total > 1:
+                target_ref_display += f" ({passage_entry.occurrence_index}/{passage_entry.occurrence_total})"
             source_paragraph = row_cells[0].paragraphs[0]
-            source_run = source_paragraph.add_run(verse.source_reference)
+            source_run = source_paragraph.add_run(passage_entry.source_reference)
             source_run.bold = True
-            if verse.occurrence_total > 1:
+            if passage_entry.occurrence_total > 1:
                 occurrence_run = source_paragraph.add_run(
-                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
+                    f" ({passage_entry.occurrence_index}/{passage_entry.occurrence_total})"
                 )
                 occurrence_run.bold = True
                 occurrence_run.italic = True
             target_paragraph = row_cells[1].paragraphs[0]
-            target_run = target_paragraph.add_run(verse.target_reference)
+            target_run = target_paragraph.add_run(passage_entry.target_reference)
             target_run.bold = True
-            if verse.occurrence_total > 1:
+            if passage_entry.occurrence_total > 1:
                 occurrence_run = target_paragraph.add_run(
-                    f" ({verse.occurrence_index}/{verse.occurrence_total})"
+                    f" ({passage_entry.occurrence_index}/{passage_entry.occurrence_total})"
                 )
                 occurrence_run.bold = True
                 occurrence_run.italic = True
@@ -409,15 +404,19 @@ def generate_docx(
                 source_paragraph.paragraph_format.line_spacing = (
                     2.0  # Adjust line spacing
                 )
-            if verse.source_has_preformatted_bolding:
-                add_preformatted_html_to_docx(verse.source_text, source_paragraph)
+            if passage_entry.source_text_with_bolding:
+                add_preformatted_html_to_docx(
+                    passage_entry.source_text_with_bolding, source_paragraph
+                )
             elif len(word_entry.bolded_phrases) > 0:
                 add_highlighted_html_to_docx_for_words(
-                    verse.source_text, source_paragraph, word_entry.bolded_phrases
+                    passage_entry.source_text,
+                    source_paragraph,
+                    word_entry.bolded_phrases,
                 )
             else:  # Bolded phrases in 4th column were not provided
                 add_highlighted_html_to_docx_for_words(
-                    verse.source_text, source_paragraph, word_entry.words
+                    passage_entry.source_text, source_paragraph, word_entry.words
                 )
             # Add target_text with wider line spacing
             target_paragraph = row_cells[1].paragraphs[0]
@@ -425,7 +424,7 @@ def generate_docx(
                 target_paragraph.paragraph_format.line_spacing = (
                     2.0  # Adjust line spacing
                 )
-            add_plain_html_to_docx(verse.target_text, target_paragraph)
+            add_plain_html_to_docx(passage_entry.target_text, target_paragraph)
             # Vertically centered Unicode checkbox
             checkbox_cell = row_cells[2]
             checkbox_paragraph = checkbox_cell.paragraphs[0]

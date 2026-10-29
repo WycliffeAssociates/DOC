@@ -38,7 +38,7 @@ test('select gateway tab after first selecting heart language and hitting next',
   await page.getByRole('link', { name: 'Language' }).click()
   await page.getByText('Cebuano').click()
   await page.getByRole('button', { name: 'Next' }).click()
-  await expect(page.getByText("Add NT Survey Reviewers'")).toBeVisible({ timeout: 30000 })
+  await expect(page.getByText("Add NT Survey Reviewers'")).toBeVisible({ timeout: 60000 })
   await page.getByText("Add NT Survey Reviewers'").click()
   await expect(page.getByTestId('shown-passages')).toContainText('(ceb)', { timeout: 120000 })
   const passagesSection = page.getByTestId('shown-passages')

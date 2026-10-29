@@ -5,7 +5,7 @@ from pydantic import BaseModel, EmailStr
 
 
 @final
-class VerseEntry(NamedTuple):
+class PassageEntry(NamedTuple):
     source_reference: str
     source_text: str
     target_reference: str
@@ -21,12 +21,12 @@ class WordEntry:
     words: list[str] = field(default_factory=list)
     strongs_numbers: str = ""
     definition: str = ""
-    verses: list[VerseEntry] = field(default_factory=list)
+    passage_entries: list[PassageEntry] = field(default_factory=list)
     bolded_phrases: list[str] = field(default_factory=list)
 
 
 @final
-class VerseReferenceDto(NamedTuple):
+class PassageReferenceDto(NamedTuple):
     lang0_code: str
     lang1_code: str
     book_code: Optional[str]
@@ -44,7 +44,7 @@ class WordEntryDto:
     words: list[str] = field(default_factory=list)
     strongs_numbers: str = ""
     definition: str = ""
-    verse_ref_dtos: list[VerseReferenceDto] = field(default_factory=list)
+    passage_ref_dtos: list[PassageReferenceDto] = field(default_factory=list)
     bolded_phrases: list[str] = field(default_factory=list)
 
 

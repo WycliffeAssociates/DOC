@@ -1,0 +1,12 @@
+
+
+| Col1                                 | Col2            | Col3                 | Col4 (optional - if not provided, then the Word(s) will be bolded) |
+|--------------------------------------+-----------------+----------------------+--------------------------------------------------------------------|
+| Word(s) followed by newline followed | Word definition | Passage references - | Comma delimited list of bolded phrases (not marked up),            |
+| by comma-delimited Strong's numbers  |                 | one on each line.    | or, fully specified passage reference and passage text             |
+|                                      |                 |                      | with bolding marked up, e.g.,                                      |
+|                                      |                 |                      | <r>John 3:16-17</r><v>For God so loved....<b>gave</b>...</v> - a   |
+|                                      |                 |                      | newline after each.                                                |
+|                                      |                 |                      | Note: Each table row can switch between comma                      |
+|                                      |                 |                      | delimited list of bolded phrases or fully specified,               |
+|                                      |                 |                      | but all references in a row need to be all one or the other type.  |

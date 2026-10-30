@@ -526,9 +526,9 @@
           {/if}
         </div>
       {/if}
-      <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Notification</h3>
-      <div class="ml-4">
-        {#if !$documentReadyStore}
+      {#if $settingsUpdatedStore || !$documentReadyStore}
+        <h3 class="mb-2 mt-4 text-2xl text-[#33445C]">Notification</h3>
+        <div class="ml-4">
           <div>
             <input
               id="emailCheckbox"
@@ -541,33 +541,33 @@
               >Email me a copy of my document.</label
             >
           </div>
-        {/if}
-        {#if showEmail && !showEmailCaptured}
-          <div>
-            <label for="email" class="pl-1 text-xl text-[#33445C]">Email address</label>
-          </div>
-          <input
-            type="text"
-            name="email"
-            id="email"
-            bind:value={$emailStore}
-            placeholder="Type email address here (optional)"
-            class="input input-bordered w-full max-w-xs bg-white"
-          />
-          <div>
-            <button
-              class="mt-4 rounded-md bg-[#E6EEFB] px-8 py-4
+          {#if showEmail && !showEmailCaptured}
+            <div>
+              <label for="email" class="pl-1 text-xl text-[#33445C]">Email address</label>
+            </div>
+            <input
+              type="text"
+              name="email"
+              id="email"
+              bind:value={$emailStore}
+              placeholder="Type email address here (optional)"
+              class="input input-bordered w-full max-w-xs bg-white"
+            />
+            <div>
+              <button
+                class="mt-4 rounded-md bg-[#E6EEFB] px-8 py-4
                            text-xl text-[#015AD9]"
-              on:click={() => (showEmailCaptured = true)}>Submit</button
-            >
-          </div>
-        {/if}
-        {#if showEmailCaptured}
-          <div class="text-xl text-[#33445C]">
-            A copy of your file will be sent to {$emailStore} when it is ready.
-          </div>
-        {/if}
-      </div>
+                on:click={() => (showEmailCaptured = true)}>Submit</button
+              >
+            </div>
+          {/if}
+          {#if showEmailCaptured}
+            <div class="text-xl text-[#33445C]">
+              A copy of your file will be sent to {$emailStore} when it is ready.
+            </div>
+          {/if}
+        </div>
+      {/if}
       <GenerateDocument />
     </main>
   </div>

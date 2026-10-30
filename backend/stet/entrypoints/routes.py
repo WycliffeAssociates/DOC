@@ -1,12 +1,12 @@
 from os import scandir
-from typing import Sequence
+from typing import Annotated, Sequence
 
 import celery.states
 from celery.result import AsyncResult
 from doc.config import settings
 from stet.domain import resource_lookup
 from docx import Document
-from fastapi import APIRouter, Request, HTTPException, status
+from fastapi import APIRouter, Depends, Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from stet.domain import document_generator, model
 
@@ -14,12 +14,25 @@ router = APIRouter()
 
 logger = settings.logger(__name__)
 
+_PRODUCTION_LANG_CODES: tuple[str, ...] = ("en", "es-419", "pt-br")
+
+
+# Providers take no arguments so they add nothing to the HTTP contract.
+def get_production_lang_codes() -> tuple[str, ...]:
+    return _PRODUCTION_LANG_CODES
+
+
+def get_stet_dir() -> str:
+    return settings.STET_DIR
+
 
 @router.get("/stet/source_languages")
 async def source_lang_codes_and_names(
     request: Request,
-    stet_dir: str = settings.STET_DIR,
-    production_lang_codes: Sequence[str] = ["en", "es-419", "pt-br"],
+    stet_dir: Annotated[str, Depends(get_stet_dir)],
+    production_lang_codes: Annotated[
+        tuple[str, ...], Depends(get_production_lang_codes)
+    ],
 ) -> Sequence[tuple[str, str, bool]]:
     """
     Return list of all available language code, name tuples for which

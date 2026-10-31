@@ -12,6 +12,7 @@ from typing import Mapping, Optional, Sequence, TypeAlias, cast
 
 from celery import current_task
 from doc.config import settings
+from doc.domain.constants import USFM_RESOURCE_TYPES
 from doc.domain import parsing, resource_lookup, worker
 from doc.domain.assembly_strategies.assemble_by_book import (
     assemble_content_by_book,

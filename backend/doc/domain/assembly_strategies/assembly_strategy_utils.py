@@ -6,6 +6,12 @@ from re import search
 from typing import Mapping, Optional, Sequence
 
 from doc.config import settings
+from doc.domain.constants import (
+    HR,
+    RESOURCE_TYPE_CODES_AND_NAMES,
+    RESOURCE_TYPE_NAME_FMT_STR,
+    VERSE_SPAN_FMT_STR,
+)
 from doc.domain.bible_books import BOOK_ID_MAP
 from doc.domain.model import (
     BCBook,
@@ -239,7 +245,7 @@ def get_book_intros(
     show_tn_book_intro: bool,
     show_bc_book_intro: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     if show_tn_book_intro:
@@ -300,7 +306,7 @@ def get_book_intros_for_groups(
     show_tn_book_intro: bool,
     show_bc_book_intro: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     if show_tn_book_intro:
@@ -365,7 +371,7 @@ def tn_chapter_intro_parts(
     chapter_num: int,
     is_rtl: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     tn_chapter_intro_ = tn_chapter_intro(tn_book, chapter_num)
@@ -391,7 +397,7 @@ def tnc_chapter_intro_parts(
     chapter_num: int,
     is_rtl: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     tnc_chapter_intro_ = tnc_chapter_intro(
@@ -447,7 +453,7 @@ def get_chapter_intros_for_groups(
     is_rtl: bool,
     show_tn_chapter_intro: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     if show_tn_chapter_intro:
@@ -534,7 +540,7 @@ def get_usfm_and_tw(
     tw_book: Optional[TWBook],
     is_rtl: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     document_parts.append(
@@ -566,8 +572,8 @@ def get_usfm_and_tw_verse(
     tw_book: Optional[TWBook],
     is_rtl: bool,
     use_section_visual_separator: bool,
-    fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
-    verse_span_fmt_str: str = settings.VERSE_SPAN_FMT_STR,
+    fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
+    verse_span_fmt_str: str = VERSE_SPAN_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     document_parts.append(
@@ -601,7 +607,7 @@ def chapter_commentary_parts(
     chapter_num: int,
     is_rtl: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     chapter_commentary_ = chapter_commentary(bc_book, chapter_num)
@@ -628,7 +634,7 @@ def tn_verses_parts(
     is_rtl: bool,
     use_two_column_layout_for_tn_notes: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     tn_verses = tn_chapter_verses(
@@ -662,7 +668,7 @@ def tnc_verses_parts(
     is_rtl: bool,
     use_two_column_layout_for_tn_notes: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     tnc_verses = tnc_chapter_verses(
@@ -696,7 +702,7 @@ def tq_verses_parts(
     is_rtl: bool,
     use_two_column_layout_for_tq_notes: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> Sequence[DocumentPart]:
     document_parts: list[DocumentPart] = []
     tq_verses = tq_chapter_verses(
@@ -783,7 +789,7 @@ def get_non_usfm_resources_verse(
     chapter_num: int,
     is_rtl: bool,
     use_section_visual_separator: bool,
-    resource_type_name_fmt_str: str = settings.RESOURCE_TYPE_NAME_FMT_STR,
+    resource_type_name_fmt_str: str = RESOURCE_TYPE_NAME_FMT_STR,
 ) -> list[DocumentPart]:
     document_parts: list[DocumentPart] = []
     tn_chapter = tn_book.chapters[chapter_num] if tn_book else None
@@ -846,7 +852,7 @@ def tnc_chapter_intro(
     tnc_book: Optional[TNCBook],
     chapter_num: int,
     use_section_visual_separator: bool,
-    hr: str = settings.HR,
+    hr: str = HR,
 ) -> str:
     """Get the chapter intro."""
     content = []
@@ -1043,9 +1049,7 @@ def filter_books_by_lang_code(
 
 def order_usfm_resources(
     usfm_books: Sequence[USFMBook],
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> tuple[USFMBook, USFMBook]:
     usfm_book0 = usfm_books[0]
     if (

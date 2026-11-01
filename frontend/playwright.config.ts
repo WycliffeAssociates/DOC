@@ -5,8 +5,8 @@ const config: PlaywrightTestConfig = {
   testMatch: '**/*.ts',
   workers: process.env.CI ? 2 : undefined,
   globalTimeout: process.env.CI ? 30 * 60 * 1000 : undefined, // 30 min suite cap
-  timeout: process.env.CI ? 120000 : 60000,
-  retries: process.env.CI ? 1 : 0,
+  timeout: process.env.CI ? 80000 : 60000,
+  retries: 0,
   reporter: process.env.CI ? 'github' : 'list',
   expect: {
     // Assertion timeout separate from test timeout

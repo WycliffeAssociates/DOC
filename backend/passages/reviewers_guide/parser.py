@@ -447,13 +447,13 @@ def get_rg_books(
 
 
 if __name__ == "__main__":
-    docx_file_path = "en_rg_nt_survey.docx"
+    docx_file_path = "backend/passages/data/en_rg/en_rg_nt_survey.docx"
     rg_books = get_rg_books(
         docx_file_path, "en", "English", "Reviewers' Guide NT Survey", LangDirEnum.LTR
     )
     for rg_book in rg_books:
         pprint(rg_book)
-    docx_file_path = "en_ot_survey_rg1_gen_deu.docx"
+    docx_file_path = "backend/passages/data/en_rg/en_ot_survey_rg1_gen_deu.docx"
     rg_books = get_rg_books(
         docx_file_path,
         "en",
@@ -463,7 +463,7 @@ if __name__ == "__main__":
     )
     for rg_book in rg_books:
         pprint(rg_book)
-    docx_file_path = "en_ot_survey_rg2_jos_est.docx"
+    docx_file_path = "backend/passages/data/en_rg/en_ot_survey_rg2_jos_est.docx"
     rg_books = get_rg_books(
         docx_file_path,
         "en",
@@ -473,7 +473,7 @@ if __name__ == "__main__":
     )
     for rg_book in rg_books:
         pprint(rg_book)
-    docx_file_path = "en_ot_survey_rg3_job_sng.docx"
+    docx_file_path = "backend/passages/data/en_rg/en_ot_survey_rg3_job_sng.docx"
     rg_books = get_rg_books(
         docx_file_path,
         "en",
@@ -483,7 +483,7 @@ if __name__ == "__main__":
     )
     for rg_book in rg_books:
         pprint(rg_book)
-    docx_file_path = "en_ot_survey_rg4_isa_mal.docx"
+    docx_file_path = "backend/passages/data/en_rg/en_ot_survey_rg4_isa_mal.docx"
     rg_books = get_rg_books(
         docx_file_path,
         "en",

@@ -16,6 +16,11 @@ from typing import Mapping, Optional, Sequence
 import requests
 from cachetools import TTLCache, cached
 from doc.config import settings
+from doc.domain.constants import (
+    GATEWAY_LANGUAGES,
+    RESOURCE_TYPE_CODES_AND_NAMES,
+    USFM_RESOURCE_TYPES,
+)
 from doc.domain import worker
 from doc.domain.bible_books import BOOK_CHAPTERS, BOOK_ID_MAP, BOOK_NAMES
 from doc.domain.model import (
@@ -198,7 +203,7 @@ query MyQuery {
 
 def lang_codes_and_names(
     # lang_code_filter_list: Sequence[str] = settings.LANG_CODE_FILTER_LIST,
-    gateway_languages: frozenset[str] = settings.GATEWAY_LANGUAGES,
+    gateway_languages: frozenset[str] = GATEWAY_LANGUAGES,
 ) -> Sequence[tuple[str, str, bool]]:
     """
     >>> from doc.domain import resource_lookup
@@ -276,7 +281,7 @@ def repos_to_clone(
     resource_assets_dir: str = settings.RESOURCE_ASSETS_DIR,
     dcs_mirror_git_username: str = "DCS-Mirror",
     resource_type_codes_and_names: Sequence[str] = list(
-        settings.RESOURCE_TYPE_CODES_AND_NAMES.keys()
+        RESOURCE_TYPE_CODES_AND_NAMES.keys()
     ),
 ) -> list[tuple[HttpUrl, str, str]]:
     repo_clone_list: list[tuple[HttpUrl, str, str]] = []
@@ -312,11 +317,9 @@ def get_resource_types(
     repo_clone_list: Sequence[tuple[HttpUrl, str, str]],
     book_codes: Sequence[str],
     bc_book_asset_pattern: str = r"^\d{2,}-[0-9a-z]{3}$",
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    usfm_resource_types: Sequence[str] = USFM_RESOURCE_TYPES,
     docx_file_path: str = "en_rg_nt_survey.docx",
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[tuple[str, str]]:
     from doc.domain.parsing import find_usfm_files
 
@@ -599,7 +602,7 @@ def batch_clone_git_repos(
 def usfm_resource_types_and_book_tuples(
     lang_code: str,
     book_codes_str: str,
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    usfm_resource_types: Sequence[str] = USFM_RESOURCE_TYPES,
 ) -> Sequence[tuple[str, str]]:
     """
     >>> from doc.domain import resource_lookup
@@ -678,11 +681,9 @@ def shared_book_codes(lang0_code: str, lang1_code: str) -> Sequence[tuple[str, s
 
 def update_repo_components(
     repo_components: list[str],
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    usfm_resource_types: Sequence[str] = USFM_RESOURCE_TYPES,
     non_usfm_resource_types: Sequence[str] = NON_USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> list[str]:
     last_component = repo_components[-1]
     # Some DCS-Mirror URLs have an unusual pattern wherein a non resource type is the last component
@@ -823,7 +824,7 @@ def get_book_codes_for_lang_(
     lang_code: str,
     usfm_only: bool,
     book_names: Mapping[str, str] = BOOK_NAMES,
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
+    usfm_resource_types: Sequence[str] = USFM_RESOURCE_TYPES,
     use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
     book_id_map: dict[str, int] = BOOK_ID_MAP,
 ) -> list[tuple[str, str]]:
@@ -1061,9 +1062,7 @@ def resource_lookup_dto(
     book_code: str,
     dcs_mirror_git_username: str = "DCS-Mirror",
     zmq_git_username: str = "faustin_azaza",
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
 ) -> Optional[ResourceLookupDto]:
     """
     >>> from doc.domain import resource_lookup

@@ -5,6 +5,11 @@ from typing import Mapping, Sequence, cast
 import mistune
 from celery import current_task
 from doc.config import settings
+from doc.domain.constants import (
+    PREFERRED_RESOURCES,
+    RESOURCE_TYPE_CODES_AND_NAMES,
+    USFM_RESOURCE_TYPES,
+)
 from doc.domain import worker
 from doc.domain.email_utils import send_email_with_attachment, should_send_email
 from doc.domain.model import Attachment
@@ -62,11 +67,9 @@ def generate_docx_document(
     use_increased_line_spacing: bool,
     document_request_key_: str,
     docx_filepath_: str,
-    usfm_resource_types: Sequence[str] = settings.USFM_RESOURCE_TYPES,
-    resource_type_codes_and_names: Mapping[
-        str, str
-    ] = settings.RESOURCE_TYPE_CODES_AND_NAMES,
-    preferred_resources: Mapping[str, str] = settings.PREFERRED_RESOURCES,
+    usfm_resource_types: Sequence[str] = USFM_RESOURCE_TYPES,
+    resource_type_codes_and_names: Mapping[str, str] = RESOURCE_TYPE_CODES_AND_NAMES,
+    preferred_resources: Mapping[str, str] = PREFERRED_RESOURCES,
 ) -> str:
     """
     Generate the scriptural terms evaluation document.

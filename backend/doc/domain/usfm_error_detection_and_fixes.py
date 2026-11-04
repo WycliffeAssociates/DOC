@@ -109,8 +109,8 @@ RESOURCES_WITH_USFM_DEFECTS: Sequence[tuple[str, str, str]] = [
     ("gwg", "reg", "2jn"),
     ("gwg", "reg", "gal"),
     ("gwg", "reg", "rom"),
-    ("hay-x-nyaihangiro", "reg", "1jn"),
-    ("hay-x-nyaihangiro", "reg", "phm"),
+    # ("hay-x-nyaihangiro", "reg", "1jn"),  # unavailable from data API
+    # ("hay-x-nyaihangiro", "reg", "phm"),  # unavailable from data API
     # ("iba-x-desatempunak", "reg", "phm"), # unavailable from data API
     ("iba-x-ibanempran", "reg", "2co"),
     ("iba-x-ibanempran", "reg", "eph"),

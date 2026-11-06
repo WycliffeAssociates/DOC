@@ -72,7 +72,6 @@ def test_assemble_content_by_verse_book_at_a_time_does_not_duplicate_books_when_
         [],
         [],
         [],
-        [],
         assembly_layout_kind=model.AssemblyLayoutEnum.ONE_COLUMN,
         use_section_visual_separator=False,
         use_two_column_layout_for_tn_notes=False,
@@ -81,7 +80,6 @@ def test_assemble_content_by_verse_book_at_a_time_does_not_duplicate_books_when_
         show_bc_book_intro=True,
         show_tn_chapter_intro=True,
         show_bc_chapter_commentary=True,
-        show_rg_chapter_commentary=True,
     )
 
     def count_parts_containing(needle: str) -> int:

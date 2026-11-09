@@ -67,6 +67,7 @@ from doc.utils.text_utils import (
     chapter_label_numeric_part,
     chapter_label_sans_numeric_part,
     normalize_localized_book_name,
+    remove_xml_incompatible_chars,
 )
 from doc.utils.tw_utils import (
     localized_translation_word,
@@ -374,6 +375,12 @@ def get_chapter_num(
 
 
 def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
+    """
+    Extract book name candidates from USFM front matter. Characters
+    that can't appear in a docx (e.g., NULL bytes from corrupt source
+    USFM) are removed, and markers whose value is then empty are
+    omitted so that callers fall back to other book name sources.
+    """
     patterns = {
         "h": r"\\h\s+(.*?)(?=\s+\\|\n|$)",
         "mt": r"\\mt\s+(.*?)(?=\s+\\|\n|$)",
@@ -384,7 +391,17 @@ def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
     for key, pattern in patterns.items():
         match = search(pattern, frontmatter, MULTILINE)
         if match:
-            extracted_data[key] = match.group(1).strip()
+            raw_value = match.group(1)
+            value = remove_xml_incompatible_chars(raw_value).strip()
+            if value != raw_value.strip():
+                logger.warning(
+                    "Removed XML incompatible characters from USFM \\%s marker: %r -> %r",
+                    key,
+                    raw_value,
+                    value,
+                )
+            if value:
+                extracted_data[key] = value
     return extracted_data
 
 

@@ -6,9 +6,32 @@ logger = settings.logger(__name__)
 
 HEADING_RE = compile(r"</?h([1-6])\b", IGNORECASE)
 
+# Characters that are not allowed in XML 1.0 documents (and so can't be
+# written to a docx by python-docx/lxml): C0 control characters other
+# than tab, newline and carriage return, lone surrogates, and the
+# non-characters U+FFFE and U+FFFF.
+XML_INCOMPATIBLE_CHARS_RE = compile(
+    "[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff￾￿]"
+)
+
 
 def normalize_spaces(text: str) -> str:
     return sub(r"\s+", " ", text).strip()
+
+
+def remove_xml_incompatible_chars(text: str) -> str:
+    """
+    Remove characters that cannot appear in XML (and therefore in a
+    docx), e.g., NULL bytes found in corrupt source files.
+
+    >>> remove_xml_incompatible_chars("\\x00\\x00\\x00\\x00\\x00\\x00")
+    ''
+    >>> remove_xml_incompatible_chars("Aefeso\\x00\\x0b")
+    'Aefeso'
+    >>> remove_xml_incompatible_chars("Mabasa ya atumwi\\n")
+    'Mabasa ya atumwi\\n'
+    """
+    return XML_INCOMPATIBLE_CHARS_RE.sub("", text)
 
 
 _ROMAN_TO_INT = {

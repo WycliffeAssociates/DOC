@@ -105,6 +105,21 @@ def test_fr_f10_book_name_lookup_prefs() -> None:
     assert localized_book_name == expected
 
 
+def test_book_name_lookup_ignores_null_byte_h_marker() -> None:
+    # Reproduces refinement_malawi/nyu-ML-nyungwe_eph_text_reg whose
+    # \h marker contained only NULL bytes which caused python-docx to
+    # raise a ValueError when writing the book name.
+    usfm_metadata = "\\ide UTF-8\n\\h \x00\x00\x00\x00\x00\x00\n\n\\c 1\n"
+    assert maybe_localized_book_name(usfm_metadata, "nyu-ML-nyungwe", "reg") == ""
+
+
+def test_book_name_lookup_falls_back_past_null_byte_h_marker() -> None:
+    usfm_metadata = "\\ide UTF-8\n\\h \x00\x00\x00\n\\mt Aefeso\n\n\\c 1\n"
+    assert (
+        maybe_localized_book_name(usfm_metadata, "nyu-ML-nyungwe", "reg") == "Aefeso"
+    )
+
+
 # Sample content taken from fr f10 Matthew 1, which uses word-entry tags.
 FRENCH_WORD_ENTRY_HTML = """
 <span class="verse">

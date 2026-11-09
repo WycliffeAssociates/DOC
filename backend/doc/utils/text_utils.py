@@ -11,7 +11,7 @@ HEADING_RE = compile(r"</?h([1-6])\b", IGNORECASE)
 # than tab, newline and carriage return, lone surrogates, and the
 # non-characters U+FFFE and U+FFFF.
 XML_INCOMPATIBLE_CHARS_RE = compile(
-    "[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff￾￿]"
+    "[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff\ufffe\uffff]"
 )
 
 

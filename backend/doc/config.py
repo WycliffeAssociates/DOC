@@ -20,6 +20,14 @@ class Settings(BaseSettings):
 
     DATA_API_URL: HttpUrl
 
+    # Testing aid. When set, e.g., to "https://content.wacsdev.org", git
+    # repo URLs returned by the data API (and the extra repos DOC adds
+    # itself) that point at a known WACS host are rewritten to point at
+    # this scheme and host instead. This lets DOC be exercised against
+    # a WACS instance other than the one the data API's URLs name. Empty
+    # string (the default) disables the rewrite.
+    REPO_HOST_OVERRIDE: str = ""
+
     SHOW_TN_BOOK_INTRO: bool = True
 
     CHECK_USFM: bool

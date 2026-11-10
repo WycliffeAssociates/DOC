@@ -3,7 +3,7 @@ import re
 from glob import glob
 from os.path import exists, join
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import yaml
 from doc.config import settings
@@ -83,6 +83,44 @@ LANG_SPECIFIC_PREFIXES_TO_REMOVE = {
     "xsr-x-shyarpa": ["shyarpa_"],
     "xwg": ["Dawit-Dessie_", "burje_duro_"],
 }
+
+
+# Hosts whose repo URLs are subject to settings.REPO_HOST_OVERRIDE.
+# wacs-dev.bibletranslationtools.org is a defunct former WACS DEV
+# hostname that still appears in some data API rows.
+WACS_HOSTS = frozenset(
+    [
+        "content.bibletranslationtools.org",
+        "wacs-dev.bibletranslationtools.org",
+        "content.wacsdev.org",
+    ]
+)
+
+
+def override_repo_host(
+    url: str,
+    host_override: str = settings.REPO_HOST_OVERRIDE,
+    wacs_hosts: frozenset[str] = WACS_HOSTS,
+) -> str:
+    """
+    If host_override is set and url points at a known WACS host, return
+    url with its scheme and host replaced by host_override's. Otherwise
+    return url unchanged.
+
+    >>> override_repo_host("https://content.bibletranslationtools.org/WA-Catalog/en_ulb", "https://content.wacsdev.org")
+    'https://content.wacsdev.org/WA-Catalog/en_ulb'
+    >>> override_repo_host("https://content.bibletranslationtools.org/WA-Catalog/en_ulb", "")
+    'https://content.bibletranslationtools.org/WA-Catalog/en_ulb'
+    >>> override_repo_host("https://example.com/foo/bar", "https://content.wacsdev.org")
+    'https://example.com/foo/bar'
+    """
+    if not host_override:
+        return url
+    parsed = urlparse(url)
+    if parsed.hostname not in wacs_hosts:
+        return url
+    override = urlparse(host_override)
+    return urlunparse(parsed._replace(scheme=override.scheme, netloc=override.netloc))
 
 
 def normalize_last_segment(

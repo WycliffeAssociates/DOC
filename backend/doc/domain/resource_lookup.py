@@ -42,6 +42,7 @@ from doc.utils.url_utils import (
     get_last_segment,
     get_book_name_from_title_file,
     book_codes_and_names_from_manifest,
+    override_repo_host,
 )
 from fastapi import HTTPException, status
 from filelock import FileLock
@@ -105,6 +106,8 @@ query MyQuery {
                     and repo.get("content", {}).get("language") is not None
                 ]
                 # Sort for test stability - ensures consistent ordering
+                for repo in valid_repos:
+                    repo["repo_url"] = override_repo_host(repo["repo_url"])
                 valid_repos.sort(key=lambda repo: repo["repo_url"])
                 return SourceData.model_validate({"git_repo": valid_repos})
             else:
@@ -177,6 +180,8 @@ query MyQuery {
                     and "WA-Catalog" in repo.get("repo_url", {})
                 ]
                 # Sort for test stability - ensures consistent ordering
+                for repo in valid_repos:
+                    repo["repo_url"] = override_repo_host(repo["repo_url"])
                 valid_repos.sort(key=lambda repo: repo["repo_url"])
                 return SourceData.model_validate({"git_repo": valid_repos})
             else:
@@ -719,7 +724,8 @@ def add_data_not_supplied_by_data_api(repos_info: list[RepoEntry]) -> list[RepoE
 
     def make_entry(url: HttpUrl, resource_type: str, lang: Language) -> RepoEntry:
         return RepoEntry(
-            repo_url=url, content=Content(resource_type=resource_type, language=lang)
+            repo_url=HttpUrl(override_repo_host(str(url))),
+            content=Content(resource_type=resource_type, language=lang),
         )
 
     bg_lang = Language(

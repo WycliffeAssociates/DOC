@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from doc.utils.url_utils import get_book_name_from_title_file
+from doc.utils.url_utils import get_book_name_from_title_file, override_repo_host
 
 
 def _write_title_file(resource_dir: Path, content: bytes) -> None:
@@ -43,3 +43,44 @@ def test_get_book_name_from_title_file_missing_file(tmp_path: Path) -> None:
         str(tmp_path), "nyu-ML-nyungwe", ["nyu-ML-nyungwe", "eph", "text", "reg"]
     )
     assert book_name == ""
+
+
+WACSDEV = "https://content.wacsdev.org"
+
+
+def test_override_repo_host_disabled_by_default() -> None:
+    url = "https://content.bibletranslationtools.org/WA-Catalog/en_ulb"
+    assert override_repo_host(url, "") == url
+
+
+def test_override_repo_host_rewrites_wacs_prod_host() -> None:
+    assert (
+        override_repo_host(
+            "https://content.bibletranslationtools.org/WA-Catalog/en_ulb", WACSDEV
+        )
+        == "https://content.wacsdev.org/WA-Catalog/en_ulb"
+    )
+
+
+def test_override_repo_host_rewrites_defunct_wacs_dev_host() -> None:
+    assert (
+        override_repo_host(
+            "https://wacs-dev.bibletranslationtools.org/Staging/arb_1ch_tn", WACSDEV
+        )
+        == "https://content.wacsdev.org/Staging/arb_1ch_tn"
+    )
+
+
+def test_override_repo_host_preserves_docx_path() -> None:
+    assert (
+        override_repo_host(
+            "https://content.bibletranslationtools.org/WA-Catalog/en_rg/raw/branch/master/en_rg_nt_survey.docx",
+            WACSDEV,
+        )
+        == "https://content.wacsdev.org/WA-Catalog/en_rg/raw/branch/master/en_rg_nt_survey.docx"
+    )
+
+
+def test_override_repo_host_leaves_non_wacs_hosts_alone() -> None:
+    url = "https://git.door43.org/Door43/en_ta"
+    assert override_repo_host(url, WACSDEV) == url

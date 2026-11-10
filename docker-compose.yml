@@ -83,7 +83,7 @@ services:
       start_period: 15s
     restart: unless-stopped
   celery-dashboard:
-    image: mher/flower
+    image: mher/flower:2.0.1
     environment:
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}

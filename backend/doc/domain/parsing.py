@@ -67,6 +67,7 @@ from doc.utils.text_utils import (
     chapter_label_numeric_part,
     chapter_label_sans_numeric_part,
     normalize_localized_book_name,
+    remove_xml_incompatible_chars,
 )
 from doc.utils.tw_utils import (
     localized_translation_word,
@@ -374,17 +375,37 @@ def get_chapter_num(
 
 
 def extract_usfm_frontmatter(frontmatter: str) -> dict[str, str]:
+    """
+    Extract book name candidates from USFM front matter. Characters
+    that can't appear in a docx (e.g., NULL bytes from corrupt source
+    USFM) are removed, and markers whose value is then empty are
+    omitted so that callers fall back to other book name sources.
+
+    A marker's value must be on the same line as the marker, so that an
+    empty marker (e.g., "\\h " followed by a newline) doesn't capture
+    content from the following line (e.g., "\\c 1").
+    """
     patterns = {
-        "h": r"\\h\s+(.*?)(?=\s+\\|\n|$)",
-        "mt": r"\\mt\s+(.*?)(?=\s+\\|\n|$)",
-        "toc1": r"\\toc1\s+(.*?)(?=\s+\\|\n|$)",
-        "toc2": r"\\toc2\s+(.*?)(?=\s+\\|\n|$)",
+        "h": r"\\h[ \t]+(.*?)(?=\s+\\|\n|$)",
+        "mt": r"\\mt[ \t]+(.*?)(?=\s+\\|\n|$)",
+        "toc1": r"\\toc1[ \t]+(.*?)(?=\s+\\|\n|$)",
+        "toc2": r"\\toc2[ \t]+(.*?)(?=\s+\\|\n|$)",
     }
     extracted_data = {}
     for key, pattern in patterns.items():
         match = search(pattern, frontmatter, MULTILINE)
         if match:
-            extracted_data[key] = match.group(1).strip()
+            raw_value = match.group(1)
+            value = remove_xml_incompatible_chars(raw_value).strip()
+            if value != raw_value.strip():
+                logger.warning(
+                    "Removed XML incompatible characters from USFM \\%s marker: %r -> %r",
+                    key,
+                    raw_value,
+                    value,
+                )
+            if value:
+                extracted_data[key] = value
     return extracted_data
 
 
@@ -494,6 +515,16 @@ def usfm_book_content(
     if content_file and exists(content_file):
         with open(content_file, "r") as f:
             content = f.read()
+        # Corrupt source content (e.g., NULL bytes in a verse, chapter
+        # title or book name) would otherwise make docx generation fail.
+        sanitized_content = remove_xml_incompatible_chars(content)
+        if sanitized_content != content:
+            logger.warning(
+                "Removed %s XML incompatible characters from USFM content in %s",
+                len(content) - len(sanitized_content),
+                content_file,
+            )
+            content = sanitized_content
     if not use_chapter_labels:
         content = ensure_no_chapter_labels(content)
     usfm_chapters: dict[ChapterNum, USFMChapter] = {}
@@ -1243,12 +1274,24 @@ def get_book_name(
     bible_book_names: Mapping[str, str] = BOOK_NAMES,
     use_localized_book_name: bool = settings.USE_LOCALIZED_BOOK_NAME,
 ) -> str:
-    """Retrieve the book name, preferring a localized title if available."""
+    """
+    Retrieve the book name, preferring a localized title if available.
+    Characters that can't appear in a docx are removed from the localized
+    title and, if nothing usable remains, the English book name is used.
+    """
     title_path = join(resource_path, "front", "title.txt")
     if use_localized_book_name:
         try:
             with open(title_path, encoding="utf-8") as f:
-                return normalize_localized_book_name(f.read())
+                book_name = normalize_localized_book_name(
+                    remove_xml_incompatible_chars(f.read())
+                )
+            if book_name:
+                return book_name
+            logger.warning(
+                "Localized book name in %s is empty or unusable, using English book name instead.",
+                title_path,
+            )
         except FileNotFoundError:
             logger.debug(
                 "Localized book name not found, using English book name instead."
@@ -1297,12 +1340,19 @@ def get_chapter_number(chapter_dir_name: str) -> int:
 
 
 def read_chapter_label(chapter_word_file: str) -> Optional[str]:
+    """
+    Return the chapter label word (e.g., "Chapter") from a chapter's
+    title.txt, or None if there is no file or it has no usable content.
+    Characters that can't appear in a docx are removed.
+    """
     try:
         with open(chapter_word_file, "r") as fin:
-            chapter_word = fin.read().strip()
-            return chapter_label_sans_numeric_part(chapter_word)
+            chapter_word = remove_xml_incompatible_chars(fin.read()).strip()
     except FileNotFoundError:
         return None
+    if not chapter_word:
+        return None
+    return chapter_label_sans_numeric_part(chapter_word)
 
 
 def read_verse_file(usfm_file: str) -> str:

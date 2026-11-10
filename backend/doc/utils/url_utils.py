@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import yaml
 from doc.config import settings
 from doc.domain.model import Data, JsonManifestBook, JsonManifestData
+from doc.utils.text_utils import remove_xml_incompatible_chars
 from passages.domain.survey_files import EN_RG_DIR
 from pydantic import HttpUrl
 
@@ -138,14 +139,27 @@ def get_book_name_from_title_file(
     """
     Book names in front/title.txt files may or may not be localized,
     it depends on the translation work done for lang_code.
+
+    Characters that can't appear in a docx (e.g., NULL bytes from a
+    corrupt title.txt) are removed. If nothing usable remains, an empty
+    string is returned so that callers fall back to other book name
+    sources.
     """
     # book_codes_and_names_localized: dict[str, str] = {}
     book_name = ""
     book_name_file = join(resource_filepath, "front", "title.txt")
     if exists(book_name_file):
         with open(book_name_file, "r") as fin:
-            book_name = fin.read()
-            logger.debug("book_name: %s", book_name)
+            raw_book_name = fin.read()
+        book_name = remove_xml_incompatible_chars(raw_book_name).strip()
+        if book_name != raw_book_name.strip():
+            logger.warning(
+                "Removed XML incompatible characters from book name in %s: %r -> %r",
+                book_name_file,
+                raw_book_name,
+                book_name,
+            )
+        logger.debug("book_name: %s", book_name)
             # if book_name:
             # Moved this code to the caller
             # localized_book_name_ = normalize_localized_book_name(book_name)

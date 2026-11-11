@@ -1,10 +1,16 @@
-from doc.domain import model
+from doc.domain import model, parsing
 from doc.domain.assembly_strategies.assemble_by_book import (
     assemble_content_by_verse_book_at_a_time,
 )
 
 
 def _usfm_book(lang_code: str, book_code: str) -> model.USFMBook:
+    html = (
+        '<span class="verse">'
+        '<sup class="versemarker">1</sup>'
+        f"{book_code} verse text"
+        "</span>"
+    )
     return model.USFMBook(
         lang_code=lang_code,
         lang_name=lang_code,
@@ -14,13 +20,8 @@ def _usfm_book(lang_code: str, book_code: str) -> model.USFMBook:
         resource_type_name="ULB",
         chapters={
             1: model.USFMChapter(
-                content=(
-                    '<span class="verse">'
-                    '<sup class="versemarker">1</sup>'
-                    f"{book_code} verse text"
-                    "</span>"
-                ),
-                verses=None,
+                content=html,
+                verses=parsing.split_into_verses(html),
             )
         },
         lang_direction=model.LangDirEnum.LTR,

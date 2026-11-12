@@ -16,7 +16,6 @@ from docx.table import Table, _Cell, _Row
 from docx.text.paragraph import Paragraph
 from html4docx import HtmlToDocx  # type: ignore[import-untyped]
 
-
 if TYPE_CHECKING:
     from typing import TypeAlias
 
@@ -212,21 +211,54 @@ def add_lined_page_at_end(doc: DocxDocument) -> DocxDocument:
     return doc
 
 
-def adjust_table_columns(table: Table) -> None:
+def adjust_table_columns(table: Table, doc: DocxDocument) -> None:
     """
     Adjusts the table columns so that the last column ('Status') is minimal,
-    while the other columns take up the remaining space.
+    while the other two content columns share the remaining space equally.
+    Column widths are derived from the document's actual page size and margins.
     :param table: The table to adjust.
+    :param doc: The document, used to calculate available text width.
     """
-    # Set widths for each column
-    column_widths = [5.5, 5.5, 1.0]  # Adjust widths in inches (example values)
-    # Apply widths to the columns
-    for col_idx, width in enumerate(column_widths):
+    EMU_PER_INCH = 914400
+    TWIPS_PER_INCH = 1440
+    # A4 with 1-inch margins fallback (in EMU)
+    DEFAULT_TEXT_WIDTH_EMU = int(6.27 * EMU_PER_INCH)
+    section = doc.sections[0]
+    page_width = section.page_width
+    left_margin = section.left_margin
+    right_margin = section.right_margin
+    if page_width is not None and left_margin is not None and right_margin is not None:
+        text_width_emu = page_width - left_margin - right_margin
+    else:
+        text_width_emu = DEFAULT_TEXT_WIDTH_EMU
+    status_width_inches = 1.0  # Wide enough for "Status" and typical translations
+    status_width_twips = int(status_width_inches * TWIPS_PER_INCH)
+    status_width_emu = int(status_width_inches * EMU_PER_INCH)
+    content_width_emu = text_width_emu - status_width_emu
+    content_width_twips = int((content_width_emu / EMU_PER_INCH) * TWIPS_PER_INCH) // 2
+    total_width_twips = content_width_twips * 2 + status_width_twips
+    column_widths_twips = [content_width_twips, content_width_twips, status_width_twips]
+    # Disable autofit at the XML level
+    table.autofit = False
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+    # Set the overall table width to fill the text area
+    tblW = tblPr.find(qn("w:tblW"))
+    if tblW is None:
+        tblW = OxmlElement("w:tblW")
+        tblPr.append(tblW)
+    tblW.set(qn("w:w"), str(total_width_twips))
+    tblW.set(qn("w:type"), "dxa")
+    # Set cell widths, replacing any existing w:tcW elements
+    for col_idx, width_twips in enumerate(column_widths_twips):
         for cell in table.columns[col_idx].cells:
             tc = cell._tc
             tcPr = tc.get_or_add_tcPr()
+            # Remove any existing tcW to avoid duplicates
+            for existing in tcPr.findall(qn("w:tcW")):
+                tcPr.remove(existing)
             tcW = OxmlElement("w:tcW")
-            tcW.set(qn("w:w"), str(int(width * 1440)))  # Convert inches to twips
+            tcW.set(qn("w:w"), str(width_twips))
             tcW.set(qn("w:type"), "dxa")
             tcPr.append(tcW)
 

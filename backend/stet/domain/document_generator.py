@@ -34,6 +34,7 @@ from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.shared import Mm
 from html4docx import HtmlToDocx  # type: ignore
 from pydantic import Json
 from stet.domain.model import PassageEntry, WordEntry
@@ -344,6 +345,14 @@ def generate_docx(
     :param use_increased_line_spacing: Indicate whether to increase line spacing to double that of normal.
     """
     doc = Document()
+    # Set page size and margins to A4
+    section = doc.sections[0]
+    section.page_width = Mm(210)
+    section.page_height = Mm(297)
+    section.left_margin = Mm(25.4)  # 1 inch
+    section.right_margin = Mm(25.4)  # 1 inch
+    section.top_margin = Mm(25.4)  # 1 inch
+    section.bottom_margin = Mm(25.4)  # 1 inch
     html_to_docx = HtmlToDocx()
     for word_entry in word_entries:
         # Add the word heading
@@ -441,8 +450,8 @@ def generate_docx(
             vAlign = OxmlElement("w:vAlign")  # Create the vertical alignment element
             vAlign.set(qn("w:val"), "center")  # Set alignment to "center"
             tcPr.append(vAlign)  # Append the vertical alignment to cell properties
-        # Adjust column widths to prioritize the first two columns
-        adjust_table_columns(table)
+        # Adjust column widths based on actual page and margin dimensions
+        adjust_table_columns(table, doc)
     footer_phrase = translated_footer_phrases_table[lang0_code]
     current_datetime = datetime.now().strftime(
         localized_date_format_strings[lang0_code]

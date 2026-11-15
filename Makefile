@@ -15,7 +15,7 @@ startdocker:
 	fi
 
 .PHONY: checkvenv
-checkvenv: startdocker
+checkvenv:
 # raises error if environment is not active
 ifeq ("$(VIRTUAL_ENV)","")
 	@echo "Venv is not activated!"
@@ -52,7 +52,7 @@ install-cython: checkvenv
 	pip install cython
 
 .PHONY: build
-build: checkvenv down clean-mypyc-artifacts install-cython local-install-deps-dev local-install-deps-prod
+build: checkvenv startdocker down clean-mypyc-artifacts install-cython local-install-deps-dev local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc-usfmparser:$${IMAGE_TAG} ./dotnet/USFMParserApi && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
@@ -60,7 +60,7 @@ build: checkvenv down clean-mypyc-artifacts install-cython local-install-deps-de
         docker build --progress=plain -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-pip-update
-build-no-pip-update: checkvenv down clean-mypyc-artifacts
+build-no-pip-update: checkvenv startdocker down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc-usfmparser:$${IMAGE_TAG} ./dotnet/USFMParserApi && \
 	docker build --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
@@ -68,7 +68,7 @@ build-no-pip-update: checkvenv down clean-mypyc-artifacts
         docker build --progress=plain -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-pip-update-run-tests
-build-no-pip-update-run-tests: checkvenv down clean-mypyc-artifacts
+build-no-pip-update-run-tests: checkvenv startdocker down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --progress=plain -t wycliffeassociates/doc-usfmparser:$${IMAGE_TAG} ./dotnet/USFMParserApi && \
 	docker build --build-arg RUN_TESTS=true --progress=plain -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
@@ -76,7 +76,7 @@ build-no-pip-update-run-tests: checkvenv down clean-mypyc-artifacts
         docker build --progress=plain -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-cache
-build-no-cache: checkvenv down clean-mypyc-artifacts local-install-deps-prod
+build-no-cache: checkvenv startdocker down clean-mypyc-artifacts local-install-deps-prod
 	export IMAGE_TAG=local && \
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-usfmparser:$${IMAGE_TAG} ./dotnet/USFMParserApi && \
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
@@ -84,7 +84,7 @@ build-no-cache: checkvenv down clean-mypyc-artifacts local-install-deps-prod
         docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-ui-tests:$${IMAGE_TAG} -f ./frontend/testsDockerfile ./frontend
 
 .PHONY: build-no-cache-no-pip-update
-build-no-cache-no-pip-update: checkvenv down clean-mypyc-artifacts
+build-no-cache-no-pip-update: checkvenv startdocker down clean-mypyc-artifacts
 	export IMAGE_TAG=local && \
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc-usfmparser:$${IMAGE_TAG} ./dotnet/USFMParserApi && \
 	docker build --progress=plain --no-cache --pull -t wycliffeassociates/doc:$${IMAGE_TAG} . && \
@@ -94,12 +94,12 @@ build-no-cache-no-pip-update: checkvenv down clean-mypyc-artifacts
 todays_date := $(shell date +%FT%T%Z)
 doc_version := $(shell git rev-parse --short HEAD)
 .PHONY: up
-up: checkvenv
+up: checkvenv startdocker
 	export IMAGE_TAG=local && \
 	PUBLIC_DOC_VERSION=$(doc_version) PUBLIC_DOC_BUILD_TIMESTAMP=$(todays_date) PUBLIC_LOGROCKET_ID=ct7zyg/interleaved-resource-generator DATA_API_URL=https://api.bibleineverylanguage.org/v1/graphql PUBLIC_BACKEND_API_URL=http://localhost:5005 PUBLIC_FILE_SERVER_URL=http://localhost:8089 docker compose up --remove-orphans
 
 .PHONY: up-as-daemon
-up-as-daemon: checkvenv
+up-as-daemon: checkvenv startdocker
 	export IMAGE_TAG=local && \
 	LOGROCKET_ID=ct7zyg/interleaved-resource-generator BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker compose up -d
 
@@ -111,11 +111,11 @@ build-and-run: build up
 
 
 .PHONY: down
-down:
+down: startdocker
 	LOGROCKET_ID=ct7zyg/interleaved-resource-generator BACKEND_API_URL=http://localhost:5005 FILE_SERVER_URL=http://localhost:8089 docker compose down --remove-orphans
 
 .PHONY: stop-and-remove
-stop-and-remove:
+stop-and-remove: startdocker
 	docker ps -q | xargs docker stop
 	docker ps -a -q -f status=exited | xargs docker rm
 
@@ -131,7 +131,7 @@ clean-local-docker-output-dir:
 	find docker_document_output/ -type f -name "*.html" -exec rm -- {} +
 
 .PHONY: test
-test: clean-local-docker-output-dir
+test: startdocker clean-local-docker-output-dir
 	docker compose -f docker-compose.yml -f docker-compose.api-test.yml -f docker-compose.override.yml up  test-runner
 
 .PHONY: unit-tests
@@ -139,12 +139,12 @@ unit-tests: startdocker
 	docker compose -f docker-compose.yml -f docker-compose.api-test.yml -f docker-compose.override.yml up  test-runner
 
 .PHONY: e2e-tests
-e2e-tests: clean-local-docker-output-dir
+e2e-tests: startdocker clean-local-docker-output-dir
 	docker compose -f docker-compose.yml -f docker-compose.api-test.yml -f docker-compose.override.yml up  test-runner
 
 
 .PHONY: e2e-docx-tests
-e2e-docx-tests: clean-local-docker-output-dir
+e2e-docx-tests: startdocker clean-local-docker-output-dir
 	docker compose -f docker-compose.yml -f docker-compose.api-docx-test.yml -f docker-compose.override.yml up  test-runner
 
 
@@ -157,7 +157,7 @@ frontend-tests: startdocker
 	docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml up --exit-code-from frontend-test-runner
 
 .PHONY: test-randomized
-test-randomized:
+test-randomized: startdocker
 	LOGROCKET_ID=ct7zyg/interleaved-resource-generator BACKEND_API_URL=http://localhost:5005 docker compose run --rm --no-deps --entrypoint=pytest api -v -m randomized -n auto /app/tests/unit /app/tests/e2e
 
 # NOTE This is only needed if mypyc is not used and you wish to run
@@ -200,7 +200,7 @@ clean-mypyc-artifacts:
 	find . ! -path .venv -type f -name "*.c" -exec rm -- {} +
 
 .PHONY: prune-docker-images-volumes
-prune-docker-images-volumes: checkvenv
+prune-docker-images-volumes: checkvenv startdocker
 	docker system prune --volumes
 
 # https://radon.readthedocs.io/en/latest/commandline.html

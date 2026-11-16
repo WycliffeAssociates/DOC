@@ -11,7 +11,8 @@ services:
         condition: service_healthy
       frontend:
         condition: service_healthy
-    # environment:
+    environment:
+      - CI=true
     #   - FRONTEND_API_URL=http://frontend/
     network_mode: host
 

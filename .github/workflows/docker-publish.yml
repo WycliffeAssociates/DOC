@@ -134,7 +134,6 @@ jobs:
   Push-Images:
     name: Push images if this is a branch
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
     needs: [Test-API-Image, Test-Frontend-Image]
     if: ${{ contains(fromJson('["push"]'), github.event_name) }}
     steps:

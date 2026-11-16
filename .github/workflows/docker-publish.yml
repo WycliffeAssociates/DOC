@@ -84,6 +84,7 @@ jobs:
   Test-Frontend-Image:
     name: Test Frontend image
     runs-on: ubuntu-24.04
+    timeout-minutes: 60  # 4 image builds + Playwright suite (30 min cap)
     needs: [Build-API-Image, Build-Frontend-Image, Build-USFMParser-Image]
     steps:
       - uses: actions/checkout@v4
@@ -127,11 +128,13 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Test frontend image with docker-compose
+        timeout-minutes: 35  # step-level cap just for Playwright
         run: docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml up --exit-code-from frontend-test-runner
 
   Push-Images:
     name: Push images if this is a branch
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     needs: [Test-API-Image, Test-Frontend-Image]
     if: ${{ contains(fromJson('["push"]'), github.event_name) }}
     steps:

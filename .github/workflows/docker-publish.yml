@@ -65,7 +65,7 @@ jobs:
   Test-API-Image:
     name: Test API image
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 45
     needs: [Build-Images]
     steps:
       - uses: actions/checkout@v4
@@ -83,7 +83,7 @@ jobs:
           docker load -i ${{ runner.temp }}/images/usfmparser.tar
           docker load -i ${{ runner.temp }}/images/fileserver.tar
 
-      # Builds/pulls only what isn't already loaded (e.g. fileserver, redis)
+      # Pulls/builds only what isn't already loaded (e.g. redis, flower).
       - name: Prepare compose stack
         run: |
           docker compose -f docker-compose.yml -f docker-compose.api-test.yml \
@@ -101,14 +101,14 @@ jobs:
   Test-Frontend-Image:
     name: Test Frontend image (shard ${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 45
     needs: [Build-Images]
     strategy:
       fail-fast: false
       matrix:
         shard: [1, 2, 3, 4]
     env:
-      # Consumed by docker-compose.frontend-test.yml (see note in README / PR)
+      # Consumed by docker-compose.frontend-test.yml → testsDockerfile --shard
       PLAYWRIGHT_SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
     steps:
       - uses: actions/checkout@v4
@@ -130,7 +130,7 @@ jobs:
             up --no-start
 
       - name: Test frontend image with docker-compose
-        timeout-minutes: 45
+        timeout-minutes: 35
         run: |
           docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml \
             up --no-build --exit-code-from frontend-test-runner

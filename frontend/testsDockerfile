@@ -7,4 +7,9 @@ COPY package-lock.json package-lock.json
 COPY playwright.config.ts playwright.config.ts
 
 RUN npm ci
-CMD [ "npx" , "playwright" , "test"]
+
+# PLAYWRIGHT_SHARD is "current/total" (e.g. "2/4"), set by the CI matrix.
+# Defaults to the full suite when unset. `exec` keeps Playwright as PID 1 so
+# it receives stop signals from docker compose directly.
+ENV PLAYWRIGHT_SHARD=1/1
+CMD exec npx playwright test --shard="$PLAYWRIGHT_SHARD"

@@ -35,6 +35,12 @@ jobs:
             context: ./frontend
             file: ./frontend/testsDockerfile
             tag: wycliffeassociates/doc-ui-tests:local
+          # fileserver has only `build: ./web` in docker-compose.yml, so compose
+          # expects the image name <project>-<service>; project = checkout dir "doc"
+          - name: fileserver
+            context: ./web
+            file: ./web/Dockerfile
+            tag: doc-fileserver:latest
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -75,11 +81,18 @@ jobs:
         run: |
           docker load -i ${{ runner.temp }}/images/api.tar
           docker load -i ${{ runner.temp }}/images/usfmparser.tar
+          docker load -i ${{ runner.temp }}/images/fileserver.tar
+
+      # Builds/pulls only what isn't already loaded (e.g. fileserver, redis)
+      - name: Prepare compose stack
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.api-test.yml \
+            up --no-start
 
       - name: Test API image with docker-compose
         run: |
           docker compose -f docker-compose.yml -f docker-compose.api-test.yml \
-            up --no-build --pull never --exit-code-from test-runner
+            up --no-build --exit-code-from test-runner
 
       - name: Dump compose logs on failure
         if: failure()
@@ -110,11 +123,17 @@ jobs:
       - name: Load images
         run: for f in ${{ runner.temp }}/images/*.tar; do docker load -i "$f"; done
 
+      # Builds/pulls only what isn't already loaded (e.g. fileserver, redis)
+      - name: Prepare compose stack
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml \
+            up --no-start
+
       - name: Test frontend image with docker-compose
         timeout-minutes: 45
         run: |
           docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml \
-            up --no-build --pull never --exit-code-from frontend-test-runner
+            up --no-build --exit-code-from frontend-test-runner
 
       - name: Dump compose logs on failure
         if: failure()

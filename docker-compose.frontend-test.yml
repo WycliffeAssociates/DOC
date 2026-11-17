@@ -11,7 +11,10 @@ services:
         condition: service_healthy
       frontend:
         condition: service_healthy
-    # environment:
+    environment:
+      - CI=true
+      # "current/total", e.g. "2/4". Set by the CI matrix; defaults to the full suite locally.
+      - PLAYWRIGHT_SHARD=${PLAYWRIGHT_SHARD:-1/1}
     #   - FRONTEND_API_URL=http://frontend/
     network_mode: host
 

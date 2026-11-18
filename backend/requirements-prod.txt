@@ -8,8 +8,10 @@ execnet==2.1.2
     # via pytest-xdist
 icdiff==2.0.10
     # via pytest-icdiff
-iniconfig==2.3.0
-    # via pytest
+iniconfig==2.3.1
+    # via
+    #   -c backend/requirements.txt
+    #   pytest
 librt==0.8.0
     # via mypy
 mypy==1.19.1
@@ -22,16 +24,19 @@ packaging==26.0
     #   pytest
 pathspec==1.0.4
     # via mypy
-pluggy==1.6.0
-    # via pytest
+pluggy==1.7.0
+    # via
+    #   -c backend/requirements.txt
+    #   pytest
 pprintpp==0.4.0
     # via pytest-icdiff
 pygments==2.19.2
     # via
     #   -c backend/requirements.txt
     #   pytest
-pytest==9.0.2
+pytest==9.2.0
     # via
+    #   -c backend/requirements.txt
     #   -r backend/requirements-prod.in
     #   pytest-datafiles
     #   pytest-icdiff

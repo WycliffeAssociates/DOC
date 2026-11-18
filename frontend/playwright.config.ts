@@ -4,7 +4,7 @@ const config: PlaywrightTestConfig = {
   testDir: 'tests',
   testMatch: '**/*.ts',
   workers: process.env.CI ? 1 : undefined,
-  globalTimeout: process.env.CI ? 30 * 60 * 1000 : undefined, // 30 min suite cap
+  globalTimeout: process.env.CI ? 15 * 60 * 1000 : undefined, // 30 min suite cap
   timeout: process.env.CI ? 120_000 : 60_000,
   retries: process.env.CI ? 1 : 0,
   // list: a line per test with its duration (shows where a run stalls); github: failure annotations

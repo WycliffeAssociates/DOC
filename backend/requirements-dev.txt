@@ -88,8 +88,10 @@ idna==3.11
     #   requests
 importlib-metadata==8.7.1
     # via docstring-to-markdown
-iniconfig==2.3.0
-    # via pytest
+iniconfig==2.3.1
+    # via
+    #   -c backend/requirements.txt
+    #   pytest
 isort==7.0.0
     # via
     #   -r backend/requirements-dev.in
@@ -141,8 +143,9 @@ platformdirs==4.7.0
     # via
     #   black
     #   pylint
-pluggy==1.6.0
+pluggy==1.7.0
     # via
+    #   -c backend/requirements.txt
     #   pytest
     #   python-lsp-server
 pprintpp==0.4.0
@@ -171,8 +174,9 @@ pylint==4.0.4
     # via -r backend/requirements-dev.in
 pylsp-mypy==0.7.1
     # via -r backend/requirements-dev.in
-pytest==9.0.2
+pytest==9.2.0
     # via
+    #   -c backend/requirements.txt
     #   -r backend/requirements-dev.in
     #   pytest-datafiles
     #   pytest-docker-tools

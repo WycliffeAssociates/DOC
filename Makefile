@@ -147,6 +147,16 @@ e2e-tests: startdocker clean-local-docker-output-dir
 e2e-docx-tests: startdocker clean-local-docker-output-dir
 	docker compose -f docker-compose.yml -f docker-compose.api-docx-test.yml -f docker-compose.override.yml up  test-runner
 
+.PHONY: test-durations
+test-durations: startdocker
+	-docker rm -f doc-test-durations 2>/dev/null
+	-docker compose -f docker-compose.yml -f docker-compose.api-test.yml -f docker-compose.override.yml \
+	  run --name doc-test-durations test-runner \
+	  -n auto -m "not all and not randomized and not english_randomized" \
+	  --store-durations --durations-path /app/tests/.test_durations \
+	  /app/tests/unit /app/tests/e2e
+	docker cp doc-test-durations:/app/tests/.test_durations tests/.test_durations
+	docker rm doc-test-durations
 
 .PHONY: frontend-tests
 frontend-tests: startdocker

@@ -2,7 +2,6 @@ services:
   frontend:
     # use nginx as a mock frontend since the frontend isn't built or used at this stage
     image: nginx:alpine
-
   test-runner:
     image: wycliffeassociates/doc:${IMAGE_TAG}
     depends_on:
@@ -14,7 +13,6 @@ services:
         condition: service_healthy
       celery-dashboard:
         condition: service_started
-
     entrypoint: pytest
     command: [
         "-vvv",
@@ -30,6 +28,13 @@ services:
         "not all and not randomized and not english_randomized",
         "-n",
         "auto",
+        # pytest-split: run group N of M. Set by the CI matrix; defaults to the full suite.
+        "--splits",
+        "${PYTEST_SPLITS:-1}",
+        "--group",
+        "${PYTEST_GROUP:-1}",
+        "--durations-path",
+        "/app/tests/.test_durations",
         "/app/tests/unit",
         "/app/tests/e2e",
       ]
@@ -46,6 +51,5 @@ services:
       SEND_EMAIL: ${SEND_EMAIL:-False}
     volumes:
       - shared:/app/document_output
-
 volumes:
   shared:

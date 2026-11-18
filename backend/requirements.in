@@ -15,6 +15,7 @@ mistune
 orjson
 pydantic
 email-validator
+pytest-split
 python-dotenv
 pyyaml
 redis

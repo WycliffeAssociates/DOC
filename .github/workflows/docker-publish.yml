@@ -63,10 +63,18 @@ jobs:
           retention-days: 1
 
   Test-API-Image:
-    name: Test API image
+    name: Test API image (group ${{ matrix.group }}/${{ strategy.job-total }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 25
     needs: [Build-Images]
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [1, 2, 3]
+    env:
+      # Interpolated into docker-compose.api-test.yml → pytest --splits/--group
+      PYTEST_SPLITS: ${{ strategy.job-total }}
+      PYTEST_GROUP: ${{ matrix.group }}
     steps:
       - uses: actions/checkout@v4
 
@@ -89,19 +97,23 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.api-test.yml \
             up --no-start
 
+      # `run` starts test-runner's dependencies (waiting for health checks), runs
+      # pytest, and returns pytest's exit code without tearing the stack down.
       - name: Test API image with docker-compose
+        timeout-minutes: 20
         run: |
           docker compose -f docker-compose.yml -f docker-compose.api-test.yml \
-            up --no-build --exit-code-from test-runner
+            run --rm -T test-runner
 
       - name: Dump compose logs on failure
         if: failure()
-        run: docker compose -f docker-compose.yml -f docker-compose.api-test.yml logs --no-color --timestamps
+        timeout-minutes: 3
+        run: docker compose -f docker-compose.yml -f docker-compose.api-test.yml logs --no-color --timestamps --tail=500
 
   Test-Frontend-Image:
     name: Test Frontend image (shard ${{ matrix.shard }}/${{ strategy.job-total }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 25
     needs: [Build-Images]
     strategy:
       fail-fast: false
@@ -123,21 +135,24 @@ jobs:
       - name: Load images
         run: for f in ${{ runner.temp }}/images/*.tar; do docker load -i "$f"; done
 
-      # Builds/pulls only what isn't already loaded (e.g. fileserver, redis)
+      # Pulls/builds only what isn't already loaded (e.g. redis, flower).
       - name: Prepare compose stack
         run: |
           docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml \
             up --no-start
 
+      # `run` starts frontend-test-runner's dependencies (waiting for health checks),
+      # runs Playwright, and returns its exit code without tearing the stack down.
       - name: Test frontend image with docker-compose
-        timeout-minutes: 35
+        timeout-minutes: 20
         run: |
           docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml \
-            up --no-build --exit-code-from frontend-test-runner
+            run --rm -T frontend-test-runner
 
       - name: Dump compose logs on failure
         if: failure()
-        run: docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml logs --no-color --timestamps
+        timeout-minutes: 3
+        run: docker compose -f docker-compose.yml -f docker-compose.frontend-test.yml logs --no-color --timestamps --tail=500
 
   Push-Images:
     name: Push images if this is a branch

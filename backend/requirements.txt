@@ -113,6 +113,8 @@ idna==3.11
     #   email-validator
     #   httpx
     #   requests
+iniconfig==2.3.1
+    # via pytest
 itsdangerous==2.2.0
     # via fastapi
 jinja2==3.1.6
@@ -143,8 +145,11 @@ packaging==26.0
     # via
     #   gunicorn
     #   kombu
+    #   pytest
 pillow==12.1.1
     # via weasyprint
+pluggy==1.7.0
+    # via pytest
 prometheus-client==0.24.1
     # via flower
 prompt-toolkit==3.0.52
@@ -167,9 +172,15 @@ pydantic-settings==2.12.0
 pydyf==0.12.1
     # via weasyprint
 pygments==2.19.2
-    # via rich
+    # via
+    #   pytest
+    #   rich
 pyphen==0.17.2
     # via weasyprint
+pytest==9.2.0
+    # via pytest-split
+pytest-split==0.11.0
+    # via -r backend/requirements.in
 python-dateutil==2.9.0.post0
     # via celery
 python-docx==1.2.0

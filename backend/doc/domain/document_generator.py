@@ -645,8 +645,7 @@ def assemble_content(
 # pagedjs-cli (does a really nice job, but is really slow - uses puppeteer underneath),
 # electron-pdf (similar speed to wkhtmltopdf) which uses chrome underneath the hood,
 # gotenburg which uses chrome under the hood and provides a nice api in Docker (untested),
-# raw chrome headless (works well and is about the same speed as weasyprint),
-# ebook-convert (faster than weasyprint, but does arbitrary page breaks in formatting and can't do headers and footers)
+# raw chrome headless (works well and is about the same speed as weasyprint).
 def convert_html_to_pdf(
     html_filepath: str,
     pdf_filepath: str,
